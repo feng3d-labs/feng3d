@@ -6,7 +6,7 @@ import { mesh } from '../../meshes/stanfordDragon';
 import { getDeferredFragmentDeferredRenderingWGSL } from '../../shaders-tsl/deferredFragmentDeferredRendering';
 import { getFragmentGBuffersDebugViewWGSL } from '../../shaders-tsl/fragmentGBuffersDebugView';
 import fragmentWriteGBuffers from './fragmentWriteGBuffers.wgsl';
-import lightUpdate from './lightUpdate.wgsl';
+import { getLightUpdateWGSL } from '../../shaders-tsl/lightUpdate';
 import { getDeferredVertexTextureQuadWGSL } from '../../shaders-tsl/deferredVertexTextureQuad';
 import { getDeferredVertexWriteGBuffersWGSL } from '../../shaders-tsl/deferredVertexWriteGBuffers';
 
@@ -247,7 +247,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const lightUpdateComputePipeline: ComputePipeline = {
         compute: {
-            code: lightUpdate,
+            code: getLightUpdateWGSL(),
         },
     };
     const lightsBufferBindGroup: BindingResources = {

@@ -44,6 +44,7 @@ import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/shade
 import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingFragment';
 import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fragmentGBuffersDebugView';
 import { getVolumeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/volume';
+import { getLightUpdateWGSL } from '../packages/webgpu/examples/src/shaders-tsl/lightUpdate';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -927,5 +928,37 @@ describe('体渲染着色器', () =>
         expect(shader.fragment).toContain('let blended = (1.0 - result) * sample;');
         expect(shader.fragment).toContain('result = result + select(0.0, blended, (intersects) && (result < 1.0));');
         expect(shader.fragment).toContain('rayPos = rayPos + input.step;');
+    });
+});
+
+/**
+ * deferredRendering 的灯光更新计算着色器（TSL 版）离线验收。
+ */
+describe('灯光更新计算着色器', () =>
+{
+    const wgsl = getLightUpdateWGSL();
+
+    it('compute 入口 + workgroup_size', () =>
+    {
+        expect(wgsl).toContain('@compute @workgroup_size(64, 1, 1)');
+        expect(wgsl).toContain('@builtin(global_invocation_id) globalInvocationId: vec3<u32>');
+    });
+
+    it('storage 是 read_write，元素结构体已输出', () =>
+    {
+        expect(wgsl).toContain('var<storage, read_write> lightsBuffer: array<LightData>;');
+        expect(wgsl).toContain('struct LightData');
+    });
+
+    it('回归：越界提前 return 必须落在 if 体内（不能被提到外层）', () =>
+    {
+        expect(wgsl).toMatch(/if \(\(index > config\.numLights\)\) \{\n\s+return;\n\s+\}/);
+    });
+
+    it('成员分量赋值 + 落到下限回到上限', () =>
+    {
+        expect(wgsl).toContain('let delta = 0.5 + 0.003 * wrapped;');
+        expect(wgsl).toContain('lightsBuffer[index].position.y = lightsBuffer[index].position.y - delta;');
+        expect(wgsl).toContain('lightsBuffer[index].position.y = lightExtent.max.y;');
     });
 });
