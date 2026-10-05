@@ -600,6 +600,26 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > **TSL 版与 master 第二次的哈希完全相同（`27695cfd…`）**，而 master 两次之间本身就不同，
 > 因此可判定「TSL 与 master 一致」。这道工序（先量噪声再判等价）在渲染迁移里是必需的。
 >
+> ✅ **第十四批（#711 雾片段批，2026-10-05）**：把 `standardFogMainWGSL`（约 15 行）做成 TSL 的
+> **可复用 body 片段** `applyStandardFog(ctx)`——这是"body 片段"这类对象的第一块试验田。
+>
+> 与 pars 的本质区别：**body 片段引用调用方的局部变量**（`finalColor`）与 varying（`worldPosition`），
+> 所以它的形态是**接收 TSL 表达式的普通 TS 函数**：在 shader body 内调用时，TSL 的语句收集器会把
+> `if_` / `let_` 挂到**当前 body** 上；需要回写的颜色用 `var_` 传入、函数内 `assign`。
+>
+> 这一批暴露并修掉了 TSL 的一个**真 bug**：
+>
+> **`if_()` 的语句收集没有判断"当前是否在 else 体内"**——它直接 `push` 到 `statements`，
+> 于是 `if (a) {...} else if (b) {...}` 里的**内层 if 被塞进了第一个 if 的 body**，
+> 生成的 WGSL 结构完全错了（`if (a) { ...; if (b) {...} else {...} }`）。
+> 修法是改用 `IfStatement.addStatement()`（它会按 `isElseBodyActive` 决定挂到 `elseStatements`）。
+> **这个 bug 只有生成"if / else if / else"链条时才会显形**——之前的用例都没写过这种结构。
+>
+> 同时补了两个 WGSL 内置：`length` / `distance`（fog 需要 `distance`）。
+>
+> 说明：本批**只交付这个单元 + 单测**，还没有接入调用方——因为接入需要先把整个
+> `standardFragmentWGSL`（约 96 行，含 `standardLightingMain`）迁成 TSL，那是下一批的事。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
