@@ -1,39 +1,51 @@
 # eslint-plugin-feng3d
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+Feng3D 仓库的自研 ESLint 规则集合，把根 [AGENTS.md](../../AGENTS.md) 里的两条核心纪律
+交给机器执行：**§8 响应式对象使用规范**与 **§15 R2 零模块级副作用 / R5 effect 必须注解**。
 
-#### 软件架构
-软件架构说明
+## 规则
 
+| 规则 | 作用 |
+|---|---|
+| `feng3d/reactive-naming` | `const x = reactive(...)` 的变量名必须带 `r_` 前缀（可自动修复） |
+| `feng3d/no-reactive-export` | 禁止导出响应式对象 |
+| `feng3d/no-reactive-argument` | 禁止把响应式对象作为函数参数传递 |
+| `feng3d/no-module-side-effect` | 模块顶层禁止创建缓存容器（`Map` / `WeakMap` / `Set` / `WeakSet` / `ChainMap`） |
+| `feng3d/effect-annotation` | `effect(...)` 调用必须带 `@边界 effect` / `@过渡 effect` 标注注释 |
 
-#### 安装教程
+规则在源码里为 `error`、在测试文件里为 `off`；启用点在根 `eslint.config.js`。
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+## 使用
 
-#### 使用说明
+本仓已配置好，无需额外操作。在其它项目里引用：
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+```js
+import feng3d from 'eslint-plugin-feng3d';
 
-#### 参与贡献
+export default [
+    {
+        plugins: { feng3d },
+        rules: {
+            'feng3d/reactive-naming': 'error',
+            'feng3d/no-reactive-export': 'error',
+            'feng3d/no-reactive-argument': 'error',
+            'feng3d/no-module-side-effect': 'error',
+            'feng3d/effect-annotation': 'error',
+        },
+    },
+];
+```
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+## 构建
 
+规则以 TypeScript 源码（`src/`）开发，入口为 `dist/index.js`：
 
-#### 特技
+```bash
+npm run build --workspace eslint-plugin-feng3d
+```
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+改动规则后需要重新构建，否则 `eslint` 读到的还是旧的 `dist`。
+
+## 许可
+
+MIT
