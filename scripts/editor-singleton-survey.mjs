@@ -52,6 +52,11 @@ const TEST = join(EDITOR, 'test');
 const SINGLETONS = [
     { name: 'editorRS', def: 'src/assets/EditorRS.ts', what: '页面侧资源系统' },
     { name: 'getEditorCache', def: 'src/caches/Editorcache.ts', what: '偏好持久化（**lazy 单例**：入口是 getEditorCache()）' },
+    // 下面两个是 #278 阶段 4b 收尾时才量出来的：它们才是"**下一层的大头**"
+    // （`editorAsset` ≈50 处、`menuConfig` ≈6 处；`editorRS` 的重灾区正是它们的定义文件，
+    //  见 `MIGRATE_SINGLETONS.md` §3 第 5 步）。先登记进来，让消费面**可查、只减不增**。
+    { name: 'editorAsset', def: 'src/ui/assets/EditorAsset.ts', what: '资产树（页面的资源管理器实体）' },
+    { name: 'menuConfig', def: 'src/configs/CommonConfig.ts', what: '菜单与命令装配' },
 ];
 
 /**
@@ -92,7 +97,7 @@ const MIGRATED = [
  * 迁移一个就从这里划掉一个；**实测集合与基线不一致即失败**（多了 = 新增违规；少了 = 该收紧基线
  * 却没收紧）。与 `imperative-construction-baseline.json` / `bundle-size-baseline.json` 同一套做法。
  */
-const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
+const TOP_LEVEL_NEW_BASELINE = ['editorRS', 'editorAsset', 'menuConfig'];
 
 /**
  * `editorData` 过渡层的**引用上限**（只减不增）。
@@ -140,7 +145,18 @@ const EDITORDATA_MAX_REFERENCES = 0;
  * 那需要先拍板"谁持有实例"（见 `MIGRATE_SINGLETONS.md` §3 第 5 步的三条路线），
  * 所以这里先把数字锁住（只减不增），不硬切。
  */
-const EDITORRS_MAX_REFERENCES = 28;
+/**
+ * 在册单例的**引用处数上限**（**只减不增**，每批收紧一次）。
+ *
+ * 原来只给 `editorRS` 写死了一个常量；`editorAsset` / `menuConfig` 登记进台账后同样需要
+ * "别又涨回去"——尤其它们才是**下一层的大头**（实测 61 处 / 8 处，见 `MIGRATE_SINGLETONS.md`
+ * §3 第 5 步）。先**锁住现状**：消费面还没开始降，但约束从登记这一刻就生效。
+ */
+const MAX_REFERENCES = {
+    editorRS: 28,
+    editorAsset: 61,
+    menuConfig: 8,
+};
 
 let total = 0;
 let failed = 0;
@@ -389,12 +405,15 @@ else
         `上限=${EDITORDATA_MAX_REFERENCES}，MIGRATED 里有=${MIGRATED.some((one) => one.name === 'editorData')}`);
 }
 
-// ---------- 自证 7：`editorRS` 的去单例化只减不增（#278 阶段 4b） ----------
-const editorRSEntry = survey.find((one) => one.name === 'editorRS');
+// ---------- 自证 7：在册单例的消费面**只减不增**（#278 阶段 4b） ----------
+for (const [name, limit] of Object.entries(MAX_REFERENCES))
+{
+    const entry = survey.find((one) => one.name === name);
 
-check('★ `editorRS` 的消费面只减不增（#278 阶段 4b：每批收紧一次上限）',
-    (editorRSEntry?.count ?? 0) <= EDITORRS_MAX_REFERENCES,
-    `实测 ${editorRSEntry?.count ?? 0} 处 / ${editorRSEntry?.hits.size ?? 0} 文件，上限 ${EDITORRS_MAX_REFERENCES} 处`);
+    check(`★ \`${name}\` 的消费面只减不增（#278：每批收紧一次上限）`,
+        (entry?.count ?? 0) <= limit,
+        `实测 ${entry?.count ?? 0} 处 / ${entry?.hits.size ?? 0} 文件，上限 ${limit} 处`);
+}
 
 // ---------- 自证 4（反向）：迁完的那些不许复活 ----------
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
