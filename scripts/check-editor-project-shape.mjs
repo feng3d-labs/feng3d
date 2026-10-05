@@ -30,6 +30,7 @@ import { resolve } from 'node:path';
 const ROOT = process.cwd();
 const TEMPLATE_DIR = resolve(ROOT, 'packages/editor/resource/template');
 const EDITOR_RS = resolve(ROOT, 'packages/editor/src/assets/EditorRS.ts');
+const TEMPLATE_TSCONFIG = resolve(TEMPLATE_DIR, 'tsconfig.json');
 
 /** 必须是编辑器元数据的两个文件（决策 16：不合并） */
 const REQUIRED = ['package.json', 'feng3d.project.json'];
@@ -85,6 +86,41 @@ function templateLists(source, name)
         .some((line) => line.includes(`'${name}'`));
 }
 
+/**
+ * 判据 4 的判据函数：模板 `tsconfig.json` 是否已经改成"`include` 通配、不回写"。
+ *
+ * 三条各自对应一个**旧形态的标志**：
+ * - `files`：那是 `ScriptCompiler` 回写的地方（已删）——留着会让"这份清单谁在维护"没有答案；
+ * - `outFile`：把全部脚本合并成一个 `project.js` 的旧构建形态（D12 已改"项目自己构建"）；
+ * - 缺 `include`：没有通配，新加的脚本不会被自动看到。
+ *
+ * @param {string} source `tsconfig.json` 文本（允许 JSONC：会先砍掉 `//` 注释）
+ * @returns {string[]} 问题清单（空 = 通过）
+ */
+function checkTemplateTsconfig(source)
+{
+    let parsed;
+
+    try
+    {
+        // JSONC 两步：砍 `//` 注释、再去尾随逗号（本仓所有 tsconfig 都带尾随逗号，
+        // 判据不能因为"合法的 tsconfig 写法"误报）
+        parsed = JSON.parse(source.replace(/\/\/[^\n]*/g, '').replace(/,(\s*[}\]])/g, '$1'));
+    }
+    catch (error)
+    {
+        return [`模板 tsconfig.json 不能解析：${error instanceof Error ? error.message : String(error)}`];
+    }
+
+    const problems = [];
+
+    if (parsed.files !== undefined) problems.push('模板 tsconfig.json 还有 `files`（那是已删的 ScriptCompiler 回写的地方）');
+    if (parsed.compilerOptions?.outFile !== undefined) problems.push('模板 tsconfig.json 还有 `outFile`（旧的"把脚本合并成一个 project.js"构建形态）');
+    if (parsed.include === undefined) problems.push('模板 tsconfig.json 没有 `include` 通配（新加的脚本不会被自动看到）');
+
+    return problems;
+}
+
 // ---------- 自证（issue #652 做法 2） ----------
 const SELF_CHECKS = [
     {
@@ -106,6 +142,25 @@ const SELF_CHECKS = [
         title: '清单里只有注释提到它 → 不认',
         run: () => templateLists("// ['./resource/template/feng3d.project.json', 'feng3d.project.json'],", 'feng3d.project.json'),
         expect: false,
+    },
+    {
+        title: 'tsconfig 走 include 通配 → 不报',
+        run: () => checkTemplateTsconfig('{"compilerOptions":{"noEmit":true},"include":["scripts/**/*.ts"]}').length === 0,
+        expect: true,
+    },
+    {
+        title: 'tsconfig 还有 `files` + `outFile` + 缺 `include` → 三条都报',
+        run: () =>
+        {
+            const problems = checkTemplateTsconfig('{"compilerOptions":{"outFile":"project.js"},"files":["a.d.ts"]}');
+
+            // 按**内容**断言，不数个数：数个数会跟着判据一起错
+            return problems.length === 3
+                && problems.some((problem) => problem.includes('files'))
+                && problems.some((problem) => problem.includes('outFile'))
+                && problems.some((problem) => problem.includes('include'));
+        },
+        expect: true,
     },
 ];
 
@@ -151,6 +206,10 @@ if (existsSync(resolve(TEMPLATE_DIR, 'package.json')))
 }
 
 // ---------- 判据 3：接线（清单里列了这两个文件） ----------
+const tsconfigProblems = existsSync(TEMPLATE_TSCONFIG)
+    ? checkTemplateTsconfig(readFileSync(TEMPLATE_TSCONFIG, 'utf8'))
+    : ['模板里没有 `tsconfig.json`'];
+
 const editorRsSource = readFileSync(EDITOR_RS, 'utf8');
 const wiringProblems = REQUIRED.filter((name) => !templateLists(editorRsSource, name))
     .map((name) => `\`EditorRS.ts\` 的 \`templateurls\` 没列 \`${name}\`（模板有了、新项目里也不会有）`);
@@ -164,11 +223,14 @@ if (fileProblems.length === 0) console.log(`  PASS  模板里有 ${REQUIRED.map(
 if (buildProblem) console.log(`  FAIL  ${buildProblem}`);
 else if (fileProblems.length === 0) console.log('  PASS  模板 `package.json` 有 `scripts.build`');
 
+for (const problem of tsconfigProblems) console.log(`  FAIL  ${problem}`);
+if (tsconfigProblems.length === 0) console.log('  PASS  模板 tsconfig.json 走 `include` 通配（没有 `files` / `outFile`）');
+
 for (const problem of wiringProblems) console.log(`  FAIL  ${problem}`);
 if (wiringProblems.length === 0) console.log('  PASS  `templateurls` 列了这两个文件（接线没断）');
 
-const failed = fileProblems.length + (buildProblem ? 1 : 0) + wiringProblems.length;
-const total = SELF_CHECKS.length + 3;
+const failed = fileProblems.length + (buildProblem ? 1 : 0) + tsconfigProblems.length + wiringProblems.length;
+const total = SELF_CHECKS.length + 4;
 
 console.log('');
 console.log(`共 ${total} 项：通过 ${total - failed - selfFailed}，失败 ${failed + selfFailed}`);
