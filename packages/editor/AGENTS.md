@@ -328,7 +328,7 @@ const { chromium } = require('playwright');
   装载前没有、装载后**多出** `rotate_info`（描述与 schema 来自插件清单）、`tools/call`
   **真的调得通**（动态工具走 `pluginMethods` 兜底）、卸载后**立刻消失**。已进 CI 的 `editor-e2e` job。
   它补的是离线门禁只能给出的**文本级**证据；上线第一次就抓到"贡献表没带 description/schema"的断链）、
-  `node scripts/editor-plugin-load.mjs --open`（**运行时装载**：不重新构建就把插件包装上——
+  `node scripts/editor-plugin-load.mjs --open`（**运行时装载（dev 形态，CI 不跑）**：不重新构建就把插件包装上——
   从真插件包导入 client 半 → 核声明 → 登记清单 → 重投插槽 → 界面标签真的多一个，卸载后回来。
   #276 验收②的守门人；**单测覆盖不到它**：浏览器原生 ESM 不解析裸包名，
   说明符要由入口图给出可解析形式，见 `src/plugins/loader/moduleTable.ts`）、
