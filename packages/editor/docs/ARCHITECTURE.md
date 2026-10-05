@@ -917,7 +917,16 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
    迁移走**策略 A（HTTP 并存）**——`check-bridge-socket.mjs` **23/23** 里含 `legacy@http` 退路。
 3. **`IReadFS` 接口梳理**：`readImage(): HTMLImageElement` 等浏览器耦合签名怎么改（改接口 vs 代理层）；
    `projectname` / `initproject` / `hasProject` 在磁盘目录形态下的语义。**阻塞 P3**。
-   （**实现现状**：`HostFS` 用 base64 + `data:` 绕过 `readImage`，接口**未改**；这仍是待办，但不阻塞已落地的部分。）
+   （**实现现状**：`HostFS` 用 base64 + `data:` 绕过 `readImage`，接口**未改**。）
+   → ✅ **已结案（2026-10-05）：结论是「不改接口」**。理由：`@feng3d/filesystem` 是
+   **引擎的浏览器文件系统包** —— `HttpFS.ts:23` 有 `typeof document` 守卫、`:70` 直接 `new Image()`，
+   所以 `readImage(): HTMLImageElement` 是它的**自然抽象**，不是"耦合缺陷"。
+   而"宿主侧（Node）满足不了它"这件事**已经有解**：`HostFS` 走 **base64 + `data:` URL**
+   （其文件头注释写明），页面侧造出 `HTMLImageElement` —— **"绕过"就是这个抽象的落地方式**，
+   不是权宜之计。改签名（退化成 `ArrayBuffer`/`Blob`）反而会把"造图片"这件事
+   摊到每个消费方（`TextureAsset` / `FileAsset`）去重复一遍。
+   本条的另一半（`projectname` / `initproject` / `hasProject` 在**磁盘目录形态**下的语义）
+   **已随 #274 落地**（`HostFS` 实现之、`bin/host/project*.mjs` 提供）。
 4. **资源身份**：继续按路径引用（现状），还是引入显式 asset id（PlayCanvas 式）？
    影响版本管理、重命名、发布时的引用重写。~~**没有结论前不要动。**~~
    → ✅ **已决策（2026-10-05，需求方）：引入显式 asset id**。代价是既有资源与序列化格式要迁移

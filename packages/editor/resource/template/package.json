@@ -9,6 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@feng3d/webgpu": "^0.6.0",
         "feng3d": "^0.6.0"
     },
     "devDependencies": {
