@@ -1,6 +1,7 @@
 import { IElement, ShaderValue } from '../../core/IElement';
 import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
 import { UInt } from '../scalar/uint';
+import { Vec2 } from './vec2';
 
 /**
  * Uvec2 类，用于表示 uvec2 字面量值
@@ -18,8 +19,9 @@ export class Uvec2 implements ShaderValue
     constructor();
     constructor(x: number, y: number);
     constructor(x: UInt, y: UInt);
+    constructor(vector: Vec2);
     constructor(host: VariableHost);
-    constructor(...args: (number | UInt | VariableHost)[])
+    constructor(...args: (number | UInt | VariableHost | Vec2)[])
     {
         if (args.length === 0)
         {
@@ -32,6 +34,14 @@ export class Uvec2 implements ShaderValue
             this.toGLSL = () => `uvec2(${x}, ${y})`;
             this.toWGSL = () => `vec2<u32>(${x}, ${y})`;
             this.dependencies = [];
+        }
+        else if (args.length === 1 && args[0] instanceof Vec2)
+        {
+            // 从 vec2 转换（WGSL 写 vec2<u32>(v)，如 `vec2u(position.xy)`）
+            const vector = args[0] as Vec2;
+            this.toGLSL = () => `uvec2(${vector.toGLSL()})`;
+            this.toWGSL = () => `vec2<u32>(${vector.toWGSL()})`;
+            this.dependencies = [vector];
         }
         else if (args.length === 2 && args[0] instanceof UInt && args[1] instanceof UInt)
         {
@@ -51,6 +61,38 @@ export class Uvec2 implements ShaderValue
         {
             throw new Error('UVec2 constructor: invalid arguments');
         }
+    }
+
+    /**
+     * 逐分量相加
+     *
+     * @param other 另一个 uvec2
+     * @returns 结果
+     */
+    add(other: Uvec2): Uvec2
+    {
+        const result = new Uvec2();
+        result.toGLSL = () => `(${this.toGLSL()} + ${other.toGLSL()})`;
+        result.toWGSL = () => `(${this.toWGSL()} + ${other.toWGSL()})`;
+        result.dependencies = [this, other];
+
+        return result;
+    }
+
+    /**
+     * 整除（另一个操作数是 u32 标量，对应 WGSL 的 `v / scalar`）
+     *
+     * @param other 除数
+     * @returns 结果
+     */
+    divide(other: UInt): Uvec2
+    {
+        const result = new Uvec2();
+        result.toGLSL = () => `${this.toGLSL()} / ${other.toGLSL()}`;
+        result.toWGSL = () => `${this.toWGSL()} / ${other.toWGSL()}`;
+        result.dependencies = [this, other];
+
+        return result;
     }
 
     /**
@@ -103,8 +145,15 @@ export function uvec2(host: VariableHost): Uvec2;
  * @returns uvec2 实例
  */
 export function uvec2(x: UInt, y: UInt): Uvec2;
-export function uvec2(...args: (number | UInt | VariableHost)[]): Uvec2
+/**
+ * uvec2 构造函数（从 vec2 转换，对应 WGSL 的 `vec2<u32>(v)`）
+ *
+ * @param vector 源向量
+ * @returns uvec2 实例
+ */
+export function uvec2(vector: Vec2): Uvec2;
+export function uvec2(...args: (number | UInt | VariableHost | Vec2)[]): Uvec2
 {
-    return new (Uvec2 as new (...args: (number | UInt | VariableHost)[]) => Uvec2)(...args);
+    return new (Uvec2 as new (...args: (number | UInt | VariableHost | Vec2)[]) => Uvec2)(...args);
 }
 
