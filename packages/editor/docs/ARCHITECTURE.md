@@ -1046,7 +1046,13 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
       **顺带修掉一个真 bug**：`TopToolBar.vue` 的「运行预览」原先在**非 indexedDB** 分支打开的是
       `index.html`（**编辑器自己**）而不是 `run.html` —— 也就是说，在宿主项目下那个按钮
       **从来没打开过运行形态**。
-    - **第二批（待做）**：删 **FS 本体与编辑器分支**（决策 ①）。
+    - ~~第二批~~ ✅ **已完成（2026-10-05）**：`IndexedDBFS.ts`（311 行）与 `base/_IndexedDB.ts`（457 行）
+      已删，`FSType` 只剩 `http` / `native` / `host`；示例、README、测试替身、注释里的举例都收口了。
+      **`EditorRS.installEditorResourceSystem()` 的初值改成 `new HostFS()`** —— 于是"没有项目"时
+      **不再退回任何页面副本**，碰项目会**如实失败**（就是本节开头说的"该有的行为"）。
+      这两个模块由 `check-editor-dead-code.mjs` 登记（**不许复活**）。
+      **收尾读数**：`filesystem` 行覆盖率 **34.8 → 67.9** —— 删掉的那两个都是低覆盖的大文件，
+      分母小了。
 
     **另有一截不在这两批里**：`run.html` 要取"**项目**里 `scenes/` 下的场景"，需要宿主提供一个
     **静态服务路由** —— 现在页面目录 ≠ 项目目录（`HttpFS.getAbsolutePath` 是"页面目录 + 路径"的
