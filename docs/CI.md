@@ -190,11 +190,11 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | R10 | 全量 **235 个测试文件 / 2713 个测试用例**，并校验四项覆盖率不低于阈值（见 §1.3） |
+| 12 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | R10 | 全量 **235 个测试文件 / 2742 个测试用例**，并校验四项覆盖率不低于阈值（见 §1.3） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
-| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **128** 个组合；#614 的空参缓存欠账已清 7 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
+| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **AST 判据**（issue #614，与第 4 步共用同一份判据实现）下 import 时执行的**全部**模块级 `new`（`export const x = new X()` 声明形式、`new Set([...])` 只读常量集合、库代码单例、类 `static` 字段、顶层 IIFE 里的构造）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`（现 **125** 个组合；#614 的空参缓存欠账已清 7 个键，见下），**新增即失败**、减少只提示。应用入口按 `ENTRY_FILES` 清单豁免、**不计入基线**，见下 |
 | 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
 | 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
 | 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
@@ -285,13 +285,18 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 模块级**块 / 对象字面量 / 回调**里的缩进行（`Entity.ts` 对象字面量里的 6 处 `new Set([...])`、
 `createTexture.ts` 模块级 `if` 块里的 7 处 `new ImageUtil`）。
 现在这四类都在判据内，两条脚本共用一份实现 `scripts/r2-module-scope.mjs`（先例：`scripts/check-editor-module-effects.mjs`）。
-**基线因此从 90 个键变成 135 个**（+47 个新登记的键、−2 个入口键）；本批清理空参缓存后又收紧到 **128**（见下节）。
+**基线因此从 90 个键变成 135 个**（+47 个新登记的键、−2 个入口键）；本批清理空参缓存后收紧到 **128**，
+rebase 到最新 master 后为 **125**（见下节）。
 
 > **数字校正（#614 欠账批实测）**：上一批文档、提交信息与脚本注释里记的是
 > 「159 处 / 138 键 / 行级 97 处 / 旧基线 91 个键 / 新基线 136 个键」，整体**偏大 1**；
 > 本批在 `202dbfe47`（#614 判据 AST 化的落地提交）上复算，实测是
 > **158 处 / 137 键 / 行级 96 处 / 旧基线 90 → 新基线 135**（"漏 62 处"两端一致，是对的）。
 > 已在 `scripts/probe-r2-blindspots.mjs` 头注释、`docs/ARCHITECTURE_V2.md` §3.1 与 `AGENTS.md` 同步为实测口径。
+>
+> **rebase 到最新 master（a61f05454）后的当前读数**：全库 `new` **1400 处** / import 期 **146 处**（127 键）/
+> 行级可见 **93 处** / 漏 **53 处** / 基线 **125 键**——差异来自 master 上的 editor/math/polyfill 清理批次
+> （删文件、迁 MathUtil），不是判据变动。
 
 四条边界（都在实测里指得到实例，不是理论）：
 
@@ -325,6 +330,9 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 AST 判据一次性暴露出 **12 处**"空参缓存"（本该被第 4 步"新增即失败"拦下，此前一直被行级判据漏掉）。
 逐处判定后：**9 处 / 7 个键已 lazy-init**、**2 处 / 1 个键按理由保留**、**1 处确认为假阳性后保留登记**；
 基线 **135 → 128**（键减少 7 个，由 `node scripts/check-toplevel-new.mjs --update` 收紧）。
+PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**——另有 3 个键是 master 上其它批次
+随文件删除/迁移清理掉的（`editor/src/ScriptCompiler.ts::ScriptCompiler`、`editor/src/assets/NativeFS.ts::NativeFS`、
+`polyfill/src/MathUtil.ts::MathUtil`），**不是本批的空参缓存**。
 
 | 位置（基线键） | 处数 | 处置 | 判定理由 / 为什么等价 |
 |---|---|---|---|
@@ -359,7 +367,7 @@ AST 判据一次性暴露出 **12 处**"空参缓存"（本该被第 4 步"新�
 用途是给判据做**独立复核**：判据改完后，它用另一份实现算出与门禁同一批读数（总数 / 每个键），
 两边对得上才说明门禁的 AST 层没写错。
 **清欠账时也用它**：每清掉一处空参缓存就复算一次，核对"探针报的空参缓存数"与"门禁的基线键数"是否同步下降
-（本批：12 处 → 3 处、135 键 → 128 键）。
+（本批：12 处 → 3 处、135 键 → 128 键 → rebase 后 125 键）。
 
 「发布产物预演」这一步的价值：`npm pack` 与 `npm publish` 走同一套打包逻辑，所以能在 PR 阶段就发现「包里少了入口文件」这类**发布成功但完全不可用**的缺陷（见 §4.1 的真实案例）。
 
