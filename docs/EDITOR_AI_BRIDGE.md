@@ -374,7 +374,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 |---|---|---|
 | `build_run` | `host.build.run` | 在项目目录里跑项目自己的 npm script（默认 `build`）；**失败如实**：返回 `{ script, code, ok, output }`，非 0 退出码原样回，不会"跑挂了还说成功" |
 | `build_status` | `host.build.status` | 当前是否正在构建（同一项目同时只允许一个构建） |
-| `build_cancel`（**MCP 工具待补**） | `host.build.cancel` | **取消正在跑的构建**（#273 长任务）："调用方能叫停"这一条的宿主半。返回 `{ cancelled, script? }`；被取消的那次 `run` 会带 `cancelled: true` 与 `code: -2`——与"项目自己报错"区分开（否则取消看起来只是又一个失败） |
+| `build_cancel` | `host.build.cancel` | **取消正在跑的构建**（#273 长任务）："调用方能叫停"这一条的完整链路（宿主方法 + MCP 工具 + 页面「取消构建」按钮）。返回 `{ cancelled, script? }`；被取消的那次 `run` 会带 `cancelled: true` 与 `code: -2`——与"项目自己报错"区分开（否则取消看起来只是又一个失败）。判据在 `check-editor-project-build.mjs`：**看的是"`run` 的 Promise 何时 settle"**，那等价于"子进程真的结束了"——只看返回值会被静默失败骗过去 |
 | `publish_run` | `host.publish.run` | **先跑项目自己的构建**（`npm run build`），再按**启用状态**把插件 runtime 端打进产物 `dist/runtime.js`（未启用的插件连入口都不给它进）。构建失败**即中止**并如实回报（`{ ok: false, stage: 'build', build: { code, output } }`），不产出"半个产物" |
 
 其余宿主方法（`host.workspace.*` 的读写 / 建删目录 / 二进制等）**有意不暴露**给 AI：它们是给
@@ -1079,4 +1079,4 @@ interface BridgeMethodContribution
 仍待定两件：
 - 若走 A：对齐纪律取**宽松**（`aiTools` 可选声明，门禁只查一致性）还是**严格**（每个 `bridgeMethod`
   都必须有对应 `aiTool`，即把现状"全部暴露"的纪律移到声明侧）；
-- 工具名与描述的命名纪律（现有 43 个工具是 `snake_case`）。
+- 工具名与描述的命名纪律（现有工具都是 `snake_case`，且**不与核心工具重名**——`scripts/editor-mcp-check.mjs` 有判据守着；这里**有意不写数字**：每加一个工具它就过时一次）。
