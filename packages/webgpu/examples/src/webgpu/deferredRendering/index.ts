@@ -3,7 +3,7 @@ import { GUI } from 'dat.gui';
 import { mat4, vec3, vec4 } from 'wgpu-matrix';
 import { mesh } from '../../meshes/stanfordDragon';
 
-import fragmentDeferredRendering from './fragmentDeferredRendering.wgsl';
+import { getDeferredFragmentDeferredRenderingWGSL } from '../../shaders-tsl/deferredFragmentDeferredRendering';
 import fragmentGBuffersDebugView from './fragmentGBuffersDebugView.wgsl';
 import fragmentWriteGBuffers from './fragmentWriteGBuffers.wgsl';
 import lightUpdate from './lightUpdate.wgsl';
@@ -112,7 +112,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
             code: getDeferredVertexTextureQuadWGSL(),
         },
         fragment: {
-            code: fragmentDeferredRendering,
+            code: getDeferredFragmentDeferredRenderingWGSL(),
         },
         primitive,
     };

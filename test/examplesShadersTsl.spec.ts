@@ -37,6 +37,7 @@ import { getShadowMappingVertexShadowWGSL } from '../packages/webgpu/examples/sr
 import { getShadowMappingVertexWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertex';
 import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blendingTexturedQuad';
 import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderBundlesMesh';
+import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredFragmentDeferredRendering';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -657,5 +658,52 @@ describe('renderBundles 网格着色器', () =>
         expect(shader.fragment).toContain('var meshTexture: sampler;');
         expect(shader.fragment).toContain('clamp(ambientColor + max(dot(input.normal, lightDir), 0.0) * dirColor, vec3<f32>(0.0), vec3<f32>(1.0))');
         expect(shader.fragment).toContain('return vec4<f32>(textureColor.xyz * lightColor, textureColor.w);');
+    });
+});
+
+/**
+ * deferredRendering 的延迟着色片元（TSL 版）离线验收。
+ *
+ * 本批顺带修了两个 TSL 根因（都由探针发现）：
+ * - forU32_ 没收集循环上界的依赖 → 上界里的 uniform 不会被声明；
+ * - fragment.ts 没输出 storage 的"元素结构体" → array<LightData> 引用不到 LightData。
+ */
+describe('deferredRendering 延迟着色片元', () =>
+{
+    const wgsl = getDeferredFragmentDeferredRenderingWGSL();
+
+    it('三张 G-Buffer 是裸纹理（只声明 texture_2d，无 sampler）', () =>
+    {
+        expect(wgsl).toContain('var gBufferPosition_texture: texture_2d<f32>;');
+        expect(wgsl).toContain('var gBufferNormal_texture: texture_2d<f32>;');
+        expect(wgsl).toContain('var gBufferAlbedo_texture: texture_2d<f32>;');
+        expect(wgsl).not.toContain('var gBufferPosition: sampler;');
+    });
+
+    it('回归：storage 的元素结构体已输出 + 循环上界的 uniform 已声明', () =>
+    {
+        // fragment.ts 原先不输出 storage 的元素 struct
+        expect(wgsl).toContain('struct LightData');
+        // forU32_ 原先不收集上界依赖
+        expect(wgsl).toContain('struct Config');
+        expect(wgsl).toContain('@group(1) @binding(1) var<uniform> config: Config;');
+        expect(wgsl).toContain('for (var i: u32 = 0u; i < config.numLights; i = i + 1u) {');
+    });
+
+    it('光照循环与手写逐行一致', () =>
+    {
+        expect(wgsl).toContain('let L = lightsBuffer[i].position.xyz - position;');
+        expect(wgsl).toContain('if (distance > lightsBuffer[i].radius) {');
+        expect(wgsl).toContain('continue;');
+        expect(wgsl).toContain('let lambert = max(dot(normal, normalize(L)), 0.0);');
+        expect(wgsl).toContain('let falloff = pow(1.0 - distance / lightsBuffer[i].radius, 2.0);');
+        expect(wgsl).toContain('result = result + falloff * lambert * lightsBuffer[i].color * albedo;');
+    });
+
+    it('discard 与手动环境光', () =>
+    {
+        expect(wgsl).toContain('if (position.z > 10000.0) {');
+        expect(wgsl).toContain('discard;');
+        expect(wgsl).toContain('result = result + vec3<f32>(0.2);');
     });
 });
