@@ -109,7 +109,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 包 | 行 | 文件 | 语句 | 分支 | 函数 |
 |---|---|---|---|---|---|
 | `watcher` | 97.6 | 2/2 | 96.7 | 83.3 | 100.0 |
-| `editor-plugin-rotate` | 95.2 | 4/5 | 95.5 | 100.0 | 90.0 |
+| `editor-plugin-rotate` | 95.5 | 4/5 | 95.7 | 100.0 | 90.9 |
 | `eslint-plugin-feng3d` | 95.2 | 6/6 | 92.8 | 74.5 | 100.0 |
 | `reactivity` | 94.8 | 17/18 | 94.7 | 88.9 | 93.5 |
 | `addons` | 91.2 | 21/22 | 88.7 | 74.8 | 86.4 |
