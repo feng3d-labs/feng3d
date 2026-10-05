@@ -533,7 +533,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
     而是因为：① 它是 `class`，按项目「数据定义 + 纯函数」的定案形态要走一遍拆解 + 消费方迁移；
     ② 它已被 `shape/core/ShapePath2.ts`（`:181` / `:206`）消费，而 `ShapePath2` 本来就在第二批里——**顺手同批做掉，不必单开一条**；
     ③ 「不进本方案」表的判据是「**不打算改**」，而 `ShapeUtils` 是要改的，留在那张表里语义相反。
-    反例对照：同表的 `Noise.ts` 有 4 个**实例方法**（`perlin1/2/3/N`）+ 构造状态，`MathF.ts` / `Time.ts` 是全局状态与纯静态工具集合——
+    反例对照：同表的 `Noise.ts` 有 4 个**实例方法**（`perlin1/2/3/N`）+ 构造状态，`MathF.ts`（**本批已合并进 `mathUtils.ts`**） / `Time.ts` 是全局状态与纯静态工具集合——
     这三个才是真正的「不进本方案」。
 
 > **✅ 第二批里的「渐变（2）」已单独落地**（`Gradient` / `MinMaxGradient`，见 §11.17）：它们与原 §8 归组相反，
@@ -545,7 +545,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 
 | 类型 | 理由 |
 |---|---|
-| [MathF.ts](../packages/math/src/MathF.ts) | 已是纯静态函数集合，无数据字段，改不改都不影响「数据驱动」 |
+| ~~`MathF.ts`~~（已删除）→ [mathUtils.ts](../packages/math/src/mathUtils.ts) | **本表原本把 `Mathf` 归为「不进本方案」**（理由：已是纯静态函数集合，无数据字段）。issue #134 收尾批已把它与从 `polyfill` 迁来的 `MathUtil` **合并进 `mathUtils.ts`** 并删掉两个 class——所以它不再需要「不进本方案」这个豁免，与 `buildLineGeometry.ts` 一样是模块级纯函数集 |
 | [Time.ts](../packages/math/src/Time.ts) | 运行时状态（`deltaTime` 等），不是数值类型；它恰是 §3.5 要消除的隐式依赖来源 |
 | [Noise.ts](../packages/math/src/Noise.ts) | 有实例状态与 4 个实例方法（`perlin1/2/3/N`），且与全局随机 / 驱动方式绑定，不属「数据 + 纯函数」改造对象 |
 | [buildLineGeometry.ts](../packages/math/src/buildLineGeometry.ts) | 已经是**模块级纯函数**（`export function buildLineGeometry`，无 class），不需要改造 |
@@ -961,7 +961,7 @@ MD5 的 6 个字段本来就是解析器自身产出。
 | 项 | 内容 |
 |---|---|
 | 判据 | `packages/math/src` 全树里，**写死在脚本中的 21 个目标类型**不得新增 `export class`（19 个数值 / 几何 + 2 个渐变，见 §11.17.1） |
-| 为什么不用「所有 `export class`」 | math 全树实测（C1 时点）**50 个** `export class` = 19 个目标 + **28 个第二批**（曲线 / 形状 / 渐变 / 字体，§8）+ **3 个不进本方案**（`Mathf` / `Noise` / `Time`）。用全量当判据会**一次误伤 31 个**不该动的类，门禁第一天就是红的，且把 C 的爆炸半径从 19 扩到 50。**渐变族落地后**：全树 **29 个** = 21 个目标（0 命中）+ 26 个第二批剩余 + 3 个不进本方案 |
+| 为什么不用「所有 `export class`」 | math 全树实测（C1 时点）**50 个** `export class` = 19 个目标 + **28 个第二批**（曲线 / 形状 / 渐变 / 字体，§8）+ **3 个不进本方案**（`Mathf` / `Noise` / `Time`）。用全量当判据会**一次误伤 31 个**不该动的类，门禁第一天就是红的，且把 C 的爆炸半径从 19 扩到 50。**渐变族落地后**：全树 **29 个** = 21 个目标（0 命中）+ 26 个第二批剩余 + 3 个不进本方案；**`MathUtil`/`Mathf` 合并批之后**：全树 **27 个** = 21 个目标（0 命中）+ 25 个第二批剩余 + `Noise` / `Time` 2 个 |
 | 键值 | `「相对路径::类型名」→ 出现次数`（照 `check-imperative-construction.mjs`：**不含行号**——行号随无关改动漂移会让门禁频繁误报；**保留次数**——否则同文件同类型新增第二处会被漏掉） |
 | 模式 | 存量冻结 + **新增即失败**；每删掉一个目标类型跑 `node scripts/check-math-no-class.mjs --update` 收紧基线，`entries` 为空即「math 里再无数值 / 几何 / 渐变 class」 |
 | 扫描范围 | 整个 `packages/math/src`（不是固定文件清单）——把目标类型搬进新文件、或在别的文件里再写一份，都会成为**新键**被拦下 |
@@ -975,9 +975,9 @@ MD5 的 6 个字段本来就是解析器自身产出。
 | 曲线 / 贝塞尔（18） | `Bezier`、`EquationSolving`、`HighFunction`、`AnimationCurve`、`AnimationCurveVector3`、`BezierCurve`、`MinMaxCurve`、`MinMaxCurveVector3`、`ArcCurve2`、`CatmullRomCurve3`、`CubicBezierCurve2`、`CubicBezierCurve3`、`EllipseCurve2`、`LineCurve2`、`LineCurve3`、`QuadraticBezierCurve2`、`QuadraticBezierCurve3`、`SplineCurve2` |
 | 形状 / 路径 / 字体（8） | `Curve`、`CurvePath`、`Font`、`Interpolations`、`Path2`、`Shape2`、`ShapePath2`、`ShapeUtils` |
 | ~~渐变（2）~~ | ~~`Gradient`、`MinMaxGradient`~~ → **已落地并进判据名单**（§11.17.1），此组清空 |
-| §8 明确「不进本方案」（3） | `Mathf`、`Noise`、`Time` |
+| §8 明确「不进本方案」（3） | `Mathf`（**已在本批随 `MathUtil` 合并删除**）、`Noise`、`Time` |
 
-（曲线 / 形状 **26 个** + `Mathf`/`Noise`/`Time` **3 个** = **29 个**；21 目标 + 29 非目标 = math 全树 **50 个** `export class`（渐变族两个已从两侧同时减去）。
+（曲线 / 形状 **26 个** + `Mathf`/`Noise`/`Time` **3 个** = **29 个**；21 目标 + 29 非目标 = math 全树 **50 个** `export class`（渐变族两个已从两侧同时减去）。**`MathUtil`/`Mathf` 合并批之后**：曲线 / 形状 **25 个** + `Noise`/`Time` **2 个** = **27 个**——`MathUtil`（从 `polyfill` 迁入）与 `Mathf` 合并成 `mathUtils.ts` 的模块级纯函数集，两个 class 都已删除。
 `node scripts/check-math-no-class.mjs --stats` 会把这份边界原样打出来。）
 
 **与 R3 门禁的分工（不要合并，两者互补）**：
@@ -2141,7 +2141,7 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 ```
 
 判据**没有**改成「所有 `export class`」：渐变族落地后 math 全树仍有 **29 个** `export class`
-（曲线 / 形状 / 字体 26 个 + `Mathf` / `Noise` / `Time` 3 个），全量判据会一次误伤它们（§11.7.1）。
+（曲线 / 形状 / 字体 26 个 + `Mathf` / `Noise` / `Time` 3 个；`Mathf` 已在「`MathUtil`/`Mathf` 合并批」删除，现为 25 + 2），全量判据会一次误伤它们（§11.7.1）。
 
 #### 11.17.4 连带修的一处**面板控件回归**（实测发现，不在原计划内）
 

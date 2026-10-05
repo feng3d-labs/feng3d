@@ -602,7 +602,7 @@ runtime 端产物合并进游戏 bundle（未启用的不参与）。推论：
 
 | 端 | 该做什么 | 现状 |
 |---|---|---|
-| **Node 端** | 烘焙导航网格（重计算）、写出产物文件 | **不存在**。算法在 Web 端，但**是纯算法**：`Recastnavigation.ts`（288 行，体素法）只依赖 `Box3`/`Vector3`/`Triangle3`/`mathUtil`；`NavigationProcess.ts`（774 行，三角形法）自述"纯算法，非组件"；`ThreeBSP.ts`（14.5 KB，CSG 布尔法）。**三者都可直接搬到 Node** |
+| **Node 端** | 烘焙导航网格（重计算）、写出产物文件 | **不存在**。算法在 Web 端，但**是纯算法**：`Recastnavigation.ts`（288 行，体素法）只依赖 `Box3`/`Vector3`/`Triangle3`/`DEG2RAD`（`@feng3d/math` 的 `mathUtils` 模块级纯函数）；`NavigationProcess.ts`（774 行，三角形法）自述"纯算法，非组件"；`ThreeBSP.ts`（14.5 KB，CSG 布尔法）。**三者都可直接搬到 Node** |
 | **Web 端** | 参数面板 + 触发烘焙 + 进度显示 + 结果预览 | **部分存在**：`Navigation` 组件的属性面板已暴露 `NavigationAgent` 的 `radius` / `height` / `stepHeight` / `maxSlope`；**缺**触发、进度与取消 |
 | **游戏端** | 加载导航网格数据、寻路查询、Agent 移动 | **不存在**（编辑器插件不贡献 runtime 端） |
 

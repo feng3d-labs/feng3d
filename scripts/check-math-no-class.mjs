@@ -13,7 +13,7 @@
  *
  * ## 为什么判据是「显式写死的 21 个名字」而不是「所有 export class」
  *
- * 实测（本批）`packages/math/src` 里共 **29 个 `export class`**：
+ * 实测（C1 建立时点）`packages/math/src` 里共 **29 个 `export class`**：
  *
  * - **0 个**还落在本方案的 21 个目标类型里（19 + 2 已全部去 class）；
  * - **26 个**是第二批的其余部分（`Bezier` / `EquationSolving` / `HighFunction` / `AnimationCurve` /
@@ -21,6 +21,11 @@
  *   `Path2` / `Shape2` / `ShapePath2` / 各样条曲线 / `ShapeUtils` …）——它们在纯函数形态下需要
  *   「tagged union + 分发」或保留继承，**改造性质与数值 / 渐变类型不同**（同文 §8 明确划界）；
  * - **3 个**是 `Mathf` / `Noise` / `Time`（同文 §8 列为「不进本方案」）。
+ *
+ * **现状（`MathUtil` ↔ `Mathf` 合并批之后）**：全树 **27 个**——`Mathf` 已与本批从 `polyfill`
+ * 迁入的 `MathUtil` 合并成 `src/mathUtils.ts` 的模块级纯函数集，两个 class 一并删除；
+ * 余下 25 个第二批 + `Noise` / `Time` 2 个。这一批**不影响本脚本的判据**（21 个目标类型的基线
+ * 早已是 `entries: {}`），只是让上面那句「29 个里 3 个不进本方案」的历史口径随之更新。
  *
  * 所以「所有 `export class`」当判据会**一次误伤 29 个**不该动的类，门禁第一天就是红的、
  * 且把爆炸半径从 21 个类型扩到 50 个（C1 建立时的全树数）。名单显式写在这里是**有意的**：

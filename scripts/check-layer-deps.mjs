@@ -23,8 +23,9 @@ const ROOT = process.cwd();
 const LAYER0 = [
     {
         pkg: 'packages/math',
-        allowed: ['@feng3d/polyfill', '@feng3d/serialization'],
-        reason: '数学库只用 polyfill（运行时兼容）与 serialization（`@serialize` 装饰器）',
+        allowed: ['@feng3d/serialization'],
+        reason: '数学库不再依赖 polyfill（`MathUtil` 已迁入本包并与 `Mathf` 合并为 `mathUtils.ts`，'
+            + '`ArrayUtils.unique` 的使用已就地内联），仅余 serialization 的 `@serialize` 装饰器',
     },
     {
         pkg: 'packages/reactivity',

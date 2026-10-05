@@ -53,7 +53,6 @@
         "packages/path/src/Path.ts::Win32Path",
         "packages/polyfill/src/ClassUtils.ts::ClassUtils",
         "packages/polyfill/src/DataTransform.ts::DataTransform",
-        "packages/polyfill/src/MathUtil.ts::MathUtil",
         "packages/reactivity/examples/index.ts::Map",
         "packages/reactivity/src/baseHandlers.ts::MutableReactiveHandler",
         "packages/reactivity/src/baseHandlers.ts::Set",
