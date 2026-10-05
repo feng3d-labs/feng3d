@@ -397,14 +397,17 @@ export class ParticleSystem implements Renderable
 
     update(interval: number)
     {
+        if (!this.isPlaying) return;
+
         // 每帧递增响应式版本：粒子的模拟状态（位置 / 寿命 / 活跃数）不在响应式系统里，
         // ForwardRenderer.draw 与 Renderable.renderObject 这些 computed 不会被它们失效，
         // 于是渲染只会停在第 0 帧。这个版本号被 _syncRenderData 读取而成为渲染 computed 的
         // 依赖，使粒子每帧重新求值并把最新实例数据写入 renderObject。
+        //
+        // 只在播放中递增：未播放的粒子不该让整条渲染链每帧重算。首帧的 playOnAwake 不依赖
+        // 这里——组件已登记为 Renderable，渲染 computed 的首次求值就会调到 beforeRender。
         const frame = this._frame;
         reactive(frame).version = frame.version + 1;
-
-        if (!this.isPlaying) return;
 
         const deltaTime = this.main.simulationSpeed * interval / 1000;
         this.time = this.time + deltaTime;
