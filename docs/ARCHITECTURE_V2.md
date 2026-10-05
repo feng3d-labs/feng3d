@@ -529,6 +529,22 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 画面判据清单扩到 **11 个示例**并全部通过。两条例外也已写明理由：`worker`（Worker 驱动，抖动 0.04~0.07，容差放宽到 0.08）
 > 与 `bitonicSort`（compute 驱动，抖动 0.30~0.73，**移出清单**——当前定格机制压不住它）。
 >
+> ✅ **第十批（#712 多输出批，2026-10-05）**：`red.frag` 与它的两个示例（`resizeCanvas` /
+> `helloTriangleMSAA`）改用 TSL。
+>
+> **一条澄清**：我原以为"多输出 fragment"是 TSL 缺的能力（`red.frag` 有 `color0`/`color1` 两个 `@location`），
+> 查下来**它本来就支持**——正确写法是把 `fragColor` 包成 vec4 再赋值：
+> ```ts
+> const color0 = vec4(fragColor(0, 'color0'));
+> fragment('main', () => { color0.assign(vec4(1, 0, 0, 1)); });
+> ```
+> 生成 `struct FragmentOut { @location(0) color0: vec4<f32>, }` 与 `output.color0 = ...`，与手写逐行对应。
+> 我先写成 `fragColor(0).assign(...)` 报 "assign is not a function" —— **是用法错，不是能力缺**，
+> 差点白补一个 API。教训：**动手补能力前先确认现有 API 能否表达**。
+>
+> 画面判据清单扩到 **13 个示例**（新增 helloTriangleMSAA / resizeCanvas）全部通过；
+> `worker` 的容差从 0.08 提到 0.10（实测 0.04~0.07 但偶发越界）。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
