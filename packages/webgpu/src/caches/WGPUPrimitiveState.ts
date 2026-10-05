@@ -61,6 +61,18 @@ export class WGPUPrimitiveState extends ReactiveObject
         return this.map.get([primitive, indexFormat]) || new WGPUPrimitiveState(primitive, indexFormat);
     }
 
-    private static readonly map = new ChainMap<[PrimitiveState, GPUIndexFormat], WGPUPrimitiveState>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[PrimitiveState, GPUIndexFormat], WGPUPrimitiveState> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[PrimitiveState, GPUIndexFormat], WGPUPrimitiveState>
+    {
+        if (!WGPUPrimitiveState._map) WGPUPrimitiveState._map = new ChainMap();
+
+        return WGPUPrimitiveState._map;
+    }
+
     private static readonly defaultGPUPrimitiveState: GPUPrimitiveState = { topology: 'triangle-list', cullMode: 'none', frontFace: 'ccw' };
 }

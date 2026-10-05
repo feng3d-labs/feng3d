@@ -146,5 +146,16 @@ export class WGPUVertexState extends ReactiveObject
         return this.map.get([device, vertexState, vertices]) || new WGPUVertexState(device, vertexState, vertices);
     }
 
-    static readonly map = new ChainMap<[GPUDevice, VertexState, VertexAttributes], WGPUVertexState>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, VertexState, VertexAttributes], WGPUVertexState> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    static get map(): ChainMap<[GPUDevice, VertexState, VertexAttributes], WGPUVertexState>
+    {
+        if (!WGPUVertexState._map) WGPUVertexState._map = new ChainMap();
+
+        return WGPUVertexState._map;
+    }
 }

@@ -71,6 +71,29 @@ export class WGPUBindGroup extends ReactiveObject
         return this.map.get([device, bindGroupLayout, bindingResources]) || new WGPUBindGroup(device, bindGroupLayout, bindingResources);
     }
 
-    private static readonly gpuBindGroupMap = new ChainMap<[BindGroupLayoutDescriptor, ...GPUBindingResource[]], GPUBindGroup>();
-    private static readonly map = new ChainMap<[GPUDevice, BindGroupLayoutDescriptor, BindingResources], WGPUBindGroup>();
+    /**
+     * GPU 绑定组缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _gpuBindGroupMap: ChainMap<[BindGroupLayoutDescriptor, ...GPUBindingResource[]], GPUBindGroup> | null = null;
+
+    /** GPU 绑定组缓存（首次访问时创建） */
+    private static get gpuBindGroupMap(): ChainMap<[BindGroupLayoutDescriptor, ...GPUBindingResource[]], GPUBindGroup>
+    {
+        if (!WGPUBindGroup._gpuBindGroupMap) WGPUBindGroup._gpuBindGroupMap = new ChainMap();
+
+        return WGPUBindGroup._gpuBindGroupMap;
+    }
+
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, BindGroupLayoutDescriptor, BindingResources], WGPUBindGroup> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, BindGroupLayoutDescriptor, BindingResources], WGPUBindGroup>
+    {
+        if (!WGPUBindGroup._map) WGPUBindGroup._map = new ChainMap();
+
+        return WGPUBindGroup._map;
+    }
 }

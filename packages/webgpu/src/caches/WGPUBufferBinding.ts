@@ -229,7 +229,18 @@ export class WGPUBufferBinding extends ReactiveObject
         return this.map.get([device, bufferBinding, type]) || new WGPUBufferBinding(device, bufferBinding, type);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, BufferBinding, TypeInfo], WGPUBufferBinding>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, BufferBinding, TypeInfo], WGPUBufferBinding> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, BufferBinding, TypeInfo], WGPUBufferBinding>
+    {
+        if (!WGPUBufferBinding._map) WGPUBufferBinding._map = new ChainMap();
+
+        return WGPUBufferBinding._map;
+    }
 }
 
 /**

@@ -140,7 +140,18 @@ export class WGPUQuerySet extends ReactiveObject
         return this.map.get([device, renderPass]) || new WGPUQuerySet(device, renderPass);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPass], WGPUQuerySet>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, RenderPass], WGPUQuerySet> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, RenderPass], WGPUQuerySet>
+    {
+        if (!WGPUQuerySet._map) WGPUQuerySet._map = new ChainMap();
+
+        return WGPUQuerySet._map;
+    }
 }
 
 declare global

@@ -259,5 +259,16 @@ export class WGPUCanvasContext extends ReactiveObject
         return this.map.get([device, context]) || new WGPUCanvasContext(device, context);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, CanvasContext], WGPUCanvasContext>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, CanvasContext], WGPUCanvasContext> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, CanvasContext], WGPUCanvasContext>
+    {
+        if (!WGPUCanvasContext._map) WGPUCanvasContext._map = new ChainMap();
+
+        return WGPUCanvasContext._map;
+    }
 }

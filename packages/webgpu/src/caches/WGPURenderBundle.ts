@@ -87,5 +87,16 @@ export class WGPURenderBundle extends ReactiveObject
         return this.map.get([device, renderBundle, renderPassFormat, attachmentSize]) || new WGPURenderBundle(device, renderBundle, renderPassFormat, attachmentSize);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderBundle, RenderPassFormat, { readonly width: number, readonly height: number }], WGPURenderBundle>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, RenderBundle, RenderPassFormat, { readonly width: number, readonly height: number }], WGPURenderBundle> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, RenderBundle, RenderPassFormat, { readonly width: number, readonly height: number }], WGPURenderBundle>
+    {
+        if (!WGPURenderBundle._map) WGPURenderBundle._map = new ChainMap();
+
+        return WGPURenderBundle._map;
+    }
 }
