@@ -145,10 +145,11 @@ npm install               # 安装依赖
 npm run build             # 构建引擎包
 npm run types             # 类型检查
 npm run test              # 单元测试（vitest，watch 模式）
-npm run test:run          # 单元测试（单次运行，CI 用）
+npm run test:run          # 单元测试（单次运行，不校覆盖率阈值）
+npm run test:coverage     # 单元测试 + 覆盖率门禁（CI 用这个）
 npm run test:e2e          # e2e 视觉回归（playwright，基线在 .verify/）
 npm run lint              # 代码检查（含 eslint-plugin-feng3d 响应式纪律规则）
-npm run ci                # 本地跑一遍与 CI 等价的完整门禁
+npm run ci                # quality job 的一个子集（不含 lint:examples 与 R1/R2/R3/R5/R6/R9/R11 的独立脚本，见 docs/CI.md §2.1 与 §7）
 npm run release:dry-run -- --force   # 发布预演（构建 + 打包校验，不发布）
 ```
 
