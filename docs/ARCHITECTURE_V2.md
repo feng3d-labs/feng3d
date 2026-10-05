@@ -399,6 +399,18 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 其它实测约束：TSL 的 `vec4` 没有 `(Vec2, Float, Float)` 构造，需要先合成 `vec3` 再补 `w`；
 > 顶点入口的参数顺序由 body 的**引用顺序**决定（location 显式指定，不影响绑定）。
 >
+> ✅ **第三批（#711 纹理批，2026-10-05）**：`TextureMaterial` 改用 TSL 生成，踩到并记录一条**采样器命名约定**：
+> TSL 把 `sampler2D(uniform('s_texture'))` 展开成 `s_texture_texture`（texture）+ `s_texture`（sampler），
+> 数据侧（`TextureMaterial` 的 `bindingResources`）必须按同一约定给键——`s_texture_texture = textureView`、
+> `s_texture = sampler`（引擎的 `WGPUBindGroupEntry` 按着色器变量名解析绑定）。
+>
+> ⚠️ **副作用（必须知道）**：改用展开格式后，引擎的 `adjustSamplerForTexture` **首次能拿到真实纹理**
+> （手写命名下它查 `s_textureSampler_texture`、查不到，于是这条调整一直没生效）。单 mip 纹理会被自动
+> 忽略 `mipmapFilter` 并把 `lodMaxClamp` 设为 0，因此该示例截图与手写版差 **5170 像素（1%）**——
+> 差异全部落在纹理过滤细节上（画面本身正常：无错位、无黑块，见 PR 附图）。
+> 这是**修正**（手写版把「没有 mipmap 却设了 mipmapFilter」的错误配置带进了 GPU），不是渲染回归；
+> 若某处需要严格像素一致，可在数据侧按手写格式补一个 `s_textureSampler_texture` 键。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
