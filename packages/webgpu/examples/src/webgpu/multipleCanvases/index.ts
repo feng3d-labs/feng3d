@@ -4,6 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { mat3, mat4 } from 'wgpu-matrix';
 
 import { modelData } from './models';
+import { getMultipleCanvasesWGSL } from '../../shaders-tsl/multipleCanvases';
 
 type Model = {
     vertices: Float32Array;
@@ -61,48 +62,18 @@ const init = async () =>
         return [rand(), rand(), rand(), 1];
     }
 
-    const module = {
-        code: `
-    struct Uniforms {
-      worldViewProjectionMatrix: mat4x4f,
-      worldMatrix: mat4x4f,
-      color: vec4f,
-    };
-
-    struct Vertex {
-      @location(0) position: vec4f,
-      @location(1) normal: vec3f,
-    };
-
-    struct VSOut {
-      @builtin(position) position: vec4f,
-      @location(0) normal: vec3f,
-    };
-
-    @group(0) @binding(0) var<uniform> uni: Uniforms;
-
-    @vertex fn vs(vin: Vertex) -> VSOut {
-      var vOut: VSOut;
-      vOut.position = uni.worldViewProjectionMatrix * vin.position;
-      vOut.normal = (uni.worldMatrix * vec4f(vin.normal, 0)).xyz;
-      return vOut;
-    }
-
-    @fragment fn fs(vin: VSOut) -> @location(0) vec4f {
-      let lightDirection = normalize(vec3f(4, 10, 6));
-      let light = dot(normalize(vin.normal), lightDirection) * 0.5 + 0.5;
-      return vec4f(uni.color.rgb * light, uni.color.a);
-    }
-  `,
-    };
+    // 着色器改由 TSL 生成（见 shaders-tsl/multipleCanvases.ts）。
+    // 注意 vertex / fragment 必须**各自**给一份 code：引擎会把两份 code 分别编译成两个 shader module，
+    // 而本示例的 vertex 与 fragment 都用到同一个 Uniforms，若拼接成一份就会出现重复定义、编译失败。
+    const shaderWGSL = getMultipleCanvasesWGSL();
 
     const pipeline: RenderPipeline = {
         label: 'our hardcoded red triangle pipeline',
         vertex: {
-            ...module,
+            code: shaderWGSL.vertex,
         },
         fragment: {
-            ...module,
+            code: shaderWGSL.fragment,
         },
         primitive: {
             cullFace: 'back',

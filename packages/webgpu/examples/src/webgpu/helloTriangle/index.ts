@@ -1,5 +1,6 @@
 import { Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
+import { getHelloTriangleWGSL } from '../../shaders-tsl/helloTriangle';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {
@@ -24,22 +25,9 @@ const init = async (canvas: HTMLCanvasElement) =>
                         renderPassObjects: [{ // 渲染对象
                             pipeline: { // 渲染管线
                                 vertex: { // 顶点着色器
-                                    code: `
-                                    @vertex
-                                    fn main(
-                                        @location(0) position: vec2<f32>,
-                                    ) -> @builtin(position) vec4<f32> {
-                                        return vec4<f32>(position, 0.0, 1.0);
-                                    }
-                                    ` },
+                                    code: getHelloTriangleWGSL().vertex },
                                 fragment: { // 片段着色器
-                                    code: `
-                                        @binding(0) @group(0) var<uniform> color : vec4<f32>;
-                                        @fragment
-                                        fn main() -> @location(0) vec4f {
-                                            return color;
-                                        }
-                                    ` },
+                                    code: getHelloTriangleWGSL().fragment },
                             },
                             vertices: {
                                 position: { data: new Float32Array([0.0, 0.5, -0.5, -0.5, 0.5, -0.5]), format: 'float32x2' }, // 顶点坐标数据
