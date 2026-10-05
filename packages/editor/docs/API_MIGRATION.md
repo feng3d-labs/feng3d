@@ -496,48 +496,60 @@ Select-String -Path 'packages/**/*.ts' -Pattern 'new Mouse3DManager'   # → 0 �
 
 ## 9. 类型可构造性矩阵（决定 `new X()` 是否合法）
 
-**这是最容易踩的坑**：`feng3d` 桶**同时**导出了两套颜色/数学类型，且
+**这是最容易踩的坑**。`feng3d` 桶**同时**导出两套颜色 / 数学类型名，且
 **显式命名导出优先于 `export *`**：
 
 ```ts
-export type { Color3 } from './core/Color3';   // ← 纯 interface（新范式）
-export type { Color4 } from './core/Color4';   // ← 纯 interface
-export * from '@feng3d/math';                  // ← 含 class 版 Color3 / Color4
+export type { Color3 } from './core/Color3';   // ← 本包的纯数据 interface（分量可选）
+export type { Color4 } from './core/Color4';   // ← 本包的纯数据 interface
+export * from '@feng3d/math';                  // ← math 的同名 interface（分量必填）
 ```
 
-因此 `import { Color4 } from 'feng3d'` 拿到的是 **interface**，`new Color4()` 运行时抛
-`TypeError: Color4 is not a constructor`；而 `Vector3` 只由 `@feng3d/math` 提供，
-是 **class**，`new Vector3()` 完全合法。
+因此 `import { Color4 } from 'feng3d'` 拿到的是**本包的** interface，`new Color4()` 运行时抛
+`TypeError: Color4 is not a constructor`。
+
+> **issue #134 之后的口径已经反转**：原先这张表的重点是「math 侧还是 class、`new` 合法」，
+> 而**math 的 19 个数值 / 几何 class（阶段 C）与 2 个渐变 class（第二批）现已全部删除**，
+> 所以表里凡是来自 `@feng3d/math` 的类型**都不可构造**。剩下的可构造类型只有**曲线 / 形状 / 字体 /
+> 贝塞尔 / `Mathf` / `Noise` / `Time`** 那批（见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8）。
 
 | 类型 | 形态 | `new` 是否合法 | 来源 |
 |---|---|---|---|
-| `Vector3` / `Vector2` / `Vector4` | class | ✅ | `@feng3d/math` |
-| `Matrix4x4` / `Matrix3x3` | class | ✅ | `@feng3d/math` |
+| `Vector3` / `Vector2` / `Vector4` | **interface**（issue #134 阶段 C-f 起） | ❌ 崩 | `@feng3d/math/src/geom/vector{2,3,4}Ops.ts`（原 `Vector*.ts` 已删除） |
+| `Matrix4x4` / `Matrix3x3` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/matrix{3x3,4x4}Ops.ts` |
+| `Plane` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/planeOps.ts` |
+| `Box3` | **interface**（阶段 C-e 起） | ❌ 崩 | `@feng3d/math/src/geom/box3Ops.ts` |
+| `Quaternion` | **interface**（阶段 C-e 起；第 38 行的同名 interface 曾只是 `MixinsQuaternion` 的声明合并） | ❌ 崩 | `@feng3d/math/src/geom/quaternionOps.ts` |
 | **`Rectangle`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/rectangleOps.ts`（原 `Rectangle.ts` 已删除） |
 | **`Euler`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/eulerOps.ts`（原 `Euler.ts` 已删除） |
 | **`TriangleGeometry`** | **interface**（issue #134 阶段 C-a 起） | ❌ 崩 | `@feng3d/math/src/geom/triangleGeometryOps.ts`（原 `TriangleGeometry.ts` 已删除） |
-| `Plane` | class | ✅ | `@feng3d/math` |
 | **`Color3`** | **interface** | ❌ 崩 | `feng3d/src/core/Color3.ts`（显式导出优先） |
 | **`Color4`** | **interface** | ❌ 崩 | `feng3d/src/core/Color4.ts`（显式导出优先） |
-| `Quaternion` | class | ✅ | `@feng3d/math/src/geom/Quaternion.ts`（第 38 行的同名 interface 只是 `MixinsQuaternion` 的声明合并，**不改变它可构造**） |
+| **`Gradient`** | **interface**（issue #134 第二批·渐变族起） | ❌ 崩 | `@feng3d/math/src/gradient/gradientOps.ts`（原 `Gradient.ts` 已删除） |
+| **`MinMaxGradient`** | **interface**（issue #134 第二批·渐变族起） | ❌ 崩 | `@feng3d/math/src/gradient/minMaxGradientOps.ts`（原 `MinMaxGradient.ts` 已删除） |
+| `MinMaxCurve` / `AnimationCurve` / `Curve` / `Bezier` 等 | class（**仍在**，属 §8 的曲线 / 形状 / 字体批） | ✅ | `@feng3d/math` |
 
 **迁移写法**：
 
 ```ts
 // ✗ 运行时崩
 const c = new Color4(1, 0, 0, 0.5);
+const g = new Gradient().fromColors([0xff0000, 0x0000ff]);   // ← 第二批起也崩
 
-// ✓ 纯数据字面量
+// ✓ 纯数据字面量 / 纯函数
 const c: Color4 = { __type__: 'Color4', r: 1, g: 0, b: 0, a: 0.5 };
+const g = gradientFromColors([0xff0000, 0x0000ff]);         // 只需 GradientLike 的入参就够
+const g2: Gradient = { __type__: 'Gradient', ...gradientFromColors([0xff0000, 0x0000ff]) };
 ```
 
-注意 `Color4` / `Color3` 的字段**全部可选**（缺失时由消费方补默认），
+注意 `Color4` / `Color3`（**本包这一套**）的字段**全部可选**（缺失时由消费方补默认），
 且**没有** `fromUnit()` / `fromUnit24()` / `BLACK` 等静态成员 —— editor 中这些调用需一并改写。
+math 那套 color / gradient 接口的字段是**必填**，且纯函数层**不产判别字段**（需要时在装配点显式写）。
 
 **受影响范围**（实测约 30 处）：`ColorPicker.vue`、`ColorPickerView.vue`、`OAVColorPicker.vue`、
-`MinMaxCurveEditor.vue`、`MinMaxCurveView.vue`、`MinMaxGradientView.vue` 等颜色编辑组件。
+`MinMaxCurveEditor.vue`、`MinMaxCurveView.vue`、`MinMaxGradientView.vue`、`GradientEditor.vue` 等颜色 / 渐变编辑组件。
 这些崩在**组件挂载 / 交互时**（不是模块加载期），不阻塞编辑器启动，
-但会让属性面板的颜色编辑整体不可用。
+但会让属性面板的颜色 / 渐变编辑整体不可用。
 
 **判别原则**：改写任何 `new X()` 之前，先确认 X 的形态，**不要凭印象**：
 
@@ -579,7 +591,8 @@ Get-ChildItem 'packages/<pkg>/src' -Recurse -Filter *.ts |
 | 边界 | 说明 | 现状处理 |
 |---|---|---|
 | ~~`ImageUtil` 参数仍是 math class `Color4`~~ **✅ 已解决** | `ImageUtil` 各方法已改为接受 **`ImageUtilColorLike`**（`{ readonly r?, g?, b?, a? }`，`packages/feng3d/src/utils/ImageUtil.ts:13`），内部原先对 `mix` / `clone` 的调用也已换成纯函数 | 不再需要 `toImageUtilColor()` 边界转换（该方法已从代码中移除）；`colorUtils.ts` 现在只是通用颜色工具集，**不再承担 `ImageUtil` 兼容职责** |
-| **`Gradient` / `MinMaxGradient` / `MinMaxCurve` 仍是 math class** | 关键点颜色是 class 实例、无 `__type__`，且 `Gradient.getColor()` 会调用实例方法 `v.mixTo(...)` | 读取侧用 `ColorLike`（`{r?,g?,b?,a?}`）兼容；**写入侧不可整体替换为字面量**，否则渐变采样会崩在 `mixTo is not a function` |
+| ~~`Gradient` / `MinMaxGradient` 仍是 math class~~ **✅ 已解决**（issue #134 第二批·渐变族） | 两个类型已迁为**带 `__type__` 的纯数据接口**（`gradientOps.ts` / `minMaxGradientOps.ts`），关键点颜色本来就已是纯数据；`Gradient.getColor()` 的 `v.mixTo(...)` 在阶段 C-b 就换成了纯函数 | 读取侧仍可用 `ColorLike`（只读 r/g/b/a）兼容；**写入侧**：字段类型上是 `readonly`，要改经 `reactive(...) as WritableMinMaxGradientLike` / `WritableGradientLike`（`MinMaxGradientView.vue` / `GradientEditor.vue` 已按此改）。`ImageUtil.drawMinMaxGradient` 的入参同时放宽为 `GradientLike`，调用方不必补判别字段 |
+| **`MinMaxCurve` 仍是 math class** | 与 `AnimationCurve` / `BezierCurve` 同属 §8 的「曲线 / 形状 / 字体」批，**尚未迁移** | 读取侧用数字形态即可（`MinMaxCurve.getValue()` 返回 `number`）；**不要**假定它可整体替换为字面量——它的 `curve` / `curveMin` / `curveMax` 仍是 `AnimationCurve` 实例 |
 | **默认值口径不一致** | `colorToHexString` 按主仓约定缺失分量补 `1`（白，依据 `webgpu/caches/color4Logic.ts` 的 `?? 1`），而部分 editor 代码补 `0`（黑） | 字段齐全时完全等价；仅「漏写 r/g/b 的异常字面量」会出现色块与 Hex 框不一致，后续统一到 `colorToCssRgb` / `colorToCssRgba` |
 
 > 根治需主仓把这些类型迁为纯数据接口。在此之前，**`colorUtils.ts` 是唯一合法的颜色形态转换层**，
