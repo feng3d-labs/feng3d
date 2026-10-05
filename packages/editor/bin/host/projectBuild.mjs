@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { Service } from '@deepseek-ai/cordis';
 
 /**
@@ -89,7 +90,12 @@ function killTree(child)
  */
 export class ProjectBuild extends Service
 {
-    /** 正在跑的那一次（`null` 表示空闲）：`{ script, child }` */
+    /**
+     * 正在跑的那一次（`null` 表示空闲）：`{ taskId, script, child, startedAt, lines }`。
+     *
+     * `taskId` / `startedAt` / `lines` 是 #273 长任务那一截：
+     * 在此之前"在不在跑"只能答是 / 否，现在能答"**哪一次、跑了多久、吐了多少行**"。
+     */
     running = null;
 
     /** 输出订阅者 */
@@ -127,6 +133,34 @@ export class ProjectBuild extends Service
     get isRunning()
     {
         return this.running !== null;
+    }
+
+    /**
+     * **这次任务长什么样**（#273 长任务：从"在不在跑"扩展成"哪一次、多久、多少行"）。
+     *
+     * 刻意**不改 `call` 的语义**：仍是"调一次、等结果"，只是查询变丰富了——
+     * 于是现有调用方（CLI / MCP / 那 15 个 e2e 脚本）**零改动**。
+     *
+     * `lines` 是**已收到的总行数**（不是保留的尾巴长度）：构建输出是流式的，
+     * 它天然就是"进度"这一维，不必另造百分比。
+     *
+     * @returns {{ running: boolean, taskId: string|null, script: string|null, startedAt: number|null, elapsedMs: number|null, lines: number }} 状态
+     */
+    status()
+    {
+        if (!this.running)
+        {
+            return { running: false, taskId: null, script: null, startedAt: null, elapsedMs: null, lines: 0 };
+        }
+
+        return {
+            running: true,
+            taskId: this.running.taskId,
+            script: this.running.script,
+            startedAt: this.running.startedAt,
+            elapsedMs: Date.now() - this.running.startedAt,
+            lines: this.running.lines,
+        };
     }
 
     /**
@@ -192,7 +226,9 @@ export class ProjectBuild extends Service
         const output = [];
 
         this.cancelling = false;
-        this.running = { script, child };
+        // 每次 run 一个新 id：调用方据此判断"我上次问的还是不是这一次"
+        // （同一个 id 说明还在跑，换了 id 说明已经翻篇了）。
+        this.running = { taskId: randomUUID(), script, child, startedAt: Date.now(), lines: 0 };
 
         /**
          * 收一行输出：留进尾巴、并报给订阅者（页面靠它看到进度）。
@@ -207,6 +243,9 @@ export class ProjectBuild extends Service
 
                 output.push(line);
                 if (output.length > this.maxOutputLines) output.shift();
+                // `lines` 是**已收到的总行数**（不是保留的尾巴长度）——它就是"进度"这一维，
+                // 而且不用另造一个百分比：构建输出本来就是流式的。
+                if (this.running) this.running.lines += 1;
 
                 for (const listener of this.listeners)
                 {

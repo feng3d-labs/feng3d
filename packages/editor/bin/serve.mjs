@@ -338,7 +338,9 @@ hostMethods.register('host.build.run', async ({ script } = {}) =>
     };
 });
 
-hostMethods.register('host.build.status', () => ({ running: projectBuild.isRunning }));
+// `status` 从"在不在跑"扩展成"这次任务长什么样"（#273 长任务）：多了 `taskId` / `elapsedMs` / `lines`。
+// **`running` 仍在**——现有调用方不必改。
+hostMethods.register('host.build.status', () => projectBuild.status());
 // 读 + 校验项目元数据（#274 P3）。**坏清单会指名报错**——不静默当空项目：
 // "打不开却看着像打开了"是最难查的一类（与 #271 的"假成功编译"同一个病）。
 hostMethods.register('host.project.meta', () => projectMeta.read());
