@@ -578,6 +578,28 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 路径（`StructImpl(uniform, definition, parentPath)`），所以数组必须把 `[i]` 作为 parentPath 传进去，
 > 否则生成的成员访问会漏掉下标、类型也会退化成元素结构体。
 >
+> ✅ **第十三批（#711 光照 pars 批，2026-10-05）**：`standardLightingParsWGSL`（约 100 行：5 个 struct +
+> 3 个绑定声明 + 4 个纯函数）从 `StandardMaterial.ts` 的内联字符串迁到 `shaders/tsl/standardLightingPars.ts`。
+> 它由 **`StandardMaterial` 与 terrain 的 `TerrainMaterial` 共用**，所以保持了同名导出（`export const
+> standardLightingParsWGSL = getStandardLightingParsWGSL()`），调用方零改动。
+>
+> 本批用到的能力（前两批刚补的）：`discard`、比较采样器、`textureSampleCompare`、**结构体数组**。
+>
+> **三处必须对齐、且离线断言抓不到的细节**：
+>
+> 1. **`select` 的分支顺序**：WGSL 是 `select(f, t, cond)`，TSL 的 API 是 `select(condition, trueValue, falseValue)`。
+>    手写 `select(1.0, shadow, inFrustum)` 对应 TSL 的 `select(inFrustum, shadow, 1.0)`——我一开始写反成
+>    `select(inFrustum, 1.0, shadow)`，**语义完全相反**（阴影判定翻转）；
+> 2. **运算顺序要照抄**：`1.0 - lightDistance / range` 不要改写成 `(lightDistance / range - 1.0) * -1.0`——
+>    数学等价但浮点不等价；
+> 3. **数据侧的采样器键名**：`s_shadowMap` 由「纹理」变成「比较采样器」，纹理移到 `s_shadowMap_texture`
+>    （`ForwardRenderer` 同步改），否则运行期报 `没有找到纹理绑定 's_shadowMap_texture'`。
+>
+> 画面验证的方法值得记：`StandardMaterialTest` 的**入库基线与本机 GPU 不匹配**（master 自己就差 4193 像素），
+> 所以我改为**像素级对比「TSL 版 vs master」**，并额外跑一次 master 做噪声基线——结果
+> **TSL 版与 master 第二次的哈希完全相同（`27695cfd…`）**，而 master 两次之间本身就不同，
+> 因此可判定「TSL 与 master 一致」。这道工序（先量噪声再判等价）在渲染迁移里是必需的。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
