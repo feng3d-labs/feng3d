@@ -55,6 +55,9 @@ export default {
         "ImpulsesTest",
         "EventsTest",
         "TriggerTest",
+        "TrimeshTest",
+        "ConvexTest",
+        "HeightfieldTest",
     ],
     "renderer": [
         "Basic",
