@@ -3,7 +3,12 @@ import type { Rule } from 'eslint';
 /**
  * 模块顶层禁止创建的缓存构造器。
  *
- *   - `Map` / `WeakMap` / `Set`：内置容器；带字面量参数的 `new Set([...])` 是只读常量集合，放行。
+ *   - `Map` / `WeakMap` / `Set` / `WeakSet`：内置容器；带字面量参数的 `new Set([...])` 是只读常量集合，放行。
+ *     `WeakSet` 是 issue #652 补进来的——它原先只在脚本层名单里（`scripts/check-module-side-effects.mjs`
+ *     的 `CACHE_NAMES`），规则层**漏了**（#606 引入 `WeakSet` 时只改了脚本，见 `f71a074ae` 的提交信息
+ *     "判据漏了名字，不是策略有意放过"）。现在这个名单不再靠人记：`scripts/check-module-side-effects.mjs`
+ *     启动时会解析本文件与 `scripts/check-editor-module-effects.mjs`、和脚本侧名单做**集合比对**，
+ *     不一致即 exit 1（issue #652 做法 5）。
  *   - `ChainMap`：**项目自有**的缓存容器（`packages/webgpu/src/utils/ChainMap.ts`——内部用 `WeakMap`
  *     逐级嵌套、`wrapKey` 把字面量键包成对象，对外只有 `get` / `set` / `delete` / `size`，
  *     语义就是「键 → 值」的按需缓存；全仓唯一用途是 `packages/webgpu/src/caches/*` 的身份键缓存）。
@@ -12,10 +17,11 @@ import type { Rule } from 'eslint';
  *     （脚本层对项目自有容器**不套空参限制**），本规则只覆盖"真正模块顶层"的形态。
  *
  * 已知覆盖边界：本规则的 `isModuleScope` 见到 `ClassBody` 就放行，所以**类 `static` 字段 / 块里的
- * 缓存创建不归它管**（`static map = new ChainMap()` 由脚本层的 AST 判据拦）。该缺口登记在
- * `scripts/probe-r2-blindspots.mjs` 的文件头。
+ * 缓存创建不归它管**（`static map = new ChainMap()` 由脚本层的 AST 判据拦）；它同样不覆盖
+ * **顶层 IIFE 体**（见到 `ArrowFunctionExpression` / `FunctionExpression` 就放行）。
+ * 这两条缺口登记在 `scripts/probe-r2-blindspots.mjs` 的文件头与 `docs/CI.md` §2.1.1 的「已知局限」。
  */
-const CACHE_CONSTRUCTORS = ['Map', 'WeakMap', 'Set', 'ChainMap'];
+const CACHE_CONSTRUCTORS = ['Map', 'WeakMap', 'Set', 'WeakSet', 'ChainMap'];
 
 /** 模块顶层禁止的启动型调用：定时器 / rAF / ticker 启动 */
 const STARTUP_CALLS = ['setInterval', 'setTimeout', 'requestAnimationFrame', 'runTickerFuncs', 'startTicker'];
