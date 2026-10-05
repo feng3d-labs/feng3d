@@ -1,7 +1,7 @@
 import { RenderObject, RenderPassDescriptor, Sampler, Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
 
-import fullscreenTexturedQuadWGSL from '../../shaders/fullscreenTexturedQuad.wgsl';
+import { getFullscreenTexturedQuadWGSL } from '../../shaders-tsl/fullscreenTexturedQuad';
 import sampleExternalTextureWGSL from '../../shaders/sampleExternalTexture.frag.wgsl';
 
 const init = async (canvas: HTMLCanvasElement) =>
@@ -41,7 +41,7 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const renderObject: RenderObject = {
         pipeline: {
-            vertex: { code: fullscreenTexturedQuadWGSL }, fragment: { code: sampleExternalTextureWGSL },
+            vertex: { code: getFullscreenTexturedQuadWGSL() }, fragment: { code: sampleExternalTextureWGSL },
         },
         bindingResources: {
             mySampler: sampler,
