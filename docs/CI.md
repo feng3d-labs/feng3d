@@ -173,7 +173,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 
 | # | 步骤 | 命令 | 规范 | 拦什么 |
 |---|---|---|---|---|
-| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则） | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `gates:host`（16 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
+| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读数组字段，issue #605）→ `gates:host`（16 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
 | 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
 | 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
 | 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | 顶层**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入——**新增即失败** |
@@ -709,13 +709,13 @@ npx feng3d-editor --port 8080 --open
 npm ci
 
 # `npm run ci` 只是 quality job 的**子集**（lint:ci + 示例入口可解析 + test:coverage +
-# types:packages + build:packages + release:dry-run；lint:ci 还会顺带跑 gates:host 与
-# check-math-no-class）。它**不含** R1/R2/R3/R5/R9/R11 的那批脚本、lint:examples、
+# types:packages + build:packages + release:dry-run；lint:ci 还会顺带跑 gates:host、
+# check-math-no-class 与 check-readonly-array-fields）。它**不含** R1/R2/R3/R5/R9/R11 的那批脚本、lint:examples、
 # 分包覆盖率一致性、工作区污染检查——逐条对照见 §2.1，要完整复现 quality job 就按 §2.1 的步骤顺序挨个跑。
 npm run ci
 
 # 单独跑（括号里是 §2.1 的步骤号）
-npm run lint:ci          # eslint，零警告（含 gates:host 16 条宿主门禁 + check-math-no-class）
+npm run lint:ci          # eslint，零警告（含 gates:host 16 条宿主门禁 + check-math-no-class + check-readonly-array-fields）
 npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告，§2.1 第 8 步）
 node scripts/check-examples-imports.mjs   # 示例入口可解析（等价 Vite dev 的依赖扫描）
 node scripts/check-docs-links.mjs         # 文档相对链接（第 2 步）
@@ -735,6 +735,7 @@ npm run build:packages   # 20 个包构建校验（第 15 步）
 node scripts/check-toplevel-new.mjs       # R2 其余模块级 new（第 16 步）
 node scripts/check-imperative-construction.mjs   # R3（第 17 步）
 node scripts/check-math-no-class.mjs      # math 数值 / 几何禁 class（第 18 步，prelint:ci 已跑一次）
+node scripts/check-readonly-array-fields.mjs      # 只读数组字段（§11.6 / issue #605，prelint:ci 已跑一次）
 node scripts/check-bundle-size.mjs        # R9（第 19 步）
 
 # 发布预演（安全，不发布）
