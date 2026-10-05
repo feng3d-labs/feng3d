@@ -687,6 +687,35 @@ export class Float implements ShaderValue
      * 取负运算
      * @returns 返回当前值的负数
      */
+    /**
+     * 浮点取模（WGSL / GLSL 的 %，对浮点取余）
+     *
+     * @param other 另一个值
+     * @returns 结果
+     */
+    modulo(other: Float | number): Float
+    {
+        const result = new Float();
+
+        result.toGLSL = () =>
+        {
+            const left = formatOperand(this, '%', true, () => this.toGLSL());
+            const right = formatOperand(other, '%', false, () => (typeof other === 'number' ? formatNumber(other) : other.toGLSL()));
+
+            return `${left} % ${right}`;
+        };
+        result.toWGSL = () =>
+        {
+            const left = formatOperand(this, '%', true, () => this.toWGSL());
+            const right = formatOperand(other, '%', false, () => (typeof other === 'number' ? formatNumber(other) : other.toWGSL()));
+
+            return `${left} % ${right}`;
+        };
+        result.dependencies = typeof other === 'number' ? [this] : [this, other];
+
+        return result;
+    }
+
     negate(): Float
     {
         const result = new Float();
