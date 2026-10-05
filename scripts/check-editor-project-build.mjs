@@ -156,6 +156,42 @@ check('**同一项目同时只跑一个构建**（第二个被明确拒绝、并
     && secondResult.ok === false && /已有构建在跑/.test(secondResult.error ?? ''),
     `第一个 code=${firstResult.result?.code}；第二个=${secondResult.error ?? secondResult.result?.code}`);
 
+// ---------- 判据 3a：长任务"可查询"（#273） ----------
+//
+// 形状上**刻意不改 \`call\` 的语义**：仍是"调一次、等结果"，只是 \`status\` 变丰富了，
+// 于是现有调用方零改动。判据的关键是"**两次的 taskId 必须不同**"——
+// 只断言"有个 taskId 字段"会被一个占位值（常量、或永远 null）骗过去。
+const firstSlow = call('host.build.run', { script: 'slow' });
+
+// 趁它还在跑时查（`slow` 睡 1.5 秒，这里等 600ms）
+await new Promise((resolve_) => setTimeout(resolve_, 600));
+
+const busy = await call('host.build.status');
+
+check('**跑中能查到这次任务**（不是只有一个"在跑"的布尔）',
+    busy.result?.running === true
+    && typeof busy.result?.taskId === 'string' && busy.result.taskId.length > 0
+    && busy.result?.script === 'slow'
+    && typeof busy.result?.startedAt === 'number'
+    && busy.result?.elapsedMs >= 0
+    && busy.result?.lines > 0,
+    JSON.stringify(busy.result));
+
+await firstSlow;
+
+const firstId = busy.result?.taskId;
+const secondSlow = call('host.build.run', { script: 'slow' });
+
+await new Promise((resolve_) => setTimeout(resolve_, 600));
+
+const busy2 = await call('host.build.status');
+
+check('**每次任务一个 id**（第二次跑拿到另一个 taskId——不是常量、也不是永远 null）',
+    typeof busy2.result?.taskId === 'string' && busy2.result.taskId !== firstId,
+    `first=${firstId} second=${busy2.result?.taskId}`);
+
+await secondSlow;
+
 // ---------- 判据 3c：调用方发起的取消真的能停掉构建（#273 长任务） ----------
 //
 // **判"真的停了"看的是"'run' 的 Promise 何时 settle"**：那个 Promise 等的是子进程的
