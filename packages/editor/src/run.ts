@@ -10,7 +10,7 @@
  *
  * ## 新形态（D12 / 纯数据声明式）
  *
- * 场景**本来就是纯数据**（`{ __type__: 'Object3D', … }`，见 `resource/template/default.scene.json`），
+ * 场景**本来就是纯数据**（`{ __type__: 'Object3D', … }`，见 `resource/template/scenes/default.scene.json`），
  * 所以不需要"反序列化出类实例"这一步：读出 JSON → 直接当视图的 `root` → 交给 `logic(view)` →
  * 用 WebGPU 的 `submit` 循环渲染。视图本身也用**纯数据字面量**声明。
  *
@@ -18,9 +18,10 @@
  *
  * | 参数 | 含义 |
  * |---|---|
- * | `fstype` | 文件系统类型（`indexedDB` 时用项目空间；缺省走 http/默认 FS） |
- * | `project` | 项目名（`fstype=indexedDB` 时用） |
- * | `scene` | 场景文件路径，缺省 `default.scene.json`（显式给 URL 便于开发与 e2e） |
+ * | `scene` | 场景文件路径，缺省 `scenes/default.scene.json`（显式给 URL 便于开发与 e2e） |
+ *
+ * **加载方式只有 HTTP(S)**（决策 ②，2026-10-05）：runtime 不再按查询参数换文件系统、
+ * 也不再碰浏览器端数据库 —— 页面从 HTTP(S) 取场景与资源。
  */
 import { WebGPU } from '@feng3d/webgpu';
 import * as feng3d from 'feng3d';
@@ -80,7 +81,6 @@ function countObjects(object: Object3D | undefined): number
 async function main(): Promise<void>
 {
     const params = new URLSearchParams(window.location.search);
-    const fstype = params.get('fstype');
     // `HttpFS.getAbsolutePath` 是 `rootPath + path` 的**纯字符串拼接**（`rootPath` 是**页面目录**），
     // 所以这里的路径必须是**相对页面**的。顺手去掉前导 `/`：否则会拼出 `//resource/...`，
     // dev server 会把它当另一个路径、回落成 index.html，于是"读场景"拿到一坨 HTML 再 JSON.parse 崩掉
@@ -90,13 +90,6 @@ async function main(): Promise<void>
     if (!canvas)
     {
         throw new Error('运行形态需要一个 <canvas id="webgpu">（见 run.html）');
-    }
-
-    if (fstype === 'indexedDB')
-    {
-        feng3d.indexedDBFS.projectname = decodeURI(params.get('project') ?? '');
-        feng3d.FS.fs = feng3d.indexedDBFS as never;
-        feng3d.ReadRS.rs = new feng3d.ReadRS(feng3d.indexedDBFS as never);
     }
 
     // 资源系统初始化。**运行形态是只读的静态产物**，这里必须容错：
