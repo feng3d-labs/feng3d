@@ -31,6 +31,12 @@ const EDITOR_SRC = resolve(ROOT, 'packages/editor/src');
  */
 const REMOVED = [
     {
+        path: 'packages/editor/packages/codeeditor/codeeditor.js',
+        specifier: 'codeeditor',
+        reason: '内嵌 Monaco 独立窗口（`codeeditor.html` + `codeeditor.js` + `package.json`，共 6 KB）——**已按 D11 废弃**（2026-10-05）：D11 定「文件树 / 脚本编辑 / 终端 / Git / 全局搜索交给 VS Code Web」，编辑器不再做文件管理，这套独立窗口是重复设施',
+        instead: '在页面内改脚本请用 VS Code Web；编辑器只专注 3D 场景 / 属性 / 产物入口 / 插件管理',
+    },
+    {
         path: 'packages/editor/src/net/client.ts',
         specifier: 'net/client',
         reason: '旧网络客户端残留（硬编码 6502 端口、用户名写死）——已删（2026-10-05，#280）',

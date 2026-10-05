@@ -15,7 +15,7 @@
  *
  * ## 它检查什么
  *
- * `window.open('packages/codeeditor/codeeditor.html')` 这类**运行时才取**的仓库内路径，
+ * `window.open(rs.fs.getAbsolutePath('run.html'))` 这类**运行时才取**的仓库内路径，
  * 必须在 `package.json` 的 `files` 覆盖范围内。`release:dry-run` 原本只查
  * `main` / `module` / `types` / `bin` 指向的文件——**看不到**这类路径，
  * 于是"本地一切正常、发布版 404"。

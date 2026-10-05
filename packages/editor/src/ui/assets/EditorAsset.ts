@@ -11,8 +11,6 @@ import { isPureDataAssetFile, object3DToAssetFileData } from './Object3DAssetFil
 
 export class EditorAsset
 {
-    static codeeditoWin: Window;
-
     /**
      * 资源ID字典
      */

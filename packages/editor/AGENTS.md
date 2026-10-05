@@ -132,7 +132,7 @@ editor Web **不再做文件管理**，专注 3D 场景、属性配置、产物�
 > |---|---|
 > | ~~`native/`~~ | ✅ **已删除**（2026-10-05，`ARCHITECTURE.md` §11-9）：那条"页面直连 Node fs"的路已由 **HostFS（经宿主）**取代 |
 > | ~~`typescript/`~~ | ✅ **已删除**（2026-10-05，§11-9/10）：713 行、全仓 0 引用；决策 4 = vite 后不再需要自研依赖排序 |
-> | `codeeditor/` | Monaco 独立窗口（`window.opener` / AMD / DOM），`private: true`；D11 后可废弃（**仍待决策**） |
+> | ~~`codeeditor/`~~ | ✅ **已删除**（2026-10-05，D11 决策）：Monaco 独立窗口（`window.opener` / AMD / DOM）是重复设施 —— D11 定「文件树 / 脚本编辑 / 终端 / Git / 全局搜索交给 VS Code Web」，编辑器不再做文件管理。已登记进 `check-editor-dead-code.mjs`（不许复活） |
 > | `editor/` | **空目录**（无 package.json、无入口） |
 >
 > **问题 9 已部分结案**（见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) §11-9）：`native` 与 `typescript` 已删，
