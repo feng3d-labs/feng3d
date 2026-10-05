@@ -36,6 +36,7 @@ import { HostMethods } from './host/hostMethods.mjs';
 import { PluginPackages } from './host/pluginPackages.mjs';
 import { PluginTree } from './host/pluginTree.mjs';
 import { ProjectBuild } from './host/projectBuild.mjs';
+import { ProjectMeta } from './host/projectMeta.mjs';
 import { ProjectPublish } from './host/projectPublish.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
@@ -289,6 +290,9 @@ hostMethods.register('host.workspace.writeBinary', ({ path, base64 }) =>
 // 项目构建（#277 的宿主半）：**编辑器关着也能构建**——页面里没有 npm、没有子进程，
 // 这件事只有宿主能做；而 D12 要求项目"脱离编辑器也能构建"，所以它是那条决策的地基
 const projectBuild = new ProjectBuild(ctx, { workspace });
+// 项目元数据（#274 P3）：`feng3d.project.json` 的**读 + 校验**那一端。
+// 在此之前它只是"模板里一个没人读的文件"。
+const projectMeta = new ProjectMeta(ctx, { workspace });
 
 hostMethods.register('host.build.run', async ({ script } = {}) =>
 {
@@ -307,6 +311,9 @@ hostMethods.register('host.build.run', async ({ script } = {}) =>
 });
 
 hostMethods.register('host.build.status', () => ({ running: projectBuild.isRunning }));
+// 读 + 校验项目元数据（#274 P3）。**坏清单会指名报错**——不静默当空项目：
+// "打不开却看着像打开了"是最难查的一类（与 #271 的"假成功编译"同一个病）。
+hostMethods.register('host.project.meta', () => projectMeta.read());
 // **可取消**（#273 长任务）：长任务协议里"调用方能叫停"这一条的宿主半。
 hostMethods.register('host.build.cancel', () => projectBuild.cancel());
 
