@@ -305,6 +305,67 @@ check('没叠用户层/内置层时，条目层是 `plugin`（既有行为不变
     readGraph(good.html)?.entries?.[0]?.layer === 'plugin',
     `good 那条的 layer=${JSON.stringify(readGraph(good.html)?.entries?.[0]?.layer)}`);
 
+// ---------- 项目级启用集（#274 / §5.2） ----------
+//
+// `feng3d.project.json` 的 `plugins` 是**字符串数组**（只有 id）—— 它回答"**这个项目要用哪些**"，
+// 而不是"插件从哪来"（那由产物配置回答，它带 `clientUrl`）。所以它表达成 `enabled: false`
+// 而**不是把条目从图里删掉**：页面仍看得到"有这么个插件、但项目没启用"，用户也能临时打开。
+const PROJECT_LAYER = [
+    { id: 'keep-me', clientUrl: '/plugins/keep.js', apiVersion: '^1.0.0' },
+    { id: 'drop-me', clientUrl: '/plugins/drop.js', apiVersion: '^1.0.0' },
+];
+
+/**
+ * 写一份项目元数据（`feng3d.project.json`）并返回它所在目录。
+ *
+ * `plugins` 传 `undefined` 时 JSON 里**不含该键** —— 那正是"项目没声明"，与"声明了空数组"不同。
+ *
+ * @param {readonly string[] | undefined} plugins 启用集
+ * @returns {string} 目录
+ */
+function makeProjectMeta(plugins)
+{
+    const dir = resolve(PROBE_DIR, 'project');
+
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(resolve(dir, 'feng3d.project.json'), JSON.stringify({
+        name: '探针项目',
+        entryScene: 'scenes/default.scene.json',
+        plugins,
+    }, null, 4), 'utf8');
+
+    return dir;
+}
+
+/**
+ * 取某个条目在入口图里的 `enabled`。
+ *
+ * @param {string} html 页面 HTML
+ * @param {string} id 插件 id
+ * @returns {boolean | undefined} 启用状态
+ */
+function enabledOf(html, id)
+{
+    return (readGraph(html)?.entries ?? []).find((entry) => entry.id === id)?.enabled;
+}
+
+const onlyKeep = await probeHost(makeProbeRoot({ plugins: PROJECT_LAYER }), ['--project', makeProjectMeta(['keep-me'])]);
+
+check('★ **项目级启用集**：列的启用、没列的 `enabled: false`',
+    enabledOf(onlyKeep.html, 'keep-me') === true && enabledOf(onlyKeep.html, 'drop-me') === false,
+    `keep-me=${enabledOf(onlyKeep.html, 'keep-me')} drop-me=${enabledOf(onlyKeep.html, 'drop-me')}`);
+check('没被项目启用的那条**仍在入口图里**（页面看得到它，用户能临时打开）',
+    (readGraph(onlyKeep.html)?.entries ?? []).some((entry) => entry.id === 'drop-me'));
+
+const emptyList = await probeHost(makeProbeRoot({ plugins: PROJECT_LAYER }), ['--project', makeProjectMeta([])]);
+
+check('★ 项目声明**空数组** = 一个都不要（与「没声明」是两回事）',
+    enabledOf(emptyList.html, 'keep-me') === false && enabledOf(emptyList.html, 'drop-me') === false);
+
+const noDeclare = await probeHost(makeProbeRoot({ plugins: PROJECT_LAYER }), ['--project', makeProjectMeta(undefined)]);
+
+check('★ 项目**没声明** `plugins` 时不约束（老项目照常全启用）',
+    enabledOf(noDeclare.html, 'keep-me') === true && enabledOf(noDeclare.html, 'drop-me') === true);
 rmSync(PROBE_DIR, { recursive: true, force: true });
 
 console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);
