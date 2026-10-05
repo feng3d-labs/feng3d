@@ -10,7 +10,8 @@
  *   - `scripts/check-toplevel-new.mjs`（其余模块级 `new`，存量冻结在基线里）
  *
  * 行级判据实测漏掉 4 成 import 期真会执行的 `new`（`scripts/probe-r2-blindspots.mjs`
- * 的读数：158 处真执行 → 行级只看见 97 处 → 漏 61 处）。issue #614 要求把判据换成 AST。
+ * 的读数：158 处真执行 → 行级只看见 96 处 → 漏 62 处；#614 当时的文档记的是 97 / 61，
+ * 已按实测校正）。issue #614 要求把判据换成 AST。
  * 换的时候**两条脚本必须用同一把尺子**——否则"口径不一致"会换个地方重演
  * （这正是 issue #606 与 #614 反复报的同一类问题：两条门禁互相以为对方管了）。
  * 所以这里把「什么算 import 时执行」「哪些文件算应用入口」「基线怎么读」三件事抽成一份实现。
@@ -77,6 +78,22 @@
  * 为什么这一批不走这两条：入口页的启动行为（`app.mount()`、`installFieldTooltip()`、`setTimeout(init)`）
  * 本身就是"应用启动"的固有语义，判死后只剩"包一层函数"这种假修法（副作用一点没少，判据却看不见了），
  * 而那不叫收紧，叫把问题藏起来。
+ *
+ * ## 这一层自己的回归保护（issue #652）
+ *
+ * 本文件是 R2 最复杂、写错时最贵的一层（4 类上下文 + 3 处透明包装剥壳 + 入口豁免 + 基线读取），
+ * 而 #614 抽出它时**没有留任何用例**。后果在 #652 里被复现了：把 `effectiveParent` 打回
+ * "不剥括号"（一处改动）后，两条 R2 门禁**都 exit 0**，`check-toplevel-new.mjs` 还把消失的键
+ * 读成"存量已被清理、可以 `--update` 收紧基线"。现在三层守着：
+ *
+ *   1. `test/r2ModuleScope.spec.ts`——直接 import 本文件，对每个判据断言正/反例
+ *      （**顶层 IIFE 的剥壳**是重点，那正是被改坏的地方）；
+ *   2. `check-module-side-effects.mjs` / `check-toplevel-new.mjs` 的脚本内合成样例自检
+ *      （各 13 / 12 条，启动时先跑、失败即 exit 1）；
+ *   3. {@link checkCacheNameLists}——三份缓存容器名单的集合一致性断言。
+ *
+ * **②的局限要如实说**：自检与被测判据同文件同进程，判据写错时自检会一起错，
+ * 发现不了"两处都错"，只防单点回归。判据形状靠 ①（独立文件、独立进程、断言行为）。
  */
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
@@ -451,4 +468,147 @@ export function readBaseline(root)
 export function baselineKey(rel, name)
 {
     return `${rel}::${name}`;
+}
+
+/* ------------------------------------------------------------------------- *
+ * 名单一致性判据（做法 5，issue #652）
+ * ------------------------------------------------------------------------- */
+
+/**
+ * R2 的「缓存容器候选名单」在本仓存在**四份**（issue #652 实测 5）：
+ *
+ * | 位置 | 形态 | 本判据是否比对 |
+ * |---|---|---|
+ * | `scripts/check-module-side-effects.mjs` 的 `CACHE_NAMES` / `PROJECT_CACHE_NAMES` | `Set` | **基准**（由调用方传入） |
+ * | `packages/eslint-plugin-feng3d/src/rules/no-module-side-effect.ts` 的 `CACHE_CONSTRUCTORS` | 数组字面量 | ✅ |
+ * | `scripts/check-editor-module-effects.mjs` 的 `MUTABLE_MODULE_CACHE` | 正则的候选组 | ✅ |
+ * | `scripts/probe-r2-blindspots.mjs` 的 `CACHE_RE` | 正则 | ❌ **刻意排除** |
+ *
+ * 最后一份**刻意不比对**：探针文件头写着它要"冻结历史读数"——它的名字集合必须停在
+ * 与历史报告可比的那一刻，跟着门禁一起改会让"上一批 / 这一批"的读数不可比。
+ *
+ * **为什么必须机器断言**：#606 / #647 反复踩的就是这条——名单各写一份、靠人手工同步，
+ * 漏改一处只表现为"某个新写法没人拦"，而门禁照样绿（`ChainMap` 那次是手工同步三处的，
+ * `WeakSet` 那次就漏了规则层）。断言把"名单漂移"从"靠人读代码 + 破坏性实验"变成 exit 1。
+ *
+ * **为什么是"集合相等"而不是"脚本侧是超集"**：两个方向都有实际失效模式——
+ * ① 脚本侧有、规则侧没有（`WeakSet` 的真实历史）：规则层漏报，属安全的漏；
+ * ② 规则侧有、脚本侧没有：CI 门禁漏报而 lint 报，开发者在编辑器里被一条**门禁不认**的规则
+ *    拦住，比漏报更难诊断。既然本批已经把 `WeakSet` 补齐（规则侧当初是**漏了**、不是有意：
+ *    见 `f71a074ae` 的提交信息"判据漏了名字，不是策略有意放过"），两份就该严格相等，
+ *    多出的差集一律当配置错处理。**允许的差集只剩"形态"**（规则层 `isModuleScope` 不覆盖
+ *    类字段 / IIFE、脚本层对项目自有容器不套空参限制），那是判据能力差异，不是名单差异。
+ */
+
+/** 对侧名单所在的源文件（仓库根相对路径） */
+export const PEER_CACHE_LIST_FILES = {
+    rule: 'packages/eslint-plugin-feng3d/src/rules/no-module-side-effect.ts',
+    editor: 'scripts/check-editor-module-effects.mjs',
+};
+
+/**
+ * 从自研规则源码文本里解出 `CACHE_CONSTRUCTORS` 的名单。
+ *
+ * **解不出来返回 `null`**，不是"空名单"：解析失败必须让调用方失败，否则"正则突然匹配不上"
+ * 会退化成"两份空名单相等"而静默通过（这正是本批要防的那类失效）。
+ *
+ * @param {string} source `no-module-side-effect.ts` 的源码文本
+ * @returns {string[] | null} 构造器名；解析不出为 null
+ */
+export function extractRuleCacheConstructors(source)
+{
+    const declaration = /CACHE_CONSTRUCTORS\s*=\s*\[([^\]]*)\]/.exec(source);
+
+    if (!declaration) return null;
+
+    const names = [...declaration[1].matchAll(/'([A-Za-z_$][\w$]*)'/g)].map((match) => match[1]);
+
+    return names.length > 0 ? names : null;
+}
+
+/**
+ * 从 `check-editor-module-effects.mjs` 源码文本里解出 `MUTABLE_MODULE_CACHE` 正则的候选名。
+ *
+ * 该名单在那边是正则的**第一个捕获组**（`(Map|WeakMap|Set|WeakSet|ChainMap)`），
+ * 取到 `;` 为止的一段即可——正则字面量里不含分号。要求组里至少有 `|`（≥2 个候选），
+ * 免得匹配到正则里别的括号（如 `[^(]`）而读出错误答案。
+ *
+ * @param {string} source `check-editor-module-effects.mjs` 的源码文本
+ * @returns {string[] | null} 构造器名；解析不出为 null
+ */
+export function extractEditorCacheNames(source)
+{
+    const start = source.indexOf('MUTABLE_MODULE_CACHE');
+
+    if (start < 0) return null;
+
+    const semicolon = source.indexOf(';', start);
+    const declaration = source.slice(start, semicolon < 0 ? source.length : semicolon);
+    const group = /\(([A-Za-z_$][\w$|]*)\)/.exec(declaration);
+
+    if (!group || !group[1].includes('|')) return null;
+
+    const names = group[1].split('|').filter(Boolean);
+
+    return names.length > 0 ? names : null;
+}
+
+/**
+ * 比对一份对侧名单与脚本侧名单，返回人类的差异描述（空数组 = 一致）。
+ *
+ * @param {Iterable<string>} scriptNames 脚本侧名单（`CACHE_NAMES` + `PROJECT_CACHE_NAMES`）
+ * @param {string[] | null} peerNames 对侧名单；`null` 表示解不出来
+ * @returns {string[]} 差异描述
+ */
+export function diffCacheNameLists(scriptNames, peerNames)
+{
+    const script = [...scriptNames].sort();
+
+    if (peerNames === null)
+    {
+        return ['名单解不出来（源文件缺失，或写法变了让解析失效）——判据已失效，先修解析再谈一致性'];
+    }
+
+    const peer = [...peerNames].sort();
+    const missing = script.filter((name) => !peer.includes(name));
+    const extra = peer.filter((name) => !script.includes(name));
+
+    if (missing.length === 0 && extra.length === 0) return [];
+
+    return [
+        `脚本侧有而对侧没有：${missing.length > 0 ? missing.join('、') : '（无）'}`,
+        `对侧有而脚本侧没有：${extra.length > 0 ? extra.join('、') : '（无）'}`,
+        `脚本侧 [${script.join('、')}] vs 对侧 [${peer.join('、')}]`,
+    ];
+}
+
+/**
+ * 名单一致性断言：脚本侧名单必须与两份对侧名单**集合相等**。
+ *
+ * 由 `scripts/check-module-side-effects.mjs` 在启动时调用（不一致即 exit 1），
+ * 也被 `test/r2ModuleScope.spec.ts` 直接调用——这样"名单漂移"既进 CI 的脚本步骤、
+ * 也进单元测试，不必等有人想起去读代码。
+ *
+ * @param {string} root 仓库根
+ * @param {Iterable<string>} scriptNames 脚本侧名单（内置 + 项目自有）
+ * @returns {{ ok: boolean, problems: string[], peers: Record<string, string[] | null> }} 断言结果
+ */
+export function checkCacheNameLists(root, scriptNames)
+{
+    const problems = [];
+    const peers = {};
+
+    for (const [key, rel] of Object.entries(PEER_CACHE_LIST_FILES))
+    {
+        const file = join(root, rel);
+        const source = existsSync(file) ? readFileSync(file, 'utf8') : null;
+        const names = source === null ? null
+            : (key === 'rule' ? extractRuleCacheConstructors(source) : extractEditorCacheNames(source));
+
+        peers[key] = names;
+
+        for (const problem of diffCacheNameLists(scriptNames, names)) problems.push(`${rel}：${problem}`);
+    }
+
+    return { ok: problems.length === 0, problems, peers };
 }
