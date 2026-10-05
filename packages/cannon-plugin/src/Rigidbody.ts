@@ -1,0 +1,98 @@
+import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, matchType, Object3D, registerComponentType } from 'feng3d';
+import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Body } from 'cannon-es';
+import type { ColliderLogic } from './Collider';
+
+declare module 'feng3d'
+{
+    export interface ComponentMap
+    {
+        Rigidbody: Rigidbody;
+    }
+}
+
+declare module '@feng3d/reactivity'
+{
+    interface LogicMap
+    {
+        Rigidbody: RigidbodyLogic;
+    }
+}
+
+/**
+ * 刚体（纯数据接口）。
+ *
+ * 与 Collider 挂在同一个 Object3D 上：初始化时收集同一对象上所有碰撞体的物理形状，
+ * 组装成一个 cannon-es 的 Body；位置由祖先 PhysicsWorld 每帧步进后写回 Object3D。
+ *
+ * 质量缺失时按 0 处理（与 cannon.js/cannon-es 的 Body 默认一致，即静态物体）；
+ * 要参与动力学请在字面量里显式声明 mass。
+ */
+export interface Rigidbody extends Behaviour
+{
+    readonly __type__: 'Rigidbody';
+
+    /** 质量（缺失时默认 0，即静态刚体） */
+    readonly mass?: number;
+}
+
+/**
+ * 刚体 logic 接口。
+ */
+export interface RigidbodyLogic extends BehaviourLogic
+{
+    /** 物理刚体（cannon-es） */
+    readonly body: Body;
+}
+
+/**
+ * 工厂函数：RigidbodyLogic 的唯一创建入口。
+ *
+ * @param data 刚体数据（raw）
+ */
+export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
+{
+    const writable = data as UnReadonly<Rigidbody>;
+    if (writable.mass === undefined) writable.mass = 0;
+
+    const { state, members } = createBehaviourLogicBase(data);
+    const body = new Body({ mass: data.mass ?? 0 });
+
+    const logic: RigidbodyLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        get body() { return body; },
+        init(object3D)
+        {
+            members.init(object3D);
+
+            const o3d = state.entity as Object3D | null;
+            if (o3d === null) return;
+
+            // 注意：组件 init 发生在 owner 的 logic **构造期间**，此时 logic 注册表里是占位对象，
+            // 读 owner 的 logic 成员会得到 undefined（Object3D.ts 的 getParentLogic 有同样说明）。
+            // 因此这里一律读 raw 数据，而不是 getLogic(o3d) 的成员。
+            const position = o3d.position ?? { x: 0, y: 0, z: 0 };
+            body.position.set(position.x, position.y, position.z);
+
+            // 收集同一 Object3D 上所有碰撞体的形状
+            for (const component of o3d.components ?? [])
+            {
+                if (!matchType(component as Components, 'Collider')) continue;
+                const colliderLogic = getLogic(component) as ColliderLogic | null;
+                const shape = colliderLogic === null ? null : colliderLogic.shape;
+                if (shape !== null) body.addShape(shape);
+            }
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval) { members.update(interval); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
+
+    return logic;
+}
+
+registerLogic('Rigidbody', rigidbodyLogic);
+registerComponentType('Rigidbody', { baseTypes: ['Behaviour'] });

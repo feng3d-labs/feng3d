@@ -38,7 +38,7 @@ const LAYERS = [
     {
         level: 4,
         name: 'Layer 4 领域模块',
-        packages: ['@feng3d/particlesystem', '@feng3d/terrain', '@feng3d/addons', '@feng3d/assets'],
+        packages: ['@feng3d/particlesystem', '@feng3d/terrain', '@feng3d/addons', '@feng3d/assets', '@feng3d/cannon-plugin'],
     },
     {
         level: 5,
