@@ -20,7 +20,7 @@
  *
  * ## 另一条判据：Logic 不许再是 class（issue #674）
  *
- * 全部批次迁完后本仓不再有 `class XxxLogic`：一律 `interface XxxLogic` + 文件级共享 proto + 工厂函数。
+ * 全部批次迁完后本仓不再有 `class XxxLogic`：一律 `interface XxxLogic` + 工厂闭包直接返回对象字面量。
  * 本脚本一并按 AST 拦下新写的 `class XxxLogic` / `class XxxLogicBase`。
  *
  * ## 扫描范围
@@ -184,6 +184,42 @@ function scanDeprecatedProtoApi(sourceFile, file, violations)
     visit(sourceFile);
 }
 
+/**
+ * 闭包形态判据（2026-10-05 口径修订）：Logic 实现文件里不许再出现共享原型写法。
+ *
+ * 命中任一即违规：
+ * - 标识符以 `Proto` 结尾（`xxxLogicProto`）——共享原型的典型命名；
+ * - `Object.create(...)` 调用——proto 写法用它造实例（闭包形态由工厂直接返回对象字面量）。
+ */
+function scanClosureForm(sourceFile, file, violations)
+{
+    const report = (node, reason) =>
+    {
+        const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+
+        violations.push({ file, line, reason, text: node.getText(sourceFile).slice(0, 120) });
+    };
+
+    const visit = (node) =>
+    {
+        if (ts.isIdentifier(node) && /Proto$/.test(node.text) && node.text !== 'createLogicProto')
+        {
+            report(node, '标识符「' + node.text + '」像共享原型——Logic 一律工厂闭包直接返回对象字面量');
+        }
+
+        if (ts.isCallExpression(node)
+            && ts.isPropertyAccessExpression(node.expression)
+            && node.expression.expression.getText(sourceFile) === 'Object'
+            && node.expression.name.text === 'create')
+        {
+            report(node, 'Object.create(...)——Logic 不再用共享原型造实例');
+        }
+
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+}
+
 /** 扫描一个已解析的文件，收集违规项 */
 function scanSource(sourceFile, file, violations)
 {
@@ -292,9 +328,40 @@ function selfCheckDeprecatedProto()
     console.log('createLogicProto 判据自检通过（import 与调用都被拦下）');
 }
 
+/** 闭包形态判据自检：共享原型写法必须被拦下，工厂形态必须放行 */
+function selfCheckClosureForm()
+{
+    const bad = 'const tubeGeometryLogicProto = Object.create(null);';
+    const good = [
+        'export function cubeGeometryLogic(data: unknown): unknown',
+        '{',
+        '    const state = createGeometryLogicState(() => ({}), () => [], data);',
+        '    return { get indices() { return state.indices.value; } };',
+        '}',
+    ].join('\n');
+    const count = (text) =>
+    {
+        const sourceFile = ts.createSourceFile('self-check-closure.ts', text, ts.ScriptTarget.Latest, true);
+        const violations = [];
+
+        scanClosureForm(sourceFile, 'self-check-closure.ts', violations);
+
+        return violations.length;
+    };
+
+    if (count(bad) !== 2 || count(good) !== 0)
+    {
+        console.error('❌ 闭包形态判据自检失败：bad=' + count(bad) + '（期望 2），good=' + count(good) + '（期望 0）');
+        process.exit(1);
+    }
+
+    console.log('闭包形态判据自检通过（xxxLogicProto 与 Object.create 被拦下，工厂形态放行）');
+}
+
 selfCheckFactory();
 selfCheckLogicClass();
 selfCheckDeprecatedProto();
+selfCheckClosureForm();
 
 if (process.argv.includes('--self-check')) process.exit(0);
 
@@ -315,8 +382,10 @@ for (const file of files)
     const rel = relative(ROOT, file);
 
     const hasProtoApi = text.includes('createLogicProto');
+    const hasRegister = text.includes('registerLogic(');
+    const isLogicImpl = hasRegister || /export function \w*Logic\b/.test(text);
 
-    if (!text.includes('registerLogic(') && !/class\s+\w*Logic\b/.test(text) && !hasProtoApi) continue;
+    if (!isLogicImpl && !/class\s+\w*Logic\b/.test(text) && !hasProtoApi) continue;
 
     const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
 
@@ -330,7 +399,12 @@ for (const file of files)
         scanDeprecatedProtoApi(sourceFile, rel, violations);
     }
 
-    if (text.includes('registerLogic('))
+    if (isLogicImpl)
+    {
+        scanClosureForm(sourceFile, rel, violations);
+    }
+
+    if (hasRegister)
     {
         scanSource(sourceFile, rel, violations);
     }
@@ -345,7 +419,7 @@ if (violations.length > 0)
         console.error('    ' + v.text);
     }
     console.error('');
-    console.error('统一写法：registerLogic(\'Xxx\', xxxLogic)——Logic 一律是 interface + 共享 proto + 工厂函数（issue #674）。');
+    console.error('统一写法：registerLogic(\'Xxx\', xxxLogic)——Logic 一律是 interface + 工厂闭包对象字面量（issue #674）。');
     process.exit(1);
 }
 
