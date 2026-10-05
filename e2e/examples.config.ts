@@ -58,6 +58,8 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: 'font', name: 'GeometryFontTest', warmupFrames: 30, freezeFrames: 30, tier: 'typical' },
 
     // ---- 全面测试档（full）----
+    // UI 独立 Pass 的可视化验证：UI 覆盖在 3D 之上、树序层级、不再依赖 frustumCulling:false
+    { category: "ui", name: "UITest", warmupFrames: 60, freezeFrames: 30 },
     { category: "geometry", name: "GeometryTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "material", name: "ColorMaterialTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "advanced", name: "TerrainMergeTest", warmupFrames: 180, freezeFrames: 10 },
