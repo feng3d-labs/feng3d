@@ -15,6 +15,7 @@ export { var_ } from './variables/var';
 // shader - 着色器相关
 export { compute, Compute, type ComputeOptions, type WorkgroupSize, type WorkgroupSizeComponent } from './shader/compute';
 export { type FragmentOptions, fragment } from './shader/fragment';
+export { overrideF32, overrideI32, overrideU32 } from './shader/override';
 export { transform } from './shader/transform';
 export { vertex } from './shader/vertex';
 export { func } from './shader/func';
