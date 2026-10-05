@@ -1,5 +1,5 @@
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
-import { registerLogic, computed, type Computed, createLogicProto } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from '../geometry/Geometry';
+import { registerLogic, computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 import { geometryUtils } from '../geometry/GeometryUtils';
 
@@ -38,23 +38,6 @@ export interface QuadGeometryLogic extends GeometryLogic
 {
 }
 
-/** QuadGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface QuadGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** QuadGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const quadGeometryLogicProto = createLogicProto<QuadGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: QuadGeometryLogic & QuadGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: QuadGeometryLogic & QuadGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：QuadGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -109,16 +92,25 @@ export function quadGeometryLogic(data: QuadGeometry): QuadGeometryLogic
     const normals = computed(() => buildNormals());
     const tangents = computed(() => buildTangents());
 
-    const logic = setupGeometryLogicState(Object.create(quadGeometryLogicProto) as QuadGeometryLogic & QuadGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    logic._attrTable = {
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positionsComputed, 'float32x3'),
         a_color: { data: new Float32Array(), format: 'float32x4' },
         a_uv: computedAttr(uvsComputed, 'float32x2'),
         a_normal: computedAttr(normals, 'float32x3'),
         a_tangent: computedAttr(tangents, 'float32x3'),
     };
-    logic._indicesComputed = indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: QuadGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

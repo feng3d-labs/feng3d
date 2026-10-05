@@ -1,7 +1,7 @@
 import { VEC3_ZERO, Vector2Like, Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from './Geometry';
-import { computed, createLogicProto, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from './Geometry';
+import { computed, reactive, registerLogic } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module './Geometry'
@@ -51,28 +51,10 @@ export interface PointGeometryLogic extends GeometryLogic
 {
 }
 
-/** PointGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface PointGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
 /** 4 个角的偏移（左下/右下/右上/左上），存入 a_uv 供顶点着色器展开四边形 */
 const CORNERS: ReadonlyArray<readonly [number, number]> = [
     [-1, -1], [1, -1], [1, 1], [-1, 1],
 ];
-
-/** PointGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const pointGeometryLogicProto = createLogicProto<PointGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: PointGeometryLogic & PointGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: PointGeometryLogic & PointGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：PointGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -186,15 +168,25 @@ export function pointGeometryLogic(data: PointGeometry): PointGeometryLogic
     const colors = computed(() => buildColors());
     const indicesComputed = computed(() => buildIndices());
 
-    const logic = setupGeometryLogicState(Object.create(pointGeometryLogicProto) as PointGeometryLogic & PointGeometryLogicState, data);
-    logic._attrTable = {
+    // attributes: data 由 computed getter 驱动
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positions, 'float32x3'),
         a_color: computedAttr(colors, 'float32x4'),
         a_uv: computedAttr(uvs, 'float32x2'),
         a_normal: computedAttr(normals, 'float32x3'),
         a_tangent: { data: new Float32Array(), format: 'float32x3' },
     };
-    logic._indicesComputed = indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: PointGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

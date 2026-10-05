@@ -1,6 +1,6 @@
 import { validateFieldTypes } from '../core/Validate';
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, type Computed, createLogicProto } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from '../geometry/Geometry';
+import { registerLogic, reactive, computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -48,23 +48,6 @@ export interface SphereGeometryLogic extends GeometryLogic
 {
 }
 
-/** SphereGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SphereGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** SphereGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const sphereGeometryLogicProto = createLogicProto<SphereGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: SphereGeometryLogic & SphereGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: SphereGeometryLogic & SphereGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：SphereGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -97,13 +80,23 @@ export function sphereGeometryLogic(data: SphereGeometry): SphereGeometryLogic
     const indicesComputed = computed(() => buildIndices());
 
     // attributes: data 由 computed getter 驱动
-    const logic = setupGeometryLogicState(Object.create(sphereGeometryLogicProto) as SphereGeometryLogic & SphereGeometryLogicState, data);
-    logic._attrTable = {
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positions, 'float32x3'),
         a_color: computedAttr(colors, 'float32x4'),
         a_uv: computedAttr(uvs, 'float32x2'),
         a_normal: computedAttr(normals, 'float32x3'),
         a_tangent: computedAttr(tangents, 'float32x3'),
+    };
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: SphereGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
     };
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
@@ -314,8 +307,6 @@ export function sphereGeometryLogic(data: SphereGeometry): SphereGeometryLogic
 
         return indices;
     }
-
-    logic._indicesComputed = indicesComputed;
 
     return logic;
 }

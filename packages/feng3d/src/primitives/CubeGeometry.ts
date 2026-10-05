@@ -1,6 +1,6 @@
 import { validateFieldTypes } from '../core/Validate';
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
-import { computed, reactive, registerLogic, type Computed, createLogicProto } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from '../geometry/Geometry';
+import { computed, reactive, registerLogic } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -53,24 +53,6 @@ export interface CubeGeometry extends Geometry
 export interface CubeGeometryLogic extends GeometryLogic
 {
 }
-
-/** CubeGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface CubeGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** CubeGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const cubeGeometryLogicProto = createLogicProto<CubeGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: CubeGeometryLogic & CubeGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: CubeGeometryLogic & CubeGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：CubeGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -266,16 +248,26 @@ export function cubeGeometryLogic(data: CubeGeometry): CubeGeometryLogic
         return new Float32Array(count * 4).fill(1); // 全白 (1,1,1,1)
     });
 
-    const logic = setupGeometryLogicState(Object.create(cubeGeometryLogicProto) as CubeGeometryLogic & CubeGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    logic._attrTable = {
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positions, 'float32x3'),
         a_color: computedAttr(colors, 'float32x4'),
         a_uv: computedAttr(uvs, 'float32x2'),
         a_normal: computedAttr(normals, 'float32x3'),
         a_tangent: computedAttr(tangents, 'float32x3'),
     };
-    logic._indicesComputed = computed(() => buildIndices());
+    const indicesComputed = computed(() => buildIndices());
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: CubeGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

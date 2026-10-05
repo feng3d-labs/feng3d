@@ -1,6 +1,6 @@
 import { vec3Add, vec3Cross, vec3From, vec3NormalizeThickness, vec3Sub, WritableVector3Like } from '@feng3d/math';
-import { Geometry, GeometryLogic, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
-import { registerLogic, reactive, computed, createLogicProto, UnReadonly, type Computed } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, computedAttr, createGeometryLogicState, geometryBounding, geometryRaycast, geometryBeforeRender } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -67,24 +67,6 @@ function calculatePositionOnCurve(u: number, p: number, q: number, radius: numbe
 export interface TorusKnotGeometryLogic extends GeometryLogic
 {
 }
-
-/** TorusKnotGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TorusKnotGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** TorusKnotGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const torusKnotGeometryLogicProto = createLogicProto<TorusKnotGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: TorusKnotGeometryLogic & TorusKnotGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: TorusKnotGeometryLogic & TorusKnotGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：TorusKnotGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -273,16 +255,25 @@ export function torusKnotGeometryLogic(data: TorusKnotGeometry): TorusKnotGeomet
     });
     const tangentsComputed = computed(() => new Float32Array(positionsComputed.value.length / 3 * 3));
 
-    const logic = setupGeometryLogicState(Object.create(torusKnotGeometryLogicProto) as TorusKnotGeometryLogic & TorusKnotGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    logic._attrTable = {
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positionsComputed, 'float32x3'),
         a_color: computedAttr(colorsComputed, 'float32x4'),
         a_uv: computedAttr(uvsComputed, 'float32x2'),
         a_normal: computedAttr(normalsComputed, 'float32x3'),
         a_tangent: computedAttr(tangentsComputed, 'float32x3'),
     };
-    logic._indicesComputed = indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: TorusKnotGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

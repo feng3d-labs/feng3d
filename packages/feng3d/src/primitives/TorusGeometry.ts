@@ -1,5 +1,5 @@
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from '../geometry/Geometry';
-import { registerLogic, reactive, computed, type Computed, createLogicProto } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from '../geometry/Geometry';
+import { registerLogic, reactive, computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -49,23 +49,6 @@ export interface TorusGeometryLogic extends GeometryLogic
 {
 }
 
-/** TorusGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TorusGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** TorusGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const torusGeometryLogicProto = createLogicProto<TorusGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: TorusGeometryLogic & TorusGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: TorusGeometryLogic & TorusGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：TorusGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -97,13 +80,23 @@ export function torusGeometryLogic(data: TorusGeometry): TorusGeometryLogic
     const indicesComputed = computed(() => buildIndices());
 
     // attributes: data 由 computed getter 驱动
-    const logic = setupGeometryLogicState(Object.create(torusGeometryLogicProto) as TorusGeometryLogic & TorusGeometryLogicState, data);
-    logic._attrTable = {
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positions, 'float32x3'),
         a_color: computedAttr(colors, 'float32x4'),
         a_uv: computedAttr(uvs, 'float32x2'),
         a_normal: computedAttr(normals, 'float32x3'),
         a_tangent: computedAttr(tangents, 'float32x3'),
+    };
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: TorusGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
     };
 
     // ---- 顶点构建（直接返回 Float32Array/number[]，内部 reactive 建立依赖） ----
@@ -308,8 +301,6 @@ export function torusGeometryLogic(data: TorusGeometry): TorusGeometryLogic
 
         return rawIndices;
     }
-
-    logic._indicesComputed = indicesComputed;
 
     return logic;
 }
