@@ -143,6 +143,13 @@ editor Web **不再做文件管理**，专注 3D 场景、属性配置、产物�
 
 - **多入口构建**：index.html（编辑器主界面）、run.html（运行预览）
 - **外部依赖**：feng3d 及相关插件通过 CDN 加载，**不打包进 bundle**
+- **项目模板（`resource/template/`）走 npm 依赖，不再有引擎快照**（2026-10-05 现代化）：
+  原先 `index.html` 引 `libs/feng3d.js`（2.2 MB 快照）+ `libs/cannon*.js`，而 `package.json`
+  里**也**声明了 npm 依赖 —— 两套并存、版本会漂；更糟的是 `app.js` 是旧形态
+  （`new feng3d.View()` 在 `View` 纯数据化后直接抛；还读 `project.js` 后 `eval`，那条链路 D12 已取消）。
+  现在：`index.html` 只有一个 `<script type="module" src="/app.js">`，`app.js` 用
+  `import * as feng3d from 'feng3d'` + `@feng3d/webgpu`，与运行形态 `src/run.ts` 同构
+  （纯数据场景直接当 `view.root`，不 eval、不反序列化）。由 `check-editor-project-shape.mjs` 守。
 - **静态资源**：resource/ 目录在构建时复制到 public/
 - **类名保持**：esbuild 配置 `keepNames`，避免类名被压缩修改
 

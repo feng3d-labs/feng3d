@@ -418,6 +418,32 @@ if (existsSync(resolve(TEMPLATE_DIR, 'default.scene.json')))
 // **反向 2**：入口场景必须指到 `scenes/` 下（目录建了、指针没跟，等于没迁）
 const entryScene = String(JSON.parse(readFileSync(resolve(TEMPLATE_DIR, 'feng3d.project.json'), 'utf8')).entryScene ?? '');
 
+// ---------- 判据：模板不许再引"引擎快照"（2026-10-05，遗留 2） ----------
+//
+// 背景：模板原先同时有**两套依赖来源** —— `index.html` 引 `libs/feng3d.js`（2.2 MB 快照）
+// 与 `libs/cannon*.js`，而 `package.json` 里也声明了 npm 依赖；两套并存会让版本漂。
+// 更糟的是 `app.js` 还是**旧形态**：`new feng3d.View()` 在 `View` 纯数据化后直接抛，
+// 还要读 `project.js` 后 `eval` —— 而那条链路 D12 已整体取消（`check-editor-no-project-script.mjs` 守着）。
+// 于是"新建项目拿到的骨架"是一份**错误示范**。
+//
+// 守两条：**模板里没有 `libs/` 快照目录**；**`app.js` 走 ESM + npm 依赖，且不再有 eval / new View / project.js**。
+const templateLibs = existsSync(resolve(TEMPLATE_DIR, 'libs'));
+const templateAppSource = readFileSync(resolve(TEMPLATE_DIR, 'app.js'), 'utf8')
+    // **先剥注释再查**：不剥的话，本文件里"旧形态为什么不通"那段**说明**会把
+    // `eval()` / `new feng3d.View()` / `project.js` 三个词自己送进判据（实测踩到，三条全误报）。
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+const appProblems = [];
+
+if (templateLibs) dirProblems.push('模板里还有 `libs/` 引擎快照目录 —— 依赖应一律来自 package.json');
+if (!/^import .* from 'feng3d'/m.test(templateAppSource)) appProblems.push('缺 import from feng3d');
+if (!/from '@feng3d\/webgpu'/.test(templateAppSource)) appProblems.push('缺 @feng3d/webgpu 依赖');
+if (/eval\s*\(/.test(templateAppSource)) appProblems.push('还有 eval(...)');
+if (/new feng3d\.View\s*\(/.test(templateAppSource)) appProblems.push('还有 new feng3d.View(...)');
+if (/project\.js/.test(templateAppSource)) appProblems.push('还在提 project.js');
+
+if (appProblems.length > 0) dirProblems.push(`模板 app.js 不是「ESM + npm 依赖」形态：${appProblems.join('；')}`);
+
 if (!entryScene.startsWith('scenes/'))
 {
     dirProblems.push(`入口场景没指到 scenes/ 下：${entryScene || '（空）'}`);

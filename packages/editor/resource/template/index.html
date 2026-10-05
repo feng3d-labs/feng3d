@@ -15,13 +15,11 @@
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
     <!-- 合并js -->
-    <script src="libs/feng3d.js"></script>
-    <script src="libs/cannon.js"></script>
-    <script src="libs/cannon-plugin.js"></script>
+    <!-- 入口走 ESM（依赖来自 package.json，不再引 libs/ 下的引擎快照）：见 app.js -->
 </head>
 
 <body style="background-color: #a18c34;">
-    <script src="app.js"></script>
+    <script type="module" src="/app.js"></script>
 </body>
 
 </html>
