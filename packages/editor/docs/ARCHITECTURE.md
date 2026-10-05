@@ -398,6 +398,10 @@ my-project/                      # 标准 npm 工程（D12）：可脱离 editor
   （"模板里有" + "`templateurls` 列了"）。
   **`feng3d.project.json` 已经有服务读它并校验它**了（#274 P3：`bin/host/projectMeta.mjs` + `host.project.meta`；
   坏清单**指名报错**而不是静默当空项目，判据在 `scripts/check-editor-project-shape.mjs`）。
+  **"新建"这一半也落地了**（#274 P3）：宿主方法 `host.project.new` 把模板整份复制进一个**空目录**，
+  并把项目名写进元数据；门禁 `scripts/check-editor-workspace.mjs` 的判据是**闭环**——
+  "新建 → `host.project.meta` 读通"（单独验"写了几个文件"证明不了它是个**编辑器项目**），
+  外加"非空目录被拒"（不覆盖用户已有的东西）。**CLI 参数（`new` / `open` / `recent`）待接**。
   `package.json` 与 `feng3d.project.json` 属**用户所有物**——
   "升级项目"不覆盖它们（用户会自己改依赖 / 入口场景 / 构建配置）。
   **但目录布局本身还没迁**：场景仍在根目录（`default.scene.json`）、没有 `scenes/` / `scripts/` /
