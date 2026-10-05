@@ -706,6 +706,30 @@ const TOOLS = [
         inputSchema: { type: 'object', properties: {}, additionalProperties: false },
     },
     {
+        name: 'project_meta',
+        description: '读 + **校验**当前项目的编辑器元数据 `feng3d.project.json`（#274 P3）：'
+            + '返回 `{ path, name, entryScene, plugins, build }`。**坏清单会指名报错**'
+            + '（文件不在 / 不是合法 JSON / 缺 `name` 或 `entryScene` / `plugins` 不是字符串数组），'
+            + '不静默当空项目——所以「项目好像没打开」时先看它的报错。需要宿主在跑、且打开了项目目录。',
+        inputSchema: { type: 'object', properties: {}, additionalProperties: false },
+    },
+    {
+        name: 'project_new',
+        description: '**新建**一个项目骨架到指定目录（#274 P3）：整份复制编辑器模板'
+            + '（`package.json` + `feng3d.project.json` + `vite.config.js` + `tsconfig.json` + `index.html`'
+            + ' + `app.js` + `default.scene.json` + `libs/`），并把项目名写进元数据（缺省取目录名）。'
+            + '**只写进空目录或还不存在的目录**——往已有项目里糊模板是不可逆的，所以它是「新建」而不是「初始化」。'
+            + '缺省写进宿主当前打开的项目目录。',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                dir: { type: 'string', description: '目标目录；缺省用宿主当前打开的项目目录' },
+                name: { type: 'string', description: '项目名；缺省取目录名' },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'publish_run',
         description: '把**已启用的**插件的 runtime 端打进项目产物 `dist/runtime.js`（按启用状态过滤：'
             + '未启用的插件**连入口都不给它进**）。与 build_run 的分工：构建管"项目自己的脚本"，'
@@ -936,6 +960,8 @@ async function handleTool(name, args)
         build_run: 'host.build.run',
         build_status: 'host.build.status',
         build_cancel: 'host.build.cancel',
+        project_meta: 'host.project.meta',
+        project_new: 'host.project.new',
         publish_run: 'host.publish.run',
     };
     // 核心工具走静态表；**插件贡献的工具**走运行期记下的转发表（#281 路径 A）
