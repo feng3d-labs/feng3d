@@ -113,7 +113,7 @@ check('**没有页面也能调通宿主方法**（不经页面）', info.ok === 
 
 const list = await call('host.workspace.list', { dir: 'scenes' });
 
-check('宿主方法能列项目目录', list.ok === true && list.result?.[0]?.path === 'scenes/default.scene.json',
+check('宿主方法能列项目目录', list.ok === true && list.result?.some((entry) => entry.path === 'scenes/default.scene.json'),
     JSON.stringify(list.result));
 
 const read = await call('host.workspace.readText', { path: 'scenes/default.scene.json' });

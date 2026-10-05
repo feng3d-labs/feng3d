@@ -13,7 +13,7 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
-const SRC = process.argv[2] ?? 'packages/editor/resource/template/default.scene.json';
+const SRC = process.argv[2] ?? 'packages/editor/resource/template/scenes/default.scene.json';
 const LEGACY = join(dirname(SRC), 'default.scene.legacy.json');
 
 const DEG2RAD = Math.PI / 180;

@@ -181,7 +181,7 @@ check('项目名写进了元数据（模板里是占位的 my-project）', creat
 const readBack = new ProjectMeta(new Context(), { workspace: { isOpen: true, root: created.root } }).read();
 
 check('**新建 → 读通**（元数据服务认得它——"建出来的是编辑器项目"的凭据）',
-    readBack.name === '我的游戏' && readBack.entryScene === 'default.scene.json',
+    readBack.name === '我的游戏' && readBack.entryScene === 'scenes/default.scene.json',
     JSON.stringify(readBack));
 
 const nonEmpty = errorOf(() => projectNew.create(created.root, 'x'));
