@@ -209,8 +209,37 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
 | 字段描述表是否为最新（#147） | `node scripts/gen-objectview-schema.mjs --check` | 是 |
 | 模块级注册副作用（R2，#170） | `node scripts/check-editor-module-effects.mjs` | 是 |
 | AI 桥接一致性（#168） | `node scripts/editor-mcp-check.mjs` | 是 |
-| 插件 runtime 端依赖边界（#276 第三端） | `node scripts/check-runtime-half-deps.mjs`（自带 8 条合成样例自检） | 是 |
+| 宿主形态门禁（#272 / #273 / #274 / #276 / #277，共 **15 条**） | `npm run gates:host`（挂在 `prelint:ci` 钩子上，随 `npm run lint:ci` 进 CI）：`check-editor-host` / `check-bridge-relay` / `check-bridge-socket` / `check-editor-workspace` / `check-editor-host-config` / `check-editor-host-options` / `check-editor-host-methods` / `check-editor-host-batch` / `check-editor-boot` / `check-editor-plugin-tree` / `check-editor-project-build` / `check-editor-project-publish` / `check-editor-publish-files` / `check-runtime-half-deps`（含 #276 第三端边界，自带 8 条合成样例自检）/ `check-runtime-artifact`（各自起真宿主进程或真打包，用临时项目目录，**不开浏览器**） | 是 |
 | 编辑器类型检查（editor 自身，#133） | `node scripts/check-editor-types.mjs`（内部跑 vue-tsc，按路径分类） | 是 |
+
+**宿主形态门禁为什么挂在 `prelint:ci` 而不是 `ci.yml` 的独立步骤**：这 15 条是「编辑器宿主形态」那一系列
+（cordis 宿主进程 / 桥接通道 / 宿主服务 / 项目构建发布 / 插件三端）的验收脚本，全部**离线可跑**
+（各自起真宿主进程或真打包，用临时项目目录，不开浏览器）。按根 [AGENTS.md](../AGENTS.md) §15 的元规则
+「没有执行者的不算规范」，它们此前**只在本机跑过**——脚本在、门禁不在，等于没有。
+
+进 CI 走的是与 `check-math-no-class.mjs` **同一条路**（见 §2.1 末尾）：改 `.github/workflows/**`
+需要 `workflow` scope 的凭据，而本仓推送凭据只有 `repo` / `gist` / `read:org`，GitHub 会直接拒收
+（实测 `refusing to allow an OAuth App to create or update workflow ... without workflow scope`）。
+所以挂到 `prelint:ci` 钩子（质量门禁 job 第一步就是 `npm run lint:ci`），并在根 `package.json`
+留一条 **`npm run gates:host`** 便于本地单跑 / 单独定位。
+
+两点要知道：
+
+- **只在 CI 路径上跑**：`prelint`（本地 `npm run lint` 用的那个钩子）**没有被改**，所以日常 lint
+  不会多花这 15 秒；`npm run lint:ci` 与 `npm run ci` 会跑。
+- **失败即停**：`gates:host` 里 15 条用 `&&` 串起来，**第一条失败、后面的就不再执行**——
+  红了先看是哪一条、修完再推，别把"后面没报错"当成"后面没问题"。
+
+本地实测（Windows + 完整 `node_modules`）：15 条全绿，总耗时约 **15 秒**
+（最慢的 `check-editor-project-build.mjs` 约 6 秒），对 job 的 40 分钟超时无压力。
+> 接线时按 ubuntu 语义复核这批脚本，抓到一处**"只在本机 Windows 成立"**的断言并顺带修掉：
+> `bin/host/projectWorkspace.mjs` 原用 `node:path` 的 `isAbsolute` 判绝对路径，而它在 posix 下
+> 不认 `C:\Windows\win.ini` / `\\server\share`（见 `check-editor-workspace.mjs` 的「拒绝绝对路径（Windows 形式）」）。
+> 这正是"门禁不进 CI 就没人知道"的实例。
+
+**还没接线的一条**：`scripts/editor-slots.mjs --open`（#276 S2b 的界面判据）跑在 **dev server** 上，
+只能加进 `editor-e2e` job——那同样要改 `.github/workflows/**`，因此**仍待 `workflow` scope 授权**
+后接进（接线补丁在 `tmp/ci-wiring-all.patch`，含该步骤）。
 
 **模块级注册副作用为什么按 AST 而不是正则**：判据是「**模块顶层**有没有注册调用」——
 函数/类/对象内部调用 `registerXxx` 是正常的（那是运行时逻辑）。正则要判断"这行在不在函数里"
@@ -294,7 +323,7 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 |---|---|---|
 | AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过，`EDITOR_HEADLESS=0` 有头时真跑——本机实测 10/10） |
 | 插件贡献表自洽（#168） | `node scripts/editor-plugins.mjs --open --check` | 真浏览器里取到的贡献表：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 |
-| 插槽驱动的界面（#276 S2b） | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
+| 插槽驱动的界面（#276 S2b）**（待接线：见 §2.2 末尾）** | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
 | 选中同步（#173） | `node scripts/editor-selection-sync-check.mjs --open` | 关闭再打开面板后，检查器/层级树**自己恢复**到当前选中（一次性事件 + 异步组件的经典坑） |
 | 场景视图反复卸载/重建（#177） | `node scripts/editor-scene-view-cycle.mjs --open` | 反复关/开「场景」面板三轮，不出现引擎侧爆栈与 `reading 'elements'` |
 
