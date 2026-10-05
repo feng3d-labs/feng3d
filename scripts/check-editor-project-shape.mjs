@@ -24,8 +24,9 @@
  *
  * 退出码：0 = 通过；1 = 有违规或自证失败。
  */
-import { existsSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const ROOT = process.cwd();
@@ -33,6 +34,7 @@ const TEMPLATE_DIR = resolve(ROOT, 'packages/editor/resource/template');
 const EDITOR_RS = resolve(ROOT, 'packages/editor/src/assets/EditorRS.ts');
 const PROJECT_META_SERVICE = resolve(ROOT, 'packages/editor/bin/host/projectMeta.mjs');
 const SERVE = resolve(ROOT, 'packages/editor/bin/serve.mjs');
+const PROJECT_RECENT_SERVICE = resolve(ROOT, 'packages/editor/bin/host/projectRecent.mjs');
 const TEMPLATE_TSCONFIG = resolve(TEMPLATE_DIR, 'tsconfig.json');
 
 /** 必须是编辑器元数据的两个文件（决策 16：不合并） */
@@ -325,6 +327,64 @@ for (const problem of cliProblems) console.log(`        ${problem}`);
 if (cliProblems.length > 0)
 {
     console.error('\n❌ `--new` 的接线断了：服务写好了但 CLI 没接上，等于这个能力用户够不到。');
+    process.exit(1);
+}
+
+// ---------- 判据 7：`recent`（#274 P3） ----------
+//
+// 落在**临时目录**里跑（`readRecent` / `recordRecent` 接的是目录参数，不是全局状态），
+// 所以这条判据既不碰跑测试的人真实的 `~/.feng3d-editor/`，也不需要起宿主。
+const { readRecent, recordRecent, MAX_RECENT } = await import(pathToFileURL(PROJECT_RECENT_SERVICE).href);
+
+const recentDir = mkdtempSync(join(tmpdir(), 'feng3d-recent-'));
+const recentProblems = [];
+
+// 去重 + 新的在前：记 a、b、再记 a —— 期望 /a 在最前（"再打开一次要挪到最前"，
+// 否则这个列表会退化成"第一次打开的顺序"）
+recordRecent(recentDir, '/a');
+recordRecent(recentDir, '/b');
+const afterThird = recordRecent(recentDir, '/a');
+
+// 期望值要跟实现一样先 `resolve()`：Windows 上 `/a` 会变成 `C:\a`
+const expectOrder = [resolve('/a'), resolve('/b')].join(',');
+
+if (afterThird.join(',') !== expectOrder) recentProblems.push(`去重与排序不对：${afterThird.join(',')}（期望 ${expectOrder}）`);
+
+// 上限：多记几个，长度必须停在 MAX_RECENT
+for (let i = 0; i < MAX_RECENT + 5; i += 1) recordRecent(recentDir, `/p${i}`);
+
+if (readRecent(recentDir).length !== MAX_RECENT) recentProblems.push(`上限不对：${readRecent(recentDir).length}（期望 ${MAX_RECENT}）`);
+
+// 坏文件容错：一份坏掉的偏好设置不该让编辑器起不来
+writeFileSync(join(recentDir, 'recent.json'), '这不是 JSON', 'utf8');
+
+if (readRecent(recentDir).length !== 0) recentProblems.push('坏文件没有当空清单处理');
+
+console.log('');
+console.log('--- 判据（最近项目） ---');
+console.log(`  ${recentProblems.length === 0 ? 'PASS' : 'FAIL'}  最近项目：去重 + 新的在前 + 上限 ${MAX_RECENT} + 坏文件当空`);
+
+for (const problem of recentProblems) console.log(`        ${problem}`);
+
+// CLI 接线：`--open` 与 `--project` 同义、`--recent` 列完就退
+const recentCliChecks = [
+    { title: '`--open` 分支在', test: /arg === '--open'/ },
+    { title: '`--open` 与 `--project` 走同一个字段', test: /arg === '--open'[\s\S]{0,400}options\.project = resolve/ },
+    { title: '`--recent` 分支在', test: /arg === '--recent'/ },
+    { title: '`--recent` 列完就退出', test: /if \(options\.recent\)[\s\S]{0,600}process\.exit\(0\)/ },
+    { title: '宿主方法 `host.project.recent` 已注册', test: /host\.project\.recent/ },
+    { title: '打开成功后记录（有目录才记）', test: /if \(options\.project\) projectRecent\.record\(/ },
+    { title: '用法文本里有 `--recent`', test: /--recent\s+列出最近/ },
+];
+
+for (const item of recentCliChecks)
+{
+    if (!item.test.test(serveSource)) recentProblems.push(item.title);
+}
+
+if (recentProblems.length > 0)
+{
+    console.error('\n❌ `recent` 没接好：最近项目清单是"我上次在改哪个"的唯一入口。');
     process.exit(1);
 }
 
