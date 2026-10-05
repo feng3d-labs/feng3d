@@ -388,6 +388,16 @@ my-project/                      # 标准 npm 工程（D12）：可脱离 editor
 - `feng3d.project.json` 是**编辑器元数据**（名字、入口场景、启用插件、构建命令覆盖），与
   `package.json` **职责不重叠**：前者给编辑器读，后者给 npm / 构建读。是否合并（把编辑器字段放进
   `package.json` 的自定义键）见 §11 问题 16。
+- **`feng3d.project.json` 的 `plugins` 是「项目级启用集」**（2026-10-05 落地，#274）：它是**字符串数组**
+  （只有 id），回答"**这个项目要用哪些**"；而"插件从哪来"（带 `clientUrl`）由产物配置
+  `editor.plugins.json` 与 `plugins/<名字>/` 目录约定回答（那是 `plugin` 层）。
+  所以它**不是又一层**（层管"同 id 谁赢"），而是**启用集**。
+  **三种取值必须区分开**：**列了** → 只启用列出的；**空数组** → 一个都不要；
+  **没声明** → 不约束（老项目照常全启用）。后两者容易混，实现里刻意分开。
+  实现上它表达成 **`enabled: false`**，而**不是把条目从入口图里删掉** —— 页面仍看得到
+  "有这么个插件、但项目没启用"，用户也能在设置里临时打开（`editor.setPlugin`）。
+  `builtin`（编辑器自带的能力）与 `user`（`--plugins` 给的用户临时覆盖）**不受它约束**。
+  判据在 `scripts/check-editor-boot.mjs`（三条，正对着上面三种取值）。
 - `node_modules/` 与 `dist/` 不入库；`feng3d.project.json` 与源码入库（D8）。
 - 现状的 `libs/`（引擎拷贝）**不再需要**——由 npm 依赖取代（D12）。
 - `IReadWriteFS` 里已有 `projectname` / `initproject` / `hasProject`
