@@ -133,25 +133,35 @@ const prelintCount = prelint.split(' && ').length;
 const ciMdText = ciMd.join('\n');
 
 {
-    const matched = ciMdText.match(/共 \*\*(\d+) 条\*\*[^\n]*gates:host|gates:host[^\n]*共 \*\*(\d+) 条\*\*/);
+    // **扫全部匹配**（原来只取第一处）：\`gates:host\` 的条数在文档里出现在不止一处 ——
+    // \`:867\` 的"共 N 条"与 \`:888\` 的"N 条全绿"。只匹配第一处会漏掉后者（实测漏过）。
+    const found = [
+        ...ciMdText.matchAll(/共 \*\*(\d+) 条\*\*[^\n]*gates:host|gates:host[^\n]*共 \*\*(\d+) 条\*\*/g),
+        ...ciMdText.matchAll(/(\d+) 条全绿/g),
+    ];
 
-    if (!matched)
+    if (found.length === 0)
     {
-        problems.push('docs/CI.md 里找不到 gates:host 的「共 N 条」断言——措辞变了，判据会平凡通过');
+        problems.push('docs/CI.md 里找不到 gates:host 的条数断言——措辞变了，判据会平凡通过');
     }
-    else
+
+    let consistent = 0;
+
+    for (const matched of found)
     {
         const stated = Number(matched[1] ?? matched[2]);
 
         if (stated !== gatesHostCount)
         {
-            problems.push(`docs/CI.md 说 gates:host「共 ${stated} 条」，而 package.json 实际是 ${gatesHostCount} 条`);
+            problems.push(`docs/CI.md 说 gates:host 是 ${stated} 条，而 package.json 实际是 ${gatesHostCount} 条`);
         }
         else
         {
-            notes.push(`gates:host 条数断言一致（${stated}）`);
+            consistent += 1;
         }
     }
+
+    if (consistent > 0 && consistent === found.length) notes.push(`gates:host 条数断言一致（${consistent} 处）`);
 }
 
 {
