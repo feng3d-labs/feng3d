@@ -3,14 +3,42 @@ import { TextMetrics } from './TextMetrics';
 import { TextStyle, TEXT_GRADIENT } from './TextStyle';
 
 /**
- * 绘制文本
+ * 取画布的 2D 绘图上下文（拿不到就抛一条能照着修的错）。
+ *
+ * strictNullChecks 下 `canvas.getContext('2d')` 的类型是 `CanvasRenderingContext2D | null`。
+ * 这里统一收窄一次而不是在每处消费点写 `!`：拿不到上下文时后续每一行都会以
+ * 「Cannot read properties of null」的形式炸开，报错点离病根（画布已被别的上下文类型占用、
+ * 或环境没有 2D 实现）很远——本文件原先的 30 处 `possibly null` 都是同一件事。
  *
  * @param canvas 画布
- * @param _text 文本
+ * @returns 2D 绘图上下文
+ */
+function get2DContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D
+{
+    const context = canvas.getContext('2d');
+    if (!context)
+    {
+        throw new Error("drawText：拿不到 2D 绘图上下文（canvas.getContext('2d') 返回 null）——"
+            + '该画布可能已被其它上下文类型占用，或当前环境未实现 2D 画布');
+    }
+
+    return context;
+}
+
+/**
+ * 绘制文本
+ *
+ * `canvas` 允许为空（缺失时就地新建一块）——`strictNullChecks` 下把这件既有语义写进签名，
+ * 免得每个调用方各自写一次 `?? document.createElement(...)`（`TextLogic.beforeRender`
+ * 传入的就是「还没建过画布」的 `null`）。`_text` 同理：为空时按一个空格测量与绘制
+ * （原有 `_text || ' '` 语义），`Text.text` 本身是可缺省字段。
+ *
+ * @param canvas 画布（为空时新建）
+ * @param _text 文本（为空时按一个空格处理）
  * @param style 文本样式
  * @param resolution 分辨率
  */
-export function drawText(canvas: HTMLCanvasElement, _text: string, style: TextStyle, resolution = 1)
+export function drawText(canvas: HTMLCanvasElement | null, _text: string | undefined, style: TextStyle, resolution = 1)
 {
     canvas = canvas || document.createElement('canvas');
 
@@ -18,7 +46,7 @@ export function drawText(canvas: HTMLCanvasElement, _text: string, style: TextSt
 
     const _font = style.toFontString();
 
-    const context = canvas.getContext('2d');
+    const context = get2DContext(canvas);
     const measured = TextMetrics.measureText(_text || ' ', style, style.wordWrap, canvas);
     const width = measured.width;
     const height = measured.height;
@@ -143,7 +171,7 @@ return canvas;
  */
 function _generateFillStyle(canvas: HTMLCanvasElement, style: TextStyle, lines: string[], resolution = 1)
 {
-    const context = canvas.getContext('2d');
+    const context = get2DContext(canvas);
     const stylefill = style.fill;
     if (!Array.isArray(stylefill))
     {
@@ -249,7 +277,7 @@ function _generateFillStyle(canvas: HTMLCanvasElement, style: TextStyle, lines: 
  */
 function drawLetterSpacing(canvas: HTMLCanvasElement, style: TextStyle, text: string, x: number, y: number, isStroke = false)
 {
-    const context = canvas.getContext('2d');
+    const context = get2DContext(canvas);
     const letterSpacing = style.letterSpacing;
 
     if (letterSpacing === 0)
@@ -303,7 +331,7 @@ function trimCanvas(canvas: HTMLCanvasElement)
     let width = canvas.width;
     let height = canvas.height;
 
-    const context = canvas.getContext('2d');
+    const context = get2DContext(canvas);
     const imageData = context.getImageData(0, 0, width, height);
     const pixels = imageData.data;
     const len = pixels.length;
@@ -313,7 +341,8 @@ function trimCanvas(canvas: HTMLCanvasElement)
     let right = NaN;
     let bottom = NaN;
 
-    let data: ImageData = null;
+    // strictNullChecks：裁剪结果在「整幅画布全透明」时为 null（调用方 `if (trimmed.data)` 已有判断）
+    let data: ImageData | null = null;
     let i: number;
     let x: number;
     let y: number;

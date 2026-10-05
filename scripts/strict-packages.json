@@ -15,6 +15,7 @@
         "assets",
         "particlesystem",
         "terrain",
+        "ui",
         "eslint-plugin-feng3d",
         "error-logger",
         "addons",

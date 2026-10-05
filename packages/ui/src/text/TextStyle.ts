@@ -1,5 +1,6 @@
 import { EventEmitter } from '@feng3d/event';
 import { Color4 } from '@feng3d/math';
+import type { gPartial } from '@feng3d/polyfill';
 import { serialization } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 
@@ -132,7 +133,10 @@ export class TextStyle<T extends TextStyleEventMap = TextStyleEventMap> extends 
     constructor(style?: Partial<TextStyle>)
     {
         super();
-        serialization.setValue(this, style);
+        // strictNullChecks：`style` 可缺省（无参构造是常态）。`setValue` 的入参类型是
+        // 「递归可选」的 `gPartial<this>`，与 `Partial<TextStyle>`（只有一层可选）不等价，
+        // 所以在边界处收窄一次；缺省时不做任何写入。
+        if (style) serialization.setValue(this, style as gPartial<this>);
         //
         watcher.watch(this as TextStyle, 'fontFamily', this.invalidate, this);
         watcher.watch(this as TextStyle, 'fontSize', this.invalidate, this);
