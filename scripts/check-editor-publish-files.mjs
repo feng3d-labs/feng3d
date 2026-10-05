@@ -4,9 +4,12 @@
  *
  * ## 它解决什么
  *
- * `packages/editor/src/ScriptCompiler.ts` 里有 `window.open('packages/codeeditor/codeeditor.html')`
+ * 当初是 `packages/editor/src/ScriptCompiler.ts` 里的 `window.open('packages/codeeditor/codeeditor.html')`
  * ——**页面运行时**才会去取这个路径。而 `package.json` 的 `files` 白名单原来**不含 `packages/`**，
  * 于是**发布版必然 404**，本地却一切正常。
+ *
+ * （那条引用与那两个模块**都已删除**：`ScriptCompiler.ts` 随 #275、`packages/codeeditor/` 随 D11。
+ * 现在扫到的是 `run.html` —— 判据本身照旧，只是样本换了。）
  *
  * `npm run release:dry-run` 拦不住这类问题：它校验的是 `main` / `module` / `types` / `bin`
  * 指向的文件在不在 tarball 里——**运行时才取的路径不在它的视野内**。
@@ -19,8 +22,8 @@
  *
  * ## 顺带说明
  *
- * 按 D11，`packages/codeeditor` 的脚本编辑职责**最终要交给 VS Code Web**，那之后这条引用会被删。
- * 但"先删引用"和"先把发布修对"是两件事：在它还在的这段时间里，发布版不该 404。
+ * 它守的**不是某一条具体路径**，而是这一类：**凡"页面运行时才去取"的仓库内路径，都得在 `files` 里**。
+ * 所以样本会随仓库变化（`codeeditor.html` → `run.html`），判据不变。
  *
  * 用法：
  *   node scripts/check-editor-publish-files.mjs
@@ -68,7 +71,7 @@ const manifest = JSON.parse(readFileSync(join(EDITOR, 'package.json'), 'utf8'));
 const files = Array.isArray(manifest.files) ? manifest.files : [];
 
 // ---------- 方法自证：白名单语义得判对，否则下面的通过毫无意义 ----------
-check('方法自证：目录条目覆盖其子树', coveredByFiles('packages/codeeditor/x.html', ['packages']) === true);
+check('方法自证：目录条目覆盖其子树', coveredByFiles('packages/editor/public/run.html', ['packages']) === true);
 check('方法自证：未列出的路径不算被覆盖', coveredByFiles('libs/feng3d.js', ['packages']) === false);
 
 // ---------- 接线自证：`release:dry-run` 必须用**同一份**判定 ----------

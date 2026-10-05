@@ -226,7 +226,7 @@ UI 操作、CLI 命令、AI（MCP）调用走同一套命令实现。现状 `Edi
 |---|---|
 | 形态 | 本地 Node 进程跑 **VS Code 服务端**（Codespaces 用同类方案；开源等价物是 `code-server` / `openvscode-server`），浏览器访问，**打开同一个项目目录** |
 | editor 因此得到 | 文件树、多标签编辑、终端、Git、全局搜索、**TypeScript 类型提示**（项目里已有 `libs/feng3d.d.ts` 555 KB，VS Code 按 `tsconfig.json` 直接吃） |
-| editor 因此交出 | **资源管理器面板**（`@feng3d/editor-plugin-project` 的 Assets 树）、**内嵌代码编辑器**（`packages/editor/packages/codeeditor` 的 Monaco 窗口） |
+| editor 因此交出（**已完成**） | **资源管理器面板**（`@feng3d/editor-plugin-project` 的 Assets 树）、**内嵌代码编辑器**（`packages/editor/packages/codeeditor` 的 Monaco 窗口） |
 | editor 专注 | 3D 场景搭建、属性配置、产物生成、插件管理 |
 
 **这与既有资产是吻合的，不是外来方案**：项目模板里**本来就带 `.vscode/settings.json`**
@@ -239,7 +239,7 @@ UI 操作、CLI 命令、AI（MCP）调用走同一套命令实现。现状 `Edi
 | 资产 | 处置 |
 |---|---|
 | `src/ui/assets/EditorAsset.ts` / `AssetNode.ts`（资源树 UI） | 定位收窄为"资源导入 / 预览 / 与场景的引用"；纯文件浏览交给 VS Code |
-| `packages/editor/packages/codeeditor`（Monaco 独立窗口） | **可废弃**——VS Code 自带编辑器；该子包现状本已不可用（不在 workspace、`files` 白名单不含 `packages/`） |
+| `packages/editor/packages/codeeditor`（Monaco 独立窗口） | ✅ **已删除（2026-10-05，D11 落地）**——VS Code 自带编辑器；该子包现状本已不可用（不在 workspace、`files` 白名单不含 `packages/`） |
 | `ScriptCompiler` 的 `nativeAPI.openWithVSCode` 分支 | 语义变为"在 VS Code Web 里打开该文件" |
 | `src/vue-app/views/ProjectViewAdapter.ts`（自称临时适配层） | 随之重新评估 |
 
@@ -785,7 +785,7 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 **目标（按 D11 重新界定职责）**：editor Web **不再做文件管理**——文件树、脚本编辑、终端、Git、
 全局搜索交给 **VS Code Web**；editor Web 专注 **3D 场景、属性配置、产物生成入口、插件管理**。
 受影响的面板：资源管理器（`@feng3d/editor-plugin-project`）定位收窄为"资源导入 / 预览 / 引用"，
-内嵌代码编辑器（`packages/editor/packages/codeeditor`）**可废弃**。
+内嵌代码编辑器（`packages/editor/packages/codeeditor`）**已按 D11 删除**（2026-10-05）。
 
 **仍需保留的能力**：面板 / 浮层的来源从构建期清单变为可运行时注册（slots 契约，§6.6）。
 
@@ -807,7 +807,7 @@ Web 端 ◀── WebSocket event（进度 / 完成）── Node 端
 |---|---|---|
 | `native/` | `NativeFSBase.js`（96 行，`fs-extra` 的 Node FS 实现）+ package.json | ✅ **已删除**（2026-10-05，决策 §11-9）：那条"页面直连 Node fs"的路已由 **HostFS（经宿主）**取代，且它本来就走不通（`nativeFS1 = null`）。同批删掉了 `src/assets/NativeFS.ts` / `NativeRequire.ts` 与 `supportNative` 判据 |
 | `typescript/` | `typescriptServices.ts`（40 行旧 TS 补丁）+ `typescriptSorting.ts`（753 行依赖排序）+ `dist/index.js` | ✅ **已删除**（2026-10-05，§11-9/10）：全仓 0 引用；决策 4 = vite、构建走项目自己的 `npm run build`，这段自研排序随之结案 |
-| `codeeditor/` | `codeeditor.html` + `codeeditor.js`（Monaco 独立窗口） | **全浏览器**（`window.opener`、AMD、DOM）；`private: true`；**D11 后可废弃**（VS Code 自带编辑器，见 §6.8） |
+| ~~`codeeditor/`~~ | ✅ **已删除**（D11 落地）：曾为 `codeeditor.html` + `codeeditor.js`（Monaco 独立窗口，**全浏览器**：`window.opener`、AMD、DOM；`private: true`）；**D11 后可废弃**（VS Code 自带编辑器，见 §6.8） |
 | `editor/` | — | **空目录**（只有一个 0 字节 `.verify-color`），无 package.json、无入口 |
 
 **它们都不在根 workspaces 内**：根 `package.json` 声明的是 `packages/*`（不递归），
@@ -951,7 +951,13 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
    而 `typescript` 无 package.json、`editor` 是空目录。~~**阻塞 P3/P4**~~
    → ✅ **已决策（2026-10-05，需求方）：`native` 与 `typescript` 删除**
    （`native` 那条"页面直连 Node fs"的路已被 **HostFS（经宿主）** 取代；`typescript` 713 行、全仓 0 引用）。
-   `codeeditor`（Monaco 独立窗口）随 **D11** 的 VS Code Web 接入再定（可废弃）。
+   ~~`codeeditor`（Monaco 独立窗口）随 **D11** 的 VS Code Web 接入再定（可废弃）~~ ——
+✅ **已删除（2026-10-05）**：D11 定「文件树 / 脚本编辑 / 终端 / Git / 全局搜索交给 VS Code Web」后，
+这套内嵌 Monaco 独立窗口（3 个文件 / 6 KB）是**重复设施**（界面侧由 VS Code Web 承担）。
+连带清掉的三处代码引用：`EditorAsset.codeeditoWin`、`Editorcache.ts` 的 `beforeunload` 里那句 `close()`、
+`EventDispatcher` 的 `'codeeditor.openScript'` 事件类型。已登记进 `check-editor-dead-code.mjs`（不许复活）。
+另：`ScriptCompiler.ts`（本来会 `window.open('packages/codeeditor/codeeditor.html')`）**早已随 #275 删除** ——
+于是"发布白名单"那条判据的样本也随之换成了 `run.html`。
 10. **TS 3.0 → 6.0.3 的跃迁**：`typescriptSorting.ts` 依赖 TS 3.0 内部 API
     （`hasModifier` / `ModifierFlags.Ambient`）——是保留这段自研排序，还是改用标准 TS 能力？~~**阻塞 P4**~~
     → ✅ **随之结案（2026-10-05）**：`packages/typescript` 整体删除，这段自研排序一并清掉

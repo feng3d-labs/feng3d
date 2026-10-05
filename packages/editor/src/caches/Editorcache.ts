@@ -1,4 +1,3 @@
-import { EditorAsset } from '../ui/assets/EditorAsset';
 // TopView 已迁移到 Vue，但 runwin 仍需要管理
 // 从 runWindowManager 导入
 import { closeRunWindow } from '../vue-app/utils/runWindowManager';
@@ -99,7 +98,6 @@ if (typeof window !== 'undefined')
 {
     window.addEventListener('beforeunload', () =>
     {
-        if (EditorAsset.codeeditoWin) EditorAsset.codeeditoWin.close();
         closeRunWindow();
         getEditorCache().save();
     });

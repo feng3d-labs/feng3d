@@ -44,10 +44,6 @@ declare global
          */
         'editorCameraRotate': Vector3Like
 
-        /**
-         * 使用编辑器打开脚本
-         */
-        'codeeditor.openScript': TextAsset;
 
         /**
          * 项目视图资源树更新
