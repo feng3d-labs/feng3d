@@ -368,7 +368,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | R5 effect 必须注解 | 1、3 | 规则 `feng3d/effect-annotation` + `check-effect-inventory.mjs` |
 | R6 可空性显式 | 9、10、14 | `check-strict-dirs.mjs`、`check-strict-packages.mjs`、`types:packages` |
 | R7 作用域守卫异常安全 | —— | **无执行者**：`batchRun` / `noMutationCount` 机制已有 `try/finally` 与 API 级回归，但 11 个生产调用点没有逐个异常用例 |
-| R8 视觉回归强度 | —— | **未进 CI**：容差在 `playwright.config.ts`（全局 0.01）与 `e2e/examples.config.ts`（26 处放宽）里，examples 视觉回归不在任一 workflow；`editor-e2e` 跑的是编辑器产物、不校验容差 |
+| R8 视觉回归强度 | —— | **未进 CI**：容差在 `playwright.config.ts`（全局 0.01）、`e2e/examples.config.ts`（26 处放宽）与 `playwright.webgpu-examples.config.ts`（0.02，5 个 webgpu 示例，issue #712 补）里，examples 视觉回归不在任一 workflow；`editor-e2e` 跑的是编辑器产物、不校验容差 |
 | R9 包体天花板 | 19 | `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json` |
 | R10 覆盖率门禁 | 12、13 | `npm run test:coverage`（四项阈值 + `check-coverage-inflation.mjs` 虚高自检）+ `coverage-by-package.mjs --check`（§1.3 表一致性） |
 | R11 文档现状标签 | 6 | `check-doc-status-labels.mjs` |
