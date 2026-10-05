@@ -310,7 +310,10 @@ for (const [ctx, list] of byCtx)
 }
 console.log('');
 
-console.log('## 若把判据换成 AST：基线会新增的键（收紧面）');
+// 口径说明：本探针量的始终是「**行级**判据能看见多少」，而两条门禁**当前已是 AST**（#614）
+// ——所以下面两段的"看不见 / 全都不看"是对**行级**口径说的、不是对当前门禁说的：
+// 这些键现在的 AST 门禁都看得见（类 static 字段 / 块那一档在 eslint 规则层仍不看）。
+console.log('## 历史对照（假定行级判据）：换成 AST 时基线会新增的键（这些键当前的 AST 门禁已看得见）');
 console.log(`  漏网键（文件::构造器）：${missedKeys.size} 个，其中不在现基线（${baseline.size} 个）里的：${addedKeys.length} 个`);
 for (const k of addedKeys) console.log(`      + ${k}`);
 console.log('');
@@ -320,7 +323,7 @@ console.log(`  ${cacheMissed.length} 处`);
 for (const r of cacheMissed) console.log(`      ${r.rel}:${r.line}  [${CTX_LABEL[r.ctx] ?? r.ctx}]  new ${r.name}()`);
 console.log('');
 
-console.log('## 类 static 字段 / static 块里的模块级 `new`（三条判据全都不看）');
+console.log('## 类 static 字段 / static 块里的模块级 `new`（行级口径看不见；#614 后两条 AST 脚本已覆盖这一档，eslint 规则层仍不看）');
 console.log(`  ${staticRows.length} 处 / ${new Set(staticRows.map((r) => r.rel)).size} 文件 / ${new Set(staticRows.map((r) => r.key)).size} 个键`);
 console.log('');
 console.log('提示：本脚本只读、不是门禁；收紧判据（改 AST）与量级评估见 docs/CI.md §2.1.1「已知局限」。');
