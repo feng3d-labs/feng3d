@@ -68,6 +68,8 @@ export { cos } from './math/trigonometric/cos';
 export { sin } from './math/trigonometric/sin';
 
 // math/exponential - 指数函数
+export { distance } from './math/geometric/distance';
+export { length } from './math/geometric/length';
 export { exp } from './math/exponential/exp';
 export { log2 } from './math/exponential/log2';
 export { pow } from './math/exponential/pow';
