@@ -6,35 +6,35 @@
             "statements": 14,
             "coveredStatements": 4,
             "functions": 2,
-            "loadCount": 56,
+            "loadCount": 57,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/webgpu/src/caches/WGPUBindGroupLayout.ts": {
             "statements": 10,
             "coveredStatements": 10,
             "functions": 2,
-            "loadCount": 77,
+            "loadCount": 79,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/webgpu/src/data/Buffer.ts": {
             "statements": 10,
             "coveredStatements": 10,
             "functions": 2,
-            "loadCount": 77,
+            "loadCount": 79,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/webgpu/src/data/Texture.ts": {
             "statements": 8,
             "coveredStatements": 2,
             "functions": 2,
-            "loadCount": 77,
+            "loadCount": 79,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         },
         "packages/shortcut/src/WindowEventProxy.ts": {
             "statements": 2,
             "coveredStatements": 2,
             "functions": 1,
-            "loadCount": 56,
+            "loadCount": 57,
             "note": "函数计数被整份算成模块加载次数（vitest v8 provider 的映射失真），该文件读数不可信"
         }
     }
