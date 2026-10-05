@@ -65,6 +65,11 @@ function collect(dir, suffix)
  * 只扫 `window.open(...)`：它是本仓出现过的唯一形态，而**刻意不做成"扫所有字符串字面量"**
  * ——那会把大量无关字符串卷进来，判据立刻变成噪音。
  *
+ * **扫 `.ts` 与 `.vue` 两种**（补盲区）：`TopToolBar.vue` 里有
+ * `window.open(\`run.html?fstype=…\`)`——它同样是"运行时才取、必须在 `files` 里"的路径，
+ * 而只扫 `.ts` 时它**从来没被覆盖过**。这个盲区是在删掉 `ScriptCompiler.ts`
+ * （当时唯一被扫到的来源）时才暴露的：删完只剩 0 处，门禁的"空转自证"立刻失败。
+ *
  * @param {string} packageRoot 包根目录（绝对路径）
  * @returns {Map<string, string>} 路径（相对包根）→ 出现的源文件（绝对路径）
  */
@@ -76,7 +81,7 @@ export function findRuntimeRepoPaths(packageRoot)
 
     if (!existsSync(src)) return paths;
 
-    for (const file of collect(src, '.ts'))
+    for (const file of [...collect(src, '.ts'), ...collect(src, '.vue')])
     {
         const code = readFileSync(file, 'utf8');
         // 目标既可能是普通字符串，也可能是**模板字符串**——实现里用的正是反引号，

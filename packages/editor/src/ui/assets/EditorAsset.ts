@@ -211,7 +211,6 @@ export class EditorAsset
                             {
                                 const fileName = editorRS.getValidChildName(folder, 'NewScript');
                                 await this.createAsset(folderPath, ScriptAsset, fileName, { textContent: assetFileTemplates.getNewScript(fileName) });
-                                globalEmitter.emit('script.compile');
                             }
                         },
                         {
@@ -219,7 +218,6 @@ export class EditorAsset
                             {
                                 const fileName = editorRS.getValidChildName(folder, 'NewShader');
                                 await this.createAsset(folderPath, ShaderAsset, fileName, { textContent: assetFileTemplates.getNewShader(fileName) });
-                                globalEmitter.emit('script.compile');
                             }
                         },
                         {
