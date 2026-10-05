@@ -91,7 +91,7 @@ export { step } from './math/common/step';
 export { bool, Bool } from './types/scalar/bool';
 export { float, Float } from './types/scalar/float';
 export { int } from './types/scalar/int';
-export { uint } from './types/scalar/uint';
+export { UInt, uint } from './types/scalar/uint';
 
 // types/vector - 向量类型
 export { bvec3 } from './types/vector/bvec3';

@@ -200,7 +200,9 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
             `${this.name}[${typeof i === 'number' ? i : toCode(i)}]`;
         result.toWGSL = () => render(index, (v) => v.toWGSL());
         result.toGLSL = () => render(index, (v) => v.toGLSL());
-        result.dependencies = [this];
+        // **必须带上索引表达式**：它本身可能依赖别的 storage / 函数调用
+        // （如 current[getIndex(x, y)]——漏掉就会让 getIndex 内部用到的 size 收集不到）
+        result.dependencies = typeof index === 'number' ? [this] : [this, index];
 
         return result;
     }

@@ -1,5 +1,6 @@
 import { Bool } from '../types/scalar/bool';
 import { Float } from '../types/scalar/float';
+import { UInt } from '../types/scalar/uint';
 import { Vec2 } from '../types/vector/vec2';
 import { Vec3 } from '../types/vector/vec3';
 import { Vec4 } from '../types/vector/vec4';
@@ -26,7 +27,7 @@ import { formatNumber } from '../core/formatNumber';
  * // 如果 x < y，结果为红色，否则为蓝色
  * ```
  */
-export function select<T extends Float | Vec2 | Vec3 | Vec4>(
+export function select<T extends Float | UInt | Vec2 | Vec3 | Vec4>(
     condition: Bool,
     trueValue: T | number,
     falseValue: T | number,
@@ -81,6 +82,24 @@ export function select<T extends Float | Vec2 | Vec3 | Vec4>(
 
         result.toGLSL = () => `(${condition.toGLSL()} ? ${trueStr()} : ${falseStr()})`;
         result.toWGSL = () => `select(${falseStrWGSL()}, ${trueStrWGSL()}, ${condition.toWGSL()})`;
+        result.dependencies = [
+            condition,
+            ...(typeof trueValue === 'number' ? [] : [trueValue]),
+            ...(typeof falseValue === 'number' ? [] : [falseValue]),
+        ];
+
+        return result as T;
+    }
+
+    // UInt 类型（如把布尔条件转成 0u / 1u）
+    if (trueValue instanceof UInt || falseValue instanceof UInt)
+    {
+        const result = new UInt();
+        const trueStrW = () => typeof trueValue === 'number' ? `${Math.floor(trueValue)}u` : trueValue.toWGSL();
+        const falseStrW = () => typeof falseValue === 'number' ? `${Math.floor(falseValue)}u` : falseValue.toWGSL();
+
+        result.toGLSL = () => `(${condition.toGLSL()} ? ${trueStrW().replace(/u$/, '')} : ${falseStrW().replace(/u$/, '')})`;
+        result.toWGSL = () => `select(${falseStrW()}, ${trueStrW()}, ${condition.toWGSL()})`;
         result.dependencies = [
             condition,
             ...(typeof trueValue === 'number' ? [] : [trueValue]),

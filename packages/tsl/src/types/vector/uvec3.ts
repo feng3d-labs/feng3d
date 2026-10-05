@@ -1,6 +1,6 @@
 import { IElement, ShaderValue } from '../../core/IElement';
 import { bindToVariableHost, isVariableHost, type VariableHost } from '../../core/variableHost';
-import { Float } from '../scalar/float';
+import { UInt } from '../scalar/uint';
 
 /**
  * Uvec3 类，用于表示 uvec3 字面量值
@@ -47,40 +47,40 @@ export class Uvec3 implements ShaderValue
     /**
      * 获取 x 分量
      */
-    get x(): Float
+    get x(): UInt
     {
-        const float = new Float();
-        float.toGLSL = () => `${this.toGLSL()}.x`;
-        float.toWGSL = () => `${this.toWGSL()}.x`;
-        float.dependencies = [this];
+        const value = new UInt();
+        value.toGLSL = () => `${this.toGLSL()}.x`;
+        value.toWGSL = () => `${this.toWGSL()}.x`;
+        value.dependencies = [this];
 
-        return float;
+        return value;
     }
 
     /**
      * 获取 y 分量
      */
-    get y(): Float
+    get y(): UInt
     {
-        const float = new Float();
-        float.toGLSL = () => `${this.toGLSL()}.y`;
-        float.toWGSL = () => `${this.toWGSL()}.y`;
-        float.dependencies = [this];
+        const value = new UInt();
+        value.toGLSL = () => `${this.toGLSL()}.y`;
+        value.toWGSL = () => `${this.toWGSL()}.y`;
+        value.dependencies = [this];
 
-        return float;
+        return value;
     }
 
     /**
      * 获取 z 分量
      */
-    get z(): Float
+    get z(): UInt
     {
-        const float = new Float();
-        float.toGLSL = () => `${this.toGLSL()}.z`;
-        float.toWGSL = () => `${this.toWGSL()}.z`;
-        float.dependencies = [this];
+        const value = new UInt();
+        value.toGLSL = () => `${this.toGLSL()}.z`;
+        value.toWGSL = () => `${this.toWGSL()}.z`;
+        value.dependencies = [this];
 
-        return float;
+        return value;
     }
 }
 
