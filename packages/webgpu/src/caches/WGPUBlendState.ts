@@ -114,8 +114,15 @@ export class WGPUBlendState extends ReactiveObject
     }
 
     /**
-     * BlendState到WGPUBlendState的缓存映射表
-     * 使用WeakMap避免内存泄漏
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
      */
-    static readonly map = new ChainMap<[BlendState], WGPUBlendState>();
+    private static _map: ChainMap<[BlendState], WGPUBlendState> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    static get map(): ChainMap<[BlendState], WGPUBlendState>
+    {
+        if (!WGPUBlendState._map) WGPUBlendState._map = new ChainMap();
+
+        return WGPUBlendState._map;
+    }
 }

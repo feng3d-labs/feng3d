@@ -129,6 +129,18 @@ export class WGPUDepthStencilState extends ReactiveObject
         return WGPUDepthStencilState.map.get(key) || new WGPUDepthStencilState(depthStencil || null, depthStencilFormat);
     }
 
-    static readonly map = new ChainMap<[DepthStencilState | null, GPUTextureFormat], WGPUDepthStencilState>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[DepthStencilState | null, GPUTextureFormat], WGPUDepthStencilState> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    static get map(): ChainMap<[DepthStencilState | null, GPUTextureFormat], WGPUDepthStencilState>
+    {
+        if (!WGPUDepthStencilState._map) WGPUDepthStencilState._map = new ChainMap();
+
+        return WGPUDepthStencilState._map;
+    }
+
     private static readonly defaultGPUDepthStencilStates: Partial<Record<GPUTextureFormat, GPUDepthStencilState>> = {};
 }

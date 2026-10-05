@@ -164,5 +164,16 @@ export class WGPURenderPipeline extends ReactiveObject
         return this.map.get([device, renderPipeline, renderPassFormat, vertices, indexFormat]) || new WGPURenderPipeline(device, renderPipeline, renderPassFormat, vertices, indexFormat);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, RenderPipeline, RenderPassFormat, VertexAttributes, GPUIndexFormat], WGPURenderPipeline>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, RenderPipeline, RenderPassFormat, VertexAttributes, GPUIndexFormat], WGPURenderPipeline> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, RenderPipeline, RenderPassFormat, VertexAttributes, GPUIndexFormat], WGPURenderPipeline>
+    {
+        if (!WGPURenderPipeline._map) WGPURenderPipeline._map = new ChainMap();
+
+        return WGPURenderPipeline._map;
+    }
 }

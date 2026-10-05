@@ -94,7 +94,18 @@ export class WGPUCanvasTexture extends ReactiveObject
         return this.map.get([device, canvasTexture.context.canvasId]) || new WGPUCanvasTexture(device, canvasTexture);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, string | HTMLCanvasElement | OffscreenCanvas], WGPUCanvasTexture>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, string | HTMLCanvasElement | OffscreenCanvas], WGPUCanvasTexture> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, string | HTMLCanvasElement | OffscreenCanvas], WGPUCanvasTexture>
+    {
+        if (!WGPUCanvasTexture._map) WGPUCanvasTexture._map = new ChainMap();
+
+        return WGPUCanvasTexture._map;
+    }
 }
 
 let id = 0;

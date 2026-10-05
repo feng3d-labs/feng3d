@@ -260,5 +260,17 @@ export class WGPURenderPassDepthStencilAttachment extends ReactiveObject
     }
 
     // 缓存键中的 canvasContext 与构造参数/ getInstance 参数一致，均可缺省，故键元组如实包含 undefined
-    private static readonly map = new ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassDepthStencilAttachment>();
+
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassDepthStencilAttachment> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassDepthStencilAttachment>
+    {
+        if (!WGPURenderPassDepthStencilAttachment._map) WGPURenderPassDepthStencilAttachment._map = new ChainMap();
+
+        return WGPURenderPassDepthStencilAttachment._map;
+    }
 }

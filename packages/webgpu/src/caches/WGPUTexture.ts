@@ -298,7 +298,18 @@ export class WGPUTexture extends ReactiveObject
         return this.map.get([device, texture]) || new WGPUTexture(device, texture);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, Texture], WGPUTexture>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, Texture], WGPUTexture> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, Texture], WGPUTexture>
+    {
+        if (!WGPUTexture._map) WGPUTexture._map = new ChainMap();
+
+        return WGPUTexture._map;
+    }
 
     /**
      * 写入纹理数据

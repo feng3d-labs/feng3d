@@ -145,5 +145,16 @@ export class WGPUShaderModule
         return gpuShaderModule;
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, string], GPUShaderModule>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, string], GPUShaderModule> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, string], GPUShaderModule>
+    {
+        if (!WGPUShaderModule._map) WGPUShaderModule._map = new ChainMap();
+
+        return WGPUShaderModule._map;
+    }
 }

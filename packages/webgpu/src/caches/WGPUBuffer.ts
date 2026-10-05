@@ -224,5 +224,16 @@ export class WGPUBuffer extends ReactiveObject
         return this.map.get([device, buffer]) || new WGPUBuffer(device, buffer);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, Buffer], WGPUBuffer>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, Buffer], WGPUBuffer> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, Buffer], WGPUBuffer>
+    {
+        if (!WGPUBuffer._map) WGPUBuffer._map = new ChainMap();
+
+        return WGPUBuffer._map;
+    }
 }

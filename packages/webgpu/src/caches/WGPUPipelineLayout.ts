@@ -286,7 +286,18 @@ export class WGPUPipelineLayout
         return gpuPipelineLayout;
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, string], GPUPipelineLayout>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, string], GPUPipelineLayout> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, string], GPUPipelineLayout>
+    {
+        if (!WGPUPipelineLayout._map) WGPUPipelineLayout._map = new ChainMap();
+
+        return WGPUPipelineLayout._map;
+    }
 }
 
 function getShaderKey(shader: { vertex: string, fragment?: string } | { compute: string })

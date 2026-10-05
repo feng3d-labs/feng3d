@@ -215,7 +215,18 @@ export class WGPUTimestampQuery extends ReactiveObject
         return this.map.get([device, timestampQuery]) || new WGPUTimestampQuery(device, timestampQuery);
     }
 
-    static readonly map = new ChainMap<[GPUDevice, TimestampQuery], WGPUTimestampQuery>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, TimestampQuery], WGPUTimestampQuery> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    static get map(): ChainMap<[GPUDevice, TimestampQuery], WGPUTimestampQuery>
+    {
+        if (!WGPUTimestampQuery._map) WGPUTimestampQuery._map = new ChainMap();
+
+        return WGPUTimestampQuery._map;
+    }
 }
 
 /**

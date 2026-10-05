@@ -261,5 +261,17 @@ export class WGPURenderPassColorAttachment extends ReactiveObject
     }
 
     // canvasContext 允许缺省（离屏渲染），构造与 getInstance 都是可选参数，缓存键里如实带上 undefined
-    private static readonly map = new ChainMap<[GPUDevice, RenderPassColorAttachment, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassColorAttachment>();
+
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, RenderPassColorAttachment, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassColorAttachment> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, RenderPassColorAttachment, RenderPassDescriptor, CanvasContext | undefined], WGPURenderPassColorAttachment>
+    {
+        if (!WGPURenderPassColorAttachment._map) WGPURenderPassColorAttachment._map = new ChainMap();
+
+        return WGPURenderPassColorAttachment._map;
+    }
 }

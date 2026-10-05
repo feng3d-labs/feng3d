@@ -61,7 +61,18 @@ export class WGPUExternalTexture extends ReactiveObject
         return WGPUExternalTexture.map.get([device, videoTexture]) || new WGPUExternalTexture(device, videoTexture);
     }
 
-    static readonly map = new ChainMap<[GPUDevice, VideoTexture], WGPUExternalTexture>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, VideoTexture], WGPUExternalTexture> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    static get map(): ChainMap<[GPUDevice, VideoTexture], WGPUExternalTexture>
+    {
+        if (!WGPUExternalTexture._map) WGPUExternalTexture._map = new ChainMap();
+
+        return WGPUExternalTexture._map;
+    }
 }
 
 let _autoIndex = 0;

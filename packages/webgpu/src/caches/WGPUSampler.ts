@@ -92,5 +92,16 @@ export class WGPUSampler extends ReactiveObject
         return this.map.get([device, sampler]) || new WGPUSampler(device, sampler);
     }
 
-    private static readonly map = new ChainMap<[GPUDevice, Sampler], WGPUSampler>();
+    /**
+     * 实例缓存的存储（R2，issue #614：缓存一律 lazy-init，不在 import 时分配）。
+     */
+    private static _map: ChainMap<[GPUDevice, Sampler], WGPUSampler> | null = null;
+
+    /** 实例缓存（首次访问时创建） */
+    private static get map(): ChainMap<[GPUDevice, Sampler], WGPUSampler>
+    {
+        if (!WGPUSampler._map) WGPUSampler._map = new ChainMap();
+
+        return WGPUSampler._map;
+    }
 }
