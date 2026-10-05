@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 106 个类型 / 590 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 107 个类型 / 616 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -501,6 +501,34 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'ParticleRotationOverLifetimeModule': [
         { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'angularVelocity', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleShapeModule': [
+        { name: 'shapeType', type: 'ParticleSystemShapeType', control: 'Enum', readonly: true, values: ['Sphere', 'SphereShell', 'Hemisphere', 'HemisphereShell', 'Cone', 'ConeShell', 'ConeVolume', 'ConeVolumeShell', 'Box', 'BoxShell', 'BoxEdge', 'Mesh', 'MeshRenderer', 'SkinnedMeshRenderer', 'Circle', 'CircleEdge', 'SingleSidedEdge'], numericValues: { Sphere: 0, SphereShell: 1, Hemisphere: 2, HemisphereShell: 3, Cone: 4, ConeShell: 7, ConeVolume: 8, ConeVolumeShell: 9, Box: 5, BoxShell: 15, BoxEdge: 16, Mesh: 6, MeshRenderer: 13, SkinnedMeshRenderer: 14, Circle: 10, CircleEdge: 11, SingleSidedEdge: 12 } },
+        { name: 'alignToDirection', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'randomDirectionAmount', type: 'number', control: 'number', readonly: true },
+        { name: 'sphericalDirectionAmount', type: 'number', control: 'number', readonly: true },
+        { name: 'angle', type: 'number', control: 'number', readonly: true },
+        { name: 'arc', type: 'number', control: 'number', readonly: true },
+        { name: 'arcMode', type: 'ParticleSystemShapeMultiModeValue', control: 'Enum', readonly: true, values: ['Random', 'Loop', 'PingPong', 'BurstSpread'], numericValues: { Random: 0, Loop: 1, PingPong: 2, BurstSpread: 3 } },
+        { name: 'arcSpeed', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'arcSpread', type: 'number', control: 'number', readonly: true },
+        { name: 'box', type: 'Vector3Like', control: 'Vector3', readonly: true },
+        { name: 'length', type: 'number', control: 'number', readonly: true },
+        { name: 'mesh', type: 'Geometry', control: 'Object', optional: true, readonly: true },
+        { name: 'useMeshMaterialIndex', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'meshMaterialIndex', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'meshRenderer', type: 'MeshRenderer', control: 'Object', optional: true, readonly: true, typeNames: ['MeshRenderer'] },
+        { name: 'skinnedMeshRenderer', type: 'SkinnedMeshRenderer', control: 'Object', optional: true, readonly: true, typeNames: ['SkinnedMeshRenderer'] },
+        { name: 'meshScale', type: 'number', control: 'number', readonly: true },
+        { name: 'meshShapeType', type: 'ParticleSystemMeshShapeType', control: 'Enum', readonly: true, values: ['Vertex', 'Edge', 'Triangle'], numericValues: { Vertex: 0, Edge: 1, Triangle: 2 } },
+        { name: 'useMeshColors', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'normalOffset', type: 'number', control: 'number', readonly: true },
+        { name: 'radius', type: 'number', control: 'number', readonly: true },
+        { name: 'radiusMode', type: 'ParticleSystemShapeMultiModeValue', control: 'Enum', readonly: true, values: ['Random', 'Loop', 'PingPong', 'BurstSpread'], numericValues: { Random: 0, Loop: 1, PingPong: 2, BurstSpread: 3 } },
+        { name: 'radiusSpeed', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'radiusSpread', type: 'number', control: 'number', readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],

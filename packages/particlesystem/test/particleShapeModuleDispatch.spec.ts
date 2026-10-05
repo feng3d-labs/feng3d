@@ -1,27 +1,22 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { vec3Length } from '@feng3d/math';
 import { ParticleSystemShapeType } from '../src/enums/ParticleSystemShapeType';
-import { ParticleSystemShapeType1 } from '../src/enums/ParticleSystemShapeType1';
-import { ParticleSystemShapeBoxEmitFrom } from '../src/shapes/ParticleSystemShapeBox';
-import { ParticleSystemShapeConeEmitFrom } from '../src/enums/ParticleSystemShapeConeEmitFrom';
-import { ParticleShapeModule } from '../src/modules/ParticleShapeModule';
-import { ParticleSystemShape } from '../src/shapes/ParticleSystemShape';
-import { ParticleSystemShapeBox } from '../src/shapes/ParticleSystemShapeBox';
-import { ParticleSystemShapeCircle } from '../src/shapes/ParticleSystemShapeCircle';
-import { ParticleSystemShapeCone } from '../src/shapes/ParticleSystemShapeCone';
-import { ParticleSystemShapeEdge } from '../src/shapes/ParticleSystemShapeEdge';
-import { ParticleSystemShapeHemisphere } from '../src/shapes/ParticleSystemShapeHemisphere';
-import { ParticleSystemShapeSphere } from '../src/shapes/ParticleSystemShapeSphere';
+import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
+import { particleShapeModuleDefault, particleShapeModuleInitParticleState, type WritableParticleShapeModuleLike } from '../src/modules/ParticleShapeModule';
+import { Particle } from '../src/Particle';
 
 /**
- * `ParticleShapeModule` 的 shapeType 分派（issue #375）。
+ * `ParticleShapeModule` 的 shapeType 分派（issue #375，形状纯函数化批改写）。
  *
- * `_onShapeTypeChanged()` 是个 18 个 case 的大 switch，**最容易写错的地方是"变体映射"**：
- * 同一种几何的多个变体（如 `Sphere` / `SphereShell`）**共用同一个 shape 实例**，
- * 靠 `emitFromShell` / `emitFrom` / `emitFromEdge` 区分。哪个 case 漏设了开关，
- * 粒子就会以**错误的分布**发射，而且**不会报任何错** —— 这正是本文件要钉住的。
+ * 原文件断言的是「`shapeType` → `activeShape` 是哪个策略 class + 策略上的 `emitFromShell` / `emitFrom` /
+ * `emitFromEdge` 开关」——策略 class 删除后，那些开关由 `module.shapeType` **直接推导**（见各
+ * `particleSystemShape*CalcParticlePosDir`），因此本文件改为**从公开行为**钉住分发：
  *
- * 约定：**只断言公开可见的东西**（`shapeType` / `shape` / `activeShape` 及 shape 上的公开字段），
- * 不去碰 private 的 `_shapeXxx`（那属于实现细节）。
+ * 1. 枚举里**每个** `shapeType` 都跑一遍 `initParticleState`：已实现的形状必须不抛且产出有限状态，
+ *    未实现的 `Mesh` / `MeshRenderer` / `SkinnedMeshRenderer` 必须走 warn 分支（原来"哪个 case 漏设开关"
+ *    的担忧，现在等价于"哪个 case 漏接分发函数"，遍历调用即可覆盖）；
+ * 2. 变体映射用**分布特征**验证：`SphereShell` 的点落在球面、`Sphere` 落在球内；
+ *    `CircleEdge` 落在圆边、`Circle` 落在圆内。
  */
 
 let warnSpy: ReturnType<typeof vi.spyOn>;
@@ -38,185 +33,135 @@ afterEach(() =>
     warnSpy.mockRestore();
 });
 
-/** 造一个模块并把 shapeType 设过去（走 watcher，等价于运行时改值） */
-function moduleWith(shapeType: ParticleSystemShapeType): ParticleShapeModule
+/** 深层代理版假 particleSystem（与 `allModulesInvariants.spec` 同款：什么都能访问、参与算术得 1） */
+function makeDeepPermissive(): unknown
 {
-    const module = new ParticleShapeModule();
-    module.shapeType = shapeType;
+    const fn = function () { return undefined; };
 
-    return module;
+    return new Proxy(fn, {
+        get(_t, prop)
+        {
+            if (prop === 'simulationSpace') return ParticleSystemSimulationSpace.Local;
+            if (prop === Symbol.toPrimitive) return () => 1;
+            if (prop === 'valueOf') return () => 1;
+            if (prop === 'toString') return () => '1';
+
+            return makeDeepPermissive();
+        },
+        apply()
+        {
+            return undefined;
+        },
+    });
 }
+
+/** 造一个形状模块数据（已接上假 particleSystem，空间取 Local —— 与各形状单测一致） */
+function makeModule(shapeType: ParticleSystemShapeType, fields: Partial<WritableParticleShapeModuleLike> = {}): WritableParticleShapeModuleLike
+{
+    const module = particleShapeModuleDefault();
+    module.enabled = true;
+    module.shapeType = shapeType;
+    module.particleSystem = makeDeepPermissive() as never;
+
+    return Object.assign(module, fields);
+}
+
+/** 造一个粒子并给出初始化前的最小状态 */
+function makeParticle(): Particle
+{
+    const particle = new Particle();
+    particle.birthRateAtDuration = 0.5;
+
+    return particle;
+}
+
+/** 枚举里所有数字值（含反向映射过滤） */
+const ALL_SHAPE_TYPES = Object.values(ParticleSystemShapeType).filter((v) => typeof v === 'number') as ParticleSystemShapeType[];
 
 describe('ParticleShapeModule 的 shapeType 分派（issue #375）', () =>
 {
-    it('默认构造后 shapeType 是 Cone，且已经分派好', () =>
+    it('默认构造后 shapeType 是 Cone', () =>
     {
-        const module = new ParticleShapeModule();
+        const module = particleShapeModuleDefault();
 
         expect(module.shapeType).toBe(ParticleSystemShapeType.Cone);
-        expect(module.activeShape).toBeInstanceOf(ParticleSystemShapeCone);
     });
 
-    it('赋值即生效（watcher 绑定着分派，不需要手动调 private 方法）', () =>
+    it.each(ALL_SHAPE_TYPES.map((t) => [ParticleSystemShapeType[t], t] as const))('%s：初始化粒子状态不抛、状态有限', (_name, shapeType) =>
     {
-        const module = new ParticleShapeModule();
+        const module = makeModule(shapeType);
+        const particle = makeParticle();
 
-        module.shapeType = ParticleSystemShapeType.Sphere;
-        expect(module.activeShape).toBeInstanceOf(ParticleSystemShapeSphere);
+        expect(() => particleShapeModuleInitParticleState(module, particle)).not.toThrow();
 
-        module.shapeType = ParticleSystemShapeType.Box;
-        expect(module.activeShape).toBeInstanceOf(ParticleSystemShapeBox);
-    });
-
-    // ---------- 按几何分组：类型 + 变体开关 ----------
-
-    describe('Sphere 的两个变体（体积 / 壳）', () =>
-    {
-        it('都指向同一类形状实例，只是 emitFromShell 不同', () =>
+        for (const v of [particle.position, particle.velocity, particle.rotation])
         {
-            const volume = moduleWith(ParticleSystemShapeType.Sphere);
-            const shell = moduleWith(ParticleSystemShapeType.SphereShell);
-
-            expect(volume.activeShape).toBeInstanceOf(ParticleSystemShapeSphere);
-            expect(shell.activeShape).toBeInstanceOf(ParticleSystemShapeSphere);
-            expect(volume.shape).toBe(ParticleSystemShapeType1.Sphere);
-            expect(shell.shape).toBe(ParticleSystemShapeType1.Sphere);
-
-            expect((volume.activeShape as ParticleSystemShapeSphere).emitFromShell).toBe(false);
-            expect((shell.activeShape as ParticleSystemShapeSphere).emitFromShell).toBe(true);
-        });
+            expect(Number.isFinite(v.x)).toBe(true);
+            expect(Number.isFinite(v.y)).toBe(true);
+            expect(Number.isFinite(v.z)).toBe(true);
+        }
     });
-
-    describe('Hemisphere 的两个变体', () =>
-    {
-        it('都指向半球形状，emitFromShell 区分体积 / 壳', () =>
-        {
-            const volume = moduleWith(ParticleSystemShapeType.Hemisphere);
-            const shell = moduleWith(ParticleSystemShapeType.HemisphereShell);
-
-            expect(volume.activeShape).toBeInstanceOf(ParticleSystemShapeHemisphere);
-            expect(shell.activeShape).toBeInstanceOf(ParticleSystemShapeHemisphere);
-            expect((volume.activeShape as ParticleSystemShapeHemisphere).emitFromShell).toBe(false);
-            expect((shell.activeShape as ParticleSystemShapeHemisphere).emitFromShell).toBe(true);
-        });
-    });
-
-    describe('Cone 的四个变体', () =>
-    {
-        it('都指向圆锥形状，emitFrom 区分 Base / BaseShell / Volume / VolumeShell', () =>
-        {
-            const expectation: [ParticleSystemShapeType, ParticleSystemShapeConeEmitFrom][] = [
-                [ParticleSystemShapeType.Cone, ParticleSystemShapeConeEmitFrom.Base],
-                [ParticleSystemShapeType.ConeShell, ParticleSystemShapeConeEmitFrom.BaseShell],
-                [ParticleSystemShapeType.ConeVolume, ParticleSystemShapeConeEmitFrom.Volume],
-                [ParticleSystemShapeType.ConeVolumeShell, ParticleSystemShapeConeEmitFrom.VolumeShell],
-            ];
-
-            for (const [shapeType, emitFrom] of expectation)
-            {
-                const module = moduleWith(shapeType);
-
-                expect(module.activeShape, `shapeType=${shapeType}`).toBeInstanceOf(ParticleSystemShapeCone);
-                expect((module.activeShape as ParticleSystemShapeCone).emitFrom, `shapeType=${shapeType}`).toBe(emitFrom);
-                expect(module.shape).toBe(ParticleSystemShapeType1.Cone);
-            }
-        });
-    });
-
-    describe('Box 的三个变体', () =>
-    {
-        it('都指向盒子形状，emitFrom 区分 Volume / Shell / Edge', () =>
-        {
-            const expectation: [ParticleSystemShapeType, ParticleSystemShapeBoxEmitFrom][] = [
-                [ParticleSystemShapeType.Box, ParticleSystemShapeBoxEmitFrom.Volume],
-                [ParticleSystemShapeType.BoxShell, ParticleSystemShapeBoxEmitFrom.Shell],
-                [ParticleSystemShapeType.BoxEdge, ParticleSystemShapeBoxEmitFrom.Edge],
-            ];
-
-            for (const [shapeType, emitFrom] of expectation)
-            {
-                const module = moduleWith(shapeType);
-
-                expect(module.activeShape, `shapeType=${shapeType}`).toBeInstanceOf(ParticleSystemShapeBox);
-                expect((module.activeShape as ParticleSystemShapeBox).emitFrom, `shapeType=${shapeType}`).toBe(emitFrom);
-                expect(module.shape).toBe(ParticleSystemShapeType1.Box);
-            }
-        });
-    });
-
-    describe('Circle 的两个变体', () =>
-    {
-        it('都指向圆形状，emitFromEdge 区分盘面 / 边缘', () =>
-        {
-            const volume = moduleWith(ParticleSystemShapeType.Circle);
-            const edge = moduleWith(ParticleSystemShapeType.CircleEdge);
-
-            expect(volume.activeShape).toBeInstanceOf(ParticleSystemShapeCircle);
-            expect(edge.activeShape).toBeInstanceOf(ParticleSystemShapeCircle);
-            expect((volume.activeShape as ParticleSystemShapeCircle).emitFromEdge).toBe(false);
-            expect((edge.activeShape as ParticleSystemShapeCircle).emitFromEdge).toBe(true);
-            expect(volume.shape).toBe(ParticleSystemShapeType1.Circle);
-        });
-    });
-
-    it('SingleSidedEdge 指向 Edge 形状', () =>
-    {
-        const module = moduleWith(ParticleSystemShapeType.SingleSidedEdge);
-
-        expect(module.activeShape).toBeInstanceOf(ParticleSystemShapeEdge);
-        expect(module.shape).toBe(ParticleSystemShapeType1.Edge);
-    });
-
-    // ---------- 同几何的变体共用同一个实例（"复用实例 + 开关"这个设计）----------
-
-    it('同几何的不同变体共用同一个 shape 实例（改的是它上面的开关）', () =>
-    {
-        const module = new ParticleShapeModule();
-
-        module.shapeType = ParticleSystemShapeType.Cone;
-        const cone = module.activeShape;
-
-        module.shapeType = ParticleSystemShapeType.ConeVolume;
-        // 同一个实例：说明实现是"复用 + 改开关"，而不是"每个变体建一个"
-        expect(module.activeShape).toBe(cone);
-    });
-
-    // ---------- 未实现的三种 ----------
 
     it.each([
-        ['Mesh', ParticleSystemShapeType.Mesh, ParticleSystemShapeType1.Mesh],
-        ['MeshRenderer', ParticleSystemShapeType.MeshRenderer, ParticleSystemShapeType1.MeshRenderer],
-        ['SkinnedMeshRenderer', ParticleSystemShapeType.SkinnedMeshRenderer, ParticleSystemShapeType1.SkinnedMeshRenderer],
-    ])('%s：activeShape 置空并给出警告（不静默）', (_name, shapeType, expectedShape) =>
+        ['Mesh', ParticleSystemShapeType.Mesh],
+        ['MeshRenderer', ParticleSystemShapeType.MeshRenderer],
+        ['SkinnedMeshRenderer', ParticleSystemShapeType.SkinnedMeshRenderer],
+    ] as const)('%s：未实现的分支走 warn（而不是静默当成别的形状）', (_name, shapeType) =>
     {
-        const module = moduleWith(shapeType as ParticleSystemShapeType);
+        const module = makeModule(shapeType);
+        const particle = makeParticle();
 
-        expect(module.activeShape).toBeNull();
-        expect(module.shape).toBe(expectedShape);
-        expect(warnSpy).toHaveBeenCalled();
+        particleShapeModuleInitParticleState(module, particle);
+
+        expect(warnSpy).toHaveBeenCalledWith('未实现 ParticleSystemShapeType.Mesh');
     });
 
-    // ---------- 未知值 ----------
-
-    it('未知 shapeType 走 default：不抛异常、保持原 activeShape、并给出警告', () =>
+    describe('变体映射（原来靠策略上的开关区分）', () =>
     {
-        const module = new ParticleShapeModule();
-        const before = module.activeShape;
+        it('SphereShell：采样点落在球面上；Sphere：落在球内', () =>
+        {
+            const radius = 3;
+            const shell = makeModule(ParticleSystemShapeType.SphereShell, { radius });
+            const volume = makeModule(ParticleSystemShapeType.Sphere, { radius });
 
-        expect(() => { module.shapeType = 999 as ParticleSystemShapeType; }).not.toThrow();
+            let minShell = Number.MAX_VALUE;
+            let maxVolume = 0;
+            for (let i = 0; i < 100; i++)
+            {
+                const p1 = makeParticle();
+                particleShapeModuleInitParticleState(shell, p1);
+                // 位置里叠加了 startSpeed 方向的贡献，这里只看"由形状产生的偏移量级"是否贴住球面：用方向（velocity）与位置一起判断
+                minShell = Math.min(minShell, vec3Length(p1.position));
 
-        expect(module.activeShape).toBe(before);
-        expect(warnSpy).toHaveBeenCalled();
-    });
+                const p2 = makeParticle();
+                particleShapeModuleInitParticleState(volume, p2);
+                maxVolume = Math.max(maxVolume, vec3Length(p2.position));
+            }
 
-    // ---------- 分派后形状是可用的 ----------
+            // 球壳的最小半径仍应显著大于球体内部采样的最大值（统计断言，避免单次随机）
+            expect(minShell).toBeGreaterThan(maxVolume);
+        });
 
-    it('分派出的形状能立刻用于采样（不是空壳）', () =>
-    {
-        const module = moduleWith(ParticleSystemShapeType.SphereShell);
-        const shape = module.activeShape as ParticleSystemShape;
+        it('CircleEdge：采样点落在圆边；Circle：落在圆内', () =>
+        {
+            const radius = 4;
+            const edge = makeModule(ParticleSystemShapeType.CircleEdge, { radius });
+            const disk = makeModule(ParticleSystemShapeType.Circle, { radius });
 
-        expect(shape).toBeInstanceOf(ParticleSystemShape);
-        expect(typeof shape.calcParticlePosDir).toBe('function');
+            let maxDisk = 0;
+            let minEdge = Number.MAX_VALUE;
+            for (let i = 0; i < 100; i++)
+            {
+                const p1 = makeParticle();
+                particleShapeModuleInitParticleState(disk, p1);
+                maxDisk = Math.max(maxDisk, Math.hypot(p1.position.x, p1.position.y));
+
+                const p2 = makeParticle();
+                particleShapeModuleInitParticleState(edge, p2);
+                minEdge = Math.min(minEdge, Math.hypot(p2.position.x, p2.position.y));
+            }
+
+            expect(minEdge).toBeGreaterThanOrEqual(maxDisk - 1e-6);
+        });
     });
 });

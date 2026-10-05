@@ -1,527 +1,302 @@
 import { Geometry, logic, MeshRenderer, SkinnedMeshRenderer } from 'feng3d';
-import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3From, vec3Length, vec3LerpNumber, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber, minMaxCurveDefault, minMaxCurveGetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { watcher } from '@feng3d/watcher';
+import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, minMaxCurveDefault, minMaxCurveGetValue, vec3Add, vec3Copy, vec3From, vec3LerpNumber, vec3Length, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber } from '@feng3d/math';
+import type { Matrix4x4, MinMaxCurve, Vector3Like } from '@feng3d/math';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
-import { ParticleSystemShapeConeEmitFrom } from '../enums/ParticleSystemShapeConeEmitFrom';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
 import { ParticleSystemShapeType } from '../enums/ParticleSystemShapeType';
-import { ParticleSystemShapeType1 } from '../enums/ParticleSystemShapeType1';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
-import { Particle } from '../Particle';
-import { ParticleSystemShape } from '../shapes/ParticleSystemShape';
-import { ParticleSystemShapeBox, ParticleSystemShapeBoxEmitFrom } from '../shapes/ParticleSystemShapeBox';
-import { ParticleSystemShapeCircle } from '../shapes/ParticleSystemShapeCircle';
-import { ParticleSystemShapeCone } from '../shapes/ParticleSystemShapeCone';
-import { ParticleSystemShapeEdge } from '../shapes/ParticleSystemShapeEdge';
-import { ParticleSystemShapeHemisphere } from '../shapes/ParticleSystemShapeHemisphere';
-import { ParticleSystemShapeSphere } from '../shapes/ParticleSystemShapeSphere';
-import { ParticleModule } from './ParticleModule';
+import { particleSystemShapeBoxCalcParticlePosDir } from '../shapes/ParticleSystemShapeBox';
+import { particleSystemShapeCircleCalcParticlePosDir } from '../shapes/ParticleSystemShapeCircle';
+import { particleSystemShapeConeCalcParticlePosDir } from '../shapes/ParticleSystemShapeCone';
+import { particleSystemShapeEdgeCalcParticlePosDir } from '../shapes/ParticleSystemShapeEdge';
+import { particleSystemShapeHemisphereCalcParticlePosDir } from '../shapes/ParticleSystemShapeHemisphere';
+import { particleSystemShapeSphereCalcParticlePosDir } from '../shapes/ParticleSystemShapeSphere';
+import type { Particle } from '../Particle';
+import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleModule';
 
 /**
- * Shape of the emitter volume, which controls where particles are emitted and their initial direction.
- * 发射体体积的形状，它控制粒子发射的位置和初始方向。
+ * 粒子系统形状模块（纯数据接口 + 模块级行为函数）。
+ *
+ * 与原 class 的三点结构差异：
+ * 1. **`shapeType` 是唯一权威**——原来的 `shape`（`ParticleSystemShapeType1` 镜像枚举）与
+ *    `activeShape`（策略实例）都是它的派生物，watcher 双向同步整段删除；
+ * 2. **策略类删除**：六个 shape 的 `calcParticlePosDir` 变成 `particleSystemShape*CalcParticlePosDir(module, ...)`
+ *    纯函数，原来挂在策略上的开关（`emitFromShell` / `emitFrom` / `emitFromEdge`）全部由 `shapeType` 推导；
+ * 3. 转发型 getter/setter（`arcSpeedMultiplier` / `radiusSpeedMultiplier`）删除，调用方直接读写曲线。
  */
-@decoratorRegisterClass()
-export class ParticleShapeModule extends ParticleModule
+export interface ParticleShapeModuleLike extends ParticleModuleLike
 {
-    __class__: 'ParticleShapeModule';
-    /**
-     * Type of shape to emit particles from.
-     * 发射粒子的形状类型。
-     */
-    @serialize
+    /** 发射粒子的形状类型（唯一权威） */
+    readonly shapeType: ParticleSystemShapeType;
+
+    /** 是否按初始运动方向排列粒子 */
+    readonly alignToDirection: boolean;
+
+    /** 随机方向量（0~1） */
+    readonly randomDirectionAmount: number;
+
+    /** 球面方向量（0~1） */
+    readonly sphericalDirectionAmount: number;
+
+    /** 圆锥角度（0~87） */
+    readonly angle: number;
+
+    /** 圆弧角（度） */
+    readonly arc: number;
+
+    /** 圆弧上生成粒子的模式 */
+    readonly arcMode: ParticleSystemShapeMultiModeValue;
+
+    /** 沿圆弧移动发射位置的速度曲线 */
+    readonly arcSpeed: MinMaxCurve;
+
+    /** 圆弧上发射点之间的间隙 */
+    readonly arcSpread: number;
+
+    /** 盒子尺寸 */
+    readonly box: Vector3Like;
+
+    /** 圆锥长度（高度） */
+    readonly length: number;
+
+    /** 从该网格发射（@todo 未实现） */
+    readonly mesh?: Geometry;
+
+    /** 是否只从单个材质发射（@todo 未实现） */
+    readonly useMeshMaterialIndex?: boolean;
+
+    /** 使用的材质下标（@todo 未实现） */
+    readonly meshMaterialIndex?: number;
+
+    /** 从该 MeshRenderer 发射（@todo 未实现） */
+    readonly meshRenderer?: MeshRenderer;
+
+    /** 从该 SkinnedMeshRenderer 发射（@todo 未实现） */
+    readonly skinnedMeshRenderer?: SkinnedMeshRenderer;
+
+    /** 生成源位置时对网格应用的缩放 */
+    readonly meshScale: number;
+
+    /** 从网格的什么位置发射（@todo 未实现） */
+    readonly meshShapeType: ParticleSystemMeshShapeType;
+
+    /** 是否用顶点颜色调节粒子颜色（@todo 未实现） */
+    readonly useMeshColors: boolean;
+
+    /** 把粒子推离源网格表面的距离 */
+    readonly normalOffset: number;
+
+    /** 形状半径 */
+    readonly radius: number;
+
+    /** 半径上生成粒子的模式 */
+    readonly radiusMode: ParticleSystemShapeMultiModeValue;
+
+    /** 沿半径移动发射位置的速度曲线 */
+    readonly radiusSpeed: MinMaxCurve;
+
+    /** 半径上发射点之间的间隙 */
+    readonly radiusSpread: number;
+}
+
+/** 可写出的形状模块（写侧形状）。 */
+export interface WritableParticleShapeModuleLike extends WritableParticleModuleLike
+{
     shapeType: ParticleSystemShapeType;
+    alignToDirection: boolean;
+    randomDirectionAmount: number;
+    sphericalDirectionAmount: number;
+    angle: number;
+    arc: number;
+    arcMode: ParticleSystemShapeMultiModeValue;
+    arcSpeed: MinMaxCurve;
+    arcSpread: number;
+    box: Vector3Like;
+    length: number;
+    mesh?: Geometry;
+    useMeshMaterialIndex?: boolean;
+    meshMaterialIndex?: number;
+    meshRenderer?: MeshRenderer;
+    skinnedMeshRenderer?: SkinnedMeshRenderer;
+    meshScale: number;
+    meshShapeType: ParticleSystemMeshShapeType;
+    useMeshColors: boolean;
+    normalOffset: number;
+    radius: number;
+    radiusMode: ParticleSystemShapeMultiModeValue;
+    radiusSpeed: MinMaxCurve;
+    radiusSpread: number;
+}
 
-    /**
-     * Type of shape to emit particles from.
-     * 发射粒子的形状类型。
-     */
-    // @oav({ tooltip: "Type of shape to emit particles from.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShape } })
-    @oav({ tooltip: '发射粒子的形状类型。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemShapeType1 } })
-    shape: ParticleSystemShapeType1;
+/** 纯数据「形状模块」（带判别字段）。 */
+export interface ParticleShapeModule extends ParticleShapeModuleLike
+{
+    readonly __type__: 'ParticleShapeModule';
+}
 
-    /**
-     * 当前使用的发射形状
-     */
-    @oav({ component: 'OAVObjectView' })
-    // 未实现的形状类型会把它置 null（读取点因此会崩，属既有语义），故保留非空类型、赋值处用 null! 补齐
-    activeShape: ParticleSystemShape;
+/**
+ * `new ParticleShapeModule()` 的纯函数版：字段默认值与原 class 逐字一致
+ * （原构造里把 `shapeType` 设为 `Cone`；`mesh` / `meshRenderer` / `skinnedMeshRenderer` 等可选字段保持 undefined）。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleShapeModuleDefault(out: WritableParticleShapeModuleLike = {
+    enabled: false,
+    shapeType: ParticleSystemShapeType.Cone,
+    alignToDirection: false,
+    randomDirectionAmount: 0,
+    sphericalDirectionAmount: 0,
+    angle: 25,
+    arc: 360,
+    arcMode: ParticleSystemShapeMultiModeValue.Random,
+    arcSpeed: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 1, constantMin: 1, constantMax: 1 },
+    arcSpread: 0,
+    box: { x: 1, y: 1, z: 1 },
+    length: 5,
+    meshScale: 1,
+    meshShapeType: ParticleSystemMeshShapeType.Vertex,
+    useMeshColors: true,
+    normalOffset: 0,
+    radius: 1,
+    radiusMode: ParticleSystemShapeMultiModeValue.Random,
+    radiusSpeed: { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 1, constantMin: 1, constantMax: 1 },
+    radiusSpread: 0,
+}): WritableParticleShapeModuleLike
+{
+    out.enabled = false;
+    out.shapeType = ParticleSystemShapeType.Cone;
+    out.alignToDirection = false;
+    out.randomDirectionAmount = 0;
+    out.sphericalDirectionAmount = 0;
+    out.angle = 25;
+    out.arc = 360;
+    out.arcMode = ParticleSystemShapeMultiModeValue.Random;
+    out.arcSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 1, constantMin: 1, constantMax: 1 };
+    out.arcSpread = 0;
+    out.box = { x: 1, y: 1, z: 1 };
+    out.length = 5;
+    out.meshScale = 1;
+    out.meshShapeType = ParticleSystemMeshShapeType.Vertex;
+    out.useMeshColors = true;
+    out.normalOffset = 0;
+    out.radius = 1;
+    out.radiusMode = ParticleSystemShapeMultiModeValue.Random;
+    out.radiusSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault(), constant: 1, constantMin: 1, constantMax: 1 };
+    out.radiusSpread = 0;
 
-    /**
-     * Align particles based on their initial direction of travel.
-     * 根据粒子的初始运动方向排列粒子。
-     *
-     * Using align to Direction in the Shape module forces the system to be rendered using Local Billboard Alignment.
-     * 在形状模块中使用align to Direction迫使系统使用本地看板对齐方式呈现。
-     */
-    @serialize
-    // @oav({ tooltip: "Align particles based on their initial direction of travel." })
-    @oav({ tooltip: '根据粒子的初始运动方向排列粒子。' })
-    alignToDirection = false;
+    return out;
+}
 
-    /**
-     * Randomizes the starting direction of particles.
-     * 随机化粒子的起始方向。
-     */
-    @serialize
-    // @oav({ tooltip: "Randomizes the starting direction of particles." })
-    @oav({ tooltip: '随机化粒子的起始方向。' })
-    randomDirectionAmount = 0;
-
-    /**
-     * Spherizes the starting direction of particles.
-     * 使粒子的起始方向球面化。
-     */
-    @serialize
-    // @oav({ tooltip: "Spherizes the starting direction of particles." })
-    @oav({ tooltip: 'Spherizes the starting direction of particles.' })
-    sphericalDirectionAmount = 0;
-
-    /**
-     * Angle of the cone.
-     *
-     * 圆锥的角度。
-     */
-    @serialize
-    angle = 25;
-
-    /**
-     * Circle arc angle.
-     *
-     * 圆弧角。
-     */
-    @serialize
-    arc = 360;
-
-    /**
-     * The mode used for generating particles around the arc.
-     *
-     * 在弧线周围产生粒子的模式。
-     */
-    @serialize
-    arcMode = ParticleSystemShapeMultiModeValue.Random;
-
-    /**
-     * When using one of the animated modes, how quickly to move the emission position around the arc.
-     *
-     * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
-     */
-    @serialize
-    arcSpeed = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 1, constantMin: 1, constantMax: 1 });
-
-    /**
-     * A multiplier of the arc speed of the emission shape.
-     *
-     * 发射形状的电弧速度的乘数。
-     */
-    get arcSpeedMultiplier()
+/**
+ * 初始化粒子状态（原 `ParticleShapeModule.initParticleState`）：算发射位置与初始速度。
+ *
+ * 形状分发由 `shapeType` 直接 `switch`（原来靠 `activeShape` 策略实例 + watcher 维护）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleShapeModuleInitParticleState(module: ParticleShapeModuleLike, particle: Particle): void
+{
+    const startSpeed = minMaxCurveGetValue(module.particleSystem!.main.startSpeed, particle.birthRateAtDuration);
+    //
+    const position = vec3From(0, 0, 0, tempPosition);
+    const dir = vec3From(0, 0, 1, tempDir);
+    //
+    if (module.enabled)
     {
-        return this.arcSpeed.curveMultiplier;
+        calcShapePosDirByShapeType(module, particle, position, dir);
     }
 
-    set arcSpeedMultiplier(v)
+    vec3ScaleNumber(dir, startSpeed, dir);
+    if (module.particleSystem!.main.simulationSpace === ParticleSystemSimulationSpace.World)
     {
-        (this.arcSpeed as WritableMinMaxCurveLike).curveMultiplier = v;
+        const local2world = logic(module.particleSystem!._obj()).local2world;
+
+        mat4TransformPoint3(local2world, position, position);
+        mat4TransformVector3(local2world, dir, dir);
     }
+    vec3Add(particle.position, position, particle.position);
+    vec3Add(particle.velocity, dir, particle.velocity);
 
-    /**
-     * Control the gap between emission points around the arc.
-     *
-     * 控制弧线周围发射点之间的间隙。
-     */
-    @serialize
-    arcSpread = 0;
+    if (!module.enabled)
+    { return; }
 
-    /**
-     * Scale of the box.
-     *
-     * 盒子的缩放。
-     */
-    @serialize
-    box = { x: 1, y: 1, z: 1 };
-
-    /**
-     * Length of the cone.
-     *
-     * 圆锥的长度（高度）。
-     */
-    @serialize
-    length = 5;
-
-    /**
-     * Mesh to emit particles from.
-     *
-     * 发射粒子的网格。
-     *
-     * @todo
-     */
-    mesh: Geometry;
-
-    /**
-     * Emit from a single material, or the whole mesh.
-     *
-     * 从一个单一的材料，或整个网格发射。
-     *
-     * @todo
-     */
-    useMeshMaterialIndex: boolean;
-
-    /**
-     * Emit particles from a single material of a mesh.
-     *
-     * 从一个网格的单一材料发射粒子。
-     *
-     * @todo
-     */
-    meshMaterialIndex: number;
-
-    /**
-     * MeshRenderer to emit particles from.
-     *
-     * 从 MeshRenderer 发射粒子。
-     *
-     * @todo
-     */
-    // meshRenderer: MeshRenderer
-    meshRenderer: MeshRenderer;
-
-    /**
-     * SkinnedMeshRenderer to emit particles from.
-     *
-     * 从 SkinnedMeshRenderer 发射粒子。
-     *
-     * @todo
-     */
-    skinnedMeshRenderer: SkinnedMeshRenderer;
-
-    /**
-     * Apply a scaling factor to the mesh used for generating source positions.
-     *
-     * 对用于生成源位置的网格应用缩放因子。
-     *
-     * @todo
-     */
-    meshScale = 1;
-
-    /**
-     * Where on the mesh to emit particles from.
-     *
-     * 从网格的什么地方发射粒子。
-     *
-     * @todo
-     */
-    meshShapeType = ParticleSystemMeshShapeType.Vertex;
-
-    /**
-     * Modulate the particle colors with the vertex colors, or the material color if no vertex colors exist.
-     *
-     * 用顶点颜色调节粒子颜色，如果没有顶点颜色，则调节材质颜色。
-     *
-     * @todo
-     */
-    useMeshColors = true;
-
-    /**
-     * Move particles away from the surface of the source mesh.
-     *
-     * 将粒子从源网格的表面移开。
-     */
-    normalOffset = 0;
-
-    /**
-     * Radius of the shape.
-     *
-     * 形状的半径。
-     */
-    @serialize
-    radius = 1;
-
-    /**
-     * The mode used for generating particles around the radius.
-     *
-     * 在弧线周围产生粒子的模式。
-     */
-    @serialize
-    radiusMode = ParticleSystemShapeMultiModeValue.Random;
-
-    /**
-     * When using one of the animated modes, how quickly to move the emission position along the radius.
-     *
-     * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
-     */
-    @serialize
-    radiusSpeed = serialization.setValue({ __type__: 'MinMaxCurve', ...minMaxCurveDefault() }, { constant: 1, constantMin: 1, constantMax: 1 });
-
-    /**
-     * A multiplier of the radius speed of the emission shape.
-     *
-     * 发射形状的半径速度的乘法器。
-     */
-    get radiusSpeedMultiplier()
+    //
+    if (module.alignToDirection)
     {
-        return this.radiusSpeed.curveMultiplier;
+        const mat: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), particle.velocity, VEC3_Y_AXIS) };
+
+        const mat0 = mat4FromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
+
+        mat4Append(mat0, mat, mat0);
+
+        const rotation = { x: 0, y: 0, z: 0 };
+
+        mat4GetRotation(mat0, rotation);
+        particle.rotation = rotation;
     }
-
-    set radiusSpeedMultiplier(v)
+    const length = vec3Length(particle.velocity);
+    if (module.randomDirectionAmount > 0)
     {
-        (this.radiusSpeed as WritableMinMaxCurveLike).curveMultiplier = v;
+        const velocity = vec3NormalizeThickness(vec3SubNumber(vec3ScaleNumber(vec3Random(), 2), 1), length);
+        vec3NormalizeThickness(vec3LerpNumber(particle.velocity, velocity, module.randomDirectionAmount, particle.velocity), length, particle.velocity);
     }
-
-    /**
-     * Control the gap between emission points around the radius.
-     *
-     * 控制弧线周围发射点之间的间隙。
-     */
-    @serialize
-    radiusSpread = 0;
-
-    private _shapeSphere = new ParticleSystemShapeSphere(this);
-    private _shapeHemisphere = new ParticleSystemShapeHemisphere(this);
-    private _shapeCone = new ParticleSystemShapeCone(this);
-    private _shapeBox = new ParticleSystemShapeBox(this);
-    private _shapeCircle = new ParticleSystemShapeCircle(this);
-    private _shapeEdge = new ParticleSystemShapeEdge(this);
-
-    constructor()
+    if (module.sphericalDirectionAmount > 0)
     {
-        super();
-        watcher.watch(this as ParticleShapeModule, 'shapeType', this._onShapeTypeChanged, this);
-        watcher.watch(this as ParticleShapeModule, 'shape', this._onShapeChanged, this);
-        //
-        this.shapeType = ParticleSystemShapeType.Cone;
+        const velocity = vec3NormalizeThickness(vec3Copy(particle.position), length);
+        vec3NormalizeThickness(vec3LerpNumber(particle.velocity, velocity, module.sphericalDirectionAmount, particle.velocity), length, particle.velocity);
     }
+}
 
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
+/**
+ * 按 `shapeType` 分发到对应形状的「算位置与方向」函数。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ * @param position 写出的位置
+ * @param dir 写出的方向
+ */
+function calcShapePosDirByShapeType(module: ParticleShapeModuleLike, particle: Particle, position: Vector3Like, dir: Vector3Like): void
+{
+    switch (module.shapeType)
     {
-        const startSpeed = minMaxCurveGetValue(this.particleSystem.main.startSpeed, particle.birthRateAtDuration);
-        //
-        const position = vec3From(0, 0, 0, tempPosition);
-        const dir = vec3From(0, 0, 1, tempDir);
-        //
-        if (this.enabled)
-        {
-            this.activeShape.calcParticlePosDir(particle, position, dir);
-        }
-
-        vec3ScaleNumber(dir, startSpeed, dir);
-        if (this.particleSystem.main.simulationSpace === ParticleSystemSimulationSpace.World)
-        {
-            const local2world = logic(this.particleSystem._obj()).local2world;
-
-            mat4TransformPoint3(local2world, position, position);
-            mat4TransformVector3(local2world, dir, dir);
-        }
-        vec3Add(particle.position, position, particle.position);
-        vec3Add(particle.velocity, dir, particle.velocity);
-
-        if (!this.enabled)
-        { return; }
-
-        //
-        if (this.alignToDirection)
-        {
-            // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据基准 + 纯函数」
-            const mat: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), particle.velocity, VEC3_Y_AXIS) };
-
-            const mat0 = mat4FromRotation(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-
-            mat4Append(mat0, mat, mat0);
-
-            const rotation = { x: 0, y: 0, z: 0 };
-
-            mat4GetRotation(mat0, rotation);
-            particle.rotation = rotation;
-        }
-        const length = vec3Length(particle.velocity);
-        if (this.randomDirectionAmount > 0)
-        {
-            const velocity = vec3NormalizeThickness(vec3SubNumber(vec3ScaleNumber(vec3Random(), 2), 1), length);
-            vec3NormalizeThickness(vec3LerpNumber(particle.velocity, velocity, this.randomDirectionAmount, particle.velocity), length, particle.velocity);
-        }
-        if (this.sphericalDirectionAmount > 0)
-        {
-            const velocity = vec3NormalizeThickness(vec3Copy(particle.position), length);
-            vec3NormalizeThickness(vec3LerpNumber(particle.velocity, velocity, this.sphericalDirectionAmount, particle.velocity), length, particle.velocity);
-        }
-    }
-
-    private _onShapeTypeChanged()
-    {
-        switch (this.shapeType)
-        {
-            case ParticleSystemShapeType.Sphere:
-                this.shape = ParticleSystemShapeType1.Sphere;
-                this._shapeSphere.emitFromShell = false;
-                this.activeShape = this._shapeSphere;
-                break;
-            case ParticleSystemShapeType.SphereShell:
-                this.shape = ParticleSystemShapeType1.Sphere;
-                this._shapeSphere.emitFromShell = true;
-                this.activeShape = this._shapeSphere;
-                break;
-            case ParticleSystemShapeType.Hemisphere:
-                this.shape = ParticleSystemShapeType1.Hemisphere;
-                this._shapeHemisphere.emitFromShell = false;
-                this.activeShape = this._shapeHemisphere;
-                break;
-            case ParticleSystemShapeType.HemisphereShell:
-                this.shape = ParticleSystemShapeType1.Hemisphere;
-                this._shapeHemisphere.emitFromShell = true;
-                this.activeShape = this._shapeHemisphere;
-                break;
-            case ParticleSystemShapeType.Cone:
-                this.shape = ParticleSystemShapeType1.Cone;
-                this._shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.Base;
-                this.activeShape = this._shapeCone;
-                break;
-            case ParticleSystemShapeType.ConeShell:
-                this.shape = ParticleSystemShapeType1.Cone;
-                this._shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.BaseShell;
-                this.activeShape = this._shapeCone;
-                break;
-            case ParticleSystemShapeType.ConeVolume:
-                this.shape = ParticleSystemShapeType1.Cone;
-                this._shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.Volume;
-                this.activeShape = this._shapeCone;
-                break;
-            case ParticleSystemShapeType.ConeVolumeShell:
-                this.shape = ParticleSystemShapeType1.Cone;
-                this._shapeCone.emitFrom = ParticleSystemShapeConeEmitFrom.VolumeShell;
-                this.activeShape = this._shapeCone;
-                break;
-            case ParticleSystemShapeType.Box:
-                this.shape = ParticleSystemShapeType1.Box;
-                this._shapeBox.emitFrom = ParticleSystemShapeBoxEmitFrom.Volume;
-                this.activeShape = this._shapeBox;
-                break;
-            case ParticleSystemShapeType.BoxShell:
-                this.shape = ParticleSystemShapeType1.Box;
-                this._shapeBox.emitFrom = ParticleSystemShapeBoxEmitFrom.Shell;
-                this.activeShape = this._shapeBox;
-                break;
-            case ParticleSystemShapeType.BoxEdge:
-                this.shape = ParticleSystemShapeType1.Box;
-                this._shapeBox.emitFrom = ParticleSystemShapeBoxEmitFrom.Edge;
-                this.activeShape = this._shapeBox;
-                break;
-            case ParticleSystemShapeType.Mesh:
-                this.shape = ParticleSystemShapeType1.Mesh;
-                console.warn(`未实现 ParticleSystemShapeType.Mesh`);
-                this.activeShape = null!;
-                break;
-            case ParticleSystemShapeType.MeshRenderer:
-                this.shape = ParticleSystemShapeType1.MeshRenderer;
-                console.warn(`未实现 ParticleSystemShapeType.Mesh`);
-                this.activeShape = null!;
-                break;
-            case ParticleSystemShapeType.SkinnedMeshRenderer:
-                this.shape = ParticleSystemShapeType1.SkinnedMeshRenderer;
-                console.warn(`未实现 ParticleSystemShapeType.Mesh`);
-                this.activeShape = null!;
-                break;
-            case ParticleSystemShapeType.Circle:
-                this.shape = ParticleSystemShapeType1.Circle;
-                this._shapeCircle.emitFromEdge = false;
-                this.activeShape = this._shapeCircle;
-                break;
-            case ParticleSystemShapeType.CircleEdge:
-                this.shape = ParticleSystemShapeType1.Circle;
-                this._shapeCircle.emitFromEdge = true;
-                this.activeShape = this._shapeCircle;
-                break;
-            case ParticleSystemShapeType.SingleSidedEdge:
-                this.shape = ParticleSystemShapeType1.Edge;
-                this.activeShape = this._shapeEdge;
-                break;
-            default:
-                console.warn(`错误 ParticleShapeModule.shapeType 值 ${this.shapeType}`);
-                break;
-        }
-        // 这里原本有一行 `serialization.setValue(this.activeShape, preValue)`，意图是"换形状时把旧形状上的
-        // 设置带到新形状"。但 setValue(target, value) 的语义是"把**序列化数据**反序列化进 target"，
-        // 传一个活跃的 shape 实例进去会让 deserialize 抛 TypeError（issue #376）——运行时只要第二次设置
-        // `shapeType` 就会崩。
-        //
-        // 而且它本来就是多余的：各 shape 的属性大多是通过 getter 读 `this._module` 的（见
-        // ParticleSystemShapeSphere.radius 等），**同一个 module 下的形状天然共享配置**，不需要搬运。
-        this.emit('refreshView');
-    }
-
-    private _onShapeChanged()
-    {
-        switch (this.shape)
-        {
-            case ParticleSystemShapeType1.Sphere:
-                this.shapeType = this._shapeSphere.emitFromShell ? ParticleSystemShapeType.SphereShell : ParticleSystemShapeType.Sphere;
-                break;
-            case ParticleSystemShapeType1.Hemisphere:
-                this.shapeType = this._shapeHemisphere.emitFromShell ? ParticleSystemShapeType.HemisphereShell : ParticleSystemShapeType.Hemisphere;
-                break;
-            case ParticleSystemShapeType1.Cone:
-                switch (this._shapeCone.emitFrom)
-                {
-                    case ParticleSystemShapeConeEmitFrom.Base:
-                        this.shapeType = ParticleSystemShapeType.Cone;
-                        break;
-                    case ParticleSystemShapeConeEmitFrom.BaseShell:
-                        this.shapeType = ParticleSystemShapeType.ConeShell;
-                        break;
-                    case ParticleSystemShapeConeEmitFrom.Volume:
-                        this.shapeType = ParticleSystemShapeType.ConeVolume;
-                        break;
-                    case ParticleSystemShapeConeEmitFrom.VolumeShell:
-                        this.shapeType = ParticleSystemShapeType.ConeVolumeShell;
-                        break;
-                    default:
-                        console.warn(`错误ParticleSystemShapeCone.emitFrom值 ${this._shapeCone.emitFrom}`);
-                        break;
-                }
-                break;
-            case ParticleSystemShapeType1.Box:
-                switch (this._shapeBox.emitFrom)
-                {
-                    case ParticleSystemShapeBoxEmitFrom.Volume:
-                        this.shapeType = ParticleSystemShapeType.Box;
-                        break;
-                    case ParticleSystemShapeBoxEmitFrom.Shell:
-                        this.shapeType = ParticleSystemShapeType.BoxShell;
-                        break;
-                    case ParticleSystemShapeBoxEmitFrom.Edge:
-                        this.shapeType = ParticleSystemShapeType.BoxEdge;
-                        break;
-                    default:
-                        console.warn(`错误ParticleSystemShapeCone.emitFrom值 ${this._shapeCone.emitFrom}`);
-                        break;
-                }
-                break;
-            case ParticleSystemShapeType1.Mesh:
-                this.shapeType = ParticleSystemShapeType.Mesh;
-                break;
-            case ParticleSystemShapeType1.MeshRenderer:
-                this.shapeType = ParticleSystemShapeType.MeshRenderer;
-                break;
-            case ParticleSystemShapeType1.SkinnedMeshRenderer:
-                this.shapeType = ParticleSystemShapeType.SkinnedMeshRenderer;
-                break;
-            case ParticleSystemShapeType1.Circle:
-                this.shapeType = this._shapeCircle.emitFromEdge ? ParticleSystemShapeType.CircleEdge : ParticleSystemShapeType.Circle;
-                break;
-            case ParticleSystemShapeType1.Edge:
-                this.shapeType = ParticleSystemShapeType.SingleSidedEdge;
-                break;
-            default:
-                console.warn(`错误 ParticleShapeModule.shape 值 ${this.shape}`);
-                break;
-        }
+        case ParticleSystemShapeType.Sphere:
+        case ParticleSystemShapeType.SphereShell:
+            particleSystemShapeSphereCalcParticlePosDir(module, particle, position, dir);
+            break;
+        case ParticleSystemShapeType.Hemisphere:
+        case ParticleSystemShapeType.HemisphereShell:
+            particleSystemShapeHemisphereCalcParticlePosDir(module, particle, position, dir);
+            break;
+        case ParticleSystemShapeType.Cone:
+        case ParticleSystemShapeType.ConeShell:
+        case ParticleSystemShapeType.ConeVolume:
+        case ParticleSystemShapeType.ConeVolumeShell:
+            particleSystemShapeConeCalcParticlePosDir(module, particle, position, dir);
+            break;
+        case ParticleSystemShapeType.Box:
+        case ParticleSystemShapeType.BoxShell:
+        case ParticleSystemShapeType.BoxEdge:
+            particleSystemShapeBoxCalcParticlePosDir(module, particle, position, dir);
+            break;
+        case ParticleSystemShapeType.Circle:
+        case ParticleSystemShapeType.CircleEdge:
+            particleSystemShapeCircleCalcParticlePosDir(module, particle, position, dir);
+            break;
+        case ParticleSystemShapeType.SingleSidedEdge:
+            particleSystemShapeEdgeCalcParticlePosDir(module, particle, position, dir);
+            break;
+        case ParticleSystemShapeType.Mesh:
+        case ParticleSystemShapeType.MeshRenderer:
+        case ParticleSystemShapeType.SkinnedMeshRenderer:
+            console.warn('未实现 ParticleSystemShapeType.Mesh');
+            break;
+        default:
+            console.warn(`错误 ParticleShapeModule.shapeType 值 ${module.shapeType}`);
+            break;
     }
 }
 
 const tempPosition = { x: 0, y: 0, z: 0 };
 const tempDir = { x: 0, y: 0, z: 1 };
+const VEC3_Y_AXIS = { x: 0, y: 1, z: 0 };

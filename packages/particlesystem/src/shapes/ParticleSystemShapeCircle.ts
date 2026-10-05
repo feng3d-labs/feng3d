@@ -1,133 +1,56 @@
-import { mathUtilDegToRad, minMaxCurveGetValue } from '@feng3d/math';
-import { vec3From, vec3ScaleNumber, WritableVector3Like } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
+import { mathUtilDegToRad, minMaxCurveGetValue, vec3From, vec3ScaleNumber } from '@feng3d/math';
+import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeMultiModeValue } from '../enums/ParticleSystemShapeMultiModeValue';
-import { Particle } from '../Particle';
-import { ParticleSystemShape } from './ParticleSystemShape';
+import { ParticleSystemShapeType } from '../enums/ParticleSystemShapeType';
+import type { Particle } from '../Particle';
+import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
 
 /**
- * 粒子系统 发射圆盘
+ * 从圆盘发射（原 `ParticleSystemShapeCircle.calcParticlePosDir`）。
+ *
+ * `emitFromEdge` 开关由 `shapeType`（`Circle` / `CircleEdge`）直接推导；
+ * `radius` / `arc` / `arcMode` / `arcSpread` / `arcSpeed` 的转发访问器删除（直接读 `module`）。
+ *
+ * @param module 形状模块数据
+ * @param particle 粒子
+ * @param position 写出的位置
+ * @param dir 写出的方向
  */
-export class ParticleSystemShapeCircle extends ParticleSystemShape
+export function particleSystemShapeCircleCalcParticlePosDir(module: ParticleShapeModuleLike, particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
-    @oav({ tooltip: '半径' })
-    get radius()
+    const emitFromEdge = module.shapeType === ParticleSystemShapeType.CircleEdge;
+    const radius = module.radius;
+    const arc = module.arc;
+    // 在圆心的方向
+    let radiusAngle = 0;
+    if (module.arcMode === ParticleSystemShapeMultiModeValue.Random)
     {
-        return this._module.radius;
+        radiusAngle = Math.random() * arc;
     }
-
-    set radius(v)
+    else if (module.arcMode === ParticleSystemShapeMultiModeValue.Loop)
     {
-        this._module.radius = v;
+        const totalAngle = particle.birthTime * minMaxCurveGetValue(module.arcSpeed, particle.birthRateAtDuration) * 360;
+        radiusAngle = totalAngle % arc;
     }
-
-    @oav({ tooltip: '弧度' })
-    get arc()
+    else if (module.arcMode === ParticleSystemShapeMultiModeValue.PingPong)
     {
-        return this._module.arc;
-    }
-
-    set arc(v)
-    {
-        this._module.arc = v;
-    }
-
-    /**
-     * The mode used for generating particles around the arc.
-     *
-     * 在弧线周围产生粒子的模式。
-     */
-    // @oav({ tooltip: "The mode used for generating particles around the arc.", component: "OAVEnum", componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-    @oav({ tooltip: '在弧线周围产生粒子的模式。', component: 'OAVEnum', componentParam: { enumClass: ParticleSystemShapeMultiModeValue } })
-    get arcMode()
-    {
-        return this._module.arcMode;
-    }
-
-    set arcMode(v)
-    {
-        this._module.arcMode = v;
-    }
-
-    /**
-     * Control the gap between emission points around the arc.
-     *
-     * 控制弧线周围发射点之间的间隙。
-     */
-    @oav({ tooltip: '控制弧线周围发射点之间的间隙。' })
-    get arcSpread()
-    {
-        return this._module.arcSpread;
-    }
-
-    set arcSpread(v)
-    {
-        this._module.arcSpread = v;
-    }
-
-    /**
-     * When using one of the animated modes, how quickly to move the emission position around the arc.
-     * 当使用一个动画模式时，如何快速移动发射位置周围的弧。
-     */
-    @oav({ tooltip: '当使用一个动画模式时，如何快速移动发射位置周围的弧。' })
-    get arcSpeed()
-    {
-        return this._module.arcSpeed;
-    }
-
-    set arcSpeed(v)
-    {
-        this._module.arcSpeed = v;
-    }
-
-    /**
-     * 是否从圆形边缘发射。
-     */
-    @oav({ tooltip: '是否从圆形边缘发射。' })
-    emitFromEdge = false;
-
-    /**
-     * 计算粒子的发射位置与方向
-     *
-     * @param particle
-     * @param position
-     * @param dir
-     */
-    calcParticlePosDir(particle: Particle, position: WritableVector3Like, dir: WritableVector3Like)
-    {
-        const radius = this.radius;
-        const arc = this.arc;
-        // 在圆心的方向
-        let radiusAngle = 0;
-        if (this.arcMode === ParticleSystemShapeMultiModeValue.Random)
+        const totalAngle = particle.birthTime * minMaxCurveGetValue(module.arcSpeed, particle.birthRateAtDuration) * 360;
+        radiusAngle = totalAngle % arc;
+        if (Math.floor(totalAngle / arc) % 2 === 1)
         {
-            radiusAngle = Math.random() * arc;
+            radiusAngle = arc - radiusAngle;
         }
-        else if (this.arcMode === ParticleSystemShapeMultiModeValue.Loop)
-        {
-            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.arcSpeed, particle.birthRateAtDuration) * 360;
-            radiusAngle = totalAngle % arc;
-        }
-        else if (this.arcMode === ParticleSystemShapeMultiModeValue.PingPong)
-        {
-            const totalAngle = particle.birthTime * minMaxCurveGetValue(this.arcSpeed, particle.birthRateAtDuration) * 360;
-            radiusAngle = totalAngle % arc;
-            if (Math.floor(totalAngle / arc) % 2 === 1)
-            {
-                radiusAngle = arc - radiusAngle;
-            }
-        }
-        if (this.arcSpread > 0)
-        {
-            radiusAngle = Math.floor(radiusAngle / arc / this.arcSpread) * arc * this.arcSpread;
-        }
-        radiusAngle = mathUtilDegToRad(radiusAngle);
-        // 计算位置
-        vec3From(Math.cos(radiusAngle), Math.sin(radiusAngle), 0, dir);
-        vec3ScaleNumber(dir, radius, position);
-        if (!this.emitFromEdge)
-        {
-            vec3ScaleNumber(position, Math.random(), position);
-        }
+    }
+    if (module.arcSpread > 0)
+    {
+        radiusAngle = Math.floor(radiusAngle / arc / module.arcSpread) * arc * module.arcSpread;
+    }
+    radiusAngle = mathUtilDegToRad(radiusAngle);
+    // 计算位置
+    vec3From(Math.cos(radiusAngle), Math.sin(radiusAngle), 0, dir);
+    vec3ScaleNumber(dir, radius, position);
+    if (!emitFromEdge)
+    {
+        vec3ScaleNumber(position, Math.random(), position);
     }
 }
