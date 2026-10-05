@@ -8,7 +8,7 @@
  * 每次调用返回**一组全新的**结构定义与实例：TSL 的依赖收集按对象身份（Set/WeakSet）进行，
  * 一个着色器构建内调用一次即生成一份声明；跨构建复用同一对象会让不同着色器的依赖互相污染。
  */
-import { float, mat4, struct, uniform, vec3 } from '@feng3d/tsl';
+import { float, mat4, struct, uniform, vec2, vec3, vec4 } from '@feng3d/tsl';
 
 /**
  * 声明 `transform` uniform（TransformUniforms）。
@@ -47,4 +47,21 @@ export function createCameraUniforms()
     });
 
     return CameraUniforms(uniform('cameraUniforms', 0, 1));
+}
+
+/**
+ * 声明 `globalUniforms` uniform（GlobalUniforms，@group(0) @binding(2)）。
+ *
+ * 对应 `ForwardRenderer.draw` 注入的 globalUniforms（场景环境光 + 画布像素尺寸）。
+ *
+ * @returns GlobalUniforms 实例
+ */
+export function createGlobalUniforms()
+{
+    const GlobalUniforms = struct('GlobalUniforms', {
+        u_sceneAmbientColor: vec4,
+        u_Viewport: vec2,
+    });
+
+    return GlobalUniforms(uniform('globalUniforms', 0, 2));
 }

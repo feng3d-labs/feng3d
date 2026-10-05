@@ -6,7 +6,7 @@
  *
  * 构建结果**懒加载并缓存**：模块顶层不执行着色器构建（AGENTS.md §15 R2 零模块级副作用）。
  */
-import { attribute, fragment, gl_Position, normalize, return_, varying, vec3, vec4, vertex } from '@feng3d/tsl';
+import { attribute, fragment, gl_Position, let_, normalize, return_, varying, vec3, vec4, vertex } from '@feng3d/tsl';
 import { createCameraUniforms, createTransformUniforms } from './uniforms';
 
 /** 懒构建缓存（首次调用时填充） */
@@ -43,9 +43,11 @@ function buildNormalShader(): { vertex: string; fragment: string }
 
     const vertexShader = vertex('main', () =>
     {
-        const worldPosition = transform.u_modelMatrix.multiply(vec4(a_position, 1.0));
+        // 用 let_ 生成 WGSL 局部变量：与手写版本同形，避免中间值被内联后改变矩阵乘法的结合顺序（浮点结果会差 1 ulp）
+        const worldPosition = let_('worldPosition', transform.u_modelMatrix.multiply(vec4(a_position, 1.0)));
         gl_Position.assign(camera.u_viewProjection.multiply(worldPosition));
-        worldNormal.assign(normalize(transform.u_ITModelMatrix.multiply(vec4(a_normal, 0.0)).xyz));
+        const normal = let_('normal', normalize(transform.u_ITModelMatrix.multiply(vec4(a_normal, 0.0)).xyz));
+        worldNormal.assign(normal);
     });
 
     const fragmentShader = fragment('main', () =>
