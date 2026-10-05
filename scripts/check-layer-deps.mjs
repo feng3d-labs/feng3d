@@ -53,8 +53,15 @@ for (const { pkg, allowed, reason } of LAYER0)
 /**
  * 上层扩展包：它们的源码 `import ... from 'feng3d'`，因此必须声明 feng3d 依赖；
  * 反过来 feng3d **不得**依赖它们（否则依赖图成环，issue #86）。
+ *
+ * 判据是「源码 import 'feng3d' + 声明 feng3d 依赖 + feng3d 不依赖它」三件事，
+ * 因此**新包只要满足这三条就该登记到这里**——不登记不会报错，等于这道守卫对它失效
+ * （feng3d 侧若哪天误加了它的依赖，成环不会被拦下）。
+ *
+ * `packages/ui` 是事实上的第三个（收尾批补登记，此前漏在清单外）：它 16 个源文件
+ * `import ... from 'feng3d'`、`package.json` 声明了 `feng3d: "*"`，而 feng3d 不依赖它。
  */
-const UPPER_EXTENSIONS = ['packages/particlesystem', 'packages/terrain'];
+const UPPER_EXTENSIONS = ['packages/particlesystem', 'packages/terrain', 'packages/ui'];
 
 const feng3dJson = JSON.parse(readFileSync(join(ROOT, 'packages/feng3d/package.json'), 'utf8'));
 const feng3dDeps = Object.keys(feng3dJson.dependencies ?? {});
@@ -86,3 +93,5 @@ if (problems.length > 0)
 }
 
 console.log(`✅ 分层依赖检查通过：${LAYER0.map((l) => l.pkg.split('/')[1]).join(' / ')} 无未登记的上层依赖`);
+console.log(`   上层扩展（源码 import 'feng3d'，feng3d 不得反向依赖）：`
+    + UPPER_EXTENSIONS.map((p) => p.split('/')[1]).join(' / '));
