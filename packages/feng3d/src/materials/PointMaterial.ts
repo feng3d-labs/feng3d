@@ -8,9 +8,7 @@ declare module '@feng3d/reactivity'
 
 import type { Color4 } from '../core/Color4';
 import { RenderPipeline } from '@feng3d/webgpu';
-import { cameraUniformsWGSL } from '../cameras/Camera';
-import { transformUniformsWGSL } from '../core/Object3D';
-import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
+import { getPointShaderWGSL } from '../shaders/tsl/pointMaterial';
 import { Material, MaterialLogic, materialLogic, writeMaterialBase } from './Material';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 
@@ -87,9 +85,12 @@ export function pointMaterialLogic(data: PointMaterial): PointMaterialLogic
     };
     const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
 
+    // TSL 构建的着色器（首次调用时构建并缓存，见 shaders/tsl/pointMaterial.ts）
+    const shaderWGSL = getPointShaderWGSL();
+
     const renderPipeline = reactive({
-        vertex: { wgsl: pointVertexWGSL },
-        fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
+        vertex: { wgsl: shaderWGSL.vertex },
+        fragment: { wgsl: shaderWGSL.fragment, targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
@@ -110,85 +111,3 @@ export function pointMaterialLogic(data: PointMaterial): PointMaterialLogic
 
 // 注册到 logic 分发表
 registerLogic('PointMaterial', pointMaterialLogic);
-
-// ============================================================================
-// 点顶点着色器 WGSL（billboard 四边形展开）
-//
-// PointGeometry 已把每点扩展成 4 顶点，a_uv 承载四边形角偏移 corner ∈ [-1,1]²。
-// 本着色器把点投影到 clip space 后，按 u_PointSize 在 NDC 屏幕空间展开成方形：
-//   NDC 偏移 = corner × (u_PointSize / viewportPixels) × 2
-// 并做透视修正（偏移乘 clip.w），使展开在屏幕空间进行、远处点视觉更小。
-//
-// viewport 像素尺寸来自 globalUniforms.u_Viewport（ForwardRenderer 每帧从画布注入）。
-//
-// 顶点输入（与 core Geometry 的 a_* 属性直接一致）：
-// - @location(0) a_position
-// - @location(1) a_color
-// - @location(2) a_uv（四边形角偏移 corner）
-const pointVertexWGSL = `
-struct VertexInput {
-    @location(0) a_position: vec3<f32>,
-    @location(1) a_color: vec4<f32>,
-    // a_uv 复用为 billboard 四边形角偏移 corner ∈ [-1,1]²（PointGeometry 写入）
-    @location(2) a_uv: vec2<f32>,
-}
-
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) color: vec4<f32>,
-}
-
-struct PointUniforms {
-    u_color: vec4<f32>,
-    u_PointSize: f32,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: PointUniforms;
-
-` + transformUniformsWGSL + cameraUniformsWGSL + globalUniformsWGSL + `
-@vertex
-fn main(input: VertexInput) -> VertexOutput {
-    var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
-    let clipPos = cameraUniforms.u_viewProjection * worldPosition;
-    // NDC 空间按像素展开：uv(=corner) × size / viewportPixels × 2（×2 因 NDC 范围 [-1,1]）
-    let ndcOffset = input.a_uv * material_uniforms.u_PointSize / globalUniforms.u_Viewport * 2.0;
-    // 透视修正：偏移施加在 clip space（乘 clipPos.w），保证屏幕空间等尺寸
-    output.position = vec4<f32>(clipPos.xy + ndcOffset * clipPos.w, clipPos.z, clipPos.w);
-    output.color = input.a_color;
-    return output;
-}
-`;
-
-// ============================================================================
-// 点片段着色器 WGSL
-//
-// 用材质 u_color 与顶点颜色相乘输出。
-//
-// 绑定约定：
-// - @group(0) @binding(3) var<uniform> material_uniforms - PointUniforms（与顶点着色器共用）
-//
-// 点片段着色器代码
-const pointFragmentWGSL = `
-struct FragmentInput {
-    @location(0) color: vec4<f32>,
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-
-struct PointUniforms {
-    u_color: vec4<f32>,
-    u_PointSize: f32,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: PointUniforms;
-
-@fragment
-fn main(input: FragmentInput) -> FragmentOutput {
-    var output: FragmentOutput;
-    output.color = vec4<f32>(input.color.rgb * material_uniforms.u_color.rgb, input.color.a);
-    return output;
-}
-`;

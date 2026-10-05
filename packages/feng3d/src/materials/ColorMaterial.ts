@@ -9,8 +9,7 @@ declare module '@feng3d/reactivity'
 import { reactive, registerLogic } from '@feng3d/reactivity';
 import { RenderPipeline } from '@feng3d/webgpu';
 import type { Color4 } from '../core/Color4';
-import { cameraUniformsWGSL } from '../cameras/Camera';
-import { transformUniformsWGSL } from '../core/Object3D';
+import { getColorShaderWGSL } from '../shaders/tsl/colorMaterial';
 import { Material, MaterialLogic, materialLogic, writeMaterialBase } from './Material';
 
 declare module './Material'
@@ -83,9 +82,12 @@ export function colorMaterialLogic(data: ColorMaterial): ColorMaterialLogic
         });
     const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
 
+    // TSL 构建的着色器（首次调用时构建并缓存，见 shaders/tsl/colorMaterial.ts）
+    const shaderWGSL = getColorShaderWGSL();
+
     const renderPipeline = reactive({
-        vertex: { wgsl: colorWGSL },
-        fragment: { wgsl: colorWGSL, targets: [{}] },
+        vertex: { wgsl: shaderWGSL.vertex },
+        fragment: { wgsl: shaderWGSL.fragment, targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
@@ -105,58 +107,3 @@ export function colorMaterialLogic(data: ColorMaterial): ColorMaterialLogic
 
 // 注册到 logic 分发表
 registerLogic('ColorMaterial', colorMaterialLogic);
-
-/**
- * 颜色顶点着色器代码
- *
- * TransformUniforms / CameraUniforms 由 transformUniformsWGSL / cameraUniformsWGSL 拼接，
- * 避免重复声明（struct 定义在数据源 Object3D.ts / Camera.ts 中维护）。
- */
-const colorWGSL = `
-struct VertexInput {
-    @location(0) a_position: vec3<f32>,
-    @location(1) a_color: vec4<f32>,
-}
-
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) color: vec4<f32>,
-}
-` + transformUniformsWGSL + cameraUniformsWGSL + `
-@vertex
-fn vertex(input: VertexInput) -> VertexOutput {
-    var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
-    output.position = cameraUniforms.u_viewProjection * worldPosition;
-    output.color = input.a_color;
-    return output;
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-
-struct ColorUniforms {
-    u_diffuseInput: vec4<f32>,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: ColorUniforms;
-
-@fragment
-fn fragment(input: VertexOutput) -> FragmentOutput {
-    var output: FragmentOutput;
-    // 顶点色与材质色相乘；透明度取顶点色。
-    //
-    // 不能写 input.color * material_uniforms.u_diffuseInput：实测材质 uniform 的**第 4 个
-    // 分量（alpha）传到 GPU 后恒为 0**（rgb 正常），相乘后整个物体渲染为黑色
-    //（单独输出 uniform、单独输出顶点色都正常，说明问题只出在 uniform 的 alpha 分量）。
-    // 逐分量书写并让 alpha 取顶点色即可规避。
-    output.color = vec4<f32>(
-        input.color.r * material_uniforms.u_diffuseInput.r,
-        input.color.g * material_uniforms.u_diffuseInput.g,
-        input.color.b * material_uniforms.u_diffuseInput.b,
-        input.color.a,
-    );
-    return output;
-}
-`;
