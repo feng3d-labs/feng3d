@@ -139,6 +139,134 @@ function getMarks(): Map<string, number>
 }
 
 /**
+ * 写操作**审计**（#281 的「可审计」那一截）。
+ *
+ * ## 它补的是什么
+ *
+ * `history.status` 回答"栈有多深"、`history.undo` 回答"退一步"—— 两者都答不了
+ * **"刚才这段时间里，谁改了什么、有没有被拒"**。AI 是这条通道的主要使用者，它要的不只是
+ * "能撤销"，还有**可追溯**：出了事能对着记录说清每一步。
+ *
+ * ## 三条取舍
+ *
+ * 1. **记在写总表那一刻**（`withAudit` 包装器），不是每个方法里各写一遍 ——
+ *    后者迟早变成"有的方法记、有的不记"；
+ * 2. **入参只留摘要**：写场景的入参可能有几万个顶点，全记会把内存与可读性一起毁掉。
+ *    所以只记 `id` / `path` / `name` / `mark` / `type` 这类定位字段，以及各种数组的**长度**；
+ * 3. **有界，且如实报出截断**：与 `undoStack` 的 `MAX_HISTORY` 同一态度。
+ *    沉默地丢记录比不记更坏 —— 那会让人以为"就这些"。
+ */
+const MAX_AUDIT = 200;
+
+/** 一条审计 */
+export interface AuditEntry
+{
+    /** 序号（从 1 起、**跨环形覆盖单调递增**："第几条"不会因覆盖而错乱） */
+    readonly seq: number;
+    /** 发生时刻（ISO） */
+    readonly at: string;
+    /** 桥接方法名，如 `scene.set` */
+    readonly method: string;
+    /** 是否预演（`dryRun: true`）—— 预演也留记录：它同样"碰过"场景再回滚 */
+    readonly dryRun: boolean;
+    /** 成功与否（写通道被拒、方法抛错都算 false） */
+    readonly ok: boolean;
+    /** 失败原因（成功时缺省） */
+    readonly error?: string;
+    /** 入参**摘要**（只记能回答"改了什么"的少量字段） */
+    readonly params: Record<string, unknown>;
+}
+
+/** 最近的审计（新的在后，读回时反转） */
+const auditEntries: AuditEntry[] = [];
+
+/** 累计发生过的写调用次数（**不因覆盖而回退**） */
+let auditSeq = 0;
+
+/** 是否因为环形覆盖丢过记录（如实报出） */
+let auditTruncated = false;
+
+/**
+ * 从入参里取**摘要**（不记全值）。
+ *
+ * @param params 入参
+ * @returns 摘要
+ */
+export function summarizeParams(params: Record<string, unknown>): Record<string, unknown>
+{
+    const summary: Record<string, unknown> = {};
+
+    for (const key of ['id', 'path', 'name', 'mark', 'type'])
+    {
+        if (params[key] !== undefined) summary[key] = params[key];
+    }
+    for (const key of ['ops', 'objects', 'fields', 'changes'])
+    {
+        if (Array.isArray(params[key])) summary[key] = (params[key] as unknown[]).length;
+    }
+    if (params.value !== undefined) summary.hasValue = true;
+
+    return summary;
+}
+
+/**
+ * 记一条审计。
+ *
+ * @param entry 除 `seq` / `at` 之外的字段（那两个由这里补）
+ */
+export function recordAudit(entry: Omit<AuditEntry, 'seq' | 'at'>): void
+{
+    auditSeq += 1;
+    auditEntries.push({ seq: auditSeq, at: new Date().toISOString(), ...entry });
+
+    if (auditEntries.length > MAX_AUDIT)
+    {
+        auditEntries.shift();
+        auditTruncated = true;
+    }
+}
+
+/**
+ * 读审计（**最近的在前**）。
+ *
+ * @param params.limit 最多几条（默认 50，上限即环形容量）
+ */
+export function historyAudit(params: Record<string, unknown>): unknown
+{
+    const limit = params.limit === undefined
+        ? 50
+        : Math.max(1, Math.min(MAX_AUDIT, Number(params.limit)));
+    const entries = auditEntries.slice(-limit).reverse();
+
+    return {
+        count: auditEntries.length,
+        total: auditSeq,
+        truncated: auditTruncated,
+        limit,
+        entries,
+        hint: auditTruncated
+            ? `环形缓冲只留最近 ${MAX_AUDIT} 条，而这期间共发生过 ${auditSeq} 次写调用（记录有丢弃）`
+            : `共 ${auditSeq} 次写调用，都在这里`,
+    };
+}
+
+/**
+ * 清空审计（**只清记录、不动场景**）。
+ *
+ * 存在的理由与 `log.clear` 相同：AI 常见的工作方式是"先清干净、再跑一段、对着记录看"，
+ * 没有它就只能靠"记住 seq"来切分两段。
+ */
+export function historyAuditClear(): unknown
+{
+    const cleared = auditEntries.length;
+
+    auditEntries.length = 0;
+    auditTruncated = false;
+
+    return { cleared, total: auditSeq, hint: '累计次数（total）保留；新记录从下一条接着编号' };
+}
+
+/**
  * 在撤销栈上打一个标记。
  *
  * 用途：AI 要"先试试看"时先打标记、再放手尝试，不满意用 `scene.rollback` 一次退回。
