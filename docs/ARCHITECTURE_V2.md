@@ -545,6 +545,21 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 画面判据清单扩到 **13 个示例**（新增 helloTriangleMSAA / resizeCanvas）全部通过；
 > `worker` 的容差从 0.08 提到 0.10（实测 0.04~0.07 但偶发越界）。
 >
+> ✅ **第十一批（#710 阴影/丢弃批，2026-10-05）**：为 `StandardMaterial` 片元（约 300 行：光照 + 阴影 + 雾）
+> 铺路，给 TSL 补了三项能力（都先确认过"现有 API 表达不了"）：
+>
+> | 能力 | API | 生成的 WGSL |
+> |---|---|---|
+> | 片元丢弃 | `discard()` | `discard;`（挂到 for 体 > if 体 > 函数体） |
+> | 比较采样器 | `samplerComparison(uniform(...))` | `texture_depth_2d` + **`sampler_comparison`** |
+> | 硬件深度比较 | `textureSampleCompare(sampler, coord, depthRef)` | `textureSampleCompare(...)` |
+>
+> 其中比较采样器需要把 `Sampler.toWGSL()` 里硬编码的 `sampler` 抽成可覆盖的 `getWGSLSamplerType()`。
+>
+> 单测在 `packages/tsl/test/tslCapability.spec.ts`（3 条，含"discard 必须缩进在 if 体内"这类结构性断言）。
+> **本批只补能力、没有迁移对象**——它的消费者（`StandardMaterial` 片元）留到下一批，届时用
+> `StandardMaterialTest` 的 e2e 与 master 对照做验收。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
