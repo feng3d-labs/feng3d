@@ -242,9 +242,11 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
 > 不认 `C:\Windows\win.ini` / `\\server\share`（见 `check-editor-workspace.mjs` 的「拒绝绝对路径（Windows 形式）」）。
 > 这正是"门禁不进 CI 就没人知道"的实例。
 
-**还没接线的一条**：`scripts/editor-slots.mjs --open`（#276 S2b 的界面判据）跑在 **dev server** 上，
-只能加进 `editor-e2e` job——那同样要改 `.github/workflows/**`，因此**仍待 `workflow` scope 授权**
-后接进（接线补丁在 `tmp/ci-wiring-all.patch`，含该步骤）。
+**最后一条也已接线**：`scripts/editor-slots.mjs --open`（#276 S2b 的界面判据）跑在 **dev server** 上，
+只能加进 `editor-e2e` job——那要改 `.github/workflows/**`，需要带 `workflow` scope 的凭据。凭据到位后
+已接上（见 §2.3 表格里那一行，`.github/workflows/ci.yml` 的 `editor-e2e` job）。至此 **#276 三条验收的
+守门脚本全部有 CI 执行者**：验收①（宿主装卸不残留）走 `check-editor-plugin-tree`，验收③（两端 `__type__`
+都有行为）走 `check-runtime-artifact`，验收②的界面那一段走本步。
 
 **模块级注册副作用为什么按 AST 而不是正则**：判据是「**模块顶层**有没有注册调用」——
 函数/类/对象内部调用 `registerXxx` 是正常的（那是运行时逻辑）。正则要判断"这行在不在函数里"
@@ -320,7 +322,7 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 
 有效性靠**破坏性验证**保证（门禁最怕「永远绿」）：把产物入口 JS 指向不存在的文件后，用例立刻变红。注意这里有个反直觉点——**移除 importmap 不会让用例变红**，因为 feng3d 已内置进产物（#145 的修复），产物不再有该裸导入；所以验证「用例有效性」要用真正切断加载的方式。
 
-`test:e2e:editor` 之后还有两步，都跑在 **dev server** 上（AI 桥接中间件挂在 dev server，
+`test:e2e:editor` 之后还有若干步，都跑在 **dev server** 上（AI 桥接中间件挂在 dev server，
 静态服务器没有它），因此先后台起 dev server 并轮询 `http://localhost:3000/__editor-bridge/ping`
 确就绪（`--strictPort`，端口漂移会让探测永远等不到，报出来却是「120s 超时」）：
 
@@ -328,7 +330,7 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 |---|---|---|
 | AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过，`EDITOR_HEADLESS=0` 有头时真跑——本机实测 10/10） |
 | 插件贡献表自洽（#168） | `node scripts/editor-plugins.mjs --open --check` | 真浏览器里取到的贡献表：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 |
-| 插槽驱动的界面（#276 S2b）**（待接线：见 §2.2 末尾）** | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
+| 插槽驱动的界面（#276 S2b） | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
 | 选中同步（#173） | `node scripts/editor-selection-sync-check.mjs --open` | 关闭再打开面板后，检查器/层级树**自己恢复**到当前选中（一次性事件 + 异步组件的经典坑） |
 | 场景视图反复卸载/重建（#177） | `node scripts/editor-scene-view-cycle.mjs --open` | 反复关/开「场景」面板三轮，不出现引擎侧爆栈与 `reading 'elements'` |
 
