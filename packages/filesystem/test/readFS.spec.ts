@@ -92,7 +92,7 @@ describe('ReadFS（filesystem 包）', () =>
     it('★ 切换 fs 之后，转发目标随之改变（代理的核心语义）', async () =>
     {
         const a = makeFakeFS(FSType.http, 'A');
-        const b = makeFakeFS(FSType.indexedDB, 'B');
+        const b = makeFakeFS(FSType.native, 'B');
         const rs = new ReadFS(a);
 
         expect(await rs.readString('x.txt')).toBe('text:A:x.txt');
@@ -142,7 +142,7 @@ describe('ReadFS（filesystem 包）', () =>
     it('type 从底层 fs 读取', () =>
     {
         expect(new ReadFS(makeFakeFS(FSType.http)).type).toBe(FSType.http);
-        expect(new ReadFS(makeFakeFS(FSType.indexedDB)).type).toBe(FSType.indexedDB);
+        expect(new ReadFS(makeFakeFS(FSType.native)).type).toBe(FSType.native);
     });
 
     it('type 随 fs 切换而变化', () =>
@@ -150,8 +150,8 @@ describe('ReadFS（filesystem 包）', () =>
         const rs = new ReadFS(makeFakeFS(FSType.http));
         expect(rs.type).toBe(FSType.http);
 
-        rs.fs = makeFakeFS(FSType.indexedDB);
-        expect(rs.type).toBe(FSType.indexedDB);
+        rs.fs = makeFakeFS(FSType.native);
+        expect(rs.type).toBe(FSType.native);
     });
 });
 
@@ -171,7 +171,7 @@ describe('ReadFS.readStrings：优先批量、退回并发（#274）', () =>
 {
     it('底层**没有**批量能力时退回**并发**逐个', async () =>
     {
-        const fake = makeFakeFS(FSType.indexedDB, 'A');
+        const fake = makeFakeFS(FSType.native, 'A');
         const rs = new ReadFS(fake);
 
         expect(await rs.readStrings(['a.txt', 'b.txt'])).toEqual(['text:A:a.txt', 'text:A:b.txt']);
