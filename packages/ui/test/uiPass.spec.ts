@@ -151,11 +151,11 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
 
     it('额外 Pass 的渲染对象注入 globalUniforms.u_Viewport（像素 → NDC 的来源）', () =>
     {
-        const { scene, root, parentRenderer } = buildScene();
+        const { scene, camera, root, parentRenderer } = buildScene();
         const view = makeView(root, 800, 600);
         const renderables = uiPassProvider.collect(view, passContext(view));
 
-        const renderObjects = forwardRenderer.prepareExtraRenderObjects(scene, [800, 600], renderables);
+        const renderObjects = forwardRenderer.prepareExtraRenderObjects(scene, camera, [800, 600], renderables);
         const expected = logic(parentRenderer).renderObject.value;
         const ro = renderObjects.find((r) => r === expected)!;
 

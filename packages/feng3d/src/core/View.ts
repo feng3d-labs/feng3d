@@ -437,7 +437,7 @@ export function viewLogic(view: View): ViewLogic
                 };
                 extraPasses.set(provider.name, pass);
             }
-            reactive(pass).renderPassObjects = forwardRenderer.prepareExtraRenderObjects(scene, passContext.viewport, renderables);
+            reactive(pass).renderPassObjects = forwardRenderer.prepareExtraRenderObjects(scene, camera, passContext.viewport, renderables);
             passEncoders[passCount++] = pass;
         }
         // 截断多余元素（光源减少 / 某额外 Pass 本帧无内容时旧 Pass 不再执行）

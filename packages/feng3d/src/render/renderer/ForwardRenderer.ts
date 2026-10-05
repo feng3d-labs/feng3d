@@ -392,27 +392,32 @@ export class ForwardRenderer
     /**
      * 为「自管 pass」的渲染对象注入全局 uniform 并产出渲染对象列表。
      *
-     * 供上层扩展包的自定义渲染 pass 使用（如 `@feng3d/ui` 的 UI pass）：这类 pass 画的是
-     * 像素空间几何、有自己的着色器，**不需要**相机 / 光照 / 阴影链路，但需要 `globalUniforms`
-     * （`u_Viewport` 是像素 → NDC 的来源，见 {@link globalUniformsWGSL}）。
+     * 供上层扩展包的自定义渲染 pass 使用（如 `@feng3d/ui` 的 UI pass）：这类 pass 有自己的着色器，
+     * **不参与**光照 / 阴影链路，但两种投影都可能有使用方——
+     * 屏幕空间用 `globalUniforms.u_Viewport`（像素 → NDC），
+     * 世界空间用 `cameraUniforms.u_viewProjection`（如 `UIRenderMode.WorldSpace` 的 UI，
+     * 它挂在 3D 里的 Canvas 上）。两者都注入，使用方各自读需要的那个。
      *
      * 与 {@link draw} 的差异：不做 computed 缓存——调用方在每次渲染链求值时用同一列表重建
      * （写入 `RenderPass.renderPassObjects` 触发下游重算），语义与 `draw` 每次重算产出新数组一致。
      *
      * @param scene 场景（取环境光）
+     * @param camera 相机（取相机 uniform：世界空间投影用）
      * @param viewport 画布像素尺寸
      * @param renderables 要渲染的对象（按绘制顺序）
      * @returns 渲染对象列表（顺序与 `renderables` 一致）
      */
-    prepareExtraRenderObjects(scene: Scene, viewport: readonly [number, number], renderables: readonly Renderable[]): RenderObject[]
+    prepareExtraRenderObjects(scene: Scene, camera: Camera, viewport: readonly [number, number], renderables: readonly Renderable[]): RenderObject[]
     {
         const sharedGlobalUniforms: BufferBinding = { value: null as never };
+        const sharedCameraUniforms: BufferBinding = { value: null as never };
         const globalUniforms: GlobalUniforms = {
             // 与 draw 同款回退：`Color4Like | Color4` 在 uniform 侧统一成纯数据 Color4
             u_sceneAmbientColor: (scene.ambientColor ?? { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }) as Color4,
             u_Viewport: { x: viewport[0], y: viewport[1] },
         };
         reactive(sharedGlobalUniforms).value = globalUniforms;
+        reactive(sharedCameraUniforms).value = logic(camera).uniforms;
 
         const renderObjects: RenderObject[] = [];
         for (let i = 0; i < renderables.length; i++)
@@ -425,6 +430,7 @@ export class ForwardRenderer
             if (bindingResources.globalUniforms !== sharedGlobalUniforms)
             {
                 reactive(bindingResources).globalUniforms = sharedGlobalUniforms;
+                reactive(bindingResources).cameraUniforms = sharedCameraUniforms;
             }
 
             logic(renderable).beforeRender(renderObject);

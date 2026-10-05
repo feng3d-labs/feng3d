@@ -164,23 +164,36 @@ export function canvasLogic(data: Canvas): CanvasLogic
         dispose() { members.dispose(); },
         layout(width, height)
         {
+            const worldSpace = (reactive(data).renderMode ?? UIRenderMode.ScreenSpaceOverlay) === UIRenderMode.WorldSpace;
             const entity = logic.entity;
             if (entity)
             {
                 const transform2D = getTransform2D(entity);
                 if (transform2D)
                 {
-                    // 迁移前逐分量赋值（size.x / size.y / pivot.set）；纯数据字段只读，改为整体写入
+                    // 迁移前逐分量赋值（size.x / size.y / pivot.set）；纯数据字段只读，改为整体写入。
+                    //
+                    // pivot 决定"画布像素原点在哪"：
+                    // - 屏幕空间（默认）用 (0, 0)：像素原点在左上，UI 坐标直接对应屏幕；
+                    // - 世界空间用 (0.5, 0.5)：像素原点在画布中心，于是画布中心正好落在
+                    //   宿主 Object3D 的位置上（UI 挂上去时不会整体偏半个画布）。
                     const r_transform2D = reactive(transform2D);
                     r_transform2D.size = { x: width, y: height };
-                    r_transform2D.pivot = { x: 0, y: 0 };
+                    r_transform2D.pivot = worldSpace ? { x: 0.5, y: 0.5 } : { x: 0, y: 0 };
                 }
 
-                // 迁移前写的是已删除的 Transform 组件，主仓的变换数据直接挂在 Object3D 上
-                const r_entity = reactive(entity);
-                r_entity.position = { x: 0, y: 0, z: 0 };
-                r_entity.rotation = { x: 0, y: 0, z: 0 };
-                r_entity.scale = { x: 1, y: 1, z: 1 };
+                // 迁移前写的是已删除的 Transform 组件，主仓的变换数据直接挂在 Object3D 上。
+                //
+                // ⚠️ 只对**屏幕空间**画布复位：屏幕空间画布钉在"画布像素原点"，宿主变换必须是单位变换；
+                // 世界空间画布（UIRenderMode.WorldSpace）的位置 / 旋转 / 缩放就是它在 3D 里的摆放，
+                // 复位会把平面打回原点、缩放到 1 倍（UI 于是贴在屏幕空间而不是那个平面上）。
+                if (!worldSpace)
+                {
+                    const r_entity = reactive(entity);
+                    r_entity.position = { x: 0, y: 0, z: 0 };
+                    r_entity.rotation = { x: 0, y: 0, z: 0 };
+                    r_entity.scale = { x: 1, y: 1, z: 1 };
+                }
             }
 
             const r_data = reactive(data);
