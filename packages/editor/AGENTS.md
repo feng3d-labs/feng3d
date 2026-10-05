@@ -440,6 +440,13 @@ const { chromium } = require('playwright');
 模板里同时有 `package.json` 与 `feng3d.project.json`（决策 16：不合并）、`package.json` 里有 `scripts.build`
 （决策 13），**并且** `EditorRS.ts` 的 `templateurls` 真的列了它们；判据 3 条 + 4 条判据自证；
 离线可跑，已进 CI 的 `gates:host`）、
+`node scripts/check-verifier-wiring.mjs`（**元规则「每条规范必须有执行者」的执行者**：
+  **`scripts/check-*.mjs` 必须被某个 workflow 或 `package.json` 的 script 引用** —— 写了门禁
+  却没人跑，它就是**空转**（本地跑一次见绿、之后永远不跑，而看目录会以为"这条有门禁守着"）。
+  另有反向判据：**被引用的脚本必须真的存在**（防"接线指向空气"）；再加三条**空转自证**
+  （扫到 3 个 workflow / 58 条引用 / 41 个检查器，集合空了判据会平凡通过）
+  与一条**自指判据**（它自己也得在被引用之列，否则它就成了判据 1 的反例）。
+  离线可跑，已进 CI 的 `gates:host`）、
 `node scripts/check-editor-dead-code.mjs`（**#280**：**已删除的模块不许复活**——本仓删东西时习惯在文档里
 写"不复活这段"，但在那之前它**只有纪律、没有执行者**。判据 2 条（路径确实不存在 + 没人 import/re-export
 它；注释与普通字符串不算）+ 4 条判据自证 + 空转检查；离线可跑，已进 CI 的 `gates:host`）、
