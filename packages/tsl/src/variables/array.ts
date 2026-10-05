@@ -150,6 +150,10 @@ export class Array<T extends ShaderValue> implements ShaderValue
      */
     initValues(values: T[]): void
     {
+        // 默认渲染成**数组构造字面量**：这样"局部数组"（未绑定变量名/访问路径）也能被
+        // index() 正确渲染——否则 this.toWGSL 未定义，索引会崩（updateSprites/points 踩到过）。
+        this.toGLSL = () => this.toGLSLInit();
+        this.toWGSL = () => this.toWGSLInit();
         this._values = values;
         this.dependencies = values;
     }

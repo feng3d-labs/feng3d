@@ -15,6 +15,10 @@ import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/shader
 import { getComputeBoidsSpriteWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsSprite';
 import { getUpdateSpritesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsUpdateSprites';
 import { getGameOfLifeRenderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeRender';
+import { getPointsOrangeFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsOrangeFrag';
+import { getPointsTexturedFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsTexturedFrag';
+import { getPointsDistanceSizedVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsDistanceSizedVert';
+import { getPointsFixedSizeVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsFixedSizeVert';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -306,5 +310,53 @@ describe('gameOfLife 渲染着色器的 TSL 生成', () =>
     {
         expect(wgsl).toContain('@location(0) cell: f32');
         expect(wgsl).toContain('return vec4<f32>(input.cell, input.cell, input.cell, 1.0);');
+    });
+});
+
+/**
+ * points 示例的 4 个着色器（TSL 版）离线验收。
+ *
+ * **该示例不在 e2e 画面判据列表里**，所以用"与手写逐句对照"验收。
+ */
+describe('points 示例的 TSL 生成', () =>
+{
+    it('orange.frag：常量橙色', () =>
+    {
+        const wgsl = getPointsOrangeFragWGSL();
+        expect(wgsl).toContain('fn fs() -> @location(0) vec4<f32>');
+        expect(wgsl).toContain('return vec4<f32>(1.0, 0.5, 0.2, 1.0);');
+    });
+
+    it('textured.frag：纹理采样 + discard', () =>
+    {
+        const wgsl = getPointsTexturedFragWGSL();
+        expect(wgsl).toContain('@location(0) texcoord: vec2<f32>');
+        // TSL 的采样器展开约定
+        expect(wgsl).toContain('var t_texture: texture_2d<f32>;');
+        expect(wgsl).toContain('var t: sampler;');
+        expect(wgsl).toContain('let color = textureSample(t_texture, t, input.texcoord);');
+        expect(wgsl).toContain('if (color.a < 0.1) {');
+        expect(wgsl).toContain('discard;');
+    });
+
+    it('两个 vert：六个顶点的数组字面量 + vertex_index 取用', () =>
+    {
+        for (const wgsl of [getPointsDistanceSizedVertWGSL(), getPointsFixedSizeVertWGSL()])
+        {
+            expect(wgsl).toContain('@builtin(vertex_index) vertexIndex: u32');
+            expect(wgsl).toContain('array<vec2<f32>, 6>(vec2<f32>(-1.0)');
+            expect(wgsl).toContain('[vertexIndex]');
+            expect(wgsl).toContain('let sizeVec = vec2<f32>(uni.size, uni.size);');
+        }
+        // 两者只在 pointPos 上有区别：fixed 版要乘 clipPos.w
+        expect(getPointsDistanceSizedVertWGSL()).not.toContain('* clipPos.w');
+        expect(getPointsFixedSizeVertWGSL()).toContain('* clipPos.w');
+    });
+
+    it('回归：局部数组（arrayWithValues）也能被 index() 渲染', () =>
+    {
+        // 曾经因为 Array 未设默认 toWGSL，局部数组索引会抛 "this.toWGSL is not a function"
+        const wgsl = getPointsDistanceSizedVertWGSL();
+        expect(wgsl).toContain('array<vec2<f32>, 6>');
     });
 });
