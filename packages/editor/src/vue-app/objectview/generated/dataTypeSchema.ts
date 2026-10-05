@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 105 个类型 / 576 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 106 个类型 / 590 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -474,6 +474,22 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'blend', type: 'BlendState', control: 'Object', optional: true, readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'name', type: 'string', control: 'String', optional: true },
+    ],
+    'ParticleNoiseModule': [
+        { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'strength3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'frequency', type: 'number', control: 'number', readonly: true },
+        { name: 'scrollSpeed', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'damping', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'octaveCount', type: 'number', control: 'number', readonly: true },
+        { name: 'octaveMultiplier', type: 'number', control: 'number', readonly: true },
+        { name: 'octaveScale', type: 'number', control: 'number', readonly: true },
+        { name: 'quality', type: 'ParticleSystemNoiseQuality', control: 'Enum', readonly: true, values: ['Low', 'Medium', 'High'], numericValues: { Low: 0, Medium: 1, High: 2 } },
+        { name: 'remapEnabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'remap3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'scrollValue', type: 'number', control: 'number', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],
     'ParticleRotationBySpeedModule': [
         { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },

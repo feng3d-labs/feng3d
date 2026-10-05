@@ -1,485 +1,324 @@
-import { MinMaxCurveMode, noise, vec3ScaleNumber, minMaxCurveVector3Default, minMaxCurveVector3GetValue, minMaxCurveDefault, minMaxCurveGetValue } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
+import { MinMaxCurveMode, minMaxCurveDefault, minMaxCurveGetValue, minMaxCurveVector3GetValue, noise, vec3ScaleNumber } from '@feng3d/math';
+import type { MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
 import { ParticleSystemNoiseQuality } from '../enums/ParticleSystemNoiseQuality';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import type { Particle } from '../Particle';
+import { particleModuleVector3CurveDefault, type ParticleModuleLike, type WritableParticleModuleLike } from './ParticleModule';
 
 /**
- * Script interface for the Noise Module.
+ * 噪声模块（纯数据接口 + 模块级行为函数）。
  *
- * The Noise Module allows you to apply turbulence to the movement of your particles. Use the low quality settings to create computationally efficient Noise, or simulate smoother, richer Noise with the higher quality settings. You can also choose to define the behavior of the Noise individually for each axis.
- *
- * 噪声模块
- *
- * 噪声模块允许你将湍流应用到粒子的运动中。使用低质量设置来创建计算效率高的噪声，或者使用高质量设置来模拟更平滑、更丰富的噪声。您还可以选择为每个轴分别定义噪声的行为。
+ * 原 class 的 `strength` / `strengthX|Y|Z` / `remap` / `remapX|Y|Z` getter/setter 都是「转发到 `strength3D` / `remap3D`」
+ * 的便捷访问器，删除；私有滚动状态 `_scrollValue` 提升为公开字段 `scrollValue`；三个 `static` 缩放系数改成模块级常量。
  */
-@decoratorRegisterClass()
-export class ParticleNoiseModule extends ParticleModule
+export interface ParticleNoiseModuleLike extends ParticleModuleLike
 {
-    /**
-     * Control the noise separately for each axis.
-     *
-     * 分别控制每个轴的噪声。
-     */
-    @serialize
-    @oav({ tooltip: '分别控制每个轴的噪声。' })
-    separateAxes = false;
+    /** 是否分轴控制噪声 */
+    readonly separateAxes: boolean;
 
-    /**
-     * How strong the overall noise effect is.
-     *
-     * 整体噪音效应有多强。
-     */
-    @oav({ tooltip: '整体噪音效应有多强。' })
-    get strength()
-    {
-        return this.strength3D.xCurve;
-    }
+    /** 噪声强度（三条轴） */
+    readonly strength3D: MinMaxCurveVector3;
 
-    set strength(v)
-    {
-        this.strength3D.xCurve = v;
-    }
+    /** 噪声频率（低值柔和、高值快速变化） */
+    readonly frequency: number;
 
-    /**
-     * How strong the overall noise effect is.
-     *
-     * 整体噪音效应有多强。
-     */
-    @serialize
-    @oav({ tooltip: '整体噪音效应有多强。' })
-    strength3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
+    /** 噪声图滚动速度 */
+    readonly scrollSpeed: MinMaxCurve;
 
-    /**
-     * Define the strength of the effect on the X axis, when using separateAxes option.
-     *
-     * 在使用分别控制每个轴时，在X轴上定义效果的强度。
-     */
-    get strengthX()
-    {
-        return this.strength3D.xCurve;
-    }
+    /** 高频噪声是否按比例衰减强度 */
+    readonly damping: boolean;
 
-    set strengthX(v)
-    {
-        this.strength3D.xCurve = v;
-    }
+    /** 叠加的噪声层数 */
+    readonly octaveCount: number;
 
-    /**
-     * Define the strength of the effect on the Y axis, when using separateAxes option.
-     *
-     * 在使用分别控制每个轴时，在Y轴上定义效果的强度。
-     */
-    get strengthY()
-    {
-        return this.strength3D.yCurve;
-    }
+    /** 每层噪声的强度系数 */
+    readonly octaveMultiplier: number;
 
-    set strengthY(v)
-    {
-        this.strength3D.yCurve = v;
-    }
+    /** 每层噪声的频率系数 */
+    readonly octaveScale: number;
 
-    /**
-     * Define the strength of the effect on the Z axis, when using separateAxes option.
-     *
-     * 在使用分别控制每个轴时，在Z轴上定义效果的强度。
-     */
-    get strengthZ()
-    {
-        return this.strength3D.zCurve;
-    }
+    /** 噪声质量（决定用 perlin1/2/3） */
+    readonly quality: ParticleSystemNoiseQuality;
 
-    set strengthZ(v)
-    {
-        this.strength3D.zCurve = v;
-    }
+    /** 是否启用重映射 */
+    readonly remapEnabled: boolean;
 
-    /**
-     * Low values create soft, smooth noise, and high values create rapidly changing noise.
-     *
-     * 低值产生柔和、平滑的噪声，高值产生快速变化的噪声。
-     */
-    @serialize
-    @oav({ tooltip: '低值产生柔和、平滑的噪声，高值产生快速变化的噪声。' })
-    frequency = 0.5;
+    /** 噪声值重映射曲线 */
+    readonly remap3D: MinMaxCurveVector3;
 
-    /**
-     * Scroll the noise map over the particle system.
-     *
-     * 在粒子系统上滚动噪声图。
-     */
-    @serialize
-    @oav({ tooltip: '在粒子系统上滚动噪声图。' })
-    scrollSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
-
-    /**
-     * Higher frequency noise will reduce the strength by a proportional amount, if enabled.
-     *
-     * 如果启用高频率噪音，将按比例减少强度。
-     */
-    @serialize
-    @oav({ tooltip: '如果启用高频率噪音，将按比例减少强度。' })
-    damping = true;
-
-    /**
-     * Layers of noise that combine to produce final noise.
-     *
-     * 一层一层的噪声组合在一起产生最终的噪声。
-     */
-    @serialize
-    @oav({ tooltip: '一层一层的噪声组合在一起产生最终的噪声。' })
-    octaveCount = 1;
-
-    /**
-     * When combining each octave, scale the intensity by this amount.
-     *
-     * 当组合每个八度时，按这个比例调整强度。
-     */
-    @serialize
-    @oav({ tooltip: '当组合每个八度时，按这个比例调整强度。' })
-    octaveMultiplier = 0.5;
-
-    /**
-     * When combining each octave, zoom in by this amount.
-     *
-     * 当组合每个八度时，放大这个数字。
-     */
-    @serialize
-    @oav({ tooltip: '当组合每个八度时，放大这个数字。' })
-    octaveScale = 2;
-
-    /**
-     * Generate 1D, 2D or 3D noise.
-     *
-     * 生成一维、二维或三维噪声。
-     */
-    @serialize
-    @oav({ tooltip: '生成一维、二维或三维噪声。', componentParam: { enumClass: ParticleSystemNoiseQuality } })
-    quality = ParticleSystemNoiseQuality.High;
-
-    /**
-     * Enable remapping of the final noise values, allowing for noise values to be translated into different values.
-     *
-     * 允许重新映射最终的噪声值，允许将噪声值转换为不同的值。
-     */
-    @serialize
-    @oav({ tooltip: '允许重新映射最终的噪声值，允许将噪声值转换为不同的值。' })
-    remapEnabled = false;
-
-    /**
-     * Define how the noise values are remapped.
-     *
-     * 定义如何重新映射噪声值。
-     */
-    @oav({ tooltip: '生成一维、二维或三维噪声。' })
-    get remap()
-    {
-        return this.remap3D.xCurve;
-    }
-
-    set remap(v)
-    {
-        this.remap3D.xCurve = v;
-    }
-
-    /**
-     * Define how the noise values are remapped.
-     *
-     * 定义如何重新映射噪声值。
-     */
-    @serialize
-    @oav({ tooltip: '生成一维、二维或三维噪声。' })
-    remap3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, {
-        xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
-        yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 },
-        zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }
-    });
-
-    /**
-     * Define how the noise values are remapped on the X axis, when using the ParticleSystem.NoiseModule.separateAxes option.
-     *
-     * 在使用分别控制每个轴时，如何在X轴上重新映射噪声值。
-     */
-    get remapX()
-    {
-        return this.remap3D.xCurve;
-    }
-
-    set remapX(v)
-    {
-        this.remap3D.xCurve = v;
-    }
-
-    /**
-     * Define how the noise values are remapped on the Y axis, when using the ParticleSystem.NoiseModule.separateAxes option.
-     *
-     * 在使用分别控制每个轴时，如何在Y轴上重新映射噪声值。
-     */
-    get remapY()
-    {
-        return this.remap3D.yCurve;
-    }
-
-    set remapY(v)
-    {
-        this.remap3D.yCurve = v;
-    }
-
-    /**
-     * Define how the noise values are remapped on the Z axis, when using the ParticleSystem.NoiseModule.separateAxes option.
-     *
-     * 在使用分别控制每个轴时，如何在Z轴上重新映射噪声值。
-     */
-    get remapZ()
-    {
-        return this.remap3D.zCurve;
-    }
-
-    set remapZ(v)
-    {
-        this.remap3D.zCurve = v;
-    }
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        particle[NoiseStrengthRate] = Math.random();
-        particle[NoiseParticleRate] = Math.random();
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        this.particleSystem.removeParticlePosition(particle, NoisePreOffset);
-        if (!this.enabled) return;
-
-        let strengthX = 1;
-        let strengthY = 1;
-        let strengthZ = 1;
-        if (this.separateAxes)
-        {
-            const strength3D = minMaxCurveVector3GetValue(this.strength3D, particle.rateAtLifeTime, particle[NoiseStrengthRate]);
-            strengthX = strength3D.x;
-            strengthY = strength3D.y;
-            strengthZ = strength3D.z;
-        }
-        else
-        {
-            strengthX = strengthY = strengthZ = minMaxCurveGetValue(this.strength, particle.rateAtLifeTime, particle[NoiseStrengthRate]);
-        }
-        //
-        const frequency = ParticleNoiseModule._frequencyScale * this.frequency;
-        //
-        const offsetPos = { x: strengthX, y: strengthY, z: strengthZ };
-        //
-        vec3ScaleNumber(offsetPos, ParticleNoiseModule._strengthScale, offsetPos);
-        if (this.damping)
-        {
-            vec3ScaleNumber(offsetPos, 1 / this.frequency, offsetPos);
-        }
-        const time = particle.rateAtLifeTime * ParticleNoiseModule._timeScale % 1;
-        //
-        offsetPos.x *= this._getNoiseValue((1 / 3 * 0 + time) * frequency, particle[NoiseParticleRate] * frequency);
-        offsetPos.y *= this._getNoiseValue((1 / 3 * 1 + time) * frequency, particle[NoiseParticleRate] * frequency);
-        offsetPos.z *= this._getNoiseValue((1 / 3 * 2 + time) * frequency, particle[NoiseParticleRate] * frequency);
-        //
-
-        this.particleSystem.addParticlePosition(particle, offsetPos, this.particleSystem.main.simulationSpace, NoisePreOffset);
-    }
-
-    // 以下两个值用于与Unity中数据接近
-    static _frequencyScale = 5;
-    static _strengthScale = 0.3;
-    static _timeScale = 5;
-
-    /**
-     * 绘制噪音到图片
-     *
-     * @param image 图片数据
-     */
-    drawImage(image: ImageData)
-    {
-        const strength = this._getDrawImageStrength();
-        let strengthX = strength.x;
-        let strengthY = strength.y;
-        let strengthZ = strength.z;
-        //
-        strengthX *= ParticleNoiseModule._strengthScale;
-        strengthY *= ParticleNoiseModule._strengthScale;
-        strengthZ *= ParticleNoiseModule._strengthScale;
-
-        if (this.damping)
-        {
-            strengthX /= this.frequency;
-            strengthY /= this.frequency;
-            strengthZ /= this.frequency;
-        }
-        //
-        const frequency = ParticleNoiseModule._frequencyScale * this.frequency;
-        //
-        const data = image.data;
-
-        const imageWidth = image.width;
-        const imageHeight = image.height;
-
-        // var datas: number[] = [];
-        // var min = Number.MAX_VALUE;
-        // var max = Number.MIN_VALUE;
-
-        for (let x = 0; x < imageWidth; x++)
-        {
-            for (let y = 0; y < imageHeight; y++)
-            {
-                const xv = x / imageWidth * frequency;
-                const yv = 1 - y / imageHeight * frequency;
-
-                let value = this._getNoiseValue(xv, yv);
-
-                // datas.push(value);
-                // if (min > value) min = value;
-                // if (max < value) max = value;
-
-                if (xv < 1 / 3)
-                { value = (value * strengthX + 1) / 2 * 256; }
-                else if (xv < 2 / 3)
-                { value = (value * strengthY + 1) / 2 * 256; }
-                else
-                { value = (value * strengthZ + 1) / 2 * 256; }
-
-                const cell = (x + y * imageWidth) * 4;
-                data[cell] = data[cell + 1] = data[cell + 2] = Math.floor(value);
-                data[cell + 3] = 255; // alpha
-            }
-        }
-        // console.log(datas, min, max);
-    }
-
-    private _getDrawImageStrength()
-    {
-        let strengthX = 1;
-        let strengthY = 1;
-        let strengthZ = 1;
-        if (this.separateAxes)
-        {
-            if (this.strengthX.mode === MinMaxCurveMode.Curve || this.strengthX.mode === MinMaxCurveMode.TwoCurves)
-            {
-                strengthX = this.strengthX.curveMultiplier;
-            }
-            else if (this.strengthX.mode === MinMaxCurveMode.Constant)
-            {
-                strengthX = this.strengthX.constant;
-            }
-            else if (this.strengthX.mode === MinMaxCurveMode.TwoConstants)
-            {
-                strengthX = this.strengthX.constantMax;
-            }
-
-            if (this.strengthY.mode === MinMaxCurveMode.Curve || this.strengthY.mode === MinMaxCurveMode.TwoCurves)
-            {
-                strengthY = this.strengthY.curveMultiplier;
-            }
-            else if (this.strengthY.mode === MinMaxCurveMode.Constant)
-            {
-                strengthY = this.strengthY.constant;
-            }
-            else if (this.strengthY.mode === MinMaxCurveMode.TwoConstants)
-            {
-                strengthY = this.strengthY.constantMax;
-            }
-
-            if (this.strengthZ.mode === MinMaxCurveMode.Curve || this.strengthZ.mode === MinMaxCurveMode.TwoCurves)
-            {
-                strengthZ = this.strengthZ.curveMultiplier;
-            }
-            else if (this.strengthZ.mode === MinMaxCurveMode.Constant)
-            {
-                strengthZ = this.strengthZ.constant;
-            }
-            else if (this.strengthZ.mode === MinMaxCurveMode.TwoConstants)
-            {
-                strengthZ = this.strengthZ.constantMax;
-            }
-        }
-        else
-        {
-             
-            if (this.strength.mode === MinMaxCurveMode.Curve || this.strength.mode === MinMaxCurveMode.TwoCurves)
-            {
-                strengthX = strengthY = strengthZ = this.strength.curveMultiplier;
-            }
-            else if (this.strength.mode === MinMaxCurveMode.Constant)
-            {
-                strengthX = strengthY = strengthZ = this.strength.constant;
-            }
-            else if (this.strength.mode === MinMaxCurveMode.TwoConstants)
-            {
-                strengthX = strengthY = strengthZ = this.strength.constantMax;
-            }
-        }
-
-        return { x: strengthX, y: strengthY, z: strengthZ };
-    }
-
-    /**
-     * 获取噪音值
-     *
-     * @param x
-     * @param y
-     */
-    private _getNoiseValue(x: number, y: number)
-    {
-        let value = this._getNoiseValueBase(x, y);
-        for (let l = 1, ln = this.octaveCount; l < ln; l++)
-        {
-            const value0 = this._getNoiseValueBase(x * this.octaveScale, y * this.octaveScale);
-            value += (value0 - value) * this.octaveMultiplier;
-        }
-
-        return value;
-    }
-
-    /**
-     * 获取单层噪音值
-     *
-     * @param x
-     * @param y
-     */
-    private _getNoiseValueBase(x: number, y: number)
-    {
-        const scrollValue = this._scrollValue;
-        if (this.quality === ParticleSystemNoiseQuality.Low)
-        {
-            return noise.perlin1(x + scrollValue);
-        }
-        if (this.quality === ParticleSystemNoiseQuality.Medium)
-        {
-            return noise.perlin2(x, y + scrollValue);
-        }
-        // if (this.quality == ParticleSystemNoiseQuality.High)
-
-        return noise.perlin3(x, y, scrollValue);
-    }
-
-    /**
-     * 更新
-     *
-     * @param interval
-     */
-    update(interval: number)
-    {
-        this._scrollValue += minMaxCurveGetValue(this.scrollSpeed, this.particleSystem._emitInfo.rateAtDuration) * interval / 1000;
-    }
-    private _scrollValue = 0;
+    /** 噪声图滚动累积值（运行时状态，由 `update` 累加） */
+    readonly scrollValue: number;
 }
+
+/** 可写出的噪声模块（写侧形状）。 */
+export interface WritableParticleNoiseModuleLike extends WritableParticleModuleLike
+{
+    separateAxes: boolean;
+    strength3D: MinMaxCurveVector3;
+    frequency: number;
+    scrollSpeed: MinMaxCurve;
+    damping: boolean;
+    octaveCount: number;
+    octaveMultiplier: number;
+    octaveScale: number;
+    quality: ParticleSystemNoiseQuality;
+    remapEnabled: boolean;
+    remap3D: MinMaxCurveVector3;
+    scrollValue: number;
+}
+
+/** 纯数据「噪声模块」（带判别字段）。 */
+export interface ParticleNoiseModule extends ParticleNoiseModuleLike
+{
+    readonly __type__: 'ParticleNoiseModule';
+}
+
+/**
+ * `new ParticleNoiseModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleNoiseModuleDefault(out: WritableParticleNoiseModuleLike = {
+    enabled: false,
+    separateAxes: false,
+    strength3D: particleModuleVector3CurveDefault(1, true, 1),
+    frequency: 0.5,
+    scrollSpeed: { __type__: 'MinMaxCurve', ...minMaxCurveDefault() },
+    damping: true,
+    octaveCount: 1,
+    octaveMultiplier: 0.5,
+    octaveScale: 2,
+    quality: ParticleSystemNoiseQuality.High,
+    remapEnabled: false,
+    remap3D: particleModuleVector3CurveDefault(1, true, 1),
+    scrollValue: 0,
+}): WritableParticleNoiseModuleLike
+{
+    out.enabled = false;
+    out.separateAxes = false;
+    out.strength3D = particleModuleVector3CurveDefault(1, true, 1);
+    out.frequency = 0.5;
+    out.scrollSpeed = { __type__: 'MinMaxCurve', ...minMaxCurveDefault() };
+    out.damping = true;
+    out.octaveCount = 1;
+    out.octaveMultiplier = 0.5;
+    out.octaveScale = 2;
+    out.quality = ParticleSystemNoiseQuality.High;
+    out.remapEnabled = false;
+    out.remap3D = particleModuleVector3CurveDefault(1, true, 1);
+    out.scrollValue = 0;
+
+    return out;
+}
+
+// 以下三个值与 Unity 中数据接近
+const NOISE_FREQUENCY_SCALE = 5;
+const NOISE_STRENGTH_SCALE = 0.3;
+const NOISE_TIME_SCALE = 5;
+
+/**
+ * 初始化粒子状态（原 `ParticleNoiseModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleNoiseModuleInitParticleState(module: ParticleNoiseModuleLike, particle: Particle): void
+{
+    particle[NoiseStrengthRate] = Math.random();
+    particle[NoiseParticleRate] = Math.random();
+}
+
+/**
+ * 更新粒子状态（原 `ParticleNoiseModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleNoiseModuleUpdateParticleState(module: ParticleNoiseModuleLike, particle: Particle): void
+{
+    module.particleSystem!.removeParticlePosition(particle, NoisePreOffset);
+    if (!module.enabled) return;
+
+    let strengthX = 1;
+    let strengthY = 1;
+    let strengthZ = 1;
+    if (module.separateAxes)
+    {
+        const strength3D = minMaxCurveVector3GetValue(module.strength3D, particle.rateAtLifeTime, particle[NoiseStrengthRate]);
+        strengthX = strength3D.x;
+        strengthY = strength3D.y;
+        strengthZ = strength3D.z;
+    }
+    else
+    {
+        strengthX = strengthY = strengthZ = minMaxCurveGetValue(module.strength3D.xCurve, particle.rateAtLifeTime, particle[NoiseStrengthRate]);
+    }
+    //
+    const frequency = NOISE_FREQUENCY_SCALE * module.frequency;
+    //
+    const offsetPos = { x: strengthX, y: strengthY, z: strengthZ };
+    //
+    vec3ScaleNumber(offsetPos, NOISE_STRENGTH_SCALE, offsetPos);
+    if (module.damping)
+    {
+        vec3ScaleNumber(offsetPos, 1 / module.frequency, offsetPos);
+    }
+    const time = particle.rateAtLifeTime * NOISE_TIME_SCALE % 1;
+    //
+    offsetPos.x *= particleNoiseModuleGetNoiseValue(module, (1 / 3 * 0 + time) * frequency, particle[NoiseParticleRate] * frequency);
+    offsetPos.y *= particleNoiseModuleGetNoiseValue(module, (1 / 3 * 1 + time) * frequency, particle[NoiseParticleRate] * frequency);
+    offsetPos.z *= particleNoiseModuleGetNoiseValue(module, (1 / 3 * 2 + time) * frequency, particle[NoiseParticleRate] * frequency);
+    //
+    module.particleSystem!.addParticlePosition(particle, offsetPos, module.particleSystem!.main.simulationSpace, NoisePreOffset);
+}
+
+/**
+ * 更新（原 `ParticleNoiseModule.update`）：累加噪声图滚动量。
+ *
+ * @param module 模块数据
+ * @param interval 时间间隔（毫秒）
+ */
+export function particleNoiseModuleUpdate(module: WritableParticleNoiseModuleLike, interval: number): void
+{
+    module.scrollValue += minMaxCurveGetValue(module.scrollSpeed, module.particleSystem!._emitInfo.rateAtDuration) * interval / 1000;
+}
+
+/**
+ * 绘制噪声到图片（原 `ParticleNoiseModule.drawImage`，编辑器面板用）。
+ *
+ * @param module 模块数据
+ * @param image 图片数据
+ */
+export function particleNoiseModuleDrawImage(module: ParticleNoiseModuleLike, image: ImageData): void
+{
+    const strength = particleNoiseModuleGetDrawImageStrength(module);
+    let strengthX = strength.x;
+    let strengthY = strength.y;
+    let strengthZ = strength.z;
+    //
+    strengthX *= NOISE_STRENGTH_SCALE;
+    strengthY *= NOISE_STRENGTH_SCALE;
+    strengthZ *= NOISE_STRENGTH_SCALE;
+
+    if (module.damping)
+    {
+        strengthX /= module.frequency;
+        strengthY /= module.frequency;
+        strengthZ /= module.frequency;
+    }
+    //
+    const frequency = NOISE_FREQUENCY_SCALE * module.frequency;
+    //
+    const data = image.data;
+    const imageWidth = image.width;
+    const imageHeight = image.height;
+
+    for (let x = 0; x < imageWidth; x++)
+    {
+        for (let y = 0; y < imageHeight; y++)
+        {
+            const xv = x / imageWidth * frequency;
+            const yv = 1 - y / imageHeight * frequency;
+
+            let value = particleNoiseModuleGetNoiseValue(module, xv, yv);
+
+            if (xv < 1 / 3)
+            { value = (value * strengthX + 1) / 2 * 256; }
+            else if (xv < 2 / 3)
+            { value = (value * strengthY + 1) / 2 * 256; }
+            else
+            { value = (value * strengthZ + 1) / 2 * 256; }
+
+            const cell = (x + y * imageWidth) * 4;
+            data[cell] = data[cell + 1] = data[cell + 2] = Math.floor(value);
+            data[cell + 3] = 255; // alpha
+        }
+    }
+}
+
+/**
+ * 取绘制用的强度（原 `ParticleNoiseModule._getDrawImageStrength`）。
+ *
+ * @param module 模块数据
+ */
+function particleNoiseModuleGetDrawImageStrength(module: ParticleNoiseModuleLike): { x: number; y: number; z: number }
+{
+    let strengthX = 1;
+    let strengthY = 1;
+    let strengthZ = 1;
+    if (module.separateAxes)
+    {
+        strengthX = getStrengthOfCurve(module.strength3D.xCurve);
+        strengthY = getStrengthOfCurve(module.strength3D.yCurve);
+        strengthZ = getStrengthOfCurve(module.strength3D.zCurve);
+    }
+    else
+    {
+        strengthX = strengthY = strengthZ = getStrengthOfCurve(module.strength3D.xCurve);
+    }
+
+    return { x: strengthX, y: strengthY, z: strengthZ };
+}
+
+/** 按曲线模式取「绘制用强度」（原 `_getDrawImageStrength` 三个分支的公共部分） */
+function getStrengthOfCurve(curve: MinMaxCurve): number
+{
+    if (curve.mode === MinMaxCurveMode.Curve || curve.mode === MinMaxCurveMode.TwoCurves)
+    {
+        return curve.curveMultiplier;
+    }
+    if (curve.mode === MinMaxCurveMode.Constant)
+    {
+        return curve.constant;
+    }
+    if (curve.mode === MinMaxCurveMode.TwoConstants)
+    {
+        return curve.constantMax;
+    }
+
+    return 1;
+}
+
+/**
+ * 获取噪声值（原 `ParticleNoiseModule._getNoiseValue`，含倍频叠加）。
+ *
+ * @param module 模块数据
+ * @param x x 坐标
+ * @param y y 坐标
+ */
+function particleNoiseModuleGetNoiseValue(module: ParticleNoiseModuleLike, x: number, y: number): number
+{
+    let value = particleNoiseModuleGetNoiseValueBase(module, x, y);
+    for (let l = 1, ln = module.octaveCount; l < ln; l++)
+    {
+        const value0 = particleNoiseModuleGetNoiseValueBase(module, x * module.octaveScale, y * module.octaveScale);
+        value += (value0 - value) * module.octaveMultiplier;
+    }
+
+    return value;
+}
+
+/**
+ * 获取单层噪声值（原 `ParticleNoiseModule._getNoiseValueBase`）。
+ *
+ * @param module 模块数据
+ * @param x x 坐标
+ * @param y y 坐标
+ */
+function particleNoiseModuleGetNoiseValueBase(module: ParticleNoiseModuleLike, x: number, y: number): number
+{
+    const scrollValue = module.scrollValue;
+    if (module.quality === ParticleSystemNoiseQuality.Low)
+    {
+        return noise.perlin1(x + scrollValue);
+    }
+    if (module.quality === ParticleSystemNoiseQuality.Medium)
+    {
+        return noise.perlin2(x, y + scrollValue);
+    }
+
+    return noise.perlin3(x, y, scrollValue);
+}
+
 const NoiseStrengthRate = '_Noise_strength_rate';
 const NoiseParticleRate = '_Noise_particle_rate';
 const NoisePreOffset = '_Noise_preOffset';

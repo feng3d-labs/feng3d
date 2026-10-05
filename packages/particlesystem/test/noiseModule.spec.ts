@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
-import { ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
+import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdateParticleState } from '../src/modules/ParticleNoiseModule';
 
 /**
  * `ParticleNoiseModule`（issue #392，第一批最大的一个，486 行）。
@@ -56,14 +56,14 @@ function makeParticle(module?: ParticleNoiseModule): Particle
     particle.rateAtLifeTime = 0.5;
     vec3From(0, 0, 0, particle.position);
     // 实现会读 `particle[NoiseParticleRate]` / `[NoiseStrengthRate]`；不先 init 就会乘出 NaN
-    module?.initParticleState(particle);
+    module && particleNoiseModuleInitParticleState(module, particle);
 
     return particle;
 }
 
 function makeModule(options: { enabled?: boolean; strength?: number; simulationSpace?: ParticleSystemSimulationSpace } = {})
 {
-    const module = new ParticleNoiseModule();
+    const module = particleNoiseModuleDefault();
     const fake = makeFakeParticleSystem(options.simulationSpace);
 
     module.enabled = options.enabled ?? true;
@@ -84,7 +84,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         const { module } = makeModule();
         const particle = makeParticle(module);
 
-        module.initParticleState(particle);
+        particleNoiseModuleInitParticleState(module, particle);
 
         const record = particle as unknown as Record<string, number>;
         for (const key of ['_Noise_strength_rate', '_Noise_particle_rate'])
@@ -100,7 +100,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         const { module, fake } = makeModule({ enabled: false });
         const particle = makeParticle(module);
 
-        module.updateParticleState(particle);
+        particleNoiseModuleUpdateParticleState(module, particle);
 
         expect(fake.calls.map((c) => c.op)).toEqual(['remove']);
     });
@@ -110,7 +110,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         const { module, fake } = makeModule();
         const particle = makeParticle(module);
 
-        module.updateParticleState(particle);
+        particleNoiseModuleUpdateParticleState(module, particle);
 
         expect(fake.calls.map((c) => c.op)).toEqual(['remove', 'add']);
     });
@@ -120,7 +120,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         const { module, fake } = makeModule();
         const particle = makeParticle(module);
 
-        module.updateParticleState(particle);
+        particleNoiseModuleUpdateParticleState(module, particle);
 
         const removeArgs = fake.calls[0].args;
         const addArgs = fake.calls[1].args;
@@ -137,7 +137,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         for (const space of [ParticleSystemSimulationSpace.Local, ParticleSystemSimulationSpace.World])
         {
             const { module, fake } = makeModule({ simulationSpace: space });
-            module.updateParticleState(makeParticle());
+            particleNoiseModuleUpdateParticleState(module, makeParticle());
 
             // addParticlePosition(particle, offset, space, key)
             expect(fake.calls[1].args[2], `simulationSpace=${space}`).toBe(space);
@@ -152,7 +152,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         for (let i = 0; i < 10; i++)
         {
             particle.rateAtLifeTime = i / 10;
-            module.updateParticleState(particle);
+            particleNoiseModuleUpdateParticleState(module, particle);
 
             const offset = fake.calls[fake.calls.length - 1].args[1] as { x: number; y: number; z: number };
             // ⚠️ 用数值比较而不是 `toBe(0)`：噪声值为负时 0 * -1 会得到 `-0`，
@@ -171,7 +171,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
         for (let i = 0; i < 20; i++)
         {
             particle.rateAtLifeTime = i / 20;
-            module.updateParticleState(particle);
+            particleNoiseModuleUpdateParticleState(module, particle);
 
             const offset = fake.calls[fake.calls.length - 1].args[1] as { x: number; y: number; z: number };
             for (const v of [offset.x, offset.y, offset.z]) expect(Number.isFinite(v)).toBe(true);
@@ -191,7 +191,7 @@ describe('ParticleNoiseModule（issue #392）', () =>
             {
                 module.frequency = frequency;
                 module.damping = damping;
-                module.updateParticleState(particle);
+                particleNoiseModuleUpdateParticleState(module, particle);
 
                 const offset = fake.calls[fake.calls.length - 1].args[1] as { x: number; y: number; z: number };
                 for (const v of [offset.x, offset.y, offset.z])
