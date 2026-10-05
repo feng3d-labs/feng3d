@@ -8,8 +8,7 @@ declare module '@feng3d/reactivity'
 
 import type { Color4 } from '../core/Color4';
 import { BlendState, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
-import { cameraUniformsWGSL } from '../cameras/Camera';
-import { transformUniformsWGSL } from '../core/Object3D';
+import { getTextureShaderWGSL } from '../shaders/tsl/textureMaterial';
 import { defaultTexture } from '../textures/createTexture';
 import { isTextureFieldLoaded, resolveTexture, TextureField, TextureResource } from '../textures/TextureResource';
 import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
@@ -136,9 +135,12 @@ export function textureMaterialLogic(data: TextureMaterial): TextureMaterialLogi
     const s_texture = () => resolveTexture(asTextureField(toRaw(r_material.s_texture)), defaultTexture);
     const depthWrite = () => r_material.depthWrite ?? true;
 
+    // TSL 构建的着色器（首次调用时构建并缓存，见 shaders/tsl/textureMaterial.ts）
+    const shaderWGSL = getTextureShaderWGSL();
+
     const renderPipeline = reactive({
-        vertex: { wgsl: textureVertexWGSL },
-        fragment: { wgsl: textureFragmentWGSL, targets: [{}] },
+        vertex: { wgsl: shaderWGSL.vertex },
+        fragment: { wgsl: shaderWGSL.fragment, targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
@@ -183,9 +185,12 @@ export function textureMaterialLogic(data: TextureMaterial): TextureMaterialLogi
     const bindingResources = computed(() =>
     {
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        result.s_texture = textureViewOf(s_texture());
+        // 键名与 TSL 的采样器展开约定一致（见 shaders/tsl/textureMaterial.ts）：
+        // TSL 把 sampler2D(uniform('s_texture')) 展开成 s_texture_texture（texture）+ s_texture（sampler），
+        // 引擎按变量名解析绑定（WGPUBindGroupEntry），所以数据侧要提供同名的两个键。
+        result.s_texture_texture = textureViewOf(s_texture());
         // sampler 字段优先，省略则用默认线性采样器
-        result.s_textureSampler = r_material.sampler ?? DEFAULT_SAMPLER;
+        result.s_texture = r_material.sampler ?? DEFAULT_SAMPLER;
 
         return result;
     });
@@ -210,76 +215,3 @@ export function textureMaterialLogic(data: TextureMaterial): TextureMaterialLogi
 
 // 注册到 logic 分发表
 registerLogic('TextureMaterial', textureMaterialLogic);
-
-// ============================================================================
-// 纹理顶点着色器 WGSL
-//
-// 顶点输入（统一 location 约定）：
-// - @location(0) a_position
-// - @location(3) a_uv
-//
-// 纹理顶点着色器代码
-const textureVertexWGSL = `
-struct VertexInput {
-    @location(0) a_position: vec3<f32>,
-    @location(3) a_uv: vec2<f32>,
-}
-
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) uv: vec2<f32>,
-}
-` + transformUniformsWGSL + cameraUniformsWGSL + `
-@vertex
-fn main(input: VertexInput) -> VertexOutput {
-    var output: VertexOutput;
-    let worldPosition = transform.u_modelMatrix * vec4<f32>(input.a_position, 1.0);
-    output.position = cameraUniforms.u_viewProjection * worldPosition;
-    output.uv = input.a_uv;
-    return output;
-}
-`;
-
-// ============================================================================
-// 纹理片段着色器 WGSL
-//
-// 采样纹理颜色，与材质 u_color 相乘输出。
-//
-// 绑定约定：
-// - @group(0) @binding(3) var<uniform> material_uniforms        - { u_color: vec4 }（TextureUniforms）
-// - @group(1) @binding(0) var s_textureSampler: sampler
-// - @group(1) @binding(1) var s_texture: texture_2d<f32>
-//
-// 注意：sampler 与 texture 的 WGSL 变量名遵循 webgpu 绑定解析约定
-// （bindingResources.s_texture = { texture, sampler }）。
-//
-// 纹理片段着色器代码
-const textureFragmentWGSL = `
-struct FragmentInput {
-    @location(0) uv: vec2<f32>,
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-
-struct TextureUniforms {
-    u_color: vec4<f32>,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: TextureUniforms;
-
-@group(1) @binding(0) var s_textureSampler: sampler;
-@group(1) @binding(1) var s_texture: texture_2d<f32>;
-
-@fragment
-fn main(input: FragmentInput) -> FragmentOutput {
-    var output: FragmentOutput;
-    let texColor = textureSample(s_texture, s_textureSampler, input.uv);
-    // 逐分量相乘、透明度取纹理的 alpha：与 ColorMaterial / SegmentMaterial 同样的处理，
-    // 规避「材质 uniform 的 alpha 分量传到 GPU 后恒为 0」的问题（详见 ColorMaterial 注释）。
-    let tint = material_uniforms.u_color;
-    output.color = vec4<f32>(texColor.rgb * tint.rgb, texColor.a);
-    return output;
-}
-`;
