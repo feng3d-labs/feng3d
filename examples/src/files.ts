@@ -28,6 +28,9 @@ export default {
     "lights": [
         "PointLightTest",
     ],
+    "ui": [
+        "UITest",
+    ],
     "advanced": [
         "TerrainTest",
         "TerrainMergeTest",
