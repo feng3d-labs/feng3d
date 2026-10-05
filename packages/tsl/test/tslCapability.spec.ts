@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, arrayLength, assign, builtin, compute, continue_, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, array, arrayLength, assign, builtin, compute, continue_, discard, float, forRange_, forU32_, fragment, if_, int, let_, max, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -344,5 +344,40 @@ describe('compute 循环能力（#785，updateSprites 的前置）', () =>
 
         expect(wgsl).toContain('struct Particle');
         expect(wgsl).toContain('var<storage, read> particles: array<Particle>;');
+    });
+});
+
+describe('无符号整数与 uvec2 的类型放宽（#785，gameOfLife 渲染的前置）', () =>
+{
+    it('max 支持 u32（生成 max(..., ...) 且带 u 后缀）', () =>
+    {
+        const a = uint(3);
+        const b = uint(5);
+        const result = max(a, b);
+
+        expect(result.toWGSL()).toBe('max(3u, 5u)');
+        // 数字入参也用 u 后缀
+        expect(max(a, 1).toWGSL()).toBe('max(3u, 1u)');
+    });
+
+    it('max 对浮点仍返回 f32', () =>
+    {
+        expect(max(float(1.5), float(2.5)).toWGSL()).toBe('max(1.5, 2.5)');
+    });
+
+    it('uvec2 可以包裹变量宿主（uniform / attribute）', () =>
+    {
+        const sizeUniform = uvec2(uniform('size', 0, 0));
+        const f = fragment('main', () =>
+        {
+            const w = let_('w', sizeUniform.x);
+            return_(vec4(float(w), 0.0, 0.0, 1.0));
+        });
+        const wgsl = f.toWGSL();
+
+        // TSL 生成的 uniform 声明里变量名后有空格（`size : vec2<u32>`），断言到类型即可
+        expect(wgsl).toContain('var<uniform> size');
+        expect(wgsl).toContain('vec2<u32>');
+        expect(wgsl).toContain('let w = size.x;');
     });
 });
