@@ -30,6 +30,7 @@
  *
  * 退出码：0 通过；1 有失败。
  */
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -214,6 +215,88 @@ check('扫描器扫到了足够多的 .mjs（集合非空）', allScripts.length
 check('★ 每个 scripts/*.mjs 要么能从 workflow 走到、要么文档里说得清',
     undocumented.length === 0,
     undocumented.length === 0 ? `${allScripts.length} 个都可达或有文档` : `既不可达又没文档：${undocumented.join(', ')}`);
+
+// ---------- 判据 7：§2.1.2 声称的「回归保护」确实存在且数量对得上 ----------
+//
+// §2.1.2 专门讲"**门禁自身的可靠性**"。它声称的四个数字会随"改判据"而腐化，
+// 而它们恰恰是"判据坏了能不能被发现"的保证 —— 所以值得像包数一样钉住。
+//
+// 实现上**跑那两个脚本并读它自报的数字**（而不是去数源码里的常量）——
+// 因为"自报"才是它们真正执行的东西，读常量可能与实际执行脱节。
+/** 上次 runScript 的错误（供"读不到"时区分"没输出"与"跑不起来"） */
+let lastRunError = null;
+
+function runScript(script)
+{
+    lastRunError = null;
+
+    const result = spawnSync(process.execPath, [`scripts/${script}`], { encoding: 'utf8', cwd: ROOT });
+
+    if (result.error)
+    {
+        lastRunError = String(result.error.message ?? result.error);
+    }
+    else if (result.status !== 0)
+    {
+        lastRunError = `退出码 ${result.status}`;
+    }
+
+    // **两流都要**：`execFileSync` 只回 stdout，而自检那句可能走 stderr（实测因此读不到）
+    return `${result.stdout ?? ''}${result.stderr ?? ''}`;
+}
+
+/** 从"自检段"里数 PASS/FAIL 行（比找"共 N 条"稳：实测 `check-toplevel-new` 没有那句话） */
+function selfCheckLines(script)
+{
+    const out = runScript(script);
+    const lines = out.split(/\r?\n/);
+    const start = lines.findIndex((line) => /---\s*自检/.test(line));
+
+    if (start < 0) return null;
+
+    let count = 0;
+
+    for (let index = start + 1; index < lines.length; index += 1)
+    {
+        if (/^---/.test(lines[index])) break;
+        if (/PASS|FAIL/.test(lines[index])) count += 1;
+    }
+
+    return count;
+}
+
+const moduleEffectsSelfChecks = Number(runScript('check-module-side-effects.mjs').match(/判据自检 (\d+) 条/)?.[1] ?? NaN);
+const toplevelNewSelfChecks = selfCheckLines('check-toplevel-new.mjs');
+
+check('★ check-module-side-effects 的判据自检条数与 §2.1.2 声称的一致（13）',
+    moduleEffectsSelfChecks === 13,
+    `实测 ${Number.isNaN(moduleEffectsSelfChecks) ? `读不到（${lastRunError ?? '无错误信息'}）` : moduleEffectsSelfChecks} 条`);
+
+check('★ check-toplevel-new 的判据自检条数与 §2.1.2 声称的一致（12）',
+    toplevelNewSelfChecks === 12,
+    `实测 ${toplevelNewSelfChecks ?? `读不到（${lastRunError ?? '无错误信息'}）`} 条`);
+
+check('★ test/r2ModuleScope.spec.ts 存在，且 it( 条数与 §2.1.2 声称的一致（46）',
+    (() =>
+    {
+        const path = resolve(ROOT, 'test/r2ModuleScope.spec.ts');
+
+        if (!existsSync(path)) return false;
+
+        return (readFileSync(path, 'utf8').match(/\bit\(/g) ?? []).length === 46;
+    })(),
+    (() =>
+    {
+        const path = resolve(ROOT, 'test/r2ModuleScope.spec.ts');
+
+        if (!existsSync(path)) return '文件不存在';
+
+        return `实测 ${(readFileSync(path, 'utf8').match(/\bit\(/g) ?? []).length} 条 it(`;
+    })());
+
+check('★ test/coverageProviderMerge.spec.ts 存在（§2.1.2 把它列为 coverage provider 的回归保护）',
+    existsSync(resolve(ROOT, 'test/coverageProviderMerge.spec.ts')),
+    existsSync(resolve(ROOT, 'test/coverageProviderMerge.spec.ts')) ? '存在' : '**不存在**');
 
 // ---------- 结论 ----------
 
