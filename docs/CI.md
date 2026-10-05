@@ -885,9 +885,9 @@ R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的�
 - **失败即停**：`gates:host` 里 20 条用 `&&` 串起来，**第一条失败、后面的就不再执行**——
   红了先看是哪一条、修完再推，别把"后面没报错"当成"后面没问题"。
 
-本地实测（Windows + 完整 `node_modules`）：20 条全绿，总耗时约 **21 秒**
-（最后四条 `editor-singleton-survey` / `check-editor-no-project-script` /
-`check-editor-project-shape` / `check-editor-dead-code` 只扫文件与源码，合计不到 1 秒）
+本地实测（Windows + 完整 `node_modules`）：**22 条全绿，总耗时约 32 秒**
+（最后四条 `check-editor-project-shape` / `check-editor-dead-code` /
+`check-verifier-wiring` / `check-doc-workflow-refs` 只扫文件与源码，合计不到 1 秒）
 （最慢的 `check-editor-project-build.mjs` 约 6 秒），对 job 的 40 分钟超时无压力。
 > 接线时按 ubuntu 语义复核这批脚本，抓到一处**"只在本机 Windows 成立"**的断言并顺带修掉：
 > `bin/host/projectWorkspace.mjs` 原用 `node:path` 的 `isAbsolute` 判绝对路径，而它在 posix 下
