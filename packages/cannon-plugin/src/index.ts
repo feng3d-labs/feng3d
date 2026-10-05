@@ -15,3 +15,5 @@ export * from './LockConstraint';
 export * from './PointToPointConstraint';
 export * from './Spring';
 export * from './Vehicle';
+export * from './SPHSystem';
+export * from './SPHParticle';

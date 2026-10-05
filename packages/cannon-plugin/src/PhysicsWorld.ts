@@ -4,11 +4,13 @@ import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVec
 // 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
 // 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
 // 直接写 new Material() 会被判为「对纯数据类的 new」——与 Plane / Sphere 同一类误报。
-import { Body, ContactMaterial, Material as CannonMaterial, World, type RaycastVehicle as CannonRaycastVehicle, type Spring as CannonSpring } from 'cannon-es';
+import { Body, ContactMaterial, Material as CannonMaterial, World, type RaycastVehicle as CannonRaycastVehicle, type SPHSystem as CannonSPHSystem, type Spring as CannonSpring } from 'cannon-es';
 import type { ConstraintLogic } from './Constraint';
 import type { RigidbodyLogic } from './Rigidbody';
 import type { SpringLogic } from './Spring';
 import type { VehicleLogic } from './Vehicle';
+import type { SPHParticleLogic } from './SPHParticle';
+import type { SPHSystemLogic } from './SPHSystem';
 
 declare module 'feng3d'
 {
@@ -168,6 +170,14 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     /** 已创建的车辆实例（每帧要 updateVehicle，所以必须留住） */
     const createdVehicles = new Map<Components, CannonRaycastVehicle>();
 
+    // ---- SPH（光滑粒子流体） ----
+    /** 求解器实例（子树里第一个 SPHSystem 组件创建；缺失时不起 SPH） */
+    let sphSystem: CannonSPHSystem | null = null;
+    /** 已创建的粒子刚体：组件 → 刚体 */
+    const createdSPHParticles = new Map<Components, Body>();
+    /** 粒子刚体 → 所属 Object3D（每帧把位置写回） */
+    const sphParticleToObject3D = new Map<Body, Object3D>();
+
     // ---- 碰撞事件 ----
     /** 「开始接触」的订阅者 */
     const collideListeners = new Set<(event: CollideEvent) => void>();
@@ -317,6 +327,43 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             // interval 单位是毫秒（Ticker 约定），第二参为「距上次调用的秒数」
             const elapsed = interval ?? (1000 / 60);
 
+            // ---- SPH：注册求解器与粒子 ----
+            // cannon-es 0.20 的 World 没有 addSystem，但 step() 会遍历 world.subsystems 逐个 update()。
+            const sphSystemDatas = getLogic(o3d).getComponentsInChildren('SPHSystem', true);
+            if (sphSystem === null && sphSystemDatas.length > 0)
+            {
+                const sphLogic = getLogic(sphSystemDatas[0]) as SPHSystemLogic | null;
+                if (sphLogic !== null && sphLogic.createSystem !== null)
+                {
+                    sphSystem = sphLogic.createSystem();
+                    world.subsystems.push(sphSystem);
+                }
+            }
+
+            if (sphSystem !== null)
+            {
+                const sphParticles = getLogic(o3d).getComponentsInChildren('SPHParticle', true);
+                for (const particleData of sphParticles)
+                {
+                    if (createdSPHParticles.has(particleData)) continue;
+
+                    const particleLogic = getLogic(particleData) as SPHParticleLogic | null;
+                    if (particleLogic === null || particleLogic.createBody === null) continue;
+
+                    const owner = particleLogic.entity;
+                    if (owner === null) continue;
+
+                    const body = particleLogic.createBody();
+                    const position = owner.position ?? { x: 0, y: 0, z: 0 };
+                    body.position.set(position.x, position.y, position.z);
+
+                    world.addBody(body);
+                    sphSystem.add(body);
+                    createdSPHParticles.set(particleData, body);
+                    sphParticleToObject3D.set(body, owner);
+                }
+            }
+
             // ---- 弹簧：必须在 step **之前**施力 ----
             // cannon-es 的 Spring 不参与约束求解，要每帧自己 applyForce() 才生效，
             // 所以它走不了 addConstraint 那条路——这是 PhysicsWorld 里唯一的"步进前钩子"。
@@ -384,6 +431,12 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             {
                 writeTransform(object3D, body);
             }
+
+            // SPH 粒子也写回（它们不是 Rigidbody，不在上面那张映射里）
+            for (const [body, object3D] of sphParticleToObject3D)
+            {
+                writeTransform(object3D, body);
+            }
         },
         get isLoaded() { return members.isLoaded; },
         dispose()
@@ -394,6 +447,10 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             for (const constraint of world.constraints.slice()) world.removeConstraint(constraint);
             for (const vehicle of createdVehicles.values()) vehicle.removeFromWorld(world);
             createdVehicles.clear();
+            for (const body of createdSPHParticles.values()) world.removeBody(body);
+            createdSPHParticles.clear();
+            sphParticleToObject3D.clear();
+            sphSystem = null;
             createdSprings.clear();
             createdConstraints.clear();
             collideListeners.clear();
