@@ -43,6 +43,7 @@ import { getAnimometerWGSL } from '../packages/webgpu/examples/src/shaders-tsl/a
 import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/bitonicDisplayFrag';
 import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingFragment';
 import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fragmentGBuffersDebugView';
+import { getVolumeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/volume';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -890,5 +891,41 @@ describe('G-Buffer 调试视图片元', () =>
         expect(wgsl).toContain('result.x = (result.x + 1.0) * 0.5;');
         expect(wgsl).toContain('result.y = (result.y + 1.0) * 0.5;');
         expect(wgsl).toContain('result.z = (result.z + 1.0) * 0.5;');
+    });
+});
+
+/**
+ * volumeRenderingTexture3D 体渲染着色器（TSL 版）离线验收。
+ */
+describe('体渲染着色器', () =>
+{
+    const shader = getVolumeWGSL();
+
+    it('顶点：逆 MVP 反投影 near/far + 步长', () =>
+    {
+        expect(shader.vertex).toContain('@builtin(vertex_index) vertexIndex: u32');
+        expect(shader.vertex).toContain('var near = uniforms.inverseModelViewProjectionMatrix * clipXY;');
+        expect(shader.vertex).toContain('near = near / near.w;');
+        expect(shader.vertex).toContain('output.step = (far.xyz - near.xyz) / 64.0;');
+    });
+
+    it('3D 纹理采样（texture_3d + sampler）', () =>
+    {
+        expect(shader.fragment).toContain('var myTexture_texture: texture_3d<f32>;');
+        expect(shader.fragment).toContain('var myTexture: sampler;');
+        expect(shader.fragment).toContain('textureSample(myTexture_texture, myTexture, texCoord)');
+    });
+
+    it('回归：lessThanAll / greaterThanAll + Bool.and 组合', () =>
+    {
+        expect(shader.fragment).toContain('let intersects = (all((rayPos < vec3<f32>(1.0)))) && (all((rayPos > vec3<f32>(-1.0))));');
+    });
+
+    it('循环与前后混合', () =>
+    {
+        expect(shader.fragment).toContain('for (var i = 0; i < 64; i = i + 1) {');
+        expect(shader.fragment).toContain('let blended = (1.0 - result) * sample;');
+        expect(shader.fragment).toContain('result = result + select(0.0, blended, (intersects) && (result < 1.0));');
+        expect(shader.fragment).toContain('rayPos = rayPos + input.step;');
     });
 });

@@ -4,7 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import volumeWGSL from './volume.wgsl';
+import { getVolumeWGSL } from '../../shaders-tsl/volume';
 
 const gui = new GUI();
 
@@ -32,10 +32,10 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: volumeWGSL,
+            code: getVolumeWGSL().vertex,
         },
         fragment: {
-            code: volumeWGSL,
+            code: getVolumeWGSL().fragment,
         },
         primitive: {
             topology: 'triangle-list',
@@ -102,8 +102,9 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const uniformBindGroup: BindingResources = {
         uniforms: { value: uniformBuffer },
-        mySampler: sampler,
-        myTexture: { texture: volumeTexture },
+        // TSL 展开：myTexture_texture（3D 纹理，binding 2）+ myTexture（采样器，binding 3）
+        myTexture_texture: { texture: volumeTexture },
+        myTexture: {},
     };
 
     const renderPassDescriptor: RenderPassDescriptor = {
