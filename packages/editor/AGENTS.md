@@ -423,6 +423,9 @@ const { chromium } = require('playwright');
   ⑦ **`editorRS` 不许在模块顶层被使用**（#278 阶段 4a）——它的装配已改成显式调用
   `installEditorResourceSystem()`（入口 `main.ts`，必须在 `pickBaseFS()` 之前）；
   这条原来只是"启发式指路"，现在 0 行才算过。
+  ⑧ **`editorRS` 的消费面只减不增**（#278 阶段 4b）——上限 `EDITORRS_MAX_REFERENCES`，
+  每迁完一批就往下压一次；去单例化的做法是"装配点用 `installEditorResourceSystem()`
+  的**返回值**"，而不是 import 单例（后者只是把引用挪个地方，引用数不降）。
   数字口径**大小写敏感**（`editorRS` 单例 ≠ `EditorRS` 类——用 PowerShell 的 `Select-String`
   数会得到不同的数，它默认大小写不敏感）；离线可跑。
   迁移顺序与每步验收见 [docs/MIGRATE_SINGLETONS.md](docs/MIGRATE_SINGLETONS.md)）、
