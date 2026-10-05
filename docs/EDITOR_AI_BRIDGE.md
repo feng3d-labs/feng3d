@@ -374,6 +374,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 |---|---|---|
 | `build_run` | `host.build.run` | 在项目目录里跑项目自己的 npm script（默认 `build`）；**失败如实**：返回 `{ script, code, ok, output }`，非 0 退出码原样回，不会"跑挂了还说成功" |
 | `build_status` | `host.build.status` | 当前是否正在构建（同一项目同时只允许一个构建） |
+| `build_cancel`（**MCP 工具待补**） | `host.build.cancel` | **取消正在跑的构建**（#273 长任务）："调用方能叫停"这一条的宿主半。返回 `{ cancelled, script? }`；被取消的那次 `run` 会带 `cancelled: true` 与 `code: -2`——与"项目自己报错"区分开（否则取消看起来只是又一个失败） |
 | `publish_run` | `host.publish.run` | **先跑项目自己的构建**（`npm run build`），再按**启用状态**把插件 runtime 端打进产物 `dist/runtime.js`（未启用的插件连入口都不给它进）。构建失败**即中止**并如实回报（`{ ok: false, stage: 'build', build: { code, output } }`），不产出"半个产物" |
 
 其余宿主方法（`host.workspace.*` 的读写 / 建删目录 / 二进制等）**有意不暴露**给 AI：它们是给
@@ -1054,7 +1055,7 @@ interface BridgeMethodContribution
 | | |
 |---|---|
 | ✅ 优点 | 无重复声明；AI 视图永远跟随方法表 |
-| ⚠️ 代价 | ① 描述 / schema 从脚本搬进编辑器源码（进产物，体积略增）；② `tools/list` 变**运行期**；③ 既有的 **40 个桥接方法 + 14 个宿主方法**都要补元数据——**一次性大迁移**，而脚本里那些长描述很值钱，搬的时候最容易丢信息 |
+| ⚠️ 代价 | ① 描述 / schema 从脚本搬进编辑器源码（进产物，体积略增）；② `tools/list` 变**运行期**；③ 既有的 **40 个桥接方法 + 15 个宿主方法**都要补元数据——**一次性大迁移**，而脚本里那些长描述很值钱，搬的时候最容易丢信息 |
 | 必须解决 | **离线 / 无编辑器时怎么办**：连不上编辑器就没有工具表。所以形态应是 **静态兜底 + 运行期增量**——把现有 `TOOLS` 留作兜底，连上后再以贡献表为准 |
 
 ### 15.4 推荐与迁移路径
