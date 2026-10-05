@@ -48,53 +48,70 @@ export class ProjectNew extends Service
     }
 
     /**
-     * 新建一个项目骨架。
+     * 新建一个项目骨架（`createProjectSkeleton` 的 service 包装）。
      *
-     * @param {string} dir 目标目录（不存在会被创建；**必须为空或不存在**）
-     * @param {string} [name] 项目名（缺省取目录名）
+     * @param {string} dir 目标目录
+     * @param {string} [name] 项目名
      * @returns {{ root: string, name: string, files: number }} 建好的项目
      */
     create(dir, name)
     {
-        if (typeof dir !== 'string' || dir.trim() === '')
-        {
-            throw new Error('要一个目录（给 `--project <目录>`，或调 `host.project.new` 时传 `dir`）');
-        }
-
-        const full = resolve(dir);
-
-        if (!existsSync(TEMPLATE_DIR))
-        {
-            throw new Error(`找不到模板目录：${TEMPLATE_DIR}（发布版的 files 可能没覆盖 "resource/"）`);
-        }
-
-        // 只写进**空目录**：往已有内容里糊模板是不可逆的（见类注释）
-        if (existsSync(full))
-        {
-            const existing = readdirSync(full);
-
-            if (existing.length > 0)
-            {
-                throw new Error(`目录里已经有东西（${existing.slice(0, 5).join(' / ')}${existing.length > 5 ? ' …' : ''}）：`
-                    + `${full}——新建只写进空目录，避免覆盖你的东西`);
-            }
-        }
-        else
-        {
-            mkdirSync(full, { recursive: true });
-        }
-
-        cpSync(TEMPLATE_DIR, full, { recursive: true });
-
-        // 项目名写进元数据（模板里是占位的 `my-project`）
-        const metaPath = join(full, 'feng3d.project.json');
-        const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
-
-        meta.name = (typeof name === 'string' && name.trim() !== '') ? name : basename(full);
-        writeFileSync(metaPath, `${JSON.stringify(meta, null, 4)}\n`, 'utf8');
-
-        return { root: full, name: meta.name, files: countFiles(full) };
+        return createProjectSkeleton(dir, name);
     }
+}
+
+/**
+ * 建一个项目骨架（**独立函数**）。
+ *
+ * 为什么不只放在 service 里：有两处都不需要 cordis——
+ * ① CLI 的 `--new <目录>` 在**创建 ctx 之前**就要把目录建出来（`ProjectWorkspace.open()` 会校验
+ * "这个目录存在且是目录"，先把骨架写出来它才校验得过）；
+ * ② 门禁要直接调它（不起宿主）。service 只是它的包装。
+ *
+ * @param {string} dir 目标目录（不存在会被创建；**必须为空或不存在**）
+ * @param {string} [name] 项目名（缺省取目录名）
+ * @returns {{ root: string, name: string, files: number }} 建好的项目
+ */
+export function createProjectSkeleton(dir, name)
+{
+    if (typeof dir !== 'string' || dir.trim() === '')
+    {
+        throw new Error('要一个目录（给 `--project <目录>`，或调 `host.project.new` 时传 `dir`）');
+    }
+
+    const full = resolve(dir);
+
+    if (!existsSync(TEMPLATE_DIR))
+    {
+        throw new Error(`找不到模板目录：${TEMPLATE_DIR}（发布版的 files 可能没覆盖 "resource/"）`);
+    }
+
+    // 只写进**空目录**：往已有内容里糊模板是不可逆的（见类注释）
+    if (existsSync(full))
+    {
+        const existing = readdirSync(full);
+
+        if (existing.length > 0)
+        {
+            throw new Error(`目录里已经有东西（${existing.slice(0, 5).join(' / ')}${existing.length > 5 ? ' …' : ''}）：`
+                + `${full}——新建只写进空目录，避免覆盖你的东西`);
+        }
+    }
+    else
+    {
+        mkdirSync(full, { recursive: true });
+    }
+
+    cpSync(TEMPLATE_DIR, full, { recursive: true });
+
+    // 项目名写进元数据（模板里是占位的 `my-project`）
+    const metaPath = join(full, 'feng3d.project.json');
+    const meta = JSON.parse(readFileSync(metaPath, 'utf8'));
+
+    meta.name = (typeof name === 'string' && name.trim() !== '') ? name : basename(full);
+    writeFileSync(metaPath, `${JSON.stringify(meta, null, 4)}\n`, 'utf8');
+
+    return { root: full, name: meta.name, files: countFiles(full) };
 }
 
 /**

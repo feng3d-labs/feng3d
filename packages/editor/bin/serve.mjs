@@ -37,7 +37,7 @@ import { PluginPackages } from './host/pluginPackages.mjs';
 import { PluginTree } from './host/pluginTree.mjs';
 import { ProjectBuild } from './host/projectBuild.mjs';
 import { ProjectMeta } from './host/projectMeta.mjs';
-import { ProjectNew } from './host/projectNew.mjs';
+import { ProjectNew, createProjectSkeleton } from './host/projectNew.mjs';
 import { ProjectPublish } from './host/projectPublish.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
@@ -109,6 +109,14 @@ function parseArgs()
             options.project = resolve(argv[++i]);
             options.given.add('project');
         }
+        else if (arg === '--new')
+        {
+            // `--new <目录>`：**先建骨架，再当项目打开**（#274 P3）。
+            // 建在这一步（而不是创建 ctx 之后）是因为 `ProjectWorkspace` 打开时会校验
+            // "这个目录存在且是目录"——先把骨架写出来它才校验得过。
+            options.new = resolve(argv[++i]);
+            options.given.add('new');
+        }
         else if (arg === '--open' || arg === '-o')
         {
             options.open = true;
@@ -148,6 +156,7 @@ function printHelp()
       --builtin-plugins <文件>  **内置层**插件配置（随编辑器发布的那一层；缺省为空）
       --plugins <文件> **用户层**插件配置（叠在产物配置之上；缺省不叠用户层）
       --project <目录> 打开项目目录：宿主只在这个目录内读写文件（缺省不打开项目）
+      --new <目录>     新建一个项目骨架到该目录（**必须为空或不存在**），然后当项目打开
   -o, --open          启动后尝试用系统默认浏览器打开
   -v, --version       打印版本信息后退出
       --help          显示本帮助
@@ -208,6 +217,21 @@ if (pluginSummary.entries > 0)
 for (const problem of pluginSummary.problems)
 {
     console.warn(`[feng3d-editor] 插件配置有问题：${problem}`);
+}
+
+// `--new` 与 `--project` 是两件事（一个"从零开始"、一个"打开已有的"），同时给就是没想清楚：
+if (options.new && options.project)
+{
+    console.error('[feng3d-editor] --new 与 --project 只能给一个：前者新建、后者打开已有的');
+    process.exit(2);
+}
+
+if (options.new)
+{
+    const created = createProjectSkeleton(options.new);
+
+    console.log(`[feng3d-editor] 已新建项目：${created.root}（${created.files} 个文件，名称 ${created.name}）`);
+    options.project = created.root;
 }
 
 // 项目工作区（#272 P2）：宿主"碰文件"的那一半。`--project <目录>` 打开项目；
