@@ -74,5 +74,9 @@ export * from './utils/GpuResourceReleaser';
 // 缓存类（benchmark 统计等）
 export { WGPURenderBundle } from './caches/WGPURenderBundle';
 
+// 顶点缓冲布局缓存管理器（issue #337）：导出后可用于离线验证"顶点缓冲按属性数据对象分组"的
+// 归并结果（4 个蒙皮属性交错共享 data → 1 个缓冲），从而在无 GPU 环境断言 maxVertexBuffers 约束。
+export { WGPUVertexBufferLayout } from './caches/WGPUVertexBufferLayout';
+
 // 渲染状态
 export { renderState } from './utils/renderState';
