@@ -1,4 +1,4 @@
-import { Behaviour, BehaviourLogic, type Object3D } from 'feng3d';
+import { Behaviour, BehaviourLogic, type Object3D, registerComponentType } from 'feng3d';
 import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { serialization, type Serializable } from '@feng3d/serialization';
 import type { gPartial } from '@feng3d/polyfill';
@@ -239,8 +239,11 @@ export class ButtonLogic extends BehaviourLogic
         children.forEach((child) =>
         {
             const c = child as Object3D;
-            if (childMap[c.name]) return;
-            childMap[c.name] = c;
+            const name = c.name;
+            // strictNullChecks：`Object3D.name` 可选。无名子对象直接跳过——迁移前用 undefined 作键，
+            // 会全部挤进 `childMap['undefined']` 这一格（同名去重下只有第一个留下），语义上并无意义。
+            if (!name || childMap[name]) return;
+            childMap[name] = c;
         });
 
         return childMap;
@@ -249,6 +252,10 @@ export class ButtonLogic extends BehaviourLogic
 
 // 注册到统一 logic 分发表
 registerLogic('Button', ButtonLogic as unknown as new (data: Button) => ButtonLogic);
+
+// 登记组件类型（理由见 core/CanvasRenderer.ts）：Button 是 Behaviour 的子类型，不登记则
+// `Scene.activeBehaviours` 扫不到它 → `ButtonLogic.update`（按钮状态机）永远不被驱动。
+registerComponentType('Button', { baseTypes: ['Behaviour'] });
 
 /**
  * 创建按钮对象（带 2D 变换与按钮组件的 Object3D 字面量）。

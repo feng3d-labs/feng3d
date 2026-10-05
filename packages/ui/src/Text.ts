@@ -1,4 +1,4 @@
-import { Component3D, ComponentLogicBase, createTextureFromCanvas, Object3D } from 'feng3d';
+import { Component3D, ComponentLogicBase, createTextureFromCanvas, Object3D, registerComponentType } from 'feng3d';
 import { effect, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Vector4 } from '@feng3d/math';
 import type { RenderObject, Texture } from '@feng3d/webgpu';
@@ -143,13 +143,18 @@ export class TextLogic extends ComponentLogicBase
         super.beforeRender(renderObject);
 
         const data = this.#data;
+        // 构造已按 §11.5 补默认值（`writable.style = new TextStyle()`），`style` 运行时一定存在；
+        // strictNullChecks 下在这里显式收窄一次，不把非空断言散进绘制调用。
+        const style = data.style;
+        if (!style) return;
+
         let canvas = this.#canvas;
 
         if (!canvas || this.#invalid)
         {
             // 迁移前：`this._image['_pixels'] = canvas; this._image.invalidate();`
             // （往同一 Texture2D 上塞像素源并就地失效）。现按主仓纹理模型新建 Texture。
-            canvas = this.#canvas = drawText(canvas, data.text, data.style);
+            canvas = this.#canvas = drawText(canvas, data.text, style);
             this.#texture = createTextureFromCanvas(canvas);
             this.#invalid = false;
         }
@@ -222,6 +227,9 @@ export class TextLogic extends ComponentLogicBase
 
 // 注册到统一 logic 分发表
 registerLogic('Text', TextLogic as unknown as new (data: Text) => TextLogic);
+
+// 登记组件类型（理由见 core/CanvasRenderer.ts）：Text 是 Component3D（进而 Component）的子类型。
+registerComponentType('Text', { baseTypes: ['Component3D'] });
 
 /**
  * 创建文本对象（带 2D 变换、画布渲染器与文本组件的 Object3D 字面量）。

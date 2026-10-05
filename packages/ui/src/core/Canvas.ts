@@ -1,4 +1,4 @@
-import { Behaviour, BehaviourLogic, Object3D } from 'feng3d';
+import { Behaviour, BehaviourLogic, Object3D, registerComponentType } from 'feng3d';
 import { reactive, registerLogic } from '@feng3d/reactivity';
 import {
     mat4AppendScale,
@@ -162,6 +162,10 @@ export class CanvasLogic extends BehaviourLogic
 
 // 注册到统一 logic 分发表
 registerLogic('Canvas', CanvasLogic as unknown as new (data: Canvas) => CanvasLogic);
+
+// 登记组件类型（理由见 core/CanvasRenderer.ts）：Canvas 是 Behaviour 的子类型，
+// 不登记则 `Scene.behaviours` / `getComponentsInChildren('Behaviour')` 扫不到它。
+registerComponentType('Canvas', { baseTypes: ['Behaviour'] });
 
 /**
  * 创建 Canvas 对象（带 2D 变换与画布组件的 Object3D 字面量）。
