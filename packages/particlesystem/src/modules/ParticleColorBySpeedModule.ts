@@ -1,65 +1,73 @@
-import { mathUtilClamp } from '@feng3d/math';
-import { color4Multiply, minMaxGradientDefault, minMaxGradientGetValue, vec3Length } from '@feng3d/math';
-import type { MinMaxGradient } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialize } from '@feng3d/serialization';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { color4Multiply, mathUtilClamp, minMaxGradientDefault, minMaxGradientGetValue, vec3Length } from '@feng3d/math';
+import type { MinMaxGradient, Vector2Like } from '@feng3d/math';
+import type { Particle } from '../Particle';
+import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleModule';
 
 /**
- * the Color By Speed module.
- *
- * 颜色随速度变化模块。
+ * 颜色随速度变化模块（纯数据接口 + 模块级行为函数）。
  */
-@decoratorRegisterClass()
-export class ParticleColorBySpeedModule extends ParticleModule
+export interface ParticleColorBySpeedModuleLike extends ParticleModuleLike
 {
-    /**
-     * The gradient controlling the particle colors.
-     *
-     * 控制粒子颜色的梯度。
-     *
-     * issue #134 第二批起 `MinMaxGradient` 是纯数据接口（class 已删除）：装配点显式写
-     * `__type__`（面板按它选 `OAVMinMaxGradient` 控件、序列化也靠它识别），默认值由
-     * `minMaxGradientDefault()` 补。
-     */
-    @serialize
-    @oav({ tooltip: '控制粒子颜色的梯度。' })
-    color: MinMaxGradient = { __type__: 'MinMaxGradient', ...minMaxGradientDefault() };
+    /** 控制粒子颜色的梯度 */
+    readonly color: MinMaxGradient;
 
-    /**
-     * Apply the color gradient between these minimum and maximum speeds.
-     *
-     * 在这些最小和最大速度之间应用颜色渐变。
-     */
-    @serialize
-    @oav({ tooltip: '在这些最小和最大速度之间应用颜色渐变。' })
-    range = { x: 0, y: 1 };
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        particle[ColorBySpeedRate] = Math.random();
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        if (!this.enabled) return;
-
-        const velocity = vec3Length(particle.velocity);
-        const rate = mathUtilClamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
-        // issue #134 第二批：原 `this.color.getValue(...)` → `minMaxGradientGetValue(this.color, ...)`
-        const color = minMaxGradientGetValue(this.color, rate, particle[ColorBySpeedRate]);
-        // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `vec3Multiply(particle.color, color, particle.color)` → `color4Multiply(a, c, out)`
-        color4Multiply(particle.color, color, particle.color);
-    }
+    /** 在这些最小和最大速度之间应用颜色渐变 */
+    readonly range: Vector2Like;
 }
+
+/** 可写出的颜色随速度变化模块（写侧形状）。 */
+export interface WritableParticleColorBySpeedModuleLike extends WritableParticleModuleLike
+{
+    color: MinMaxGradient;
+    range: Vector2Like;
+}
+
+/** 纯数据「颜色随速度变化模块」（带判别字段）。 */
+export interface ParticleColorBySpeedModule extends ParticleColorBySpeedModuleLike
+{
+    readonly __type__: 'ParticleColorBySpeedModule';
+}
+
+/**
+ * `new ParticleColorBySpeedModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
+ */
+export function particleColorBySpeedModuleDefault(out: WritableParticleColorBySpeedModuleLike = { enabled: false, color: { __type__: 'MinMaxGradient', ...minMaxGradientDefault() }, range: { x: 0, y: 1 } }): WritableParticleColorBySpeedModuleLike
+{
+    out.enabled = false;
+    out.color = { __type__: 'MinMaxGradient', ...minMaxGradientDefault() };
+    out.range = { x: 0, y: 1 };
+
+    return out;
+}
+
+/**
+ * 初始化粒子状态（原 `ParticleColorBySpeedModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleColorBySpeedModuleInitParticleState(module: ParticleColorBySpeedModuleLike, particle: Particle): void
+{
+    particle[ColorBySpeedRate] = Math.random();
+}
+
+/**
+ * 更新粒子状态（原 `ParticleColorBySpeedModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleColorBySpeedModuleUpdateParticleState(module: ParticleColorBySpeedModuleLike, particle: Particle): void
+{
+    if (!module.enabled) return;
+
+    const velocity = vec3Length(particle.velocity);
+    const rate = mathUtilClamp((velocity - module.range.x) / (module.range.y - module.range.x), 0, 1);
+    const color = minMaxGradientGetValue(module.color, rate, particle[ColorBySpeedRate]);
+
+    color4Multiply(particle.color, color, particle.color);
+}
+
 const ColorBySpeedRate = '_ColorBySpeed_rate';

@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 89 个类型 / 464 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 94 个类型 / 487 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -398,6 +398,39 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'size', type: 'number', control: 'number', readonly: true },
         { name: 'color', type: 'Color4Like', control: 'Color4', readonly: true },
         { name: 'outlineMorphFactor', type: 'number', control: 'number', readonly: true },
+    ],
+    'ParticleColorBySpeedModule': [
+        { name: 'color', type: 'MinMaxGradient', control: 'Object', readonly: true, typeNames: ['MinMaxGradient'] },
+        { name: 'range', type: 'Vector2Like', control: 'Vector2', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleColorOverLifetimeModule': [
+        { name: 'color', type: 'MinMaxGradient', control: 'Object', readonly: true, typeNames: ['MinMaxGradient'] },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleForceOverLifetimeModule': [
+        { name: 'force', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'space', type: 'ParticleSystemSimulationSpace', control: 'Enum', readonly: true, values: ['Local', 'World'], numericValues: { Local: 0, World: 1 } },
+        { name: 'randomized', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleInheritVelocityModule': [
+        { name: 'mode', type: 'ParticleSystemInheritVelocityMode', control: 'Enum', readonly: true, values: ['Initial', 'Current'], numericValues: { Initial: 0, Current: 1 } },
+        { name: 'multiplier', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleLimitVelocityOverLifetimeModule': [
+        { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'limit', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'limit3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'space', type: 'ParticleSystemSimulationSpace', control: 'Enum', readonly: true, values: ['Local', 'World'], numericValues: { Local: 0, World: 1 } },
+        { name: 'dampen', type: 'number', control: 'number', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],
     'ParticleMaterial': [
         { name: 'uniforms', type: 'ParticleUniforms', control: 'Object', readonly: true },
