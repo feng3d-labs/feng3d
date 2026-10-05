@@ -395,7 +395,10 @@ my-project/                      # 标准 npm 工程（D12）：可脱离 editor
 - 资源根目录名硬编码 `Assets`（`ReadRS.ts:29`）。是否允许改名属于资源身份问题（§11 问题 4）。
 - **现状（2026-10-05，#274 P3 第一批）**：模板已含 `package.json` / `feng3d.project.json` /
   `vite.config.js` 三个文件，并由门禁 `scripts/check-editor-project-shape.mjs` **两向**守着
-  （"模板里有" + "`templateurls` 列了"）；`package.json` 与 `feng3d.project.json` 属**用户所有物**——
+  （"模板里有" + "`templateurls` 列了"）。
+  **`feng3d.project.json` 已经有服务读它并校验它**了（#274 P3：`bin/host/projectMeta.mjs` + `host.project.meta`；
+  坏清单**指名报错**而不是静默当空项目，判据在 `scripts/check-editor-project-shape.mjs`）。
+  `package.json` 与 `feng3d.project.json` 属**用户所有物**——
   "升级项目"不覆盖它们（用户会自己改依赖 / 入口场景 / 构建配置）。
   **但目录布局本身还没迁**：场景仍在根目录（`default.scene.json`）、没有 `scenes/` / `scripts/` /
   `assets/` / `plugins/`，`libs/`（引擎快照）也还在——那些等 D12 的"用 npm 依赖取代 `libs/`"与后续批次。
