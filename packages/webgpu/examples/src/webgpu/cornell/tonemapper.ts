@@ -2,7 +2,7 @@ import { BindingResources, CanvasTexture, CommandEncoder, PassEncoder, Texture }
 import { ComputePipeline } from '@feng3d/webgpu';
 
 import Common from './common';
-import tonemapperWGSL from './tonemapper.wgsl';
+import { getTonemapperWGSL } from '../../shaders-tsl/tonemapper';
 
 /**
  * Tonemapper implements a tonemapper to convert a linear-light framebuffer to
@@ -35,7 +35,8 @@ export default class Tonemapper
         this.material = {
             label: 'Tonemap.pipeline',
             compute: {
-                code: tonemapperWGSL.replace('{OUTPUT_FORMAT}', output.context.configuration.format),
+                // context.configuration 的类型是可空的（既有类型声明如此），这里它必然存在
+                code: getTonemapperWGSL(output.context.configuration!.format as string),
                 constants: {
                     WorkgroupSizeX: this.kWorkgroupSizeX,
                     WorkgroupSizeY: this.kWorkgroupSizeY,

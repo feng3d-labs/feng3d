@@ -20,7 +20,7 @@ export interface ComputeOptions
      * 生成 `override <name> = <value>;`，可由 WebGPU 的 pipeline `constants` 在运行期替换。
      * 需要在 {@link WorkgroupSize} 里用变量名的场景（如 `@workgroup_size(blockSize, blockSize)`）就靠它。
      */
-    overrides?: Record<string, number>;
+    overrides?: Record<string, number | string | { type: string; value?: number | string }>;
 }
 
 /**
@@ -62,6 +62,15 @@ export class Compute extends Func
             // override 声明（可由 pipeline constants 在运行期替换）
             for (const [name, value] of Object.entries(this.options.overrides ?? {}))
             {
+                if (typeof value === 'object' && value !== null)
+                {
+                    // 与 Fragment 对齐：{ type, value? }——没有 value 时只声明类型
+                    lines.push(value.value === undefined
+                        ? `override ${name}: ${value.type};`
+                        : `override ${name}: ${value.type} = ${value.value};`);
+
+                    continue;
+                }
                 lines.push(`override ${name} = ${value};`);
             }
 
