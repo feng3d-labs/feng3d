@@ -18,14 +18,14 @@ import { ArrayUtils, decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { watcher } from '@feng3d/watcher';
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
-import { ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
-import { ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
+import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
+import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
 import { ParticleEmissionModule } from './modules/ParticleEmissionModule';
-import { ParticleForceOverLifetimeModule } from './modules/ParticleForceOverLifetimeModule';
-import { ParticleInheritVelocityModule } from './modules/ParticleInheritVelocityModule';
-import { ParticleLimitVelocityOverLifetimeModule } from './modules/ParticleLimitVelocityOverLifetimeModule';
+import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModuleInitParticleState, particleForceOverLifetimeModuleUpdateParticleState, type ParticleForceOverLifetimeModule } from './modules/ParticleForceOverLifetimeModule';
+import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from './modules/ParticleInheritVelocityModule';
+import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from './modules/ParticleLimitVelocityOverLifetimeModule';
 import { ParticleMainModule } from './modules/ParticleMainModule';
-import { ParticleModule } from './modules/ParticleModule';
+import { ParticleModule, type WritableParticleModuleLike } from './modules/ParticleModule';
 import { ParticleNoiseModule } from './modules/ParticleNoiseModule';
 import { ParticleRotationBySpeedModule } from './modules/ParticleRotationBySpeedModule';
 import { ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOverLifetimeModule';
@@ -203,8 +203,8 @@ export class ParticleSystem implements Renderable
     get limitVelocityOverLifetime() { return this._limitVelocityOverLifetime; }
     set limitVelocityOverLifetime(v)
     {
-        ArrayUtils.replace(this._modules, this._limitVelocityOverLifetime, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._limitVelocityOverLifetime = v;
     }
     private _limitVelocityOverLifetime: ParticleLimitVelocityOverLifetimeModule;
@@ -219,8 +219,8 @@ export class ParticleSystem implements Renderable
     get inheritVelocity() { return this._inheritVelocity; }
     set inheritVelocity(v)
     {
-        ArrayUtils.replace(this._modules, this._inheritVelocity, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._inheritVelocity = v;
     }
     private _inheritVelocity: ParticleInheritVelocityModule;
@@ -230,8 +230,8 @@ export class ParticleSystem implements Renderable
     get forceOverLifetime() { return this._forceOverLifetime; }
     set forceOverLifetime(v)
     {
-        ArrayUtils.replace(this._modules, this._forceOverLifetime, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._forceOverLifetime = v;
     }
     private _forceOverLifetime: ParticleForceOverLifetimeModule;
@@ -241,8 +241,8 @@ export class ParticleSystem implements Renderable
     get colorOverLifetime() { return this._colorOverLifetime; }
     set colorOverLifetime(v)
     {
-        ArrayUtils.replace(this._modules, this._colorOverLifetime, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._colorOverLifetime = v;
     }
     private _colorOverLifetime: ParticleColorOverLifetimeModule;
@@ -255,8 +255,8 @@ export class ParticleSystem implements Renderable
     get colorBySpeed() { return this._colorBySpeed; }
     set colorBySpeed(v)
     {
-        ArrayUtils.replace(this._modules, this._colorBySpeed, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._colorBySpeed = v;
     }
     private _colorBySpeed: ParticleColorBySpeedModule;
@@ -377,11 +377,11 @@ export class ParticleSystem implements Renderable
         this.emission = new ParticleEmissionModule();
         this.shape = new ParticleShapeModule();
         this.velocityOverLifetime = new ParticleVelocityOverLifetimeModule();
-        this.inheritVelocity = new ParticleInheritVelocityModule();
-        this.forceOverLifetime = new ParticleForceOverLifetimeModule();
-        this.limitVelocityOverLifetime = new ParticleLimitVelocityOverLifetimeModule();
-        this.colorOverLifetime = new ParticleColorOverLifetimeModule();
-        this.colorBySpeed = new ParticleColorBySpeedModule();
+        this.inheritVelocity = { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() };
+        this.forceOverLifetime = { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() };
+        this.limitVelocityOverLifetime = { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() };
+        this.colorOverLifetime = { __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() };
+        this.colorBySpeed = { __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() };
         this.sizeOverLifetime = new ParticleSizeOverLifetimeModule();
         this.sizeBySpeed = new ParticleSizeBySpeedModule();
         this.rotationOverLifetime = new ParticleRotationOverLifetimeModule();
@@ -994,6 +994,13 @@ export class ParticleSystem implements Renderable
     private _initParticleState(particle: Particle)
     {
         this._modules.forEach((v) => { v.initParticleState(particle); });
+
+        // 已纯数据化的模块（未迁移的仍在 _modules 里统一遍历）
+        particleColorOverLifetimeModuleInitParticleState(this._colorOverLifetime, particle);
+        particleColorBySpeedModuleInitParticleState(this._colorBySpeed, particle);
+        particleInheritVelocityModuleInitParticleState(this._inheritVelocity, particle);
+        particleForceOverLifetimeModuleInitParticleState(this._forceOverLifetime, particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(this._limitVelocityOverLifetime, particle);
     }
 
     /**
@@ -1004,6 +1011,14 @@ export class ParticleSystem implements Renderable
     {
         //
         this._modules.forEach((v) => { v.updateParticleState(particle); });
+
+        // 已纯数据化的模块（未迁移的仍在 _modules 里统一遍历）
+        particleColorOverLifetimeModuleUpdateParticleState(this._colorOverLifetime, particle);
+        particleColorBySpeedModuleUpdateParticleState(this._colorBySpeed, particle);
+        particleInheritVelocityModuleUpdateParticleState(this._inheritVelocity, particle);
+        particleForceOverLifetimeModuleUpdateParticleState(this._forceOverLifetime, particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(this._limitVelocityOverLifetime, particle);
+
         particle.updateState(particle.curTime + deltaTime);
     }
 
