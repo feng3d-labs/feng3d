@@ -1008,6 +1008,39 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
     `tools/list` 动态生成 + 静态兜底）。**第四端是贡献点维度的扩展，插件包不新增入口**（triple-half 形态不变）。
     契约草案、代价与迁移路径见 [docs/EDITOR_AI_BRIDGE.md §15](../../../docs/EDITOR_AI_BRIDGE.md)。
 
+24. **文件系统与项目来源**：项目文件走页面内的 IndexedDB 副本，还是走宿主的磁盘目录？
+    → ✅ **已决策（2026-10-05，需求方）：不要中间层** ——
+    **① 不再支持 IndexedDB**：每个项目对应**一个本地目录**，由 **Node.js** 操作，
+    网页端经 **WebSocket** 与宿主交互（那条通道 #273 已经在了）；
+    **② runtime（游戏运行端）只支持 HTTP(S) 加载**，不再使用 IndexedDB。
+
+    **它取消了什么**：[MIGRATE_TO_HOST_FS.md](MIGRATE_TO_HOST_FS.md) §3 里"宿主没开项目 →
+    **退回 indexedDB**"这条路。于是那篇表格里 B 方案的顾虑（"宿主没开项目时全错"）
+    **从"要避免的错"变成"该有的行为"**：没有项目就明确要求打开一个，
+    而不是悄悄用一份**页面副本**（那份副本永远追不上磁盘，见该文 §1）。
+
+    **它解开的问题**：§11 问题 5（`editorRS` 的拆分边界）**不再需要**"工作区半 / 资产半"那种切法 ——
+    整块归宿主。原先的顾虑是"`@feng3d/assets` 对浏览器 API 的依赖程度尚未评估"，
+    而现在不需要评估了：浏览器端不直接碰文件。
+
+    **影响面**（`grep indexedDB` 实测 **125 处**命中，归类后）：
+
+    | 类别 | 位置 | 处置 |
+    |---|---|---|
+    | **FS 本体** | `packages/filesystem/src/IndexedDBFS.ts`（311 行）、`src/base/_IndexedDB.ts`（457 行）、
+    `FSType.indexedDB`、`src/index.ts` 的导出 | **删** |
+    | **编辑器里的分支** | `EditorRS.ts` 的 `FS.basefs = indexedDBFS`；**`run.ts` 的 `fstype=indexedDB`**
+    （**决策 ② 直接对着它**）；`TopToolBar.vue` 的 `rs.fs.type === FSType.indexedDB` | 删；
+    改成"没有项目就**明说**" |
+    | **示例与文档** | `packages/filesystem/examples`、`README.md`、`IReadFS.ts` / `ReadFS.ts` 的注释 | 改 |
+    | **测试替身** | `packages/filesystem/test/readFS.spec.ts` 拿 `FSType.indexedDB` **当假类型值**
+    （并非真用 indexedDB） | 换个类型值即可 |
+    | **不在本批** | `resource/template/libs/feng3d.js` / `.d.ts`（**引擎快照里也有一份**） |
+    由 D12 的"npm 依赖取代 `libs/`"处理 |
+
+    **分批**：第一批删 **runtime 的 indexedDB 分支**（决策 ②，独立可验收）；
+    第二批删 **FS 本体与编辑器分支**（决策 ①）。
+
 23. **多人协作的"一致性模型"**（#280 P9；**待拍板**）：
     §7 的债务表第 12 项原先写着"多人协作（P9）的形态**已定**：CRDT + 跑在本地宿主（§11）"
     ——**那是一句没有依据的断言**：§11 里从来没有这一条（2026-10-05 的 milestone 盘点发现，
