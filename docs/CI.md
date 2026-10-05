@@ -157,6 +157,19 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > （路径分隔符相关的分支），**不要按本地读数改这一行**。该行已登记在 `scripts/coverage-by-package.mjs`
 > 的 `PLATFORM_DIFFS` 里：本地跑 `--check` 跳过它的**行覆盖率**比对（并打印一行 `ℹ` 提示，不静默），
 > CI 上照常比对。**文件数列不享受这条豁免**（它与平台无关），本地、CI 都逐包精确比对。
+>
+> **`feng3d` 在 CI 上有 run-to-run 摆动，故该包单独放宽了比对容差**（2026-10-05，`@feng3d/ui` 四批迁移批）：
+> **同一个 commit 的两次 CI run 分别给出 66.4 与 67.1**（run `37256357717` = 66.4、run `37256948216` = 67.1；
+> 两者被测代码完全相同，只差两个文档/脚本文件），本机连续多轮稳定 **67.1**，两次 run 都是
+> 246 个测试文件 / 2805 个用例全过、分母完全相同（92/108 文件）。也就是说**CI 上这个包在 66.4 ~ 67.1 之间摆（0.7），
+> 本机读的是上限**——不是文档腐化，也不是本机/CI 的平台分支差异。该摆动疑似来自 `@feng3d/ui` 的测试所触达的
+> 那批 feng3d 文件里的**时序敏感路径**（帧驱动 / effect 调度：只跑 `packages/feng3d/src` 的测试时 feng3d 是
+> 57.6% / 70 文件，ui 的测试把它抬到 67.1% / 92 文件），**未逐行定位**。
+>
+> 处置：表中这一行写**本机实测值 67.1**（与 `node scripts/coverage-by-package.mjs` 的输出一致），并在
+> `scripts/coverage-by-package.mjs` 的 `PACKAGE_TOLERANCES` 里把 `feng3d` 的容差放宽到 **0.8**
+> （覆盖 0.7 的摆动 + 0.1 的常规抖动）——这样 CI 摆到 66.4 或 67.1 都判绿。**摆动消除后应收回该行。**
+> 取证障碍已记录在 issue #642：**CI 不上传覆盖率产物**，本机无法复现/定位 CI 侧的差异行。
 
 往 80% 走的路径（对应已开的 issue）：补 serialization（#103，已完成）、替换占位测试（#104：objectview / terrain / particlesystem / webgpu）、渲染核心补单测（#105：render / materials / shaders / cameras / light）。**上调阈值时同步改本表与本文件 §1 的基线行**——阈值与现状脱节会让门禁变成噪声。
 
