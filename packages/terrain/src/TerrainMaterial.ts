@@ -13,13 +13,9 @@ import {
     reactive,
     effect,
     computed,
-    standardLightingParsWGSL,
-    standardLightingMainWGSL,
-    standardFogMainWGSL,
     standardVertexWGSL,
-    cameraUniformsWGSL,
-    globalUniformsWGSL,
 } from 'feng3d';
+import { getTerrainFragmentWGSL } from './terrainFragment';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址，splat 各层 UV 重复采样需要 repeat）。
@@ -230,7 +226,7 @@ export function terrainMaterialLogic(material: TerrainMaterial): TerrainMaterial
 
     const renderPipeline = reactive({
         vertex: { wgsl: standardVertexWGSL },
-        fragment: { wgsl: terrainFragmentWGSL, targets: [{}] },
+        fragment: { wgsl: getTerrainFragmentWGSL(), targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'cw' },
         depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
     }) as RenderPipeline;
@@ -262,8 +258,10 @@ export function terrainMaterialLogic(material: TerrainMaterial): TerrainMaterial
         for (const key in textureBindings)
         {
             const binding = textureBindings[key];
-            result[key] = binding.textureView;
-            result[key + 'Sampler'] = binding.sampler;
+            // 键名按 TSL 的采样器展开约定（sampler2D(uniform('s_diffuse')) → s_diffuse_texture + s_diffuse），
+            // 与手写的 s_diffuse + s_diffuseSampler 相反。见 terrainFragment.ts。
+            result[key + '_texture'] = binding.textureView;
+            result[key] = binding.sampler;
         }
 
         return result;
@@ -320,113 +318,4 @@ registerLogic('TerrainMaterial', terrainMaterialLogic);
 // - @group(1) @binding(6-7)  s_splatTexture1 + sampler
 // - @group(1) @binding(8-9)  s_splatTexture2 + sampler
 // - @group(1) @binding(10-11) s_splatTexture3 + sampler
-const terrainFragmentWGSL = `
-struct FragmentInput {
-    @location(0) worldPosition: vec3<f32>,
-    @location(1) worldNormal: vec3<f32>,
-    @location(2) worldTangent: vec3<f32>,
-    @location(3) worldBitangent: vec3<f32>,
-    @location(4) uv: vec2<f32>,
-    @location(5) color: vec4<f32>,
-    // standardVertexWGSL 顶点输出含 @location(6) shadowPos，
-    // standardLightingMainWGSL 读取 input.shadowPos，片段输入需对应声明
-    @location(6) shadowPos: vec3<f32>,
-}
 
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-` + cameraUniformsWGSL + globalUniformsWGSL + `
-// ---- diffuse_pars_frag ----
-struct TerrainUniforms {
-    u_diffuse: vec4<f32>,
-    u_alphaThreshold: f32,
-    u_specular: vec4<f32>,
-    u_glossiness: f32,
-    u_ambient: vec4<f32>,
-    u_reflectivity: f32,
-    u_fogMinDistance: f32,
-    u_fogMaxDistance: f32,
-    u_fogColor: vec4<f32>,
-    u_fogDensity: f32,
-    u_fogMode: f32,
-    u_splatRepeats: vec4<f32>,
-}
-
-@group(0) @binding(3) var<uniform> material_uniforms: TerrainUniforms;
-
-// ---- diffuse_pars_frag ----
-@group(1) @binding(0) var s_diffuseSampler: sampler;
-@group(1) @binding(1) var s_diffuse: texture_2d<f32>;
-// ---- specular_pars_frag ----
-@group(1) @binding(2) var s_specularSampler: sampler;
-@group(1) @binding(3) var s_specular: texture_2d<f32>;
-// ---- terrainDefault_pars_frag ----
-@group(1) @binding(4) var s_blendTextureSampler: sampler;
-@group(1) @binding(5) var s_blendTexture: texture_2d<f32>;
-@group(1) @binding(6) var s_splatTexture1Sampler: sampler;
-@group(1) @binding(7) var s_splatTexture1: texture_2d<f32>;
-@group(1) @binding(8) var s_splatTexture2Sampler: sampler;
-@group(1) @binding(9) var s_splatTexture2: texture_2d<f32>;
-@group(1) @binding(10) var s_splatTexture3Sampler: sampler;
-@group(1) @binding(11) var s_splatTexture3: texture_2d<f32>;
-
-// ---- terrainDefault_pars_frag: 地形 splat 混合函数 ----
-// 对照 src/shaders/modules/terrainDefault_pars_frag.glsl 翻译。
-// 非均匀控制流下用 textureSampleLevel（lod=0.0）替代 textureSample。
-fn terrainMethod(diffuseColor: vec4<f32>, uv: vec2<f32>) -> vec4<f32> {
-    let blend = textureSampleLevel(s_blendTexture, s_blendTextureSampler, uv, 0.0);
-
-    var t_uv = uv * material_uniforms.u_splatRepeats.y;
-    var tColor = textureSampleLevel(s_splatTexture1, s_splatTexture1Sampler, t_uv, 0.0);
-    var result = (tColor - diffuseColor) * blend.x + diffuseColor;
-
-    t_uv = uv * material_uniforms.u_splatRepeats.z;
-    tColor = textureSampleLevel(s_splatTexture2, s_splatTexture2Sampler, t_uv, 0.0);
-    result = (tColor - result) * blend.y + result;
-
-    t_uv = uv * material_uniforms.u_splatRepeats.w;
-    tColor = textureSampleLevel(s_splatTexture3, s_splatTexture3Sampler, t_uv, 0.0);
-    result = (tColor - result) * blend.z + result;
-
-    return result;
-}
-
-` + standardLightingParsWGSL + `
-@fragment
-fn main(input: FragmentInput) -> FragmentOutput {
-    var output: FragmentOutput;
-
-    // 初始化
-    var finalColor: vec4<f32> = vec4<f32>(1.0, 1.0, 1.0, 1.0);
-
-    // ---- color_frag ----
-    finalColor = input.color * finalColor;
-
-    // ---- normal_frag ----
-    let normal = normalize(input.worldNormal);
-
-    // ---- diffuse_frag ----
-    var diffuseColor: vec4<f32> = material_uniforms.u_diffuse;
-    diffuseColor = finalColor * diffuseColor * textureSample(s_diffuse, s_diffuseSampler, input.uv);
-
-    // ---- terrain_frag ----
-    // 地形 splat 纹理混合（无条件执行，TerrainMaterial 即为地形材质）
-    diffuseColor = terrainMethod(diffuseColor, input.uv);
-
-    // ---- alphatest_frag ----
-    if (diffuseColor.a < material_uniforms.u_alphaThreshold) {
-        discard;
-    }
-
-    // ---- finalColor = diffuseColor ----
-    finalColor = diffuseColor;
-
-` + standardLightingMainWGSL + `
-
-` + standardFogMainWGSL + `
-
-    output.color = finalColor;
-    return output;
-}
-`;
