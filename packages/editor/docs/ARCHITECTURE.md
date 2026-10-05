@@ -376,7 +376,7 @@ my-project/                      # 标准 npm 工程（D12）：可脱离 editor
 ├── feng3d.project.json     # 【新增】编辑器元数据：名称 / 入口场景 / 启用插件 / 构建覆盖
 ├── scripts/                # 【已有约定】用户 TypeScript 脚本
 ├── scenes/                 # 【已有约定·可扩展】场景 JSON（default.scene.json …）
-├── assets/                 # 【已有约定】资源（根目录名现状固定为 Assets）
+├── Assets/                 # 【已有约定】资源根；**名字是大写**，由 ReadRS.ts:29 硬编码
 ├── plugins/                # 【新增·可选】项目级插件（三端形态）
 ├── node_modules/           # 【D12】依赖（不入库）
 └── dist/                   # 【产物】构建输出（不入库；替代现状的 project.js）
@@ -413,8 +413,14 @@ my-project/                      # 标准 npm 工程（D12）：可脱离 editor
   §5.2 点名的三个命令（`new` / `open` / `recent`）至此**齐了**。
   `package.json` 与 `feng3d.project.json` 属**用户所有物**——
   "升级项目"不覆盖它们（用户会自己改依赖 / 入口场景 / 构建配置）。
-  **但目录布局本身还没迁**：场景仍在根目录（`default.scene.json`）、没有 `scenes/` / `scripts/` /
-  `assets/` / `plugins/`，`libs/`（引擎快照）也还在——那些等 D12 的"用 npm 依赖取代 `libs/`"与后续批次。
+  **目录布局已落进模板（2026-10-05）**：`scenes/` / `scripts/` / `Assets/` / `plugins/` 四个目录都在了，
+  场景文件从项目根迁进了 `scenes/`，`feng3d.project.json` 的 `entryScene` 也跟着指过去。
+  判据在 `scripts/check-editor-project-shape.mjs`（**判据 8**），除了"四个目录都在"，还有两条**反向**判据：
+  ① 项目根不许再出现 `default.scene.json`（迁完的不许回来）；② `entryScene` 必须指到 `scenes/` 下
+  （**目录建了、指针没跟，等于没迁**）。
+  这一步之所以值得先做：`tsconfig.json` 的 `include` 早就写着 `scripts/**/*.ts`，
+  **而模板里根本没有 `scripts/` 目录** —— 那是句**空承诺**；现在它有着落了。
+  **仍待做**：`libs/`（引擎快照）还在，它由 D12 的"用 npm 依赖取代"处理（见本章「现状的 `libs/` 不再需要」）。
 
 ---
 
