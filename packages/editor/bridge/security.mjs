@@ -33,6 +33,7 @@
  * 应当由调用方显式传入允许的主机名——而不是把这里放宽成"什么都收"。
  */
 
+import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
 
 /**
@@ -115,6 +116,84 @@ export function checkBridgeRequest({ headers, localPort })
             return { ok: false, reason: `Origin 端口不符（${parsed.port} ≠ ${localPort}）` };
         }
     }
+
+    return { ok: true };
+}
+
+/**
+ * 生成一个**一次性 token**（服务端启动时调一次）。
+ *
+ * 192 位随机、base64url——不可猜、URL 安全（要放进 WS 握手的查询串）。
+ *
+ * @returns {string} token
+ */
+export function createBridgeToken()
+{
+    return randomBytes(24).toString('base64url');
+}
+
+/**
+ * 把 token 注入页面的脚本标签。
+ *
+ * dev（vite 的 `transformIndexHtml`）与生产（宿主的 `bootScript`）**共用这一份**——
+ * 两处各写一遍格式，迟早会出现"一边注入了、另一边页面读不到"。
+ *
+ * @param {string} token 一次性 token
+ * @returns {string} `<script>` 标签
+ */
+export function bridgeTokenScript(token)
+{
+    return `<script>window.__EDITOR_BRIDGE_TOKEN__=${JSON.stringify(token)};</script>`;
+}
+
+/**
+ * 判断一个路由是否是**页面侧端点**（需要一次性 token 的那些）。
+ *
+ * 页面侧 = "只有编辑器页面会调"的端点：`GET /pending`（领任务）、`POST /result`（交结果）。
+ * 调用方端点（`POST /call` 投递、`GET /result?id=` 取结果、`GET /ping` 探针）**不在此列**——
+ * 本地工具（CLI / MCP / 15 个 e2e 脚本）走的是它们，要求 token 会让那些工具全部要改，
+ * 而浏览器里的攻击者本来就到不了它们（跨源被 `Origin` 挡、响应被 CORS 挡住读不到）。
+ *
+ * @param {string} method HTTP 方法
+ * @param {string} pathname 路径
+ * @param {string} prefix 桥接前缀
+ * @returns {boolean} 是否需要 token
+ */
+export function isPageSideRoute(method, pathname, prefix)
+{
+    if (method === 'GET' && pathname === `${prefix}/pending`) return true;
+    if (method === 'POST' && pathname === `${prefix}/result`) return true;
+
+    return false;
+}
+
+/**
+ * 校验一次性 token。
+ *
+ * 两种携带方式都接受：HTTP 用 `x-editor-bridge-token` 头；
+ * WS 握手**不能自定义头**，所以查询串 `?token=` 也要认。
+ *
+ * @param {{ headers?: Record<string, unknown>, search?: string, token?: string }} input
+ *   请求头、查询串（含 `?`）、服务端持有的 token（空串表示未启用）
+ * @returns {{ ok: boolean, reason?: string }} 结论
+ */
+export function checkBridgeToken({ headers, search, token })
+{
+    // 没启用 token（单测 / 降级路径）：放行——**但不能静默**，由调用方决定要不要告警
+    if (!token) return { ok: true };
+
+    const head = headers ?? {};
+    const provided = String(
+        head['x-editor-bridge-token'] ?? new URLSearchParams(String(search ?? '')).get('token') ?? '',
+    );
+
+    if (!provided) return { ok: false, reason: '缺少一次性 token' };
+
+    // 定长比较（`timingSafeEqual` 要求等长）：长度不同直接判否，否则会抛
+    const a = Buffer.from(provided);
+    const b = Buffer.from(token);
+
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return { ok: false, reason: 'token 不匹配' };
 
     return { ok: true };
 }

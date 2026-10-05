@@ -23,6 +23,7 @@
  * 连不上就退回轮询（见 `src/bridge/bridgeSocket.ts` 与 `src/bridge/EditorBridge.ts`）。
  */
 import { createBridgeSocket } from './bridgeSocket.mjs';
+import { bridgeTokenScript, createBridgeToken } from './security.mjs';
 import { createBridgeRelay } from './relay.mjs';
 
 /**
@@ -33,11 +34,23 @@ import { createBridgeRelay } from './relay.mjs';
  */
 export function editorBridgePlugin(options = {})
 {
-    const relay = createBridgeRelay(options);
+    // **一次性 token**（#273 P2 / D9 第二步）：dev 与生产**行为一致**——
+    // 服务端生成、注入页面；页面拿它连 WS、领任务。跨源网页拿不到它。
+    // 传 `options.token` 可以固定它（门禁 / 调试用）。
+    const token = options.token ?? createBridgeToken();
+    const relay = createBridgeRelay({ ...options, token });
 
     return {
         name: 'feng3d-editor-bridge',
         apply: 'serve',
+
+        // 把 token 注入页面。**与生产的 `bootScript` 共用同一份脚本格式**（`bridgeTokenScript`）——
+        // 两处各写一遍的话，迟早出现"一边注入了、另一边页面读不到"
+        transformIndexHtml: {
+            order: 'pre',
+            handler: (html) => html.replace('</head>', `${bridgeTokenScript(token)}</head>`),
+        },
+
         configureServer(server)
         {
             server.middlewares.use((req, res, next) =>
@@ -49,7 +62,7 @@ export function editorBridgePlugin(options = {})
             // WebSocket 通道：挂 dev server 的 http server（同一端口，不额外开端口）
             if (server.httpServer)
             {
-                const socket = createBridgeSocket({ relay });
+                const socket = createBridgeSocket({ relay, token });
 
                 socket.attach(server.httpServer);
                 server.httpServer.on('close', () => socket.stop());

@@ -50,7 +50,8 @@ export class StaticServer extends Service
 
     /**
      * @param {import('@deepseek-ai/cordis').Context} ctx 所属 context
-     * @param {{ root: string, host: string, port: number, bootScript?: () => string }} config 监听配置
+     * @param {{ root: string, host: string, port: number, token?: string, bootScript?: () => string }} config 监听配置
+     *   `token` 是一次性 token（#273 P2 / D9）：交给中继去校验**页面侧端点**
      */
     constructor(ctx, config)
     {
@@ -59,7 +60,7 @@ export class StaticServer extends Service
         this.root = config.root;
         this.host = config.host;
         this.port = config.port;
-        this.relay = createBridgeRelay();
+        this.relay = createBridgeRelay({ token: config.token });
         this.bootScript = config.bootScript ?? (() => '');
     }
 

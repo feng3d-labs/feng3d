@@ -33,7 +33,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
-import { checkBridgeRequest } from './security.mjs';
+import { checkBridgeRequest, checkBridgeToken, isPageSideRoute } from './security.mjs';
 
 /** 默认路由前缀 */
 export const BRIDGE_PREFIX = '/__editor-bridge';
@@ -85,12 +85,15 @@ function send(res, status, body)
 /**
  * 造一个桥接中继。
  *
- * @param {{ prefix?: string }} [options] 选项
+ * @param {{ prefix?: string, token?: string }} [options] 选项
+ *   `token` 是**一次性 token**（#273 P2 / D9 第二步）：只管**页面侧端点**，
+ *   调用方端点（`/call`、`GET /result`、`/ping`）不要求——理由见 `handle` 里的注释
  * @returns {{ prefix: string, handle: (req: any, res: any) => boolean }} 中继
  */
 export function createBridgeRelay(options = {})
 {
     const prefix = options.prefix ?? BRIDGE_PREFIX;
+    const token = String(options.token ?? '');
 
     /** 待前端执行：id → { method, params, target, createdAt } */
     const pending = new Map();
@@ -534,6 +537,25 @@ export function createBridgeRelay(options = {})
                 res.end(JSON.stringify({ ok: false, error: `桥接拒绝该请求：${verdict.reason}` }));
 
                 return true;    // 已接管（拒绝也是接管）：不要让它继续走静态资源
+            }
+
+            // **一次性 token**（#273 P2 / D9 第二步）：只保护**页面侧端点**——
+            // 那是唯一"能执行任务"的一端（拿到它就能读场景、改工程）。
+            //
+            // 调用方端点（`POST /call`、`GET /result`、`GET /ping`）**刻意不要求** token：
+            // CLI / MCP / 15 个 e2e 脚本都是本地可信进程、走的正是这些端点，于是**零改动**；
+            // 而浏览器里的攻击者**到不了**它们（跨源被 `Origin` 挡、响应被 CORS 挡住读不到）。
+            if (isPageSideRoute(req.method, url.pathname, prefix))
+            {
+                const tokenVerdict = checkBridgeToken({ headers: req.headers, search: url.search, token });
+
+                if (!tokenVerdict.ok)
+                {
+                    res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
+                    res.end(JSON.stringify({ ok: false, error: `桥接拒绝该请求：${tokenVerdict.reason}` }));
+
+                    return true;
+                }
             }
 
             void route(req, res, url);

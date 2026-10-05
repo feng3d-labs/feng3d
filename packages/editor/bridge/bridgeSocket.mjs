@@ -1,6 +1,6 @@
 import { Service } from '@deepseek-ai/cordis';
 import { WebSocketServer } from 'ws';
-import { checkBridgeRequest } from './security.mjs';
+import { checkBridgeRequest, checkBridgeToken } from './security.mjs';
 
 /**
  * 桥接的 **WebSocket 通道**（#273 第二/三阶段，#272 的 P1）。
@@ -47,6 +47,7 @@ export function createBridgeSocket(options)
 {
     const bridge = options.relay.bridge;
     const path = options.path ?? `${options.relay.prefix}/ws`;
+    const token = String(options.token ?? '');
 
     /** WebSocket 服务端（`noServer`：不自己占端口，挂在现有 http server 上） */
     let server = null;
@@ -291,6 +292,22 @@ export function createBridgeSocket(options)
                     socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n'
                         + 'Content-Type: text/plain; charset=utf-8\r\n\r\n'
                         + `桥接拒绝该连接：${verdict.reason}`);
+                    socket.destroy();
+
+                    return;
+                }
+
+                // **一次性 token**（#273 P2 / D9 第二步）：WS 握手不能自定义头，
+                // 所以从查询串取（页面把它拼在 `?token=` 上）。
+                // 这一条与 `Origin`/`Host` 是**互补**的：那两条挡浏览器里的攻击者，
+                // 这一条挡"能伪造头、但拿不到注入页面里那个随机值"的客户端。
+                const tokenVerdict = checkBridgeToken({ headers: req.headers, search: requestUrl.search, token });
+
+                if (!tokenVerdict.ok)
+                {
+                    socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n'
+                        + 'Content-Type: text/plain; charset=utf-8\r\n\r\n'
+                        + `桥接拒绝该连接：${tokenVerdict.reason}`);
                     socket.destroy();
 
                     return;

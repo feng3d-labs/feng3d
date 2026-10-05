@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { checkBridgeRequest, hostnameOfHost, isLoopbackHostname } from '../bridge/security.mjs';
+import {
+    checkBridgeRequest,
+    checkBridgeToken,
+    createBridgeToken,
+    hostnameOfHost,
+    isLoopbackHostname,
+    isPageSideRoute,
+} from '../bridge/security.mjs';
 
 /**
  * 桥接来源校验（#273 P2 / D9 通信安全）。
@@ -80,5 +87,51 @@ describe('桥接来源校验', () =>
         expect(hostnameOfHost('[::1]:3000')).toEqual({ name: '::1', port: 3000 });
         // `127.0.0.0/8` 整段都是回环，不只是 .1
         expect(isLoopbackHostname('127.0.0.5')).toBe(true);
+    });
+});
+
+describe('一次性 token（#273 P2 / D9 第二步）', () =>
+{
+    const token = 'abc123';
+
+    it('缺 / 错 / 对三种情况；WS 的查询串也认（握手不能自定义头）', () =>
+    {
+        // 服务端没启用 token（单测 / 降级路径）：放行，由调用方决定要不要告警
+        expect(checkBridgeToken({ token: '' })).toEqual({ ok: true });
+
+        expect(checkBridgeToken({ headers: {}, token }).ok).toBe(false);
+        expect(checkBridgeToken({ headers: { 'x-editor-bridge-token': 'abc124' }, token }).ok).toBe(false);
+        // 长度不同也得走"判否"而不是抛错（`timingSafeEqual` 要求等长）
+        expect(checkBridgeToken({ headers: { 'x-editor-bridge-token': 'abc12' }, token }).ok).toBe(false);
+        expect(checkBridgeToken({ headers: { 'x-editor-bridge-token': token }, token })).toEqual({ ok: true });
+        expect(checkBridgeToken({ search: `?token=${token}`, token })).toEqual({ ok: true });
+    });
+
+    it('页面侧端点清单：**只有领任务与交结果**要 token', () =>
+    {
+        const prefix = '/__editor-bridge';
+
+        // 本地工具（CLI / MCP / 15 个 e2e 脚本）走的是这三条——要求 token 会让它们全部要改，
+        // 而浏览器里的攻击者本来就到不了它们（跨源被 Origin 挡、响应被 CORS 挡住读不到）
+        expect(isPageSideRoute('POST', `${prefix}/call`, prefix)).toBe(false);
+        expect(isPageSideRoute('GET', `${prefix}/ping`, prefix)).toBe(false);
+        expect(isPageSideRoute('GET', `${prefix}/result`, prefix)).toBe(false);
+
+        // 页面侧
+        expect(isPageSideRoute('GET', `${prefix}/pending`, prefix)).toBe(true);
+        expect(isPageSideRoute('POST', `${prefix}/result`, prefix)).toBe(true);
+
+        // **方法也算判据**：`GET /result` 是调用方取结果（不要 token），`POST` 才是页面交结果
+        expect(isPageSideRoute('POST', `${prefix}/pending`, prefix)).toBe(false);
+    });
+
+    it('生成的 token 足够长、URL 安全、每次不同', () =>
+    {
+        const first = createBridgeToken();
+
+        expect(first.length).toBeGreaterThanOrEqual(30);
+        // URL 安全字符集：它要放进 WS 握手的查询串
+        expect(first).toMatch(/^[A-Za-z0-9_-]+$/);
+        expect(createBridgeToken()).not.toBe(first);
     });
 });
