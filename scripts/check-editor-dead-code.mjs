@@ -78,6 +78,19 @@ const REMOVED = [
         reason: 'Egret EXML 的类型声明，0 引用（feng3d 之前的历史遗留）',
         instead: '不需要',
     },
+
+    {
+        path: 'packages/filesystem/src/IndexedDBFS.ts',
+        specifier: 'IndexedDBFS',
+        reason: 'IndexedDB 后端（311 行）——决策 ①（2026-10-05）删除：项目对应一个本地目录、由宿主 Node 操作',
+        instead: '要读写项目文件就走宿主方法（`host.workspace.*`，页面经 WS 与宿主交互）',
+    },
+    {
+        path: 'packages/filesystem/src/base/_IndexedDB.ts',
+        specifier: '_indexedDB',
+        reason: '上面那个后端用的 IndexedDB 封装（457 行），随之删除',
+        instead: '同上（浏览器端不直接碰文件）',
+    },
 ];
 
 /** 采集一个目录下所有 `.ts` / `.vue` 文件 */
