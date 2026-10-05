@@ -1,27 +1,41 @@
 /**
- * R2 门禁覆盖率探针（issue #606 后续；为「行级判据 vs AST 判据」的差距留一份可复现的读数）。
+ * R2 门禁覆盖率探针（issue #606 后续 → 判据 AST 化见 issue #614）。
  *
- * 两条 R2 门禁脚本（`check-module-side-effects.mjs` / `check-toplevel-new.mjs`）的判据都是**行级**的：
- * 「行首无空白 = 模块顶层」+ 单行正则。本探针用 TypeScript AST 独立算一遍「真正在 import 时执行的 `new`」，
- * 再按同一行级规则判断门禁能不能看见它，从而给出**漏网清单 + 成因分类 + 换成 AST 判据后的基线新增量**。
+ * **它量的是「行级判据 vs AST 判据」的差距**：两条 R2 门禁脚本原先的判据都是行级的
+ * （「行首无空白 = 模块顶层」+ 单行正则）。本探针用 TypeScript AST 独立算一遍
+ * 「真正在 import 时执行的 `new`」，再按同一行级规则判断门禁能不能看见它，
+ * 从而给出**漏网清单 + 成因分类 + 换成 AST 判据后的基线新增量**。
+ *
+ * 判据**已经**在 issue #614 里换成了 AST（实现是 `scripts/r2-module-scope.mjs`，
+ * 两条门禁共用）。所以本探针现在的用途变成**独立复核**：它用另一份实现算同一批数字
+ * （总数 + 每个「文件::构造器」键），与门禁的输出对得上，才说明门禁的 AST 层没写错。
+ * 它仍然**不是门禁**、刻意不进 CI——它的结论是"判据够不够用"，不是"代码有没有违规"。
  *
  * 用法（只读，不改仓库、不写任何文件）：
  *   node scripts/probe-r2-blindspots.mjs          # 汇总 + 每类前 40 条
  *   node scripts/probe-r2-blindspots.mjs --all    # 打印全部漏网条目
  *
- * **它不是门禁**，刻意不进 CI：结论本身是「判据不够用」，在收紧判据（改 AST）之前它只会一直红着，
- * 放进 CI 就是一条永远红的噪声。`check-module-side-effects.mjs` / `check-toplevel-new.mjs` 才是门禁。
+ * 读数记录（`packages/` 全量）：
  *
- * 2026-10-05 的读数（就是它促成 issue #606 的后续 issue）：
- *   `packages/` 下 `new` 共 1409 处 → import 时真的执行 **158** 处 → 两条行级脚本只看见 **97** 处
- *   → 漏 **61** 处（换算成「文件::构造器」是 44 个未登记基线键），其中 **12 处是空参缓存**
- *   （`new Map/WeakMap/Set/WeakSet()`，本该按 `check-module-side-effects.mjs --strict` 的
- *   「新增即失败」拦下）。
+ * | 口径 | 修掉探针自身的 IIFE 缺陷之前 | 之后（现在的输出） |
+ * |---|---|---|
+ * | `new` 总出现处 | 1409 | 1409 |
+ * | import 时真的执行 | 158 处 / 137 键 | **159 处 / 138 键** |
+ * | 两条行级脚本能看见 | 97 处 | 97 处 |
+ * | 真漏网 | 61 处 | **62 处** |
+ * | 其中空参缓存（本该「新增即失败」） | 12 处 | 12 处 |
+ *
+ * **"之后"那一列是本批（issue #614）顺手修掉的探针自身缺陷**：原先的 `ctxOf` 用
+ * `CallExpression.expression === 函数节点` 认 IIFE，而最常见的写法 `(() => { ... })()`
+ * 在 AST 里隔着 `ParenthesizedExpression`——于是**带括号的 IIFE 整类被判成"函数体内"**，
+ * 探针自称覆盖的"IIFE 盲区"其实一直**没被覆盖**。修正后多出来的那一处正是
+ * `packages/editor/src/bridge/EditorBridge.ts:50-60` 的
+ * `const BRIDGE_CLIENT_ID = (() => {...})()`（IIFE 里 `new URLSearchParams(window.location.search)`）。
  *
  * 四类盲区成因（都能在本仓现状里指到实例）：
  *   ① 类 `static` 字段 / `static` 块初始化器：类声明在模块顶层时，初始化器在 import 时执行
- *      （`private static map = new ChainMap()`，webgpu 的 caches 里 20 余处）；
- *   ② 顶层 IIFE：issue #56 的根因 `new AudioContext()` 就是这个形态，至今三条判据都不看它；
+ *      （`private static map = new ChainMap()`，webgpu 的 caches 里 20 余处，全部 42 处）；
+ *   ② 顶层 IIFE：issue #56 的根因 `new AudioContext()` 就是这个形态（实例见上）；
  *   ③ 多行声明：`const x =\n    new Map();`（`new` 所在行有前导空白）；
  *   ④ 模块级块 / 对象字面量 / 回调里的缩进行（`if (...) { const s = new Set(); }`、
  *      `{ a: new Set([...]) }`、`[...].forEach(() => new X())`）。
@@ -48,6 +62,56 @@ const CTX_LABEL = {
     'static-block': '类 static 块',
     'module-call-callback': '模块级调用回调（如 [...].forEach(...)）',
 };
+
+/**
+ * 「透明」包装表达式（括号 / 类型断言）——剥掉后还是同一个表达式。
+ *
+ * **本次修正（issue #614 的破坏性实验实测）**：本探针最初的 `ctxOf` 用
+ * `grand.expression === parent` 认 IIFE，而最常见的写法 `(() => { ... })()` 在 AST 里是
+ * `CallExpression.expression === ParenthesizedExpression(ArrowFunction)`——比对不成立，
+ * 于是**带括号的 IIFE 整类被判成"函数体内"**，`moduleRows` 里根本没有它们：
+ * 文件头写的"② 顶层 IIFE"盲区其实**没有被这份探针覆盖**。
+ * 现在两侧（探针与 `scripts/r2-module-scope.mjs`）都用同一套剥壳逻辑。
+ */
+const TRANSPARENT_WRAPPERS = new Set([
+    ts.SyntaxKind.ParenthesizedExpression,
+    ts.SyntaxKind.AsExpression,
+    ts.SyntaxKind.TypeAssertionExpression,
+    ts.SyntaxKind.NonNullExpression,
+    ts.SyntaxKind.SatisfiesExpression,
+]);
+
+/**
+ * 剥掉括号 / 类型断言等透明包装。
+ *
+ * @param {import('typescript').Node | undefined} node 节点
+ * @returns {import('typescript').Node | undefined} 剥掉包装后的节点
+ */
+function unwrapExpression(node)
+{
+    let current = node;
+
+    while (current && TRANSPARENT_WRAPPERS.has(current.kind)) current = current.expression;
+
+    return current;
+}
+
+/**
+ * 函数节点的有效父节点：先向上穿过括号 / 类型断言等透明包装。
+ *
+ * `(() => { ... })()` 里箭头函数的直接父是 `ParenthesizedExpression`，再上一层才是 `CallExpression`。
+ *
+ * @param {import('typescript').Node} node 节点
+ * @returns {import('typescript').Node | undefined} 有效父节点
+ */
+function effectiveParent(node)
+{
+    let parent = node.parent;
+
+    while (parent && TRANSPARENT_WRAPPERS.has(parent.kind)) parent = parent.parent;
+
+    return parent;
+}
 
 /** `new` 出现处所在行（1 基）与整行文本 */
 function lineInfo(text, start)
@@ -100,10 +164,10 @@ function ctxOf(node)
 
         if (ts.isFunctionLike(p))
         {
-            const gp = p.parent;
+            const gp = effectiveParent(p);
 
-            if (gp && ts.isCallExpression(gp) && gp.expression === p) { n = gp; continue; }   // IIFE → 继续向上看
-            if (gp && ts.isCallExpression(gp) && gp.arguments.includes(p))                   // 作为回调传给某个调用
+            if (gp && ts.isCallExpression(gp) && unwrapExpression(gp.expression) === p) { n = gp; continue; }   // IIFE → 继续向上看
+            if (gp && ts.isCallExpression(gp) && gp.arguments.some((argument) => unwrapExpression(argument) === p))  // 作为回调传给某个调用
             {
                 passedAsCallback = true;
                 n = gp;

@@ -1,213 +1,211 @@
 /**
- * R2：零模块级副作用（运行时侧，issue #88；也是 issue #76 的一部分）。
+ * R2：零模块级副作用（运行时侧，issue #88；判据 AST 化见 issue #614）。
  *
- * 模块**顶层**出现 `new Map()/WeakMap()/Set()/WeakSet()` 或裸调用语句时，只要被 import 就会执行——
- * 缓存无法按需分配、副作用无法关闭、tree-shaking 也判断不了模块能否整体消除。
+ * 模块在 import 时执行代码，会让缓存无法按需分配、副作用无法关闭、tree-shaking 也判断不了
+ * 模块能否整体消除。本脚本守三类：
  *
- * 本脚本守两条：
- *   1. 顶层不得 `= new Map() / new WeakMap() / new Set() / new WeakSet()`（缓存一律 lazy-init；
- *      泛型实参不影响判定，`new WeakSet<Components>()` 同样拦下——issue #606）；
- *   2. 顶层不得出现裸调用语句（`foo(...)`）：启动型调用（定时器 / rAF / ticker 启动）
- *      与写 `globalThis` 直接报错，注册型调用（`registerLogic(...)` / `setAssetTypeClass(...)` /
- *      `xxx.push(...)` 等）**只统计不报错**（见文件末尾的存量统计输出）。
+ *   1. **缓存创建**：模块级 `= new Map() / new WeakMap() / new Set() / new WeakSet()`
+ *      （空参或只有泛型实参；泛型实参不影响判定，`new WeakSet<Components>()` 同样拦下——issue #606）。
+ *      带字面量参数的 `new Set([...])` 是只读常量集合，不是按需缓存——只统计，不报错。
+ *   2. **启动型调用**：定时器 / rAF / ticker 启动（`setInterval` / `setTimeout` /
+ *      `requestAnimationFrame` / `runTickerFuncs` / `startTicker`）。
+ *   3. **`globalThis` 写入**。
  *
- * 用法：`node scripts/check-module-side-effects.mjs`
+ * ## 判据为什么是 AST（issue #614）
+ *
+ * 原判据是**行级**的（「行首无空白 = 模块顶层」+ 单行正则）。实测（`scripts/probe-r2-blindspots.mjs`）
+ * `packages/` 下真正在 import 时执行的 `new` 有 **158 处**，两条行级脚本合计只看见 **97 处**，
+ * 漏 **61 处**——四类盲区（类 `static` 字段 / `static` 块、顶层 IIFE、多行声明、
+ * 模块级块 / 对象字面量 / 回调）全部由缩进造成。现在判据是「**顶层代码路径上的节点**」，
+ * 实现与两条脚本的共用层在 `scripts/r2-module-scope.mjs`（先例：`scripts/check-editor-module-effects.mjs`）。
+ *
+ * 最直接的两个例子：`packages/feng3d/src/textures/createTexture.ts` 模块级 `if` 块里 7 处
+ * `new ImageUtil`（`docs/CI.md` §1.1 自己就写着"`ImageUtil` 在模块加载期构造占位默认纹理"），
+ * 以及 `packages/webgpu/src/caches/*` 里 20 余处 `private static map = new ChainMap()`——原先门禁都看不见。
+ *
+ * ## 存量怎么办：与 `check-toplevel-new.mjs` 共用一份基线
+ *
+ * AST 化会一次性暴露出 46 个未登记的「文件::构造器」键（issue #614 实测；其中 12 处是
+ * 本该"新增即失败"的空参缓存，如 `EventEmitter` 的三个 `static ... = new Map()`）。
+ * 本脚本**不清零**，而是与 `scripts/check-toplevel-new.mjs` 读**同一份**存量基线
+ * （`scripts/toplevel-new-baseline.json`）：
+ *
+ *   - 键**在基线里**→ 存量冻结，放行（属登记在册的欠账，不是白名单豁免）；
+ *   - 键**不在基线里**→ `--strict` 下即失败——这才是"新增即失败"的真正含义。
+ *
+ * 粒度代价要说清：基线键是「文件::构造器」，所以**同一个文件里再加一个同名缓存不会失败**。
+ * 这一条与 `check-toplevel-new.mjs` 共享（那一条本来就这个粒度），
+ * 真正想收紧时得先把存量清零、再把基线收缩到空。
+ *
+ * ## 应用入口（issue #614 定夺）
+ *
+ * 应用入口页在 import 时执行代码是它的固有语义（不被 tree-shake、也没有"谁 import 它"的问题），
+ * 所以**入口页整类豁免**——模块级 `new`（含缓存形态）、启动型调用、`globalThis` 写入都不报。
+ * 这与本脚本原先的 `ENTRY_FILE`（命中即整文件 `return`）行为一致，换的只是"入口在哪里定义"：
+ * 现在是 `scripts/r2-module-scope.mjs` 的 **`ENTRY_FILES` 显式清单**，**两条 R2 脚本共用同一份**
+ * （原先那条 `ENTRY_FILE` 正则只在本脚本里，另一条脚本没有入口概念——25 个示例入口的
+ * `new GUI(...)` 因此默默进了基线，正是 #614 报的口径不一致）。
+ * 清单刻意**不含**单个示例页；理由、代价与"将来怎么收紧"写在 `ENTRY_FILES` 上方。
+ * **代价**（issue #614 要求写清）：入口页里的真副作用一起放行，实测一处
+ * （`packages/editor/src/vue-app/main.ts:93` 的模块级 `setTimeout`），细则见 `docs/CI.md` §2.1。
+ *
+ * 用法：`node scripts/check-module-side-effects.mjs [--strict]`
+ * （`--strict`：有基线外的违规即 exit 1；CI 用它。默认只报告。）
  *
  * 为什么注册型调用只统计：全仓上百个 Logic 文件都靠顶层注册分发，一次性清零需要先改注册模型
- * （见 docs/ARCHITECTURE_V2.md §2.2 第 2 项的分期计划）。判据先守「缓存创建 + 启动型调用 + globalThis」
- * 这三类新增，注册模型的存量按分期改造。
- *
- * **与 `scripts/check-toplevel-new.mjs` 的分工**（issue #606 明确，消灭"我以为你管了"的夹缝）：
- *   - 本脚本管**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）+ 启动型调用
- *     + `globalThis` 写入——**新增即失败**（`--strict` 进 CI）；
- *   - 那条脚本管**其余模块级 `new`**（`export const x = new X()` 这类声明形式，含 `new Set([...])`
- *     只读常量集合、`new Float32Array([...])`、示例里的 `new GUI(...)`）——**存量冻结**在
- *     `scripts/toplevel-new-baseline.json`，新增即失败。两条重叠处**有意重复报告**（去重比漏网好）。
+ * （见 docs/ARCHITECTURE_V2.md §2.2 第 2 项的分期计划）。判据先守上面三类新增，注册模型的存量按分期改造。
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import ts from 'typescript';
+import {
+    baselineKey,
+    collectModuleLevelCalls,
+    collectModuleLevelGlobalThisWrites,
+    collectModuleLevelNews,
+    collectTsFiles,
+    CONTEXT_LABELS,
+    entryFileList,
+    isEntryFile,
+    missingEntryFiles,
+    readBaseline,
+    toRelative,
+} from './r2-module-scope.mjs';
 
-/** --strict：有违规即 exit 1（存量清零后接 CI 门禁用；默认只报告） */
+/** --strict：有基线外的违规即 exit 1（CI 用；默认只报告） */
 const strict = process.argv.includes('--strict');
 const ROOT = process.cwd();
 const PACKAGES = join(ROOT, 'packages');
 
-/** 顶层「启动型」调用：定时器 / rAF / ticker 启动——这些必须显式化，不能在 import 时执行 */
-const STARTUP_CALLS = /(?:^|[^\w$])(?:setInterval|setTimeout|requestAnimationFrame|runTickerFuncs|startTicker)\s*\(/;
+/** 「启动型」调用：定时器 / rAF / ticker 启动——这些必须显式化，不能在 import 时执行 */
+const STARTUP_CALLS = /^(?:setInterval|setTimeout|requestAnimationFrame|runTickerFuncs|startTicker)$/;
 
-/** 应用入口：import 即执行是入口的固有语义（不被 tree-shake、也没有"谁 import 它"的问题） */
-const ENTRY_FILE = /(?:^|\/)(?:examples\/index\.ts|vue-app\/main\.ts)$/;
+/** 缓存容器名（空参形态才算缓存；带参数的 `new Set([...])` 是常量集合） */
+const CACHE_NAMES = new Set(['Map', 'WeakMap', 'Set', 'WeakSet']);
 
-/** 统计（不报错，只用于输出里说明存量） */
-const stats = { constantSets: 0, registeredCalls: 0, otherTopLevelCalls: 0, entryFiles: 0 };
+/** 注册型调用（顶层注册模型改造范围，只统计不报错） */
+const REGISTRATION_CALLS = /^(?:registerLogic|unregisterLogic)$/;
 
-/** 顶层语句里不该出现的 JS 关键字（`if (`、`for (` 等不是"裸调用"） */
-const STATEMENT_KEYWORDS = [
-    'if', 'for', 'while', 'switch', 'return', 'throw', 'catch', 'do', 'else',
-    'export', 'import', 'function', 'class', 'const', 'let', 'var', 'try', 'await', 'new', 'typeof', 'super',
-];
+/** 应用入口（页面入口）：清单在 `scripts/r2-module-scope.mjs` 的 `ENTRY_FILES`，两条 R2 脚本共用 */
+const entries = entryFileList();
 
-function collectFiles(dir, out = [])
-{
-    for (const entry of readdirSync(dir))
-    {
-        if (entry === 'node_modules' || entry === 'dist' || entry === '.git') continue;
+/** 入口清单的反向校验（登记项必须存在），与判据无关，错了就是配置错 */
+const staleEntries = missingEntryFiles(ROOT);
 
-        const full = join(dir, entry);
-        const st = statSync(full);
+/** 存量基线：键在其中的视为登记在册的欠账，放行 */
+const baseline = readBaseline(ROOT);
 
-        if (st.isDirectory())
-        {
-            if (entry === 'test') continue;
-            collectFiles(full, out);
-        }
-        else if (entry.endsWith('.ts') && !entry.endsWith('.spec.ts') && !entry.endsWith('.d.ts'))
-        {
-            out.push(full);
-        }
-    }
-
-    return out;
-}
-
-/** 把块注释整段挖空（保留行结构，便于按行判定顶层），并去掉行内 `//` 注释 */
-function maskComments(text)
-{
-    const lines = [];
-    let inBlock = false;
-
-    for (const raw of text.split('\n'))
-    {
-        let line = '';
-        let k = 0;
-
-        while (k < raw.length)
-        {
-            if (inBlock)
-            {
-                const end = raw.indexOf('*/', k);
-
-                if (end < 0) break;
-                inBlock = false;
-                k = end + 2;
-            }
-            else
-            {
-                const blockStart = raw.indexOf('/*', k);
-                const lineStart = raw.indexOf('//', k);
-
-                if (lineStart >= 0 && (blockStart < 0 || lineStart < blockStart))
-                {
-                    line += raw.slice(k, lineStart);
-                    break;
-                }
-                if (blockStart < 0)
-                {
-                    line += raw.slice(k);
-                    break;
-                }
-                line += raw.slice(k, blockStart);
-                inBlock = true;
-                k = blockStart + 2;
-            }
-        }
-
-        lines.push(line);
-    }
-
-    return lines;
-}
-
-/**
- * 边界说明里引用的「模块级 `new`」基线条目数。
- *
- * 动态读而不是写死数字：写死的数字必然随基线收紧而腐化（issue #606 报的就是这类陈旧数字），
- * 而这里只是给读者一个量级，真正的口径以 `check-toplevel-new.mjs` 的输出为准。
- *
- * @returns 基线条目数；读不到返回 null
- */
-function readToplevelNewBaselineSize()
-{
-    try
-    {
-        return JSON.parse(readFileSync(join(ROOT, 'scripts', 'toplevel-new-baseline.json'), 'utf8')).entries.length;
-    }
-    catch
-    {
-        return null;
-    }
-}
-
+/** 基线外的违规（会导致 `--strict` 失败） */
 const problems = [];
 
-for (const file of collectFiles(PACKAGES))
+/** 基线内的存量（放行，但在报告里透明列出量级） */
+const frozen = [];
+
+/** 统计（不报错，只用于输出里说明存量） */
+const stats = {
+    constantSets: 0, registeredCalls: 0, otherTopLevelCalls: 0,
+    entryFiles: 0, entryNews: 0, entryCalls: 0, moduleLevelNews: 0,
+};
+
+/** 记录模块级 `new` 的「文件::构造器」键（报告里与探针读数对照用） */
+const newsKeys = new Set();
+
+for (const file of collectTsFiles(PACKAGES))
 {
-    const rel = relative(ROOT, file).split(sep).join('/');
-    const isEntry = ENTRY_FILE.test(rel);
+    const rel = toRelative(ROOT, file);
+    const isEntry = isEntryFile(rel);
 
     if (isEntry) stats.entryFiles++;
-    const lines = maskComments(readFileSync(file, 'utf8'));
 
-    lines.forEach((line, i) =>
+    const sourceFile = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
+
+    // 规则 1：模块级**缓存**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）。
+    for (const hit of collectModuleLevelNews(sourceFile))
     {
-        // 只看模块顶层：行首没有空白
-        if (line.length === 0 || /^\s/.test(line)) return;
-        const trimmed = line.trim();
+        stats.moduleLevelNews++;
+        newsKeys.add(baselineKey(rel, hit.name));
 
-        if (trimmed.length === 0) return;
-        if (isEntry) return;
+        if (isEntry) stats.entryNews++;
 
-        // 规则 1：顶层**缓存**（`new Map()` / `new WeakMap()` / `new Set()` / `new WeakSet()`）。
-        // 带字面量参数的 `new Set([...])` 是只读常量集合，不是按需缓存——只统计，不报错。
-        // 泛型实参用 `[^(]*` 吃掉：`new WeakSet<Components>()`、嵌套的 `new Set<Tween<any>>()`
-        // 都能命中（不能用 `[^>]*`——嵌套泛型会在第一个 `>` 处截断）。口径与
-        // `scripts/check-editor-module-effects.mjs` 的 `MUTABLE_MODULE_CACHE` 一致（issue #606）。
-        const cache = trimmed.match(/^(?:export\s+)?(?:const|let|var)\s+\w+\s*(?::[^=]+)?=\s*new\s+(Map|WeakMap|Set|WeakSet)\b[^(]*\(\s*\)\s*;?\s*$/);
+        const label = CONTEXT_LABELS[hit.context] ?? hit.context;
 
-        if (cache)
+        if (hit.argumentCount === 0 && CACHE_NAMES.has(hit.name))
         {
-            problems.push(`${rel}:${i + 1} 顶层 \`new ${cache[1]}()\`（缓存应 lazy-init）`);
+            if (isEntry) continue;                       // 入口页整类豁免（页面装配 + 应用启动）
+
+            const where = `${rel}:${hit.line} 模块级 \`new ${hit.name}()\`（缓存应 lazy-init）[${label}]`;
+
+            if (baseline.has(baselineKey(rel, hit.name))) frozen.push(where);
+            else problems.push(where);
         }
-
-        if (/^(?:export\s+)?(?:const|let|var)\s+\w+\s*(?::[^=]+)?=\s*new\s+Set\s*\(\s*\[/.test(trimmed)) stats.constantSets++;
-
-        // 规则 2：顶层「启动型」调用（定时器 / rAF / ticker 启动）与顶层写 globalThis。
-        // 注册型调用（registerLogic、setAssetTypeClass、xxx.push(...) 等）属注册模型改造范围，
-        // 这里只统计存量——一次报一百多条只会让人把这条门禁当噪音忽略。
-        const call = trimmed.match(/^([A-Za-z_$][\w$.]*)\s*\(/);
-
-        if (call && !STATEMENT_KEYWORDS.includes(call[1].split('.')[0]))
+        else if (hit.name === 'Set' && hit.argumentCount > 0)
         {
-            if (STARTUP_CALLS.test(trimmed)) problems.push(`${rel}:${i + 1} 顶层启动型调用 \`${trimmed.slice(0, 60)}\``);
-            else if (/^registerLogic\s*\(|^unregisterLogic\s*\(/.test(trimmed)) stats.registeredCalls++;
-            else stats.otherTopLevelCalls++;
+            stats.constantSets++;                        // 只读常量集合：只统计
         }
+    }
 
-        if (/^globalThis\s*\.\s*\w+\s*=/.test(trimmed)) problems.push(`${rel}:${i + 1} 顶层写 globalThis \`${trimmed.slice(0, 60)}\``);
-    });
+    // 规则 2：模块级「启动型」调用 + 顶层纯调用语句的统计（注册型与其它分开，两者都不进判据）。
+    for (const hit of collectModuleLevelCalls(sourceFile, () => true))
+    {
+        if (STARTUP_CALLS.test(hit.callee))
+        {
+            if (isEntry) { stats.entryCalls++; continue; }   // 入口页整类豁免
+            problems.push(`${rel}:${hit.line} 模块级启动型调用 \`${hit.callee}(\`（应在显式函数里启动）`);
+            continue;
+        }
+        if (!hit.isStatement) continue;                  // 声明形式（`export const x = foo()`）由另一条脚本的基线管
+        if (REGISTRATION_CALLS.test(hit.callee)) stats.registeredCalls++;
+        else stats.otherTopLevelCalls++;
+    }
+
+    // 规则 3：模块级写 `globalThis`。
+    for (const hit of collectModuleLevelGlobalThisWrites(sourceFile))
+    {
+        if (isEntry) { stats.entryCalls++; continue; }       // 入口页整类豁免
+        problems.push(`${rel}:${hit.line} 模块级写 globalThis \`${hit.text}\``);
+    }
+}
+
+// 入口清单的反向校验先跑：清单是"单一事实来源"，过期的登记项会让豁免范围悄悄失真。
+if (staleEntries.length > 0)
+{
+    console.error(`❌ 应用入口清单里有不存在的登记项（${staleEntries.length} 个）：`);
+    for (const rel of staleEntries) console.error(`  - ${rel}`);
+    console.error('   清单在 scripts/r2-module-scope.mjs 的 ENTRY_FILES，两条 R2 脚本共用；');
+    console.error('   文件被删 / 改名后请同步更新清单（过期登记 = 豁免范围与文档说的不一致）。');
+    process.exit(1);
 }
 
 if (problems.length > 0)
 {
-    console.error(`❌ 模块级副作用（R2，issue #88）：${problems.length} 处`);
+    console.error(`❌ 模块级副作用（R2，issue #88）：${problems.length} 处基线外的违规`);
+    console.error('   （判据为 AST：模块顶层 / 类 static 字段与 static 块 / 模块级调用回调；'
+        + '应用入口清单里的文件整类豁免，代价见 docs/CI.md §2.1）');
 
-    for (const p of problems) console.error(`  - ${p}`);
+    for (const problem of problems) console.error(`  - ${problem}`);
     console.error('\n修法：缓存改 lazy-init（`let cache = null; function getCache()`，'
         + '`WeakSet` / `WeakMap` / `Set` / `Map` 都一样，泛型实参不影响判定）；');
-    console.error('模块级的初始化代码移进显式函数（如 Ticker.startTicker），不要在 import 时执行。');
+    console.error('模块级的初始化代码移进显式函数（如 Ticker.startTicker），不要在 import 时执行；');
+    console.error('globalThis 写入移到显式安装函数里，由入口或使用者调用。');
+
+    if (frozen.length > 0)
+    {
+        console.error(`\nℹ️  另有 ${frozen.length} 处已在基线 scripts/toplevel-new-baseline.json 里的存量（本次放行，属欠账）。`);
+    }
 
     if (strict) process.exit(1);
-    console.log('⚠️  以上为存量（尚未清零），默认只报告；清零后可用 --strict 接进 CI 门禁。');
+    console.log('⚠️  以上为基线外的新增，默认只报告；CI 用 --strict 让它们失败。');
     process.exit(0);
 }
 
-const toplevelNewSize = readToplevelNewBaselineSize();
-
-console.log('✅ 模块级副作用检查通过（顶层无缓存创建、无启动型调用、无 globalThis 写入）');
+console.log('✅ 模块级副作用检查通过（R2，AST 判据）');
+console.log(`   扫描 packages/ 下 .ts：import 时执行的 \`new\` ${stats.moduleLevelNews} 处 / `
+    + `${newsKeys.size} 个「文件::构造器」键；启动型调用 0 处；globalThis 写入 0 处`);
+console.log(`   应用入口豁免（清单 ${entries.length} 个文件，见 scripts/r2-module-scope.mjs 的 ENTRY_FILES）：`
+    + `${stats.entryNews} 处 \`new\` / ${stats.entryCalls} 处启动型调用或 globalThis 写入`
+    + '——入口页 import 即执行是固有语义，真副作用**有意放行**，代价见 docs/CI.md §2.1');
+console.log(`   存量冻结（基线 ${baseline.size} 个组合）：缓存创建 ${frozen.length} 处已登记放行`);
 console.log(`   存量统计（不在本次门禁范围）：注册型顶层调用 ${stats.registeredCalls} 处、`
-    + `其它顶层**裸调用语句** ${stats.otherTopLevelCalls} 处、只读常量集合 ${stats.constantSets} 处、入口文件 ${stats.entryFiles} 个`);
-console.log('   ⚠️ 口径边界（issue #606）：上面的统计只含**裸调用语句**（行首第一个词就是函数名，`foo(...)`）。'
-    + '`export const x = new X()` / `const a = foo()` 这类**声明形式**的顶层语句被整行跳过，'
-    + '**不在本脚本判据内**——模块级声明形式的 `new` 由 `scripts/check-toplevel-new.mjs` 按'
-    + `「文件::构造器」存量冻结${toplevelNewSize === null ? '（条目数以该脚本输出为准）' : `（基线 ${toplevelNewSize} 个组合）`}。`
-    + '两个数字口径不同，不可相加减、也不可互相验证。');
+    + `其它顶层**裸调用语句** ${stats.otherTopLevelCalls} 处、只读常量集合 ${stats.constantSets} 处`);
+console.log('   口径边界：模块级 `new` 的**全量**存量（含上面三类之外的构造）见'
+    + ' `scripts/check-toplevel-new.mjs`；两条脚本重叠处**有意重复报告**（去重比漏网好）。');
