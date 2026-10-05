@@ -7,7 +7,7 @@ import { mat4, vec3 } from 'wgpu-matrix';
 import { mesh } from '../../meshes/teapot';
 
 import compositeWGSL from './composite.wgsl';
-import opaqueWGSL from './opaque.wgsl';
+import { getABufferOpaqueWGSL } from '../../shaders-tsl/aBufferOpaque';
 import translucentWGSL from './translucent.wgsl';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
@@ -57,10 +57,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const opaquePipeline: RenderPipeline = {
         vertex: {
-            code: opaqueWGSL,
+            code: getABufferOpaqueWGSL().vertex,
         },
         fragment: {
-            code: opaqueWGSL,
+            code: getABufferOpaqueWGSL().fragment,
         },
         primitive: {
             topology: 'triangle-list',
