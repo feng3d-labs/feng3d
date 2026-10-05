@@ -77,6 +77,16 @@ export class Array<T extends ShaderValue> implements ShaderValue
     }
 
     /**
+     * 是否带初始化值（`arrayWithValues` 创建或 `initValues` 设置过）。
+     *
+     * @returns 有值时返回 true
+     */
+    get hasValues(): boolean
+    {
+        return this._values !== undefined;
+    }
+
+    /**
      * 生成数组的**初始化表达式**（字面量），供声明处使用。
      *
      * 与 `toWGSL()` 分开：`initValues` 之后实例本身仍可被 `_setVarName` 覆盖成"变量名"
