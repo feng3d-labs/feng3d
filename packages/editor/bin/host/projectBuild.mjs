@@ -2,6 +2,68 @@ import { spawn } from 'node:child_process';
 import { Service } from '@deepseek-ai/cordis';
 
 /**
+ * 终止子进程**及其子进程树**。
+ *
+ * 为什么要"树"：`spawn` 用了 `shell: true`（Windows 上为了能找到 `npm.cmd`），
+ * 于是真正跑构建的是 shell 的**子进程**——只 `child.kill()` 会留下它继续写 `dist/`，
+ * 而"取消了却还在跑"是最难查的一类问题。
+ *
+ * @param {import('node:child_process').ChildProcess} child 子进程
+ */
+function killTree(child)
+{
+    if (child.pid === undefined) return;
+
+    if (process.platform === 'win32')
+    {
+        // `taskkill /T` 杀整棵树、`/F` 强制——Windows 上没有更简单可靠的办法。
+        //
+        // **不要 `stdio: 'ignore'`**：它失败时是**静默**的——实测踩过：`cancel()` 报"取消成功"、
+        // 而构建照旧在跑，5 秒后 `run()` 的 Promise 还没 settle。把输出收下来，失败就报出去。
+        const killer = spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: ['ignore', 'pipe', 'pipe'] });
+        let said = '';
+
+        killer.stdout?.on('data', (chunk) => { said += chunk; });
+        killer.stderr?.on('data', (chunk) => { said += chunk; });
+        killer.on('close', (code) =>
+        {
+            if (code !== 0) console.error(`[build] taskkill 退出码 ${code}：${said.trim()}`);
+        });
+        killer.on('error', (error) => console.error(`[build] taskkill 起不来：${error.message}`));
+
+        // 兜底：也给 shell 自己发一次（taskkill 失败时至少能停掉它）
+        try
+        {
+            child.kill();
+        }
+        catch
+        {
+            // 已经没了
+        }
+
+        return;
+    }
+
+    // POSIX：`detached` 让子进程成为**进程组首领**，于是 `-pid` 能把整组一起杀掉
+    try
+    {
+        process.kill(-child.pid, 'SIGTERM');
+    }
+    catch
+    {
+        // 组不存在（子进程已退出 / 没建成组）时退回单进程 kill
+        try
+        {
+            child.kill('SIGTERM');
+        }
+        catch
+        {
+            // 已经没了
+        }
+    }
+}
+
+/**
  * **项目构建服务**（#277 的宿主半：`host.build.*`）。
  *
  * ## 它解决什么
@@ -35,6 +97,15 @@ export class ProjectBuild extends Service
 
     /** 超时（毫秒）——构建卡死不该让宿主永远挂着 */
     timeoutMs;
+
+    /**
+     * 本次构建是否**被调用方取消**（#273 长任务）。
+     *
+     * 它只影响"退出码怎么解释"：被取消不是"构建失败"，但也不该报成功——
+     * `run()` 会把 `code` 记成 `-2` 并在结果里带 `cancelled: true`，调用方据此区分
+     * "项目自己报错"与"我叫停的"。
+     */
+    cancelling = false;
 
     /** 输出最多保留多少行（回传给调用方的尾巴） */
     maxOutputLines;
@@ -72,6 +143,32 @@ export class ProjectBuild extends Service
     }
 
     /**
+     * **取消正在跑的构建**（#273 长任务：调用方发起取消）。
+     *
+     * `run()` 原来只有**超时**能终止子进程——调用方（页面 / CLI / MCP）没有任何办法叫停，
+     * 只能等它跑完或等满 5 分钟。长任务协议要的"可取消"就是这条。
+     *
+     * 注意它是**同步返回**的：`child.kill()` 只是发信号，进程真正结束由 `run()` 的
+     * `close` 事件确认——所以调用方要判"真的停了"，应当看 `run()` 的 Promise 何时 settle
+     * （门禁就是这么判的）。
+     *
+     * @returns {{ cancelled: boolean, script?: string }} 有没有真的取消到
+     */
+    cancel()
+    {
+        const child = this.running?.child;
+
+        if (!child) return { cancelled: false };
+
+        const script = this.running.script;
+
+        this.cancelling = true;
+        killTree(child);
+
+        return { cancelled: true, script };
+    }
+
+    /**
      * 跑一次项目脚本。
      *
      * @param {string} [script] 脚本名（缺省 `build`）
@@ -86,9 +183,15 @@ export class ProjectBuild extends Service
         if (typeof script !== 'string' || script.length === 0) throw new Error('脚本名不能为空');
 
         const cwd = this.workspace.root;
-        const child = spawn('npm', ['run', script], { cwd, shell: process.platform === 'win32' });
+        const child = spawn('npm', ['run', script], {
+            cwd,
+            shell: process.platform === 'win32',
+            // POSIX 下让子进程当**进程组首领**，`cancel()` 才能一次杀掉整棵树
+            detached: process.platform !== 'win32',
+        });
         const output = [];
 
+        this.cancelling = false;
         this.running = { script, child };
 
         /**
@@ -148,8 +251,11 @@ export class ProjectBuild extends Service
             });
         });
 
-        this.running = null;
+        const cancelled = this.cancelling;
 
-        return { script, code, output };
+        this.running = null;
+        this.cancelling = false;
+
+        return { script, code: cancelled ? -2 : code, output, cancelled };
     }
 }
