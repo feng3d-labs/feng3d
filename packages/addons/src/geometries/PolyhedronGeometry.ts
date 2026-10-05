@@ -1,6 +1,6 @@
 import { vec3From, vec3LerpNumber, vec3NormalizeThickness, vec3ScaleNumber, Vector3Like, WritableVector3Like } from '@feng3d/math';
-import { Geometry, GeometryLogic, geometryUtils, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
-import { registerLogic, reactive, computed, createLogicProto, UnReadonly, type Computed } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, geometryUtils, computedAttr, createGeometryLogicState, geometryBounding, geometryRaycast, geometryBeforeRender } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -59,24 +59,6 @@ type PolyhedronGeometryRuntime = PolyhedronGeometry & {
 export interface PolyhedronGeometryLogic extends GeometryLogic
 {
 }
-
-/** PolyhedronGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface PolyhedronGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** PolyhedronGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const polyhedronGeometryLogicProto = createLogicProto<PolyhedronGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: PolyhedronGeometryLogic & PolyhedronGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: PolyhedronGeometryLogic & PolyhedronGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：PolyhedronGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -324,16 +306,25 @@ export function polyhedronGeometryLogic(data: PolyhedronGeometry): PolyhedronGeo
         return new Float32Array(geometryUtils.createVertexTangents(indicesComputed.value, positions, uvs, true));
     });
 
-    const logic = setupGeometryLogicState(Object.create(polyhedronGeometryLogicProto) as PolyhedronGeometryLogic & PolyhedronGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    logic._attrTable = {
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positionsComputed, 'float32x3'),
         a_color: computedAttr(colorsComputed, 'float32x4'),
         a_uv: computedAttr(uvsComputed, 'float32x2'),
         a_normal: computedAttr(normalsComputed, 'float32x3'),
         a_tangent: computedAttr(tangentsComputed, 'float32x3'),
     };
-    logic._indicesComputed = indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: PolyhedronGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

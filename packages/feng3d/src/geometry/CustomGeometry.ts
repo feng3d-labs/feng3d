@@ -1,5 +1,5 @@
-import { computedAttr, DrawRange, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from './Geometry';
-import { computed, createLogicProto, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, DrawRange, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from './Geometry';
+import { computed, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 // 触发 GeometryLogic 注册
@@ -66,24 +66,6 @@ export interface CustomGeometry extends Geometry
 export interface CustomGeometryLogic extends GeometryLogic
 {
 }
-
-/** CustomGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface CustomGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** CustomGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const customGeometryLogicProto = createLogicProto<CustomGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: CustomGeometryLogic & CustomGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: CustomGeometryLogic & CustomGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /** 把 readonly number[] 转为 Float32Array（undefined → 空）。reactive 代理数组须先 toRaw 还原再喂 TypedArray */
 function toFloat32(v: ReadonlyArray<number> | undefined): Float32Array
@@ -191,8 +173,8 @@ export function customGeometryLogic(data: CustomGeometry): CustomGeometryLogic
     // indices 是整数索引数组，保持 number[]（不用 Float32Array，避免精度问题）
     const indicesComputed = computed(() => toNumberArray(reactive(data).indices));
 
-    const logic = setupGeometryLogicState(Object.create(customGeometryLogicProto) as CustomGeometryLogic & CustomGeometryLogicState, data);
-    logic._attrTable = {
+    // attributes: data 由 computed getter 驱动
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positions, 'float32x3'),
         a_color: computedAttr(colors, 'float32x4'),
         a_uv: computedAttr(uvs, 'float32x2'),
@@ -204,7 +186,17 @@ export function customGeometryLogic(data: CustomGeometry): CustomGeometryLogic
         a_skinIndices1: skinnedAttr(skinInterleaved, 32, SKIN_INTERLEAVED_STRIDE),
         a_skinWeights1: skinnedAttr(skinInterleaved, 48, SKIN_INTERLEAVED_STRIDE),
     };
-    logic._indicesComputed = indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: CustomGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

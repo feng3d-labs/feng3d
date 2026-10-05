@@ -1,6 +1,6 @@
 import { Texture } from '@feng3d/webgpu';
 import type { CustomGeometry } from 'feng3d';
-import { computed, computedAttr, createLogicProto, defaultTexture, effect, GeometryLogic, geometryLogicProto, setupGeometryLogicState, geometryUtils, ImageUtil, reactive, ref, registerLogic, type Computed, type GeometryLogicState } from 'feng3d';
+import { computed, computedAttr, createGeometryLogicState, defaultTexture, effect, GeometryLogic, geometryBeforeRender, geometryBounding, geometryRaycast, geometryUtils, ImageUtil, reactive, ref, registerLogic } from 'feng3d';
 import type { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -106,24 +106,6 @@ export interface TerrainGeometryLogic extends GeometryLogic
 {
 }
 
-/** TerrainGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface TerrainGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** TerrainGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const terrainGeometryLogicProto = createLogicProto<TerrainGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: TerrainGeometryLogic & TerrainGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** 顶点索引（覆写基类 getter，由 computed 驱动） */
-    vertexIndices: {
-        get: function (this: TerrainGeometryLogic & TerrainGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
-
 /**
  * 工厂函数：TerrainGeometryLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -133,7 +115,7 @@ export function terrainGeometryLogic(data: TerrainGeometry): TerrainGeometryLogi
 {
     // 每个实例独立的高度图像素缓存（普通变量，配合 r_heightVersion 版本戳触发 computed 重算）
     let heightImageData: ImageData = getDefaultHeightMap();
-    // 版本戳：heightImageData 更新时递增，_terrainData computed 依赖它触发重算
+    // 版本戳：heightImageData 更新时递增，terrainData computed 依赖它触发重算
     const r_heightVersion = ref(0);
 
     /**
@@ -142,7 +124,7 @@ export function terrainGeometryLogic(data: TerrainGeometry): TerrainGeometryLogi
      * 任一变化时 computed 自动失效重算。
      * 返回 { positions, uvs, indices, normals, tangents }。
      */
-    const _terrainData = computed(() =>
+    const terrainData = computed(() =>
     {
         void r_heightVersion.value; // 建立对 heightImageData 更新的依赖
         if (!heightImageData) return null;
@@ -204,28 +186,36 @@ export function terrainGeometryLogic(data: TerrainGeometry): TerrainGeometryLogi
         };
     });
 
-    // 从 _terrainData 派生各顶点属性 computed
-    const _positions = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.positions) : new Float32Array());
-    const _uvs = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.uvs) : new Float32Array());
-    const _normals = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.normals) : new Float32Array());
-    const _tangents = computed(() => _terrainData.value ? new Float32Array(_terrainData.value.tangents) : new Float32Array());
-    const _indices = computed(() => _terrainData.value ? _terrainData.value.indices : []);
+    // 从 terrainData 派生各顶点属性 computed
+    const positionsComputed = computed(() => terrainData.value ? new Float32Array(terrainData.value.positions) : new Float32Array());
+    const uvsComputed = computed(() => terrainData.value ? new Float32Array(terrainData.value.uvs) : new Float32Array());
+    const normalsComputed = computed(() => terrainData.value ? new Float32Array(terrainData.value.normals) : new Float32Array());
+    const tangentsComputed = computed(() => terrainData.value ? new Float32Array(terrainData.value.tangents) : new Float32Array());
+    const indicesComputed = computed(() => terrainData.value ? terrainData.value.indices : []);
 
     // attributes 覆写数据源：computed 驱动的属性表
-    const _attrTable: VertexAttributes = {
-        a_position: computedAttr(_positions, 'float32x3'),
+    const attrTable: VertexAttributes = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
         a_color: { data: new Float32Array(), format: 'float32x4' },
-        a_uv: computedAttr(_uvs, 'float32x2'),
-        a_normal: computedAttr(_normals, 'float32x3'),
-        a_tangent: computedAttr(_tangents, 'float32x3'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
     };
 
-    const logic = setupGeometryLogicState(Object.create(terrainGeometryLogicProto) as TerrainGeometryLogic & TerrainGeometryLogicState, data);
-    logic._attrTable = _attrTable;
-    logic._indicesComputed = _indices;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
 
-    // heightMap 变化时更新高度图像素缓存，触发 _terrainData computed 重算。
-    // 其余构造参数（width/height/depth/segmentsW/...）由 _terrainData computed 内 reactive(data).xxx 直接追踪。
+    const logic: TerrainGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
+
+    // heightMap 变化时更新高度图像素缓存，触发 terrainData computed 重算。
+    // 其余构造参数（width/height/depth/segmentsW/...）由 terrainData computed 内 reactive(data).xxx 直接追踪。
     const r_geometry = reactive(data);
     effect(() => { void r_geometry.heightMap; onHeightMapChanged(); });
 
@@ -274,3 +264,4 @@ export function terrainGeometryLogic(data: TerrainGeometry): TerrainGeometryLogi
 }
 
 registerLogic('TerrainGeometry', terrainGeometryLogic);
+

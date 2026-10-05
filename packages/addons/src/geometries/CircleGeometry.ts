@@ -1,5 +1,5 @@
-import { Geometry, GeometryLogic, geometryUtils, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly, createLogicProto, type Computed } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, geometryUtils, computedAttr, createGeometryLogicState, geometryBeforeRender, geometryBounding, geometryRaycast } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -45,24 +45,6 @@ export interface CircleGeometry extends Geometry
 export interface CircleGeometryLogic extends GeometryLogic
 {
 }
-
-/** CircleGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface CircleGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** CircleGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const circleGeometryLogicProto = createLogicProto<CircleGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: CircleGeometryLogic & CircleGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: CircleGeometryLogic & CircleGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：CircleGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -153,36 +135,45 @@ export function circleGeometryLogic(data: CircleGeometry): CircleGeometryLogic
     }
 
     // 每个属性独立 computed，仅在实际被读取时计算
-    const _positions = computed(() => buildPositions());
-    const _normals = computed(() => buildNormals());
-    const _uvs = computed(() => buildUVs());
-    const _indicesComputed = computed(() => buildIndices());
-    const _colors = computed(() =>
+    const positionsComputed = computed(() => buildPositions());
+    const normalsComputed = computed(() => buildNormals());
+    const uvsComputed = computed(() => buildUVs());
+    const indicesComputed = computed(() => buildIndices());
+    const colorsComputed = computed(() =>
     {
-        const pos = _positions.value;
+        const pos = positionsComputed.value;
         if (pos.length === 0) return new Float32Array(0);
         const count = pos.length / 3;
 
         return new Float32Array(count * 4).fill(1);
     });
-    const _tangents = computed(() =>
+    const tangentsComputed = computed(() =>
     {
-        const positions = Array.from(_positions.value);
-        const uvs = Array.from(_uvs.value);
+        const positions = Array.from(positionsComputed.value);
+        const uvs = Array.from(uvsComputed.value);
 
-        return new Float32Array(geometryUtils.createVertexTangents(_indicesComputed.value, positions, uvs, true));
+        return new Float32Array(geometryUtils.createVertexTangents(indicesComputed.value, positions, uvs, true));
     });
 
-    const logic = setupGeometryLogicState(Object.create(circleGeometryLogicProto) as CircleGeometryLogic & CircleGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    logic._attrTable = {
-        a_position: computedAttr(_positions, 'float32x3'),
-        a_color: computedAttr(_colors, 'float32x4'),
-        a_uv: computedAttr(_uvs, 'float32x2'),
-        a_normal: computedAttr(_normals, 'float32x3'),
-        a_tangent: computedAttr(_tangents, 'float32x3'),
+    const attrTable: VertexAttributes = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_color: computedAttr(colorsComputed, 'float32x4'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
     };
-    logic._indicesComputed = _indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: CircleGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

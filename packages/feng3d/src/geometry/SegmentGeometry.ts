@@ -1,7 +1,7 @@
 import { Vector3Like } from '@feng3d/math';
 import type { Color4 } from '../core/Color4';
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, type GeometryLogicState } from './Geometry';
-import { computed, createLogicProto, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, geometryBeforeRender, geometryBounding, geometryRaycast, GeometryLogic } from './Geometry';
+import { computed, reactive, registerLogic } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module './Geometry'
@@ -63,24 +63,6 @@ export interface SegmentGeometryLogic extends GeometryLogic
 {
 }
 
-/** SegmentGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SegmentGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** SegmentGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const segmentGeometryLogicProto = createLogicProto<SegmentGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: SegmentGeometryLogic & SegmentGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: SegmentGeometryLogic & SegmentGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
-
 /**
  * 工厂函数：SegmentGeometryLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -140,15 +122,25 @@ export function segmentGeometryLogic(data: SegmentGeometry): SegmentGeometryLogi
     const colors = computed(() => buildColors());
     const indicesComputed = computed(() => buildIndices());
 
-    const logic = setupGeometryLogicState(Object.create(segmentGeometryLogicProto) as SegmentGeometryLogic & SegmentGeometryLogicState, data);
-    logic._attrTable = {
+    // attributes: data 由 computed getter 驱动
+    const attrTable: VertexAttributes = {
         a_position: computedAttr(positions, 'float32x3'),
         a_color: computedAttr(colors, 'float32x4'),
         a_uv: { data: new Float32Array(), format: 'float32x2' },
         a_normal: { data: new Float32Array(), format: 'float32x3' },
         a_tangent: { data: new Float32Array(), format: 'float32x3' },
     };
-    logic._indicesComputed = indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: SegmentGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

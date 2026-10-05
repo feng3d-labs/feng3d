@@ -1,6 +1,6 @@
 import type { Shape2 } from '@feng3d/math';
-import { Geometry, GeometryLogic, computedAttr, geometryLogicProto, setupGeometryLogicState, type GeometryLogicState } from 'feng3d';
-import { registerLogic, reactive, computed, UnReadonly, createLogicProto, type Computed } from '@feng3d/reactivity';
+import { Geometry, GeometryLogic, computedAttr, createGeometryLogicState, geometryBeforeRender, geometryBounding, geometryRaycast } from 'feng3d';
+import { registerLogic, reactive, computed, UnReadonly } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module '@feng3d/reactivity'
@@ -49,24 +49,6 @@ export interface ExtrudeGeometry extends Geometry
 export interface ExtrudeGeometryLogic extends GeometryLogic
 {
 }
-
-/** ExtrudeGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface ExtrudeGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** ExtrudeGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const extrudeGeometryLogicProto = createLogicProto<ExtrudeGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: ExtrudeGeometryLogic & ExtrudeGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: ExtrudeGeometryLogic & ExtrudeGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
 
 /**
  * 工厂函数：ExtrudeGeometryLogic 的唯一创建入口（registerLogic 注册它）。
@@ -165,31 +147,40 @@ export function extrudeGeometryLogic(data: ExtrudeGeometry): ExtrudeGeometryLogi
         };
     }
 
-    const _extrude = computed(() => buildExtrude());
-    const _positions = computed(() => _extrude.value.positions);
-    const _normals = computed(() => _extrude.value.normals);
-    const _uvs = computed(() => _extrude.value.uvs);
-    const _indicesComputed = computed(() => _extrude.value.indices);
-    const _colors = computed(() =>
+    const extrudeComputed = computed(() => buildExtrude());
+    const positionsComputed = computed(() => extrudeComputed.value.positions);
+    const normalsComputed = computed(() => extrudeComputed.value.normals);
+    const uvsComputed = computed(() => extrudeComputed.value.uvs);
+    const indicesComputed = computed(() => extrudeComputed.value.indices);
+    const colorsComputed = computed(() =>
     {
-        const n = _positions.value.length / 3;
+        const n = positionsComputed.value.length / 3;
         const d = new Float32Array(n * 4);
         d.fill(1);
 
         return d;
     });
-    const _tangents = computed(() => new Float32Array(_positions.value.length));
+    const tangentsComputed = computed(() => new Float32Array(positionsComputed.value.length));
 
-    const logic = setupGeometryLogicState(Object.create(extrudeGeometryLogicProto) as ExtrudeGeometryLogic & ExtrudeGeometryLogicState, data);
     // attributes: data 由 computed getter 驱动
-    logic._attrTable = {
-        a_position: computedAttr(_positions, 'float32x3'),
-        a_color: computedAttr(_colors, 'float32x4'),
-        a_uv: computedAttr(_uvs, 'float32x2'),
-        a_normal: computedAttr(_normals, 'float32x3'),
-        a_tangent: computedAttr(_tangents, 'float32x3'),
+    const attrTable: VertexAttributes = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_color: computedAttr(colorsComputed, 'float32x4'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
     };
-    logic._indicesComputed = _indicesComputed;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: ExtrudeGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }

@@ -1,5 +1,5 @@
-import { computedAttr, Geometry, geometryLogicProto, setupGeometryLogicState, GeometryLogic, geometryUtils, type GeometryLogicState } from 'feng3d';
-import { computed, createLogicProto, registerLogic, type Computed } from '@feng3d/reactivity';
+import { computedAttr, createGeometryLogicState, Geometry, GeometryLogic, geometryBeforeRender, geometryBounding, geometryRaycast, geometryUtils } from 'feng3d';
+import { computed, registerLogic } from '@feng3d/reactivity';
 import { VertexAttributes } from '@feng3d/webgpu';
 
 declare module 'feng3d'
@@ -43,24 +43,6 @@ export interface UIGeometryLogic extends GeometryLogic
 {
 }
 
-/** UIGeometryLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface UIGeometryLogicState extends GeometryLogicState
-{
-    _attrTable: VertexAttributes;
-    _indicesComputed: Computed<number[]>;
-}
-
-/** UIGeometryLogic 的共享原型：继承 Geometry 基类实现，覆写 vertices / vertexIndices */
-const uiGeometryLogicProto = createLogicProto<UIGeometryLogic>(geometryLogicProto, {
-    vertices: {
-        get: function (this: UIGeometryLogic & UIGeometryLogicState): VertexAttributes { return this._attrTable; },
-    },
-    /** indices 由 computed 驱动（覆写基类 getter） */
-    vertexIndices: {
-        get: function (this: UIGeometryLogic & UIGeometryLogicState): number[] { return this._indicesComputed.value; },
-    },
-});
-
 /**
  * 工厂函数：UIGeometryLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -69,23 +51,32 @@ const uiGeometryLogicProto = createLogicProto<UIGeometryLogic>(geometryLogicProt
 export function uiGeometryLogic(data: UIGeometry): UIGeometryLogic
 {
     // 每个属性独立 computed，仅在实际被读取时计算
-    const _positions = computed(() => new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]));
-    const _uvs = computed(() => new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]));
-    const _indices = computed(() => [0, 1, 2, 0, 2, 3]);
-    const _normals = computed(() => new Float32Array(geometryUtils.createVertexNormals(
-        _indices.value, Array.from(_positions.value), true)));
-    const _tangents = computed(() => new Float32Array(geometryUtils.createVertexTangents(
-        _indices.value, Array.from(_positions.value), Array.from(_uvs.value), true)));
+    const positionsComputed = computed(() => new Float32Array([0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0]));
+    const uvsComputed = computed(() => new Float32Array([0, 0, 1, 0, 1, 1, 0, 1]));
+    const indicesComputed = computed(() => [0, 1, 2, 0, 2, 3]);
+    const normalsComputed = computed(() => new Float32Array(geometryUtils.createVertexNormals(
+        indicesComputed.value, Array.from(positionsComputed.value), true)));
+    const tangentsComputed = computed(() => new Float32Array(geometryUtils.createVertexTangents(
+        indicesComputed.value, Array.from(positionsComputed.value), Array.from(uvsComputed.value), true)));
 
-    const logic = setupGeometryLogicState(Object.create(uiGeometryLogicProto) as UIGeometryLogic & UIGeometryLogicState, data);
     // attributes：data 由各 computed getter 驱动
-    logic._attrTable = {
-        a_position: computedAttr(_positions, 'float32x3'),
-        a_uv: computedAttr(_uvs, 'float32x2'),
-        a_normal: computedAttr(_normals, 'float32x3'),
-        a_tangent: computedAttr(_tangents, 'float32x3'),
+    const attrTable: VertexAttributes = {
+        a_position: computedAttr(positionsComputed, 'float32x3'),
+        a_uv: computedAttr(uvsComputed, 'float32x2'),
+        a_normal: computedAttr(normalsComputed, 'float32x3'),
+        a_tangent: computedAttr(tangentsComputed, 'float32x3'),
     };
-    logic._indicesComputed = _indices;
+    const state = createGeometryLogicState(() => attrTable, () => indicesComputed.value, data);
+
+    const logic: UIGeometryLogic = {
+        get vertices() { return attrTable; },
+        get vertexIndices() { return indicesComputed.value; },
+        get indices() { return state.indices.value; },
+        get draw() { return state.draw.value; },
+        get bounding() { return geometryBounding(logic); },
+        raycast(ray, shortestCollisionDistance, cullFace) { return geometryRaycast(logic, ray, shortestCollisionDistance, cullFace); },
+        beforeRender(renderObject) { geometryBeforeRender(logic, renderObject); },
+    };
 
     return logic;
 }
