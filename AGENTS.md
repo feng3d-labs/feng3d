@@ -236,7 +236,7 @@ registerLogic('ColorMaterial', colorMaterialLogic);
 - 测试框架：Vitest
 - 新功能必加测试，修 bug 加回归测试，改公共 API 必更新测试
 - **覆盖率由门禁守着**（issue #74）：`npm run test:coverage`（= `vitest run --coverage`）在跑完同一批测试后校验阈值，低于阈值即失败。阈值取「实测基线向下留余量」——作用是**防下降**，不是宣告达标；各包现状分档与冲击 80% 的路径见 [docs/CI.md](docs/CI.md) §1.3。上调阈值时同步更新该表。**读数虚高已修根因**（issue #667）：原先只被间接 `import`、自身一行都没执行的模块会被整份算成 100%（内置 v8 provider 跨 worker 合并 V8 coverage 时丢函数条目），现由自定义 provider `scripts/vitest-v8-coverage-provider.mjs` 修正；`test:coverage` 末尾仍追加 `node scripts/check-coverage-inflation.mjs` 拦函数级失真（新增即失败，基线 `scripts/coverage-inflation-baseline.json`；判据与残留面见该脚本文件头）
-- **升级测试基础设施（vitest / coverage provider）后必须按新口径重测阈值**，不能沿用旧值：vitest 3.2.6 → 5.0.2 时同一份代码的语句总数从 56571 变 30142、分支分母从 4366 变 12996（插桩与 sourcemap 映射方式变了），旧阈值会让门禁立刻全红
+- **升级测试基础设施（vitest / coverage provider）后必须按新口径重测阈值**，不能沿用旧值：vitest 3.2.6 → 5.0.2 时同一份代码的语句总数从 56571 变 30142、分支分母从 4366 变 12996（插桩与 sourcemap 映射方式变了），旧阈值会让门禁立刻全红。**升级 vitest 时还要核对 `scripts/vitest-v8-coverage-provider.mjs` 是否仍与新版 `@vitest/coverage-v8` 的 `generateCoverage` 一致**（它 override 了对方内部实现），回归保护见 `test/coverageProviderMerge.spec.ts`；上游若修好 `mergeScriptCovs`，删掉该 provider 与 `scripts/vitest-v8-merge-script-covs.mjs`、改回内置 v8
 
 ## 14. 其他约定
 - 截图（Playwright MCP 等）放 `.playwright-mcp/` 目录，不入根目录
