@@ -24,6 +24,7 @@ export { fragColor } from './glsl/fragColor';
 export { sampler2D } from './glsl/sampler/sampler2D';
 export { sampler2DArray } from './glsl/sampler/sampler2DArray';
 export { sampler3D } from './glsl/sampler/sampler3D';
+export { samplerComparison } from './glsl/sampler/samplerComparison';
 export { samplerCube } from './glsl/sampler/samplerCube';
 export { usampler2D } from './glsl/sampler/usampler2D';
 export { depthSampler } from './glsl/sampler/depthSampler';
@@ -36,6 +37,7 @@ export { texelFetch } from './glsl/texture/texelFetch';
 export { texelFetchOffset } from './glsl/texture/texelFetchOffset';
 export { texture } from './glsl/texture/texture';
 export { texture2D } from './glsl/texture/texture2D';
+export { textureSampleCompare } from './glsl/texture/textureSampleCompare';
 export { textureGrad } from './glsl/texture/textureGrad';
 export { textureLod } from './glsl/texture/textureLod';
 export { textureOffset } from './glsl/texture/textureOffset';
@@ -46,6 +48,7 @@ export { dFdx } from './glsl/derivative/dFdx';
 export { dFdy } from './glsl/derivative/dFdy';
 
 // control - 控制流
+export { discard } from './control/discard';
 export { forRange_ } from './control/for_';
 export { if_ } from './control/if_';
 export { return_ } from './control/return';
