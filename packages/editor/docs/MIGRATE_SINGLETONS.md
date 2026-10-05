@@ -17,7 +17,10 @@
 P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为服务"。
 实测下来它们**不是同一类东西**，"迁服务"对其中两个甚至不是正确的目标：
 
-| 单例 | 外部引用 | 它**其实**是什么 | 目标应该是什么 |
+> ⚠️ 下表「外部引用」是**起草时（2026-10-02）**的读数，此后迁移已推进（例如 `editorData` 已清零）。
+> 最新数字见 §1 与 `node scripts/editor-singleton-survey.mjs` 的输出，两处不一致时以脚本为准。
+
+| 单例 | 外部引用（起草时） | 它**其实**是什么 | 目标应该是什么 |
 |---|---|---|---|
 | `editorData` | **76 处 / 24 文件** | **已经是 Pinia 的过渡层**——`@deprecated 请直接使用 useEditorStore()`，内部 getter 转发给 Pinia store | → **Pinia**（继续清消费方）。**不是** cordis |
 | `editorRS` | 45 处 / 10 文件 | 页面侧资源系统实例（`extends ReadWriteRS`），并在**模块顶层**把自己挂给引擎（`ReadRS.rs = editorRS`） | → 服务（**页面侧**容器）＋ 那条顶层赋值改成**显式注入** |
@@ -28,21 +31,27 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 
 ## 1. 现状（实测）
 
+> 时点：**2026-10 实测快照**（`editor-singleton-survey.mjs` 的当前输出）。在册数字随迁移变动——
+> **要最新数字就跑脚本**，本表只用于说明"当前在册的是哪几个、各有多大"。
+
 ```
-单例            引用处数  文件数  测试引用  角色
+单例            引用处数  文件数  测试引用  角色（上限见 MAX_REFERENCES）
+editorRS               28       4         7  页面侧资源系统（上限 28）
+getEditorCache         15       5         4  偏好持久化（✅ lazy 单例）
+editorAsset            61       7         4  资产树（上限 61）
 editorData              0       0         0  ✅ 已迁完（登记在 `MIGRATED`，上限 0）
-editorRS               54      10         0  页面侧资源系统
-getEditorCache         15       5         0  偏好持久化（✅ lazy 单例；文件数不变 = 消费方一个没漏）
 editorui                0       0         0  ✅ 已删（#272 P5 第 1 步，由反向校验守着）
+menuConfig              0       0         0  ✅ 已迁完（#278 路线 B 第一批：创建挪到入口 + Vue 注入）
 ```
 
 > ⚠️ **口径**：数字**含 `.vue`**。本文第一版只扫 `.ts`，于是把 `editorui` 在
 > `App.vue` / `SceneView.vue` 里的消费者整个漏掉（台账 11 处，真实 19 处）。
 > 已修进脚本注释——**"台账少算消费方"比没有台账更危险**：它会让人以为一步就能迁完。
 
-**爆炸半径**（每个单例引用最多的文件，也就是每步要重点改的地方）：
+**爆炸半径**（每个单例引用最多的文件，也就是每步要重点改的地方）。
+下表为**起草时**读数，最新见脚本输出：
 
-| 单例 | 引用最多的三个文件 |
+| 单例 | 引用最多的三个文件（起草时） |
 |---|---|
 | `editorData` | `shortcut/Editorshortcut.ts`(13)、`feng3d/mrsTool/MRSToolTarget.ts`(9)、`configs/CommonConfig.ts`(5) |
 | `editorRS` | `ui/assets/EditorAsset.ts`(15)、`ScriptCompiler.ts`(8)、`configs/CommonConfig.ts`(7) |
