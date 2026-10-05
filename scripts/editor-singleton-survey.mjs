@@ -56,7 +56,6 @@ const SINGLETONS = [
     // （`editorAsset` ≈50 处、`menuConfig` ≈6 处；`editorRS` 的重灾区正是它们的定义文件，
     //  见 `MIGRATE_SINGLETONS.md` §3 第 5 步）。先登记进来，让消费面**可查、只减不增**。
     { name: 'editorAsset', def: 'src/ui/assets/EditorAsset.ts', what: '资产树（页面的资源管理器实体）' },
-    { name: 'menuConfig', def: 'src/configs/CommonConfig.ts', what: '菜单与命令装配' },
 ];
 
 /**
@@ -74,6 +73,15 @@ const MIGRATED = [
         step: '#272 P5 第 1 步（删兼容空壳）',
         fileGone: true,
         detect: 'import',
+    },
+    {
+        name: 'menuConfig',
+        def: 'src/configs/CommonConfig.ts',
+        step: '#278 路线 B 第一批（创建挪到入口 + Vue 注入）',
+        // 定义文件**仍在**（`MenuConfig` 类就在那儿），只是不再有模块级单例
+        fileGone: false,
+        detect: 'import',
+        note: '定义文件仍在（`MenuConfig` 类在此），单例已改由 `main.ts` 创建并 provide',
     },
     {
         name: 'editorData',
@@ -97,7 +105,7 @@ const MIGRATED = [
  * 迁移一个就从这里划掉一个；**实测集合与基线不一致即失败**（多了 = 新增违规；少了 = 该收紧基线
  * 却没收紧）。与 `imperative-construction-baseline.json` / `bundle-size-baseline.json` 同一套做法。
  */
-const TOP_LEVEL_NEW_BASELINE = ['editorRS', 'editorAsset', 'menuConfig'];
+const TOP_LEVEL_NEW_BASELINE = ['editorRS', 'editorAsset'];
 
 /**
  * `editorData` 过渡层的**引用上限**（只减不增）。
@@ -155,7 +163,6 @@ const EDITORDATA_MAX_REFERENCES = 0;
 const MAX_REFERENCES = {
     editorRS: 28,
     editorAsset: 61,
-    menuConfig: 8,
 };
 
 let total = 0;

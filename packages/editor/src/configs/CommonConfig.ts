@@ -419,7 +419,9 @@ export class MenuConfig
 /**
  * 菜单配置
  */
-export const menuConfig = new MenuConfig();
+// **不在模块顶层创建**了（#278 路线 B 第一批）：创建挪到入口 `vue-app/main.ts`，
+// 组件通过 `useMenus()` 注入取用。原因见 `vue-app/composables/useMenus.ts` 的文件头——
+// `MenuConfig` 是三个单例依赖环的"外沿"，先拆它最稳。
 
 /**
  * 下载项目

@@ -41,6 +41,8 @@ registerObjectViewComponents();
 import { installBuiltinPlugins, loadUserPatch } from '../plugins';
 import { installEditorResourceSystem, pickBaseFS } from '../assets/EditorRS';
 import { editorRSKey } from './composables/useEditorRS';
+import { menusKey } from './composables/useMenus';
+import { MenuConfig } from '../configs/CommonConfig';
 installBuiltinPlugins();
 
 // **显式装配资源系统**（#278 阶段 4a）：原来是 `EditorRS.ts` 的模块顶层副作用
@@ -87,6 +89,10 @@ const app = createApp(App);
 // **资源系统走注入**（#278 阶段 4b）：组件用 `useEditorRS()` 取，不再各自 import 模块级单例——
 // 于是"谁在用资源系统"可计量（单例普查的引用数）、也可替换（测试能塞假的）
 app.provide(editorRSKey, resourceSystem);
+
+// **菜单装配也走注入**（#278 路线 B 第一批）：创建从 `CommonConfig.ts` 的模块顶层挪到这里。
+// `MenuConfig` 依赖另外三个单例、却**没被它们依赖**——是依赖环的外沿，先拆它最稳。
+app.provide(menusKey, new MenuConfig());
 
 // 使用已创建的 Pinia 实例
 // 这会将 Pinia 激活，使得 useEditorStore() 可以在 EditorData 中使用
