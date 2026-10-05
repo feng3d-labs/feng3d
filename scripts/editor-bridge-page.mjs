@@ -23,11 +23,17 @@ const REGISTER_TIMEOUT_MS = 60000;
  *
  * @param {string} base dev server 地址（形如 `http://localhost:3000`）
  * @param {string} client 桥接 clientId（URL 上的 `?bridgeClient=`）
+ * @param {{ locale?: string }} [options] `locale` 交给 Playwright 的 `newPage()`；
+ *   **不传就用 runner 的系统语言**。它是给"判据里含界面文案"的自检用的：
+ *   编辑器的语言来自 `localStorage['editor.language']`，没有则按 `navigator.language` 定
+ *   （`packages/editor/src/utils/i18n.ts` 的 `initLanguage()`），于是 CI 的 ubuntu runner
+ *   （en-US）会渲染成英文，而本机（zh-CN）是中文——`editor-slots.mjs` 就因为断言中文标签
+ *   在 CI 上挂过（6/12）。**断言文案的自检要显式传 `{ locale: 'zh-CN' }`**，让结果不随 runner 变。
  * @returns {Promise<{ page: import('playwright').Page, browser: import('playwright').Browser, close: () => Promise<void>, pageErrors: string[] }>}
  *   `page` 给需要**点界面**的自检用（大多数自检只走桥接，用不到它）
  * @throws playwright 不可用、页面 60s 内没注册到桥接时抛出，信息里说明该怎么做
  */
-export async function openBridgePage(base, client)
+export async function openBridgePage(base, client, options = {})
 {
     const { chromium } = await import('playwright').catch(() =>
     {
@@ -44,7 +50,8 @@ export async function openBridgePage(base, client)
         // 有头模式下若仍拿不到 adapter，这两个开关能打开 Chromium 的 WebGPU 回退路径
         args: headless ? [] : ['--enable-unsafe-webgpu'],
     });
-    const page = await browser.newPage();
+    // locale 只在调用方显式要求时才传：不传时行为与以前完全一致（用 runner 的系统语言）
+    const page = await browser.newPage(options.locale ? { locale: options.locale } : undefined);
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(e.message));
 
