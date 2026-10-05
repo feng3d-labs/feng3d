@@ -1,0 +1,8 @@
+{
+    "name": "my-project",
+    "entryScene": "default.scene.json",
+    "plugins": [],
+    "build": {
+        "script": "build"
+    }
+}

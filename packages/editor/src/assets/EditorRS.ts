@@ -6,7 +6,7 @@ import { callHost } from '../bridge/hostCall';
 import { HostFS } from './HostFS';
 
 // 使用相对路径，与 index.html 处于同一层级
-const templateurls = [
+const templateurls: [string, string, boolean?][] = [
     ['./resource/template/.vscode/settings.json', '.vscode/settings.json'],
     ['./resource/template/app.js', 'app.js'],
     ['./resource/template/index.html', 'index.html'],
@@ -18,6 +18,15 @@ const templateurls = [
     ['./resource/template/libs/cannon.d.ts', 'libs/cannon.d.ts'],
     ['./resource/template/libs/cannon-plugin.js', 'libs/cannon-plugin.js'],
     ['./resource/template/libs/cannon-plugin.d.ts', 'libs/cannon-plugin.d.ts'],
+    // 【#274 新增·用户所有物】第三个元素 `true` = **只在新项目里写一次**：
+    // 升级项目时**不覆盖**（用户会自己改依赖 / 入口场景 / 构建配置，理由见 `writeTemplateFiles`）。
+    //
+    // 这三个文件是 §5.2「标准 npm 工程」的标志（D12）：`package.json` 让项目能自己
+    // `npm install && npm run build`（D10「脱离 editor 也能跑」），`feng3d.project.json`
+    // 是**编辑器元数据**（决策 16：与 `package.json` 不合并），`vite.config.js` 是可替换的构建配置。
+    ['./resource/template/package.json', 'package.json', true],
+    ['./resource/template/feng3d.project.json', 'feng3d.project.json', true],
+    ['./resource/template/vite.config.js', 'vite.config.js', true],
 ];
 
 /**
@@ -63,7 +72,7 @@ export class EditorRS extends ReadWriteRS
     /**
      * 把模板文件逐个读进来、写进当前文件系统（"创建"与"升级"走的是同一条链）。
      *
-     * **并发**发（#274）：模板有 12 个文件，而宿主 FS 每一次写就是两趟 HTTP——
+     * **并发**发（#274）：模板有 14 个文件，而宿主 FS 每一次写就是两趟 HTTP——
      * 串行在这里是最贵的写法。这些文件彼此独立（各写各的路径），并发不改变结果，只把等待叠起来。
      *
      * 并发建目录是安全的：`HostFS` 是 `mkdirSync(recursive)`，`IndexedDBFS` 内部先问 `exists`
@@ -71,8 +80,13 @@ export class EditorRS extends ReadWriteRS
      */
     private async writeTemplateFiles()
     {
-        await Promise.all(templateurls.map(async ([url, target]) =>
+        await Promise.all(templateurls.map(async ([url, target, createOnly]) =>
         {
+            // `createOnly` 的是**用户所有物**（#274）：`package.json` / `feng3d.project.json` /
+            // `vite.config.js` —— 用户会自己改（依赖、入口场景、构建配置），而"升级项目"
+            // 会重写全部模板文件；把这三份也覆盖回去等于**抹掉用户的改动**。
+            if (createOnly && await this.fs.exists(target)) return;
+
             const content = await loader.loadText(url);
 
             await this.fs.writeString(target, content);
