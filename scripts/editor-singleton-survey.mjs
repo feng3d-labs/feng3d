@@ -125,6 +125,20 @@ const EDITORDATA_MAX_REFERENCES = 0;
  *
  * 为什么先立上限再动手：45 处消费面不可能一次改完，而没有上限时"顺手加一处 import"
  * 会静悄悄把进度抹掉。数字口径与 `EDITORDATA_MAX_REFERENCES` 一致（**大小写敏感**）。
+ *
+ * ## 剩余 4 个文件为什么"只差 28 处"却不好切（实测）
+ *
+ * | 文件 | 处数 | 为什么黏 |
+ * |---|---|---|
+ * | `writeMisc.ts` | 2 | 它是 `scene.save` 的处理器，而 `EditorBridgeWrite` 的写方法表
+ *   是**模块级常量**（`RAW_WRITE_HANDLERS`）且 `sceneBatch` 自己也要查这张表——工厂化会碰到自引用 |
+ * | `AssetNode.ts` | 6 | 它是**类**，实例由 `editorAsset` 创建（见下） |
+ * | `CommonConfig.ts` | 7 | 它的定义文件同时持有另一个单例 `menuConfig`（**≈6 处 / 3 文件**） |
+ * | `EditorAsset.ts` | 13 | 同上：它持有 `editorAsset`（**≈50 处 / 7 文件**，重灾区 `ProjectView.vue`） |
+ *
+ * 也就是说：**再切一批 `editorRS` 消费方，实际会变成"同时改造两个更大的单例"**。
+ * 那需要先拍板"谁持有实例"（见 `MIGRATE_SINGLETONS.md` §3 第 5 步的三条路线），
+ * 所以这里先把数字锁住（只减不增），不硬切。
  */
 const EDITORRS_MAX_REFERENCES = 28;
 

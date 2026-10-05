@@ -333,6 +333,33 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
   （现状：`editorRS` 在测试里**没有**引用，所以这一步要先补测试，否则是**裸改**）；
 - **风险**：**高**。建议单独一个阶段、单独一个 PR。
 
+### 第 5 步：`editorAsset` / `menuConfig` 的**持有者**决策（阶段 4b 收尾前必须拍板）
+
+> **为什么需要它**：第 4 步剩下 4 个文件（`writeMisc` 2 / `AssetNode` 6 / `CommonConfig` 7 /
+> `EditorAsset` 13），看着只差 **28 处**引用，但实测发现——
+> **它们本身就是另外两个更大的模块级单例的持有者**：
+
+| 单例 | 定义 | 实测消费面 |
+|---|---|---|
+| `editorRS`（第 4 步的目标） | `src/assets/EditorRS.ts` | **28 处 / 4 文件** |
+| `editorAsset` | `src/ui/assets/EditorAsset.ts:572` | **≈50 处 / 7 文件**（重灾区 `ProjectView.vue` ≈30） |
+| `menuConfig` | `src/configs/CommonConfig.ts:422` | **≈6 处 / 3 文件** |
+
+`EditorAsset.ts`(13) 与 `CommonConfig.ts`(7) 正是 `editorAsset` / `menuConfig` 的**定义文件**，
+所以"再切一批 `editorRS` 消费方"实际上会变成"同时改造两个更大的单例"——
+这正是第 4 步标注**风险高**的真正原因。
+
+**三条候选路线**（要拍板：它属架构决策，不是实现细节）：
+
+| 路线 | 做法 | 代价 |
+|---|---|---|
+| **A. 只登记、不改造** | 把 `editorAsset` / `menuConfig` 也登记进台账（引用面可查、只减不增），第 4 步到此为止 | 最省；但"去单例化"只做到一半，`editorAsset` 仍是隐式全局 |
+| **B. 入口创建 + 注入**（推荐） | 由 `vue-app/main.ts` / `App.vue` 创建并 `provide`，非 Vue 侧走**参数链**（`Editor` 已经这么做）；三个单例一起收口 | 消费面 ≈84 处分 3–4 批；`ProjectView.vue` 是最大的一块 |
+| **C. 套 cordis 容器** | 按 `NODE_HOST.md` P5 原话"迁服务" | 页面侧**没有 cordis**（§2 已论证），要先引入容器；与"最小改动"相反 |
+
+推荐 **B**：它就是第 4 步已经在走的路（`Editor` 构造注入、Vue 用 `useEditorRS()`），
+只是把"谁创建实例"从模块顶层挪到入口；**A 可以作为 B 的第一步**（先把数字锁住）。
+
 ## 4. 明确不做（边界）
 
 - **不把 Pinia 换掉**：`editorData` 的目标就是 Pinia（它已经在路上），不要为了"统一到 cordis"
