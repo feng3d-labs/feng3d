@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, while_, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -493,5 +493,26 @@ describe('位运算与逐分量比较（#712）', () =>
         const b = vec3(0.5, 0.5, 0.5).greaterThanAll(vec3(0.0, 0.0, 0.0));
 
         expect(a.and(b).toWGSL()).toBe('(all((vec3<f32>(0.5) < vec3<f32>(1.0)))) && (all((vec3<f32>(0.5) > vec3<f32>(0.0))))');
+    });
+});
+
+describe('while 循环（#712，a-buffer composite 的前置）', () =>
+{
+    it('生成 while (cond) { ... }，循环体缩进一层', () =>
+    {
+        const f = fragment('main', () =>
+        {
+            const i = var_('i', uint(0));
+            while_(() => i.lessThan(uint(5)), () =>
+            {
+                assign(i, i.add(uint(1)));
+            });
+            return_(vec4(float(i), 0.0, 0.0, 1.0));
+        });
+        const wgsl = f.toWGSL();
+
+        expect(wgsl).toContain('var i = 0u;');
+        expect(wgsl).toContain('while (i < 5u) {');
+        expect(wgsl).toContain('i = (i + 1u);');
     });
 });
