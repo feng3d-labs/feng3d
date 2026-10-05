@@ -1,4 +1,5 @@
 import { buildShader } from '../core/buildShader';
+import { Array as TSLArray } from '../variables/array';
 import { Func } from './func';
 import { IElement, ShaderValue } from '../core/IElement';
 import { Precision } from '../glsl/precision';
@@ -212,7 +213,7 @@ export class Fragment extends Func
             const externalVars = dependencies.externalVars;
             for (const { name, expr } of externalVars)
             {
-                lines.push(`const ${expr.glslType} ${name} = ${expr.toGLSL()};`);
+                lines.push(`const ${expr instanceof TSLArray ? `${expr.glslType}[${expr.length}]` : expr.glslType} ${name} = ${expr instanceof TSLArray ? expr.toGLSLInit() : expr.toGLSL()};`);
             }
 
             // 生成着色器函数定义
@@ -374,7 +375,7 @@ export class Fragment extends Func
             const externalVars = dependencies.externalVars;
             for (const { name, expr } of externalVars)
             {
-                lines.push(`const ${name}: ${expr.wgslType} = ${expr.toWGSL()};`);
+                lines.push(`const ${name}: ${expr instanceof TSLArray ? `array<${expr.wgslType}, ${expr.length}>` : expr.wgslType} = ${expr instanceof TSLArray ? expr.toWGSLInit() : expr.toWGSL()};`);
             }
 
             // 生成着色器函数定义

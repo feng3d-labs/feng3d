@@ -1,5 +1,5 @@
 // variables - 变量相关
-export { array } from './variables/array';
+export { array, arrayWithValues } from './variables/array';
 export type { Array as TSLArray } from './variables/array';
 export { attribute } from './variables/attribute';
 export { struct } from './variables/struct';
@@ -24,6 +24,7 @@ export { fragColor } from './glsl/fragColor';
 export { sampler2D } from './glsl/sampler/sampler2D';
 export { sampler2DArray } from './glsl/sampler/sampler2DArray';
 export { sampler3D } from './glsl/sampler/sampler3D';
+export { samplerCube } from './glsl/sampler/samplerCube';
 export { usampler2D } from './glsl/sampler/usampler2D';
 export { depthSampler } from './glsl/sampler/depthSampler';
 
