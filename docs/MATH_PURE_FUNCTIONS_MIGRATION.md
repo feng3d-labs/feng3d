@@ -554,6 +554,7 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | 类型 | 原判理由 | 现状（批 A 收尾） |
 |---|---|---|
 | `MathF.ts`（`Mathf`） | 已是纯静态函数集合，无数据字段 | ✅ **批 A 已做**：改为 `mathf.ts` 的模块级纯函数 + `MATHF_*` 常量（§11.18.1） |
+| `packages/polyfill/src/MathUtil.ts`（`MathUtil`） | 无数据字段，但是 `class` + 模块级单例 `mathUtil`（R2 关注的形态） | ✅ **`MathUtil` 迁移批已做**：迁入 `packages/math/src/mathutil.ts`、纯函数化为 `mathUtil*` + `MATHUTIL_*`，`polyfill` 侧零命中（§11.18.8） |
 | `Time.ts`（`Time`） | 运行时状态（`deltaTime` 等），不是数值类型 | ✅ **批 A 已删**：理由见 §11.18.2——全树 getter 都是 `throw '未实现'`、**零消费方**、且它正是 §3.5 要消除的隐式依赖来源 |
 | [Noise.ts](../packages/math/src/Noise.ts) | 有实例状态与 4 个实例方法（`perlin1/2/3/N`），且与全局随机 / 驱动方式绑定 | ⬜ **批 B**：形态要先定（实例状态 → 纯数据字段还是模块级访问器） |
 | [buildLineGeometry.ts](../packages/math/src/buildLineGeometry.ts) | 已经是**模块级纯函数**（`export function buildLineGeometry`，无 class） | ✅ 无需改造：本来就没有 class，天然就是目标形态 |
@@ -2314,9 +2315,9 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 （2022-08 打包快照，里面仍是 `Mathf.Sin = function …` / `ShapeUtils.area = function …` 的老形态）、
 `packages/editor/resource/threejs/three.js`（第三方库自带的 `ShapeUtils`）。两者都不在源码与门禁范围内。
 
-#### 11.18.4 `Mathf` vs `MathUtil` 的重叠对照表与合并建议（**本批不实现合并**）
+#### 11.18.4 `Mathf` vs `MathUtil` 的重叠对照表与合并建议（**批 A 只出建议、不实现合并**；`MathUtil` 迁移批按此执行，见 §11.18.8）
 
-`packages/polyfill/src/MathUtil.ts` 正被另一个批次移入 math，**本批刻意不动它**（避免与并发批次冲突）。
+`packages/polyfill/src/MathUtil.ts` 正被另一个批次移入 math，**批 A 刻意不动它**（避免与并发批次冲突）；**该迁移批已落地**，逐条对照与最终取舍见 §11.18.8。
 但功能重叠是真实的——`packages/math/src/geom/vector2.ts` **现在同时用着两边**
 （同一个文件里既有 `mathUtil.clamp` 又有 `mathfMin` / `mathfSign`）。
 **按用户确立的原则「代码里不允许出现多份重复的实现」，两者不能长期并存。**
@@ -2408,6 +2409,74 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 | `npx tsc -p packages/math/tsconfig.json --noEmit` | ✅ 无输出 |
 | `node scripts/check-math-no-class.mjs` | ✅ 27 个目标类型、0 命中；全树 23 个后继批次 class |
 | `node scripts/check-docs-links.mjs` | ✅ 通过（新增/改名的源码链接均有效） |
+
+#### 11.18.8 `MathUtil` 迁移批：从 `polyfill` 迁入 + 纯函数化（分支 `refactor/move-mathutil`）
+
+**背景**：§11.18.4 已给出「`Mathf` vs `MathUtil` 重叠」的逐条对照与合并建议（批 A 只出建议）。
+本批就是那次建议的执行，但**范围收敛为「迁移 + 纯函数化 + 前缀隔离」**，不做两套语义的归一。
+
+##### 做了什么
+
+| 步骤 | 事实 |
+|---|---|
+| 删除 `packages/polyfill/src/MathUtil.ts` | `git grep -n 'MathUtil\|mathUtil' -- packages/polyfill` **零命中**；`index.ts` 的 `export * from './MathUtil'` 同批移除；**没有**让 `polyfill` 重导出 `math` 的它（那会形成 `polyfill → math` 的反向依赖，违反 R1） |
+| 迁入 `packages/math/src/mathutil.ts` | `class MathUtil` + 模块级单例 `export const mathUtil = new MathUtil()` → **模块级函数 + 模块级常量**，单例消失（原 `check-toplevel-new` 基线里的 `packages/polyfill/src/MathUtil.ts::MathUtil` 随之清掉） |
+| 命名 | 全部加 `mathUtil` 前缀（`mathUtilClamp` / `mathUtilEquals` / …），常量加 `MATHUTIL_` 前缀——与批 A 的 `mathf*` / `MATHF_*` **并置而不撞名**，让「同名不同义」在调用点一眼可见 |
+| 消费点迁移 | math 包内 19 个源文件 + 9 个 spec 走相对路径；`feng3d` / `assets` / `particlesystem` 走 `@feng3d/math`；`editor` 的 7 个文件（含 3 个 `.vue`）从 `feng3d` 聚合桶取 |
+| 分层收益 | `packages/math` 去掉 `@feng3d/polyfill` 依赖（`triangleGeometry.ts` 的 `ArrayUtils.unique` 就地内联为文件私有的 `uniqueInPlace`）；`scripts/check-layer-deps.mjs` 的白名单收紧为 `['@feng3d/serialization']` |
+
+##### 逐条采纳 §11.18.4 的建议
+
+| §11.18.4 的建议 | 本批的处置 |
+|---|---|
+| 1. 不能机械合并，`clamp` / `lerp` / `smoothstep` 三对行为不同 | ✅ **不合并**：`mathUtilClamp` / `mathUtilLerp` / `mathUtilSmoothstep` 与 `mathfClamp` / `mathfLerp` / `mathfSmoothStep` 并存，差异在 `mathutil.ts` 文件头表格 + `test/mathutil.spec.ts` 的 `★★` 用例里逐条钉住 |
+| 2. `DEG2RAD` / `RAD2DEG` 纯重复必须消掉 | ✅ **消掉重复的真源**：`mathutil.ts` 的 `MATHUTIL_DEG2RAD` / `MATHUTIL_RAD2DEG` 直接取 `MATHF_DEG2RAD` / `MATHF_RAD2DEG` 的值（只有一份定义），并把它们重新导出，作为「原 `mathUtil.DEG2RAD` 消费点」的就近入口；`mathUtilDegToRad` / `mathUtilRadToDeg` 也走这两个常量 |
+| 3. `MathUtil` 独有成员搬成模块级函数 | ✅ `mathUtilUclideanModulo` / `mathUtilMapLinear` / `mathUtilSmoothstep` / `mathUtilSmootherstep` / `mathUtilRandInt` / `mathUtilRandFloat` / `mathUtilRandFloatSpread` / `mathUtilDegToRad` / `mathUtilRadToDeg` / `mathUtilEquals` / `mathUtilGcd` / `mathUtilLcm` / `mathUtilNewUuid` |
+| 4. `uuid` 的模块级闭包状态要按 R2 处理 | ✅ 改成**纯函数** `mathUtilNewUuid(length = 36)`（局部变量 + 每次调用重新初始化，无模块级闭包状态）；其余成员也无模块级状态 |
+| 5. 建议加门禁「`math` 内出现 `mathUtil.` 即失败」 | ⬜ **未加**：本批之后 `math` 内已无 `mathUtil.` 命名空间引用（`mathUtil*` 是**函数名前缀**、不是对象），该门禁的对象已不存在；真正该防的「两套语义被误合并」只能靠 spec 的 `★★` 断言与代码注释，**无机器执行者**（已知缺口） |
+
+##### 与本批一并**删除**的 `MathUtil` 成员（依据）
+
+| 成员 | 依据 |
+|---|---|
+| `min` / `max` | 与 `mathfMin` / `mathfMax` **实现逐字相同**（`a < b ? a : b`）——按「不允许两份重复实现」直接复用批 A 的实现，本文件不再另立一份（`vector2/3/4.ts` 与 `vec3MinMathf` 等调用点改调 `mathfMin` / `mathfMax`） |
+| `toRound` / `isPowerOfTwo` / `nearestPowerOfTwo` / `nextPowerOfTwo` | 全仓 0 消费方（死代码）；其中 `toRound` 与 `mathfRoundToMultipleOf` 语义高度接近，留着就是两份近似实现，故一并删除 |
+
+##### 行为语义变化
+
+**零**。所有保留成员的实现逐字照搬原 `class MathUtil`（唯一改动是 `this.DEG2RAD` / `this.RAD2DEG` / `this.PRECISION` 换成模块级常量、`this.gcd` 换成 `mathUtilGcd`）。
+`min` / `max` 的调用点改调 `mathfMin` / `mathfMax` 也**不是**行为变化——两者实现相同，且批 A 的实现带数组重载，`(a, b)` 形式命中同一个分支。
+
+##### 验收（本批实测）
+
+| 命令 | 结果 |
+|---|---|
+| `git grep -n 'MathUtil\|mathUtil' -- packages/polyfill` | ✅ 零命中（退出码 1） |
+| `npx vitest run` | ✅ 235 个文件 / 2741 个测试全绿（批 A 之后基线 234 / 2709；本批 +1 文件 / +32 测试 = 新增 `test/mathutil.spec.ts`） |
+| `npx tsc -p packages/math/tsconfig.json --noEmit` | ✅ 无输出 |
+| `npm run test:coverage` | ✅ 通过；`math` 与 `polyfill` 两行已按实测更新到 `docs/CI.md` §1.3 |
+| `node scripts/check-layer-deps.mjs` | ✅ 通过（`math` 白名单收紧为 `['@feng3d/serialization']`） |
+| `node scripts/check-layer-direction.mjs` | ✅ 通过（无新增向上依赖） |
+| `node scripts/check-module-side-effects.mjs --strict` | ✅ 通过 |
+| `node scripts/check-toplevel-new.mjs` | ✅ 通过（基线 90 → 89，清掉 `polyfill/src/MathUtil.ts::MathUtil`） |
+| `node scripts/check-math-no-class.mjs` | ✅ 通过（`MathUtil` 不在 27 个目标类型内，不受影响；全树 `export class` 再少 1 个） |
+| `node scripts/check-docs-links.mjs` | ✅ 0 坏链 |
+
+##### 留下的欠账
+
+1. **两套标量工具仍在**（`mathf*` 与 `mathUtil*`）。本批只做到「不撞名 + 语义可辨」，没有归一。
+   真要归一，必须先定「以哪一套语义为准」——`clamp` / `lerp` / `smoothstep` / `equals` 四对
+   的差异都有真实消费方依赖（`vec2LerpClamped` 就钉着 `mathUtilClamp(NaN, 0, 1) === 1`）。
+2. **批 A 保留的纯转发仍在**（`mathfTan` / `mathfSin` / `mathfSqrt` / `mathfCeil` … 共 19 个）。
+   本批**没有**动它们——那是批 A 刚合入的代码，删除属独立一批的改动面
+   （要同步改 `mathf.spec.ts` / `mathfAngles.spec.ts`）。若要清理，建议单开一批。
+3. **`packages/math/package.json` 仍声明 `@feng3d/serialization`**，但 `packages/math/src` 里
+   grep 不到任何 `@serialize` / serialization 的 import——看起来是**多余的依赖**。
+   本批只解开了 `polyfill`，这条建议另开 issue 核实。
+4. `editor/resource/template/libs/feng3d.{js,d.ts}`（编辑器模板快照）里仍是旧的 `mathUtil.*` 形态、
+   且写着 `DefaultRotationOrder = YXZ`（源码早已是 `XYZ`）——**快照与源码本就不一致**，
+   属既有问题、非本批引入。
+
 
 ## 12. 需要同步的既有文档
 
