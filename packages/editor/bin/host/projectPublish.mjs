@@ -58,10 +58,13 @@ export class ProjectPublish extends Service
      * （返回 `{ ok: false, stage: 'build', build: { code, output } }`），
      * 绝不"带着半个产物说成功"（#271「编译失败仍弹编译完成」的教训）。
      *
-     * @param {{ skipBuild?: boolean }} [options] `skipBuild` 只打插件端（离线门禁的合成项目用）
+     * @param {{ skipBuild?: boolean, enabledPlugins?: readonly string[] }} [options]
+     *   `skipBuild` 只打插件端（离线门禁的合成项目用）；`enabledPlugins` 是**调用方给的启用集**
+     *   （#277「开关参与构建」：编辑器里的开关在浏览器 `localStorage`，与宿主读的
+     *   `<静态根>/editor.plugins.json` 本是两套——传下来才谈得上"关掉它就不进产物"）
      * @returns {Promise<{ ok: boolean, stage?: string, file: string|null, plugins: string[], skipped: string[], bytes: number, build: object|null }>} 结果
      */
-    async run({ skipBuild = false } = {})
+    async run({ skipBuild = false, enabledPlugins } = {})
     {
         if (!this.workspace?.isOpen) throw new Error('项目未打开（用 --project <目录> 启动宿主）');
 
@@ -81,6 +84,10 @@ export class ProjectPublish extends Service
         }
 
         // **只取启用的、且带 runtime 端的**——未启用的插件连入口都不给它进
+        //
+        // 判"启用"优先看**调用方传下来的启用集**（#277）：那是编辑器界面里的真实开关；
+        // 没传才退回静态配置的 `entry.enabled`。两者都缺就是启用（默认开启）。
+        const override = Array.isArray(enabledPlugins) ? new Set(enabledPlugins) : null;
         const enabled = [];
         const skipped = [];
 
@@ -88,8 +95,10 @@ export class ProjectPublish extends Service
         {
             if (!Array.isArray(entry.halves) || !entry.halves.includes('runtime')) continue;
 
-            if (entry.enabled === false) skipped.push(entry.id);
-            else enabled.push(entry);
+            const isEnabled = override ? override.has(entry.id) : entry.enabled !== false;
+
+            if (isEnabled) enabled.push(entry);
+            else skipped.push(entry.id);
         }
 
         if (enabled.length === 0 && skipped.length === 0)
