@@ -21,7 +21,7 @@
  *
  * WebSocket 握手用的是**同一个判据函数**（`bridgeSocket.mjs` 里调 `checkBridgeRequest`）——
  * 起 vite dev server 才能真连 WS，成本太高；这里用一条**接线自证**钉住它，
- * 判据本身由 `packages/editor/test/bridgeSecurity.spec.ts` 的 8 条单测覆盖。
+ * 判据本身由 `packages/editor/test/bridgeSecurity.spec.ts` 的 **12 条**单测覆盖（实测 `npx vitest run`）。
  *
  * 用法：
  *   node scripts/check-bridge-security.mjs
@@ -265,7 +265,7 @@ try
 
     check('★ WebSocket 握手接了**同一个判据**（接线自证：`bridgeSocket.mjs` 里调 `checkBridgeRequest`）',
         /checkBridgeRequest\(\{\s*headers:\s*req\.headers/.test(socketSource),
-        'WS 握手不受同源策略约束，判据本身由 test/bridgeSecurity.spec.ts 的 8 条覆盖');
+        'WS 握手不受同源策略约束，判据本身由 test/bridgeSecurity.spec.ts 的 12 条覆盖');
 }
 finally
 {

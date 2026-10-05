@@ -361,7 +361,7 @@ const { chromium } = require('playwright');
   （**DNS rebinding**）/ 端口不符全部 **403**；同时验正例（页面自己的同源 GET 必须能过）与**范围**
   （校验只覆盖桥接前缀，静态资源照常返回）。**WebSocket 握手共用同一份判据**
   （`bridge/security.mjs`，握手不受同源策略约束，所以这条尤其关键）——WS 那一路由
-  `test/bridgeSecurity.spec.ts` 的 11 条单测覆盖 + 门禁里的一条接线自证。
+  `test/bridgeSecurity.spec.ts` 的 **12 条**单测覆盖 + 门禁里的一条接线自证。
   **另含一次性 token**（D9 第二步）：服务端生成、注入页面（dev 的 `transformIndexHtml` 与生产的
   `bootScript` **共用同一份脚本格式**），页面拿它领任务并连 WS；范围限定在**页面侧端点**——
   调用方端点（`/call`、`GET /result?id=`、`/ping`）不要求，CLI / MCP / e2e **零改动**。
@@ -502,6 +502,9 @@ const { chromium } = require('playwright');
 不该出现 `RangeError: Maximum call stack size exceeded` 或 `reading 'elements'` 这类引擎侧报错
 （issue #177；已进 CI 的 `editor-e2e` job）。
 
+`node scripts/check-editor-no-project-script.mjs`（**#271 收尾**：编辑器不得再依赖"项目脚本（`project.js`）"
+那条旧链路——它要由"编辑器内浏览器 TypeScript services"编译，而编译器本体从未加载、D12 已取消编辑器内编译；
+判据 2 条 + 4 条判据自证；离线可跑，已进 CI 的 `gates:host`）、
 ### 改桥接代码时的四条纪律
 
 1. **改完必须实测**：桥接调用成功 ≠ 场景没问题。用 `view.screenshot` 看画面、`log.tail`
