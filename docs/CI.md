@@ -31,13 +31,13 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 现在由 [`vitest.setup.ts`](../vitest.setup.ts) 补齐所需全局，两者纳入全量：
 
-| 缺失全局 | 用途 |
+| 缺失全局 | 用途（issue #624 后的现状） |
 |---|---|
-| `self` + `addEventListener` / `removeEventListener` / `dispatchEvent` | `@feng3d/shortcut` 的 `WindowEventProxy` 在模块顶层 `new EventProxy(self)`，`on()` 随即对 `self` 注册监听 |
+| `self` + `addEventListener` / `removeEventListener` / `dispatchEvent` | `@feng3d/shortcut` 的 `windowEventProxy` 在**首次 `on()`** 时惰性解析出 `self` 并注册监听（#624 前是模块顶层 `new EventProxy(self)`、`on()` 随即注册，那时缺 `self` 会 `import` 即崩） |
 | `MouseEvent` / `KeyboardEvent` / `WheelEvent` | shortcut 用 `instanceof` 区分输入类型（`KeyState.pressKey`、`EventProxy.onMouseKey`） |
-| `GPUBufferUsage` 等 WebGPU 常量表 | `@feng3d/webgpu` 的 class static field 在 import 期读这些常量 |
-| `GPUTexture` / `GPUBuffer` 类 | `@feng3d/webgpu` 加载时 monkey-patch `GPUTexture.prototype.createView` |
-| `ImageData` | feng3d 的 `ImageUtil` 在模块加载期构造占位默认纹理 |
+| `GPUBufferUsage` 等 WebGPU 常量表 | `@feng3d/webgpu` 在**运行期**读（`WGPUBuffer.defaultGPUBufferUsage` getter、`WGPUTexture._getGPUTextureUsageFlags` 等；#624 前有 class static field 在 import 期读，已改 getter） |
+| `GPUTexture` / `GPUBuffer` 类 | `@feng3d/webgpu` 的 `GPUTexture.prototype.createView` 原型补丁由**显式安装函数**装上（#624 前是模块顶层 IIFE），运行期路径仍要用到这两个类 |
+| `ImageData` | `ImageUtil` 构造时 `new ImageData(...)`；#624 前 terrain 的默认高度图在模块加载期构造（已改惰性），运行期纹理构造仍要用 |
 
 两点约定：
 
@@ -248,7 +248,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 位置 | 形态 | 引用面（本次实测） | 处置 |
 |---|---|---|---|
 | `packages/event/src/GlobalEmitter.ts` | `export const globalEmitter = new EventEmitter<MixinsGlobalEvents>()` | `globalEmitter` **77 处 / 20 文件**（其中 editor 69 处），并经 `feng3d` 公开入口 `export *` 出去 | 保持冻结，见下 |
-| `packages/shortcut/src/WindowEventProxy.ts` | `export const windowEventProxy = new EventProxy<WindowEventMap>(self)`（**还在用顶层 `self`**） | `windowEventProxy` **121 处 / 23 文件**（editor 49、`feng3d/src` 35） | 保持冻结，见下 |
+| `packages/shortcut/src/WindowEventProxy.ts` | `export const windowEventProxy = new EventProxy<WindowEventMap>(() => …self…)`（**目标已惰性解析**，模块顶层不再读 `self`，见下） | `windowEventProxy` **121 处 / 23 文件**（editor 49、`feng3d/src` 35） | 保持冻结，见下 |
 
 三点理由：
 
@@ -265,7 +265,10 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 3. 正确修法是设计改动而不是判据补丁：注册表 lazy 化 + getter API + 一个 deprecation 窗口
    （先加 `getGlobalEmitter()` / `getWindowEventProxy()`，`feng3d` 内与 editor 的调用点迁完、发大版本时再删旧导出）。
    `WindowEventProxy` 那条顶层 `self` 还额外让 `@feng3d/shortcut` 在非浏览器环境 **import 即 `ReferenceError`**
-   （Node 里 `typeof self === 'undefined'`，目前靠 `vitest.setup.ts` 补全局才跑得起来）——这一条最值得先做，建议单开 issue。
+   （Node 里 `typeof self === 'undefined'`，那时靠 `vitest.setup.ts` 补全局才跑得起来）——**这一条已在 issue #624 批次修掉**：
+   不动 getter API，只把「目标的取得」惰性化（`EventProxy` 接受一个目标解析函数，首次 `on()` / 读 `target` 时才解析），
+   `import '@feng3d/shortcut'` 与 `import 'feng3d'` 在 Node v22.23.2 下实测均已不再崩。
+   这不改变上表「模块级单例保持冻结」的结论——`new EventProxy(...)` 本身仍是模块级 `new`，只是不再读宿主全局。
 
 门禁在这种情况下**如何认可它**：第 16 步是**存量冻结**策略——基线里的「文件::构造器」视为已知存量放行，
 新增即失败、减少只提示。所以这两处**不是白名单豁免**，而是**登记在册的欠账**
