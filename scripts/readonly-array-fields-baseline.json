@@ -1,0 +1,21 @@
+{
+    "note": "只读形状（属性与数组都只读）的存量基线。判据范围只有两类机械可判定的读侧纯数据接口：名字以 `Like` 结尾且不以 `Writable` 开头，或声明了 `__type__` 属性。其余 export interface（WebGPU 描述符 / 编辑器 UI 类型 / GLTF 解析中间类型等）不参与判据——见 scripts/check-readonly-array-fields.mjs 的注释。键是「相对路径::接口名.字段名」，值是出现次数（不含行号：行号会随无关改动漂移）。**新增即失败**；清理完跑 --update 收紧。WebGPU 边界项（如 Matrix4x4.elements）按 AGENTS.md §10 处理，不要靠删 readonly 修。",
+    "entries": {
+        "packages/addons/src/geometries/ConvexGeometry.ts::ConvexGeometry.points": 1,
+        "packages/addons/src/geometries/ExtrudeGeometry.ts::ExtrudeGeometry.shapes": 1,
+        "packages/addons/src/geometries/PolyhedronGeometry.ts::PolyhedronGeometry.indices": 1,
+        "packages/addons/src/geometries/PolyhedronGeometry.ts::PolyhedronGeometry.vertices": 1,
+        "packages/feng3d/src/animation/Animation.ts::Animation.animations": 1,
+        "packages/feng3d/src/animators/skeleton/Skeleton.ts::Skeleton.boneInverses": 1,
+        "packages/feng3d/src/animators/skeleton/Skeleton.ts::Skeleton.boneNames": 1,
+        "packages/feng3d/src/core/Entity.ts::Entity.components": 1,
+        "packages/feng3d/src/geometry/PointGeometry.ts::PointGeometry.points": 1,
+        "packages/feng3d/src/geometry/SegmentGeometry.ts::SegmentGeometry.segments": 1,
+        "packages/math/src/geom/matrix4x4.ts::Matrix4x4.elements": 1,
+        "packages/math/src/gradient/gradient.ts::GradientLike.alphaKeys": 1,
+        "packages/math/src/gradient/gradient.ts::GradientLike.colorKeys": 1,
+        "packages/webgpu/src/data/ComputePass.ts::ComputePass.computeObjects": 1,
+        "packages/webgpu/src/data/OcclusionQuery.ts::OcclusionQuery.renderObjects": 1,
+        "packages/webgpu/src/data/TransformFeedbackPass.ts::TransformFeedbackPass.transformFeedbackObjects": 1
+    }
+}
