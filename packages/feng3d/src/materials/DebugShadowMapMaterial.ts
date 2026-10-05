@@ -1,8 +1,8 @@
-import { RenderObject, RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, writeTextureBindings, type MaterialLogicState } from './Material';
-import { createLogicProto, reactive, registerLogic, computed, Computed, toRaw } from '@feng3d/reactivity';
+import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
+import { reactive, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 
 /**
  * 默认采样器（线性过滤 + repeat 寻址）。
@@ -78,32 +78,12 @@ function getDefaultDepthTexture(): Texture
 /**
  * DebugShadowMapMaterial logic：填入调试着色器，监听 s_texture 变化重算绑定。
  *
- * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('DebugShadowMapMaterial', debugShadowMapMaterial)
+ * 通过 registerLogic('DebugShadowMapMaterial', debugShadowMapMaterial)
  * 注册，调用方用 `logic(material)` 获取实例。
  */
 export interface DebugShadowMapMaterialLogic extends MaterialLogic
 {
 }
-
-/** DebugShadowMapMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface DebugShadowMapMaterialLogicState extends MaterialLogicState
-{
-    _uniforms: () => DebugShadowMapUniforms;
-    _renderPipeline: RenderPipeline;
-    _bindingResources: Computed<Record<string, import('@feng3d/webgpu').BindingResource>>;
-}
-
-/** DebugShadowMapMaterialLogic 的共享原型：继承基类实现，覆写 beforeRender */
-const debugShadowMapMaterialLogicProto = createLogicProto<DebugShadowMapMaterialLogic>(materialLogicProto, {
-    beforeRender: {
-        value: function (this: DebugShadowMapMaterialLogic & DebugShadowMapMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
-            writeTextureBindings(renderObject, this._bindingResources.value);
-        },
-    },
-});
 
 /**
  * 工厂函数：DebugShadowMapMaterialLogic 的唯一创建入口（registerLogic 注册它）。
@@ -112,16 +92,13 @@ const debugShadowMapMaterialLogicProto = createLogicProto<DebugShadowMapMaterial
  */
 export function debugShadowMapMaterialLogic(data: DebugShadowMapMaterial): DebugShadowMapMaterialLogic
 {
-    const logic = Object.create(debugShadowMapMaterialLogicProto) as DebugShadowMapMaterialLogic & DebugShadowMapMaterialLogicState;
-    logic._data = data;
-
     const r_material = reactive(data);
 
-    logic._uniforms = () => r_material.uniforms ?? { u_texSize: { x: 1024, y: 1024 } };
+    const uniforms = () => r_material.uniforms ?? { u_texSize: { x: 1024, y: 1024 } };
     const s_texture = () => r_material.s_texture ?? getDefaultDepthTexture();
     const depthWrite = () => r_material.depthWrite ?? false; // 缺省沿用该材质原默认值（issue #157）
 
-    logic._renderPipeline = reactive({
+    const renderPipeline = reactive({
         vertex: { wgsl: textureVertexWGSL },
         fragment: { wgsl: debugShadowMapFragmentWGSL, targets: [{}] },
         // 不剔除：调试平面两面都要可见（Billboard 旋转后法线可能翻转）
@@ -133,7 +110,7 @@ export function debugShadowMapMaterialLogic(data: DebugShadowMapMaterial): Debug
     // 纹理绑定（纯 computed）：字段变化时精确失效。
     // 纹理视图缓存：同一 Texture 复用同一 TextureView（稳定引用，避免 GPU 纹理重建）。
     const viewCache = new Map<unknown, TextureView>();
-    logic._bindingResources = computed(() =>
+    const bindingResources = computed(() =>
     {
         // reactive 读取 s_texture 返回的是 Proxy：若直接作为 Texture 传给 webgpu 层，
         // ChainMap 按 Proxy 键查缓存会命中不到附件用的同一 GPUTexture（raw 键），
@@ -157,6 +134,20 @@ export function debugShadowMapMaterialLogic(data: DebugShadowMapMaterial): Debug
 
         return result;
     });
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(data);
+
+    const logic: DebugShadowMapMaterialLogic = {
+        get isTransparent() { return base.isTransparent; },
+        get isPrimitivesTopology() { return base.isPrimitivesTopology; },
+        get isLoaded() { return base.isLoaded; },
+        beforeRender(renderObject)
+        {
+            writeMaterialBase(renderObject, renderPipeline, uniforms);
+            writeTextureBindings(renderObject, bindingResources.value);
+        },
+    };
 
     return logic;
 }

@@ -1,4 +1,4 @@
-import { createLogicProto, registerLogic } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { BindingResource, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { BindingResources } from '@feng3d/webgpu';
@@ -86,54 +86,34 @@ export interface MaterialLogic
 }
 
 /**
- * Material 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入）。
+ * 基类行为：Material 基类的 beforeRender 兜底（只确保 bindingResources 存在）。
  *
- * Logic 改为工厂函数后，原 class 的 protected / 私有字段状态落在实例字段上
- * （共享原型上的方法经 this 读取），命名以 _ 开头。
+ * 子类覆写 beforeRender 时可直接调用本函数做兜底。
  */
-export interface MaterialLogicState
+export function materialBeforeRender(renderObject: RenderObject): void
 {
-    /** 关联的材质数据（raw，子类可读） */
-    _data: Material;
+    // 基类兜底：只确保 bindingResources 存在，不写入渲染数据
+    const r_renderObject = reactive(renderObject);
+    if (!renderObject.bindingResources) r_renderObject.bindingResources = {} as BindingResources;
 }
-
-/**
- * Material 系 Logic 的共享原型（issue #674）。
- *
- * 方法 / getter 挂在模块级 proto 上、实例由 Object.create(proto) 创建，保住
- * 「方法在原型上共享」的内存优势（千级对象场景不产生每实例闭包）。子类 proto 用
- * Object.create(materialLogicProto) 继承基类实现；覆写处要复用基类行为时显式调用
- * materialLogicProto.beforeRender.call(this, ...)。
- */
-export const materialLogicProto = createLogicProto<MaterialLogic>(null, {
-    isTransparent: {
-        get: function (): boolean { return false; },
-    },
-    isPrimitivesTopology: {
-        get: function (): boolean { return true; },
-    },
-    isLoaded: {
-        get: function (): boolean { return true; },
-    },
-    beforeRender: {
-        value: function (this: MaterialLogic & MaterialLogicState, renderObject: RenderObject): void
-        {
-            // 基类兜底：只确保 bindingResources 存在，不写入渲染数据
-            const r_renderObject = reactive(renderObject);
-            if (!renderObject.bindingResources) r_renderObject.bindingResources = {} as BindingResources;
-        },
-    },
-});
 
 /**
  * 工厂函数：MaterialLogic 的唯一创建入口（registerLogic 注册它）。
  *
- * @param data 材质数据（raw）
+ * 形态：**工厂闭包直接返回对象字面量**——无共享原型、无 this、无 `_` 前缀状态字段。
+ * 子类工厂用 `materialLogic(data)` 拿基类实例后，对未覆写的成员**显式委托**（不要用
+ * `...base` 展开——对象展开会把 getter 立刻求值成固定值）。
+ *
+ * @param _data 材质数据（基类自身不使用；各子类在自己的闭包里捕获 data）
  */
-export function materialLogic(data: Material): MaterialLogic
+export function materialLogic(_data: Material): MaterialLogic
 {
-    const logic = Object.create(materialLogicProto) as MaterialLogic & MaterialLogicState;
-    logic._data = data;
+    const logic: MaterialLogic = {
+        get isTransparent() { return false; },
+        get isPrimitivesTopology() { return true; },
+        get isLoaded() { return true; },
+        beforeRender(renderObject) { materialBeforeRender(renderObject); },
+    };
 
     return logic;
 }

@@ -7,11 +7,11 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
-import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, type MaterialLogicState } from './Material';
-import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic, materialLogic, writeMaterialBase } from './Material';
+import { reactive, registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -52,8 +52,7 @@ export interface SegmentMaterial extends Material
 /**
  * SegmentMaterial logic：填入 segment 着色器，line-list 拓扑、不剔除、开启 alpha 混合。
  *
- * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('SegmentMaterial', segmentMaterial) 注册，
+ * 通过 registerLogic('SegmentMaterial', segmentMaterial) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 /**
@@ -63,31 +62,6 @@ export interface SegmentMaterialLogic extends MaterialLogic
 {
 }
 
-/** SegmentMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SegmentMaterialLogicState extends MaterialLogicState
-{
-    _uniforms: () => SegmentUniforms;
-    _renderPipeline: RenderPipeline;
-}
-
-/** SegmentMaterialLogic 的共享原型：继承基类实现，覆写两个 getter 与 beforeRender */
-const segmentMaterialLogicProto = createLogicProto<SegmentMaterialLogic>(materialLogicProto, {
-    /** 半透明（alpha 混合启用），供渲染排序/分组/阴影筛选查询 */
-    isTransparent: {
-        get: function (): boolean { return true; },
-    },
-    /** 线段拓扑（line-list），不参与面片处理 */
-    isPrimitivesTopology: {
-        get: function (): boolean { return false; },
-    },
-    beforeRender: {
-        value: function (this: SegmentMaterialLogic & SegmentMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
-        },
-    },
-});
-
 /**
  * 工厂函数：SegmentMaterialLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -95,12 +69,9 @@ const segmentMaterialLogicProto = createLogicProto<SegmentMaterialLogic>(materia
  */
 export function segmentMaterialLogic(data: SegmentMaterial): SegmentMaterialLogic
 {
-    const logic = Object.create(segmentMaterialLogicProto) as SegmentMaterialLogic & SegmentMaterialLogicState;
-    logic._data = data;
-
     const r_material = reactive(data);
     // uniforms 兜底：逐字段补齐（缺字段会让 WGPUBufferBinding 取不到值并放弃上传）
-    logic._uniforms = () => (r_material.uniforms?.u_segmentColor
+    const uniforms = () => (r_material.uniforms?.u_segmentColor
         ? r_material.uniforms
         : {
             ...r_material.uniforms,
@@ -108,7 +79,7 @@ export function segmentMaterialLogic(data: SegmentMaterial): SegmentMaterialLogi
         });
     const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
 
-    logic._renderPipeline = reactive({
+    const renderPipeline = reactive({
         vertex: { wgsl: segmentVertexWGSL },
         fragment: {
             wgsl: segmentFragmentWGSL,
@@ -123,6 +94,18 @@ export function segmentMaterialLogic(data: SegmentMaterial): SegmentMaterialLogi
         primitive: { topology: 'line-list', cullFace: 'none', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(data);
+
+    const logic: SegmentMaterialLogic = {
+        /** 半透明（alpha 混合启用），供渲染排序/分组/阴影筛选查询 */
+        get isTransparent() { return true; },
+        /** 线段拓扑（line-list），不参与面片处理 */
+        get isPrimitivesTopology() { return false; },
+        get isLoaded() { return base.isLoaded; },
+        beforeRender(renderObject) { writeMaterialBase(renderObject, renderPipeline, uniforms); },
+    };
 
     return logic;
 }

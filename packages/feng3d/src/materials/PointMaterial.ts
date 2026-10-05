@@ -7,12 +7,12 @@ declare module '@feng3d/reactivity'
 }
 
 import type { Color4 } from '../core/Color4';
-import { RenderObject, RenderPipeline } from '@feng3d/webgpu';
+import { RenderPipeline } from '@feng3d/webgpu';
 import { cameraUniformsWGSL } from '../cameras/Camera';
 import { transformUniformsWGSL } from '../core/Object3D';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
-import { Material, MaterialLogic, materialLogicProto, writeMaterialBase, type MaterialLogicState } from './Material';
-import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
+import { Material, MaterialLogic, materialLogic, writeMaterialBase } from './Material';
+import { reactive, registerLogic } from '@feng3d/reactivity';
 
 declare module './Material'
 {
@@ -57,34 +57,12 @@ export interface PointMaterial extends Material
 /**
  * PointMaterial logic：填入 point 着色器，triangle-list 拓扑（billboard 四边形）、不剔除。
  *
- * class 实现：暴露 isLoaded / renderPipeline / material_uniforms / bindingResources。
- * renderPipeline。通过 registerLogic('PointMaterial', pointMaterial) 注册，
+ * 通过 registerLogic('PointMaterial', pointMaterial) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 export interface PointMaterialLogic extends MaterialLogic
 {
 }
-
-/** PointMaterialLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface PointMaterialLogicState extends MaterialLogicState
-{
-    _uniforms: () => PointUniforms;
-    _renderPipeline: RenderPipeline;
-}
-
-/** PointMaterialLogic 的共享原型：继承基类实现，覆写 isPrimitivesTopology 与 beforeRender */
-const pointMaterialLogicProto = createLogicProto<PointMaterialLogic>(materialLogicProto, {
-    /** 点拓扑（triangle-list 展开但语义为点），不参与面片处理 */
-    isPrimitivesTopology: {
-        get: function (): boolean { return false; },
-    },
-    beforeRender: {
-        value: function (this: PointMaterialLogic & PointMaterialLogicState, renderObject: RenderObject): void
-        {
-            writeMaterialBase(renderObject, this._renderPipeline, this._uniforms);
-        },
-    },
-});
 
 /**
  * 工厂函数：PointMaterialLogic 的唯一创建入口（registerLogic 注册它）。
@@ -93,14 +71,11 @@ const pointMaterialLogicProto = createLogicProto<PointMaterialLogic>(materialLog
  */
 export function pointMaterialLogic(data: PointMaterial): PointMaterialLogic
 {
-    const logic = Object.create(pointMaterialLogicProto) as PointMaterialLogic & PointMaterialLogicState;
-    logic._data = data;
-
     const r_material = reactive(data);
     // uniforms 兜底：逐字段补齐（不能只判断 uniforms 整体是否存在——
     // 调用方可能只声明了部分字段，缺字段会让 WGPUBufferBinding 取不到值、
     // 打印「没有找到 统一块变量属性 …」并放弃上传，GPU 侧该字段恒为 0）
-    logic._uniforms = () =>
+    const uniforms = () =>
     {
         const uniforms = r_material.uniforms;
 
@@ -112,12 +87,23 @@ export function pointMaterialLogic(data: PointMaterial): PointMaterialLogic
     };
     const depthWrite = () => r_material.depthWrite ?? true; // 缺省沿用该材质原默认值（issue #157）
 
-    logic._renderPipeline = reactive({
+    const renderPipeline = reactive({
         vertex: { wgsl: pointVertexWGSL },
         fragment: { wgsl: pointFragmentWGSL, targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'none', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;
+
+    // 组合基类工厂：未覆写的成员显式委托（不要用 ...base 展开——会把 getter 立刻求值）
+    const base = materialLogic(data);
+
+    const logic: PointMaterialLogic = {
+        get isTransparent() { return base.isTransparent; },
+        /** 点拓扑（triangle-list 展开但语义为点），不参与面片处理 */
+        get isPrimitivesTopology() { return false; },
+        get isLoaded() { return base.isLoaded; },
+        beforeRender(renderObject) { writeMaterialBase(renderObject, renderPipeline, uniforms); },
+    };
 
     return logic;
 }
