@@ -4,10 +4,10 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import distanceSizedPointsVertWGSL from './distance-sized-points.vert.wgsl';
-import fixedSizePointsVertWGSL from './fixed-size-points.vert.wgsl';
-import orangeFragWGSL from './orange.frag.wgsl';
-import texturedFragWGSL from './textured.frag.wgsl';
+import { getPointsDistanceSizedVertWGSL } from '../../shaders-tsl/pointsDistanceSizedVert';
+import { getPointsFixedSizeVertWGSL } from '../../shaders-tsl/pointsFixedSizeVert';
+import { getPointsOrangeFragWGSL } from '../../shaders-tsl/pointsOrangeFrag';
+import { getPointsTexturedFragWGSL } from '../../shaders-tsl/pointsTexturedFrag';
 
 // See: https://www.google.com/search?q=fibonacci+sphere
 function createFibonacciSphereVertices({
@@ -48,13 +48,13 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     // Compile all 4 shaders
     const fragModules = [
-        orangeFragWGSL,
-        texturedFragWGSL,
+        getPointsOrangeFragWGSL(),
+        getPointsTexturedFragWGSL(),
     ];
 
     const vertModules = [
-        distanceSizedPointsVertWGSL,
-        fixedSizePointsVertWGSL,
+        getPointsDistanceSizedVertWGSL(),
+        getPointsFixedSizeVertWGSL(),
     ];
 
     const depthFormat = 'depth24plus';
@@ -137,8 +137,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
                 size: undefined,
             },
         },
+        // 键名按 TSL 的采样器展开约定：sampler2D(uniform('t')) 展开成 t_texture（纹理）+ t（采样器）
         s: sampler,
-        t: { texture },
+        t_texture: { texture },
+        t: sampler,
     };
 
     const renderPassDescriptor: RenderPassDescriptor = {
