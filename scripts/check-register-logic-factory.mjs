@@ -162,6 +162,28 @@ function scanLogicClass(sourceFile, file, violations)
     visit(sourceFile);
 }
 
+/** 已删除 API 判据：Logic 不再用共享原型（2026-10-05 口径修订） */
+function scanDeprecatedProtoApi(sourceFile, file, violations)
+{
+    const visit = (node) =>
+    {
+        if (ts.isIdentifier(node) && node.text === 'createLogicProto')
+        {
+            const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1;
+
+            violations.push({
+                file,
+                line,
+                reason: 'createLogicProto 已删除（Logic 改为「工厂闭包直接返回对象字面量」）',
+                text: node.getText(sourceFile),
+            });
+        }
+
+        ts.forEachChild(node, visit);
+    };
+    visit(sourceFile);
+}
+
 /** 扫描一个已解析的文件，收集违规项 */
 function scanSource(sourceFile, file, violations)
 {
@@ -248,8 +270,31 @@ function selfCheckLogicClass()
     console.log('class 判据自检通过（XxxLogic / XxxLogicBase 被拦下，interface 与普通 class 放行）');
 }
 
+/** 已删除 API 判据自检：createLogicProto 出现即违规 */
+function selfCheckDeprecatedProto()
+{
+    const sample = [
+        "import { createLogicProto } from '@feng3d/reactivity';",
+        'const proto = createLogicProto(null, {});',
+        'const fine = createGeometryLogicState(() => ({}), () => [], {});',
+    ].join('\n');
+    const sourceFile = ts.createSourceFile('self-check-proto.ts', sample, ts.ScriptTarget.Latest, true);
+    const violations = [];
+
+    scanDeprecatedProtoApi(sourceFile, 'self-check-proto.ts', violations);
+
+    if (violations.length !== 2)
+    {
+        console.error('❌ createLogicProto 判据自检失败：期望 2 处，实测 ' + violations.length);
+        process.exit(1);
+    }
+
+    console.log('createLogicProto 判据自检通过（import 与调用都被拦下）');
+}
+
 selfCheckFactory();
 selfCheckLogicClass();
+selfCheckDeprecatedProto();
 
 if (process.argv.includes('--self-check')) process.exit(0);
 
@@ -269,13 +314,20 @@ for (const file of files)
     const text = readFileSync(file, 'utf8');
     const rel = relative(ROOT, file);
 
-    if (!text.includes('registerLogic(') && !/class\s+\w*Logic\b/.test(text)) continue;
+    const hasProtoApi = text.includes('createLogicProto');
+
+    if (!text.includes('registerLogic(') && !/class\s+\w*Logic\b/.test(text) && !hasProtoApi) continue;
 
     const sourceFile = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
 
     if (/class\s+\w*Logic\b/.test(text))
     {
         scanLogicClass(sourceFile, rel, violations);
+    }
+
+    if (hasProtoApi)
+    {
+        scanDeprecatedProtoApi(sourceFile, rel, violations);
     }
 
     if (text.includes('registerLogic('))
