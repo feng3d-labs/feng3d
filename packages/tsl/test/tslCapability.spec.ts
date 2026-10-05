@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, int, ivec2, let_, max, return_, saturate, sampler2D, samplerComparison, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, int, ivec2, let_, max, return_, saturate, mat4, sampler2D, samplerComparison, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -611,5 +611,35 @@ describe('switch_ 语句（#712，skinnedMesh 的 render_mode 分支）', () =>
         // 分支体要有 return，且不能出现 break
         expect(w).toMatch(/case 1: \{\n\s+return vec4<f32>/);
         expect(w).not.toContain('break;');
+    });
+});
+
+describe('Mat4 的标量乘与矩阵加法（#712，GPU 蒙皮的常见形态）', () =>
+{
+    it('mat4 * f32 生成 (m * s)', () =>
+    {
+        const m = mat4(uniform('m', 0, 0));
+        const w = float(0.5);
+
+        expect(m.multiply(w).toWGSL()).toBe('(m * 0.5)');
+        expect(m.multiply(2).toWGSL()).toBe('(m * 2)');
+    });
+
+    it('矩阵逐元素相加生成 (a + b)', () =>
+    {
+        const a = mat4(uniform('a', 0, 0));
+        const b = mat4(uniform('b', 0, 1));
+
+        expect(a.add(b).toWGSL()).toBe('(a + b)');
+    });
+
+    it('蒙皮矩阵的典型写法：j0*w0 + j1*w1 可组合', () =>
+    {
+        const j0 = mat4(uniform('j0', 0, 0));
+        const j1 = mat4(uniform('j1', 0, 1));
+        const w0 = float(0.25);
+        const w1 = float(0.75);
+
+        expect(j0.multiply(w0).add(j1.multiply(w1)).toWGSL()).toBe('((j0 * 0.25) + (j1 * 0.75))');
     });
 });
