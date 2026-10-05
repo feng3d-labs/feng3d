@@ -16,7 +16,7 @@
 
 ## 3. Logic 类化
 - 所有 XxxLogic 是 class（不是 interface+工厂）
-- protected constructor + `static create(data)`（只有 `logic()` 能创建；`registerLogic` **只接受工厂函数**，统一注册 `XxxLogic.create`，见 issue #653）
+- protected constructor + `static create(data)`（只有 `logic()` 能创建；`registerLogic` **只接受工厂函数**，统一注册 `XxxLogic.create`，见 issue #653。执行者：`LogicFactory` 类型 + 门禁 `node scripts/check-register-logic-factory.mjs`，挂在 `prelint:ci` 上）
 - ComponentLogic.entity / .component 是 getter（只读）
 - init() 接收可选 object3D 参数，子类 override 需调 super.init(object3D)
 - **新写 Logic 一律 class**（存量工厂函数在被触碰时转换，不做一次性重写）。模板：

@@ -276,7 +276,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 
 | # | 步骤 | 命令 | 规范 | 拦什么 |
 |---|---|---|---|---|
-| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 + R13 纯函数层 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读数组字段，issue #605）→ `check-pure-modules.mjs`（纯函数层，R13）→ `gates:host`（17 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
+| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 + R13 纯函数层 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读数组字段，issue #605）→ `check-pure-modules.mjs`（纯函数层，R13）→ `check-register-logic-factory.mjs`（registerLogic 只接受工厂函数，issue #653）→ `gates:host`（17 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
 | 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
 | 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
 | 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | **AST 判据**（issue #614；与第 16 步共用 `scripts/r2-module-scope.mjs`）——模块顶层 / 类 **`static` 字段与 `static` 块** / **模块级调用回调**（含**顶层 IIFE**、多行声明、对象字面量、缩进的顶层块）里的：① 缓存创建（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`，外加**项目自有**的 `new ChainMap()`——`ChainMap` 是 webgpu 的链式字典、不套空参限制）；② 启动型调用（定时器 / rAF / ticker 启动）；③ `globalThis` 写入。**新增即失败**（已实测的存量按 `scripts/toplevel-new-baseline.json` 冻结放行）；应用入口按 `ENTRY_FILES` 清单**整类**豁免 |
@@ -297,6 +297,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
 | 20 | 发布产物预演 | `npm run release:dry-run -- --force --no-build` | —— | 构建 + `npm pack` + **内容校验**，不发布（`--no-build` 复用第 15 步产物） |
 | 21 | 工作区污染检查 | `git status --porcelain` | —— | 构建若改动了受版本控制的文件则失败 |
+| 22 | registerLogic 工厂形态 | `node scripts/check-register-logic-factory.mjs` | ——（issue #653 收尾） | AST 判第二实参：带 `as` 断言、或同文件内声明的 class 裸标识符即失败（要求 `XxxLogic.create` / 函数名 / 箭头函数）。类型层已挡住各包 `src`，本脚本补 `test/` 与 `examples/` 等类型检查覆盖不到的地方（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
 
 **R1–R13 各自对应上面哪一步**（状态 ✅/🔶/❌ 与缺口以 §3.1 为准，此处不重复判断）：
 
@@ -1106,12 +1107,12 @@ npm ci
 
 # `npm run ci` 只是 quality job 的**子集**（lint:ci + 示例入口可解析 + test:coverage +
 # types:packages + build:packages + release:dry-run；lint:ci 还会顺带跑 gates:host、
-# check-math-no-class、check-readonly-array-fields 与 check-pure-modules）。它**不含** R1/R2/R3/R5/R9/R11 的那批脚本、lint:examples、
+# check-math-no-class、check-readonly-array-fields、check-pure-modules 与 check-register-logic-factory）。它**不含** R1/R2/R3/R5/R9/R11 的那批脚本、lint:examples、
 # 分包覆盖率一致性、工作区污染检查——逐条对照见 §2.1，要完整复现 quality job 就按 §2.1 的步骤顺序挨个跑。
 npm run ci
 
 # 单独跑（括号里是 §2.1 的步骤号）
-npm run lint:ci          # eslint，零警告（含 gates:host 17 条宿主门禁 + check-math-no-class + check-readonly-array-fields + check-pure-modules）
+npm run lint:ci          # eslint，零警告（含 gates:host 17 条宿主门禁 + check-math-no-class + check-readonly-array-fields + check-pure-modules + check-register-logic-factory）
 npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告，§2.1 第 8 步）
 node scripts/check-examples-imports.mjs   # 示例入口可解析（等价 Vite dev 的依赖扫描）
 node scripts/check-docs-links.mjs         # 文档相对链接（第 2 步）
@@ -1133,6 +1134,7 @@ node scripts/check-imperative-construction.mjs   # R3（第 17 步）
 node scripts/check-math-no-class.mjs      # math 数值 / 几何禁 class（第 18 步，prelint:ci 已跑一次）
 node scripts/check-readonly-array-fields.mjs      # 只读数组字段（§11.6 / issue #605，prelint:ci 已跑一次）
 node scripts/check-pure-modules.mjs      # R13 纯函数层（prelint:ci 已跑一次）
+node scripts/check-register-logic-factory.mjs     # registerLogic 只接受工厂函数（issue #653，prelint:ci 已跑一次）
 node scripts/check-bundle-size.mjs        # R9（第 19 步）
 
 # 发布预演（安全，不发布）
