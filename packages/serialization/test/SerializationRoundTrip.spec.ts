@@ -80,6 +80,45 @@ describe('serialization 往返（保存 → 加载 → 等价）', () =>
         expect(loaded).toStrictEqual(data);
     });
 
+    it('★ 纯数据渐变（`Gradient` / `MinMaxGradient`）往返等价（issue #134 第二批专项验证）', () =>
+    {
+        // 为什么专项验证：这两个类型的默认值过去是 class 实例（`new MinMaxGradient()` 里三个
+        // `new Gradient()`），第二批把它们换成带 `__type__` 的纯数据接口后，默认值变成嵌套字面量。
+        // 这里锁住「嵌套纯数据（数组 + 对象 + 枚举）」在 序列化 → JSON → 反序列化 之后逐字段不变，
+        // 且不会被写进 `__class__`（那会让反序列化去找并不存在的类）。
+        const data = {
+            __type__: 'ParticleMainModule',
+            startColor: {
+                __type__: 'MinMaxGradient',
+                mode: 2,
+                color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+                colorMin: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
+                colorMax: { __type__: 'Color4', r: 0, g: 0, b: 1, a: 1 },
+                gradient: {
+                    __type__: 'Gradient',
+                    mode: 0,
+                    alphaKeys: [{ alpha: 1, time: 0 }, { alpha: 0.5, time: 1 }],
+                    colorKeys: [
+                        { color: { __type__: 'Color3', r: 1, g: 0, b: 0 }, time: 0 },
+                        { color: { __type__: 'Color3', r: 0, g: 0, b: 1 }, time: 1 },
+                    ],
+                },
+            },
+        };
+        const ObjectCtor = Object as unknown as { inst?: unknown };
+
+        expect(ObjectCtor.inst).toBeUndefined();
+
+        const saved = serialization.serialize(data);
+
+        expect(saved).toStrictEqual(data);
+        expect(ObjectCtor.inst).toBeUndefined();
+
+        const loaded = serialization.deserialize(JSON.parse(JSON.stringify(saved)));
+
+        expect(loaded).toStrictEqual(data);
+    });
+
     it('经 JSON.stringify/parse 之后反序列化仍与原对象等价', () =>
     {
         const json = {
