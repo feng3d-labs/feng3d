@@ -230,11 +230,11 @@ registerLogic('Rotate', RotateLogic);
   只有读者点进去 404 才发现。本地跑 `node scripts/check-docs-links.mjs`（已进 CI 门禁）；
   只查仓库内相对链接，`http(s)` 外链与页内锚点不查（外链有效性受网络与对方站点影响）
 
-## 15. 架构执行规范（R1–R12）
+## 15. 架构执行规范（R1–R13）
 
 > **元规则**：每条规范必须有**机器执行者**（linter / 类型检查 / CI 门禁）。无执行者的只能写进「建议」，不算规范。
 > 规范与实现冲突时，必须改文档或改代码，不允许长期并存。
-> 完整 12 条与落地计划见 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3。
+> 完整 13 条与落地计划见 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3。
 
 以下四条为展开条文的核心规范（执行者均已落地）：
 
@@ -245,7 +245,7 @@ registerLogic('Rotate', RotateLogic);
 | **R3** | **纯数据声明式**：数据类（Geometry / Color / Material 等）一律用 `__type__` 字面量声明，禁止 `new` 构造（与第 2 章一致，此处补执行者） | ✅ `scripts/check-imperative-construction.mjs`（**基线 `entries` 已为空**——0 处存量、新增即失败）。~~自研规则 `feng3d/no-imperative-construction`~~：该规则一直**不存在**（issue #353 实测），改用等效脚本；名单取自 `gen-objectview-schema.mjs` 的产物（现 **84** 个纯数据类；issue #134 收尾批把 `Gradient` / `MinMaxGradient` 迁为纯数据接口后 82 → 84）。**原「排除 `@feng3d/math` 的同名 class 与 `packages/math` 包内」两处豁免已在 issue #134 阶段 C 收尾收回**（math 的 19 个数值 / 几何 class 已全部删除，豁免再无对象），基线按实测从 13 处收紧到 1 处；R3 收尾把最后 1 处（cornell）判定为「本地 class 与纯数据类同名」的假阳性、用重命名消除，基线清零 |
 | **R6** | **可空性显式**：`logic()` 返回 `Logic \| null`，调用方必须显式处理；`strictNullChecks` 已在**全部 21 个包**开启（19 个直接用各自 `tsconfig.json`，`feng3d` / `editor` 走独立 `tsconfig.strict.json`） | ✅ 三层：`scripts/check-strict-dirs.mjs`（feng3d 与 editor 全部 src 必须 0 错误）+ `scripts/check-strict-packages.mjs`（包级清单双向校验：漏登记与误关闭都失败，清单 `scripts/strict-packages.json`）+ `npm run types:packages`（各包开的必须真的编译得过） |
 
-**R1–R12 全表状态**（其余 8 条不在本节复述，以免两处各写一份而不同步；**唯一权威为 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3.1 现状表**，下表只给一句话状态与执行者，抽查以 §3.1 为准）：
+**R1–R13 全表状态**（其余 8 条不在本节复述，以免两处各写一份而不同步；**唯一权威为 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §3.1 现状表**，下表只给一句话状态与执行者，抽查以 §3.1 为准）：
 
 | 编号 | 规范 | 状态与执行者（详见 ARCHITECTURE_V2 §3.1） |
 |---|---|---|
@@ -261,6 +261,7 @@ registerLogic('Rotate', RotateLogic);
 | R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（54/44/51/54，2026-10-02 按实测复测上调）+ `npm run test:coverage`（进 CI；末尾追加 `check-coverage-inflation.mjs` 拦新增的覆盖率虚高文件，issue #645） |
 | R11 | 文档现状标签 | ✅ `check-doc-status-labels.mjs`（进 CI） |
 | R12 | 提交规范 | ✅ 约定式提交 + PR 评审（**无机器门禁**，有意为之） |
+| R13 | 纯函数层 | ✅ `scripts/check-pure-modules.mjs` + `scripts/pure-modules.json`（进 CI：挂在 `prelint:ci` 上）——登记为纯函数的模块不得依赖 `@feng3d/reactivity` 与上层包；分类口径与已知局限见 [docs/CODE_TAXONOMY.md](docs/CODE_TAXONOMY.md) |
 
 **当前已知违反项**（实测基线，见 ARCHITECTURE_V2 **§3.1 现状表**的「问题 / 缺口」列——R2 / R3 / R6 的违反项与存量都在那里；
 R1 的分层依据另见 **§2.1 分层蓝图**，该节只含依赖方向一项）：
