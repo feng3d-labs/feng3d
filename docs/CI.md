@@ -155,7 +155,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `serialization` | 85.3 | 2/2 | 83.9 | 75.5 | 90.8 |
 | `math` | 83.2 | 55/63 | 83.2 | 75.1 | 90.7 |
 | `error-logger` | 81.5 | 1/1 | 80.6 | 63.4 | 53.8 |
-| `ui` | 77.7 | 13/15 | 76.8 | 59.3 | 78.2 |
+| `ui` | 78.3 | 14/15 | 77.4 | 60.6 | 78.8 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `cannon-plugin` | 75.2 | 8/8 | 76.5 | 66.2 | 41.5 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
@@ -205,6 +205,13 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > WGSL 着色器，组件类型登记表加了 `renderPass` 维度（主场景渲染列表跳过非 `forward` 的组件）。
 > `ui` 行覆盖 **76.4 → 77.7**（文件 12/14 → **13/15**，新增 `UIPass.ts` 与 `test/uiPass.spec.ts`）；
 > 受统计文件 **771**。读数已 rebase 到含 #674 闭包形态与 #711 TSL 材质批的最新 master。
+
+> **2026-10-05（UI 世界空间批）本机实测**：全局 **54.44 / 45.42 / 48.08 / 54.7**（语句/分支/函数/行），
+> 阈值 `52/42/45/52` **未变**。本批补上 `UIRenderMode.WorldSpace`（此前只有字段声明、没有消费点）：
+> `UIUniforms.u_projection` + `uiMaterialWGSL` 的 `cameraUniforms` 分支、`CanvasLogic.layout` 在世界空间
+> 不复位宿主变换、`ForwardRenderer.prepareExtraRenderObjects` 同时注入相机 uniform。
+> `ui` 行覆盖 **77.7 → 78.3**（文件 13/15 → **14/15**，新增 `test/worldSpace.spec.ts`）；
+> 受统计文件 **779**（含新收编的 `cannon-plugin`）。
 
 > **`webgpu` 行为什么从 60.6 变成 59.9**（2026-10-05，R2 空参缓存 lazy-init）：该包 4 个缓存容器从
 > 「类 `static` 字段初始化」改成「`static get` + 首次访问创建」——改前那 4 行在模块加载时必然执行、必被覆盖；
