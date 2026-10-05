@@ -26,6 +26,24 @@
  * 方案 §3.5 已定案「math 纯函数层不接受隐式时间源，`deltaTime` 一律显式传参」，
  * 所以这里 `deltaTime` 是**必填形参**，`Time.ts` 随之删除（理由见方案 §8 与 §11.18）。
  *
+ * ## 已删除：19 个对原生 `Math.*` 的纯转发（分支 `refactor/mathf-drop-passthrough`）
+ *
+ * 原先这里有 19 个函数，**实现就是对 `Math.*` 的逐字转发**（`mathfSin` / `mathfCos` / `mathfTan` /
+ * `mathfAsin` / `mathfAcos` / `mathfAtan` / `mathfAtan2` / `mathfSqrt` / `mathfAbs` / `mathfPow` /
+ * `mathfExp` / `mathfLog` / `mathfLog10` / `mathfCeil` / `mathfFloor` / `mathfRound` /
+ * `mathfCeilToInt` / `mathfFloorToInt` / `mathfRoundToInt`）——它们**不承载任何语义**，
+ * 消费点一律改调 `Math.*`。判断依据是逐样本实调对比（源码层抽表达式 + 21 个边界值 × 21 个的
+ * 441 组样本 + `Object.is` 比较），三者俱全才删；核对方法与保留理由见
+ * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。
+ *
+ * ⚠️ 注意 `*ToInt` 三个名字里的 `ToInt` 是**误导**：实现就是 `Math.ceil/floor/round`，
+ * 返回值仍是 `number`，没有取整成 int 的转换——所以它们是纯转发、可以删。
+ *
+ * ⚠️ 反过来说，**看似转发但实测有语义差异的成员一个都没动**：`mathfMin` / `mathfMax`
+ * （`NaN` 不传播、空数组返回 `0`）、`mathfSign`（`sign(0) === 1`、`sign(NaN) === -1`）、
+ * `mathfClamp` / `mathfClamp01`（不交换 `min > max` 端点、`Clamp01(-0) === -0`）、
+ * `mathfLerp*` / `mathfRepeat` / `mathfPingPong` 等。**新增成员前先按同一套样本核对**。
+ *
  * ## 逐字保留的既有语义（含反直觉处）
  *
  * - 三角函数按**弧度**，不是度；
@@ -37,43 +55,6 @@
  * - `mathfClamp(v, min, max)` 在 `min > max` 时不交换端点（与 `mathUtil.clamp` 不同）。
  */
 import type { Vector2Like, WritableVector2Like } from './geom/vector2';
-
-/**
- * Returns the sine of angle `f` in radians.
- */
-export function mathfSin(f: number)
-{
-    return Math.sin(f);
-}
-
-/**
- * Returns the cosine of angle `f` in radians.
- */
-export function mathfCos(f: number)
-{
-    return Math.cos(f);
-}
-
-// Returns the tangent of angle /f/ in radians.
-export function mathfTan(f: number) { return Math.tan(f); }
-
-// Returns the arc-sine of /f/ - the angle in radians whose sine is /f/.
-export function mathfAsin(f: number) { return Math.asin(f); }
-
-// Returns the arc-cosine of /f/ - the angle in radians whose cosine is /f/.
-export function mathfAcos(f: number) { return Math.acos(f); }
-
-// Returns the arc-tangent of /f/ - the angle in radians whose tangent is /f/.
-export function mathfAtan(f: number) { return Math.atan(f); }
-
-// Returns the angle in radians whose ::ref::Tan is @@y/x@@.
-export function mathfAtan2(y: number, x: number) { return Math.atan2(y, x); }
-
-// Returns square root of /f/.
-export function mathfSqrt(f: number) { return Math.sqrt(f); }
-
-// Returns the absolute value of /f/.
-export function mathfAbs(f: number) { return Math.abs(f); }
 
 /**
  * Returns the smallest of two or more values.
@@ -140,36 +121,6 @@ export function mathfMax(...args: [number, number] | [readonly number[]]): numbe
 
     return a > b ? a : b;
 }
-
-// Returns /f/ raised to power /p/.
-export function mathfPow(f: number, p: number) { return Math.pow(f, p); }
-
-// Returns e raised to the specified power.
-export function mathfExp(power: number) { return Math.exp(power); }
-
-// Returns the natural (base e) logarithm of a specified number.
-export function mathfLog(f: number) { return Math.log(f); }
-
-// Returns the base 10 logarithm of a specified number.
-export function mathfLog10(f: number) { return Math.log10(f); }
-
-// Returns the smallest integer greater to or equal to /f/.
-export function mathfCeil(f: number) { return Math.ceil(f); }
-
-// Returns the largest integer smaller to or equal to /f/.
-export function mathfFloor(f: number) { return Math.floor(f); }
-
-// Returns /f/ rounded to the nearest integer.
-export function mathfRound(f: number) { return Math.round(f); }
-
-// Returns the smallest integer greater to or equal to /f/.
-export function mathfCeilToInt(f: number) { return Math.ceil(f); }
-
-// Returns the largest integer smaller to or equal to /f/.
-export function mathfFloorToInt(f: number) { return Math.floor(f); }
-
-// Returns /f/ rounded to the nearest integer.
-export function mathfRoundToInt(f: number) { return Math.round(f); }
 
 // Returns the sign of /f/.
 export function mathfSign(f: number) { return f >= 0 ? 1 : -1; }
@@ -242,7 +193,7 @@ export function mathfLerpAngle(a: number, b: number, t: number)
 // Moves a value /current/ towards /target/.
 export function mathfMoveTowards(current: number, target: number, maxDelta: number)
 {
-    if (mathfAbs(target - current) <= maxDelta)
+    if (Math.abs(target - current) <= maxDelta)
     { return target; }
 
     return current + mathfSign(target - current) * maxDelta;
@@ -272,11 +223,11 @@ export function mathfSmoothStep(from: number, to: number, t: number)
 export function mathfGamma(value: number, absmax: number, gamma: number)
 {
     const negative = value < 0;
-    const absval = mathfAbs(value);
+    const absval = Math.abs(value);
     if (absval > absmax)
     { return negative ? -absval : absval; }
 
-    const result = mathfPow(absval / absmax, gamma) * absmax;
+    const result = Math.pow(absval / absmax, gamma) * absmax;
 
     return negative ? -result : result;
 }
@@ -291,7 +242,7 @@ export function mathfApproximately(a: number, b: number)
     // 1.000001f can be represented while 1.0000001f is rounded to zero,
     // thus we could use an epsilon of 0.000001f for comparing values close to 1.
     // We multiply this epsilon by the biggest magnitude of a and b.
-    return mathfAbs(b - a) < mathfMax(0.000001 * mathfMax(mathfAbs(a), mathfAbs(b)), MATHF_EPSILON * 8);
+    return Math.abs(b - a) < mathfMax(0.000001 * mathfMax(Math.abs(a), Math.abs(b)), MATHF_EPSILON * 8);
 }
 
 /**
@@ -357,7 +308,7 @@ export function mathfSmoothDampAngle(current: number, target: number, currentVel
 // Loops the value t, so that it is never larger than length and never smaller than 0.
 export function mathfRepeat(t: number, length: number)
 {
-    return mathfClamp(t - mathfFloor(t / length) * length, 0.0, length);
+    return mathfClamp(t - Math.floor(t / length) * length, 0.0, length);
 }
 
 // PingPongs the value t, so that it is never larger than length and never smaller than 0.
@@ -365,7 +316,7 @@ export function mathfPingPong(t: number, length: number)
 {
     t = mathfRepeat(t, length * 2);
 
-    return length - mathfAbs(t - length);
+    return length - Math.abs(t - length);
 }
 
 // Calculates the ::ref::Lerp parameter between of two values.
@@ -466,7 +417,7 @@ export function mathfRoundToMultipleOf(value: number, roundingValue: number)
         return value;
     }
 
-    return mathfRound(value / roundingValue) * roundingValue;
+    return Math.round(value / roundingValue) * roundingValue;
 }
 
 /**
@@ -479,7 +430,7 @@ export function mathfGetClosestPowerOfTen(positiveNumber: number)
         return 1;
     }
 
-    return mathfPow(10, mathfRoundToInt(mathfLog10(positiveNumber)));
+    return Math.pow(10, Math.round(Math.log10(positiveNumber)));
 }
 
 /**
@@ -487,7 +438,7 @@ export function mathfGetClosestPowerOfTen(positiveNumber: number)
  */
 export function mathfGetNumberOfDecimalsForMinimumDifference(minDifference: number)
 {
-    return mathfClamp(-mathfFloorToInt(mathfLog10(mathfAbs(minDifference))), 0, K_MAX_DECIMALS);
+    return mathfClamp(-Math.floor(Math.log10(Math.abs(minDifference))), 0, K_MAX_DECIMALS);
 }
 
 /**

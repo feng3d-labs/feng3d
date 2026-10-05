@@ -1,5 +1,5 @@
 import { MATHF_RAD2DEG, MATHUTIL_PRECISION, mathUtilClamp, mathUtilEquals } from '../mathutil';
-import { mathfMax, mathfMin, mathfSign, mathfSqrt } from '../mathf';
+import { mathfMax, mathfMin, mathfSign } from '../mathf';
 import type { Vector3Like } from './vector3';
 
 /**
@@ -592,7 +592,7 @@ export function vec2SmoothDamp(
 
     if (sqDist > maxChangeSq)
     {
-        const mag = mathfSqrt(sqDist);
+        const mag = Math.sqrt(sqDist);
 
         changeX = changeX / mag * maxChange;
         changeY = changeY / mag * maxChange;
