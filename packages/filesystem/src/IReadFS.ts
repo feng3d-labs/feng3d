@@ -48,7 +48,7 @@ export interface IReadFS
      * @param path 图片路径
      * @param callback 加载完成回调
      *
-     * 数据不存在时可能返回 `undefined`（如 IndexedDBFS），调用方需判空。
+     * 数据不存在时可能返回 `undefined`，调用方需判空。
      */
     readImage(path: string): Promise<HTMLImageElement | undefined>;
     /**
@@ -60,7 +60,7 @@ export interface IReadFS
      * **批量**读文本（**可选能力**）。
      *
      * 只有"单次往返很贵"的文件系统才值得实现它——宿主 FS 每次调用两趟 HTTP；
-     * 而本地 FS（indexedDB / 内存 / http）本来就没有这个成本，实现它没有收益。
+     * 而本地 FS（内存 / http）本来就没有这个成本，实现它没有收益。
      *
      * 所以它是**可选**的：调用方（`ReadFS.readStrings`）先看有没有，没有就退回"并发逐个"。
      * 这也正是"引擎不认识编辑器、却能吃上宿主批量"的那条缝：引擎只认这个接口，

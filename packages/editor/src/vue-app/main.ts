@@ -54,7 +54,7 @@ installBuiltinPlugins();
 // **装配并留住返回值**：Vue 侧通过注入拿它（`useEditorRS()`），而不是各自 import 单例
 const resourceSystem = installEditorResourceSystem();
 
-// 项目形态（#274）：**宿主开着项目就用它的磁盘目录当文件系统**，否则保持原来的（indexedDB）。
+// 项目形态（#274 / 决策 ①）：**宿主打开的那个磁盘目录就是项目**（不再有"页面内副本"）。
 // 位置有讲究：必须在**任何资源读取之前**——所以放在这里（模块顶层 await，早于 mount 与主题初始化）。
 // 探测失败是正常态（静态部署），静默保持原样；见 docs/MIGRATE_TO_HOST_FS.md。
 if (await pickBaseFS()) console.info('[editor] 项目来自宿主（磁盘目录）');

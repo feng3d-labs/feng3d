@@ -26,17 +26,18 @@ npm install @feng3d/filesystem
 </script>
 ```
 
-### 通过indexedDB读写文件系统
+### 通过 http 读文件系统
+
+> 决策 ①（2026-10-05）：**不再提供 IndexedDB 后端** —— 每个项目对应一个本地目录、
+> 由宿主 Node 侧操作，网页端经 WebSocket 与宿主交互。
 ```html
 <script type="module">
     import { HttpFS, ReadFS } from "@feng3d/filesystem";
 
     // 
-    const indexedDBWriteFS = new ReadWriteFS(new IndexedDBFS("feng3d"));
-    indexedDBWriteFS.initproject("test");   // 初始化项目
+    const httpReadFS = new ReadFS(new HttpFS());
 
-    await indexedDBWriteFS.writeObject("a.json", { a: 1 });  // 写入json文件 a.json {"a":1}
-    const obj1 = await indexedDBWriteFS.readObject("a.json");  // 读取json文件 a.json {"a":1}
+    const obj1 = await httpReadFS.readObject("a.json");  // 读取json文件 a.json {"a":1}
     console.log(obj1); // { a: 1 }
 </script>
 ```

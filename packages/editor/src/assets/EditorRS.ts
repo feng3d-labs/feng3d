@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { FS, indexedDBFS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
+import { FS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
 import { getEditorCache } from '../caches/Editorcache';
 import { callHost } from '../bridge/hostCall';
@@ -75,8 +75,7 @@ export class EditorRS extends ReadWriteRS
      * **并发**发（#274）：模板有 14 个文件，而宿主 FS 每一次写就是两趟 HTTP——
      * 串行在这里是最贵的写法。这些文件彼此独立（各写各的路径），并发不改变结果，只把等待叠起来。
      *
-     * 并发建目录是安全的：`HostFS` 是 `mkdirSync(recursive)`，`IndexedDBFS` 内部先问 `exists`
-     * 再 `put`（put 是覆盖写）——两边都不会因为"同目录被建两次"而失败。
+     * 并发建目录是安全的：`HostFS` 走 `mkdirSync(recursive)`，同目录被建两次不会失败。
      */
     private async writeTemplateFiles()
     {
@@ -195,7 +194,7 @@ export class EditorRS extends ReadWriteRS
 
 // native 直连已删除（2026-10-05，决策见 `ARCHITECTURE.md` §11-9）：那条路既走不通（`nativeFS1 = null`
 // 一旦 `supportNative = true` 必空指针）也不该走——**页面直接碰 Node fs 已被 HostFS（经宿主）取代**。
-// 那行 `FS.basefs = indexedDBFS` 也移进 `installEditorResourceSystem()` 了（#278）：
+// 那行 `FS.basefs = …` 也移进 `installEditorResourceSystem()` 了（#278）：
 // 模块顶层写**引擎全局槽位**与 `FS.fs` / `ReadRS.rs` 是同一类——"import 即改装配"。
 
 /**
@@ -233,9 +232,14 @@ export function installEditorResourceSystem(): EditorRS
 {
     if (!installed)
     {
-        // 浏览器侧初值；`pickBaseFS()` 会在"宿主开着项目"时把它换掉——
-        // 所以这一句必须在它**之前**执行（装配点在入口里就排在它前面）。
-        FS.basefs = indexedDBFS;
+        // **初值就是宿主**（决策 ①，2026-10-05：不再支持 IndexedDB —— 每个项目对应一个
+        // 本地目录、由 Node 操作、网页经 WS 交互）。
+        //
+        // 原先这里给的是"浏览器侧副本"（`indexedDBFS`），等 `pickBaseFS()` 在宿主开着项目时
+        // 再覆盖。现在**没有副本可退**：没有项目时 `HostFS` 的调用会**如实失败** ——
+        // 那是有意的，比"保存看着成功、其实写进一份空副本"好（见 `docs/ARCHITECTURE.md`
+        // §11 问题 24 记下的语义）。
+        FS.basefs = new HostFS();
         FS.fs = new ReadWriteFS();
         installed = true;
     }
@@ -253,17 +257,20 @@ const HOST_PROBE_TIMEOUT = 1500;
  *
  * ## 为什么要有这一步
  *
- * 上面那两行 `FS.basefs = …` 是**模块顶层**的同步赋值（浏览器端 → `indexedDBFS`），
+ * 上面那两行 `FS.basefs = …` 是**显式装配**里的同步赋值（决策 ① 之后是 `HostFS`），
  * 而"宿主有没有开着项目"只能**异步**问。所以"选哪个 FS"这件事必须从模块顶层挪进启动流程——
  * 也就是这个函数：启动时 `await` 它，它再决定要不要覆盖 `FS.basefs`。
  *
- * ## 两个"失败"要分开
+ * ## "没有宿主"的语义变了（决策 ①）
  *
- * - **没有宿主**（静态部署 / dev server 没接 relay）是**正常态** → **静默保持原样**，返回 `false`；
- * - **宿主挂了**（探测成功之后的调用失败）是**错误态** → 那时必须如实报错，
- *   **不能**退回 indexedDB：那会让"保存"看着成功、实际写进了另一份项目，比直接失败危险得多。
+ * - **没有宿主**（静态部署 / dev server 没接 relay）：静默返回 `false`。
+ *   它**不再是"保持原样用页面副本"**那样一个正常态 —— 决策 ① 之后**没有副本可退**，
+ *   `FS.basefs` 就是 `HostFS`，于是**任何碰项目的操作会如实失败**。
+ *   编辑器页面本身照样起得来（设置页这类不碰项目的部分不受影响）。
+ * - **宿主挂了**（探测成功之后的调用失败）：同样当场报错，由 `HostFS` / `callHost` 抛出去。
  *
- * 这个函数只负责前者；后者发生在后续每一次读写里（由 `HostFS` / `callHost` 抛出去）。
+ * 两条都**不再"悄悄退回另一份项目"** —— 那会让"保存"看着成功、实际写进了别处，
+ * 比直接失败危险得多。这条纪律在决策 ① 之前就有，决策 ① 只是把"退回"这条退路整个删掉了。
  *
  * @returns 是否切到了宿主（便于日志与验收）
  */
