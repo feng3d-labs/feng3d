@@ -19,6 +19,11 @@ import { getPointsOrangeFragWGSL } from '../packages/webgpu/examples/src/shaders
 import { getPointsTexturedFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsTexturedFrag';
 import { getPointsDistanceSizedVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsDistanceSizedVert';
 import { getPointsFixedSizeVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsFixedSizeVert';
+import { getReversedZFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragment';
+import { getReversedZVertexWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertex';
+import { getReversedZVertexDepthPrePassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexDepthPrePass';
+import { getReversedZVertexPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexPrecisionErrorPass';
+import { getReversedZVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexTextureQuad';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -358,5 +363,60 @@ describe('points 示例的 TSL 生成', () =>
         // 曾经因为 Array 未设默认 toWGSL，局部数组索引会抛 "this.toWGSL is not a function"
         const wgsl = getPointsDistanceSizedVertWGSL();
         expect(wgsl).toContain('array<vec2<f32>, 6>');
+    });
+});
+
+/**
+ * reversedZ 示例的 5 个着色器（TSL 版）离线验收。
+ *
+ * **该示例不在 e2e 画面判据列表里**，所以用"与手写逐句对照"验收。
+ * （另外 2 个深度相关着色器仍是 .wgsl——它们需要深度纹理的 texelFetch，留待后续。）
+ */
+describe('reversedZ 示例的 TSL 生成', () =>
+{
+    it('三个 vert：mat4 数组 uniform + instance_index', () =>
+    {
+        for (const wgsl of [getReversedZVertexWGSL(), getReversedZVertexDepthPrePassWGSL(), getReversedZVertexPrecisionErrorPassWGSL()])
+        {
+            expect(wgsl).toContain('modelMatrix: array<mat4x4<f32>, 5>');
+            expect(wgsl).toContain('var<uniform> uniforms: Uniforms;');
+            expect(wgsl).toContain('var<uniform> camera: Camera;');
+            expect(wgsl).toContain('@builtin(instance_index) instanceIndex: u32');
+            // 与手写一致：camera.viewProjectionMatrix * uniforms.modelMatrix[instanceIdx] * position
+            expect(wgsl).toContain('camera.viewProjectionMatrix * uniforms.modelMatrix[instanceIndex] * position');
+        }
+    });
+
+    it('vertex：输出 fragColor varying；depthPrePass：没有 varying', () =>
+    {
+        expect(getReversedZVertexWGSL()).toContain('@location(0) fragColor: vec4<f32>');
+        expect(getReversedZVertexWGSL()).toContain('output.fragColor = color;');
+        // depthPrePass 的 VertexOutput 里只有 position（没有 @location 输出 varying）
+        const dp = getReversedZVertexDepthPrePassWGSL();
+        const outputStruct = dp.slice(dp.indexOf('struct VertexOutput'), dp.indexOf('}', dp.indexOf('struct VertexOutput')));
+        expect(outputStruct).toContain('@builtin(position)');
+        expect(outputStruct).not.toContain('@location');
+    });
+
+    it('precisionErrorPass：clipPos 是位置本身', () =>
+    {
+        const wgsl = getReversedZVertexPrecisionErrorPassWGSL();
+        expect(wgsl).toContain('@location(0) clipPos: vec4<f32>');
+        expect(wgsl).toContain('output.clipPos = clipPos;');
+    });
+
+    it('vertexTextureQuad：常量数组 + vertex_index + vec4(pos, 0, 1)', () =>
+    {
+        const wgsl = getReversedZVertexTextureQuadWGSL();
+        expect(wgsl).toContain('@builtin(vertex_index) vertexIndex: u32');
+        expect(wgsl).toContain('array<vec2<f32>, 6>(vec2<f32>(-1.0)');
+        expect(wgsl).toContain('output.position = vec4<f32>(pos, 0.0, 1.0);');
+    });
+
+    it('fragment：把 varying 原样返回', () =>
+    {
+        const wgsl = getReversedZFragmentWGSL();
+        expect(wgsl).toContain('@location(0) fragColor: vec4<f32>');
+        expect(wgsl).toContain('return input.fragColor;');
     });
 });
