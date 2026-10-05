@@ -38,6 +38,7 @@ export default {
     ],
     "animator": [
         "SceneLoadTest",
+        "SkinningTest",
     ],
     "away3d": [
         "Basic_View",

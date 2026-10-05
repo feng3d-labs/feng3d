@@ -64,6 +64,7 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: "renderer", name: "Basic", warmupFrames: 30, freezeFrames: 10 },
     { category: "renderer", name: "DashedLine", warmupFrames: 30, freezeFrames: 10 },
     { category: "animator", name: "SceneLoadTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "animator", name: "SkinningTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "base", name: "BenchmarkTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "base", name: "ThreejsCubeTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "base", name: "ThreejsGeometriesTest", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
