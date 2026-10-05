@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { getBasicVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/basicVert';
 import { getBlackFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blackFrag';
 import { getFullscreenTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fullscreenTexturedQuad';
+import { getHelloTriangleWGSL } from '../packages/webgpu/examples/src/shaders-tsl/helloTriangle';
+import { getMultipleCanvasesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/multipleCanvases';
+import { getRenderObjectChangesVariantWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderObjectChangesVariant';
 import { getInstancedVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/instancedVert';
 import { getSampleTextureFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/sampleTextureFrag';
 import { getSampleTextureMixColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/sampleTextureMixColorFrag';
@@ -82,5 +85,36 @@ describe('examples 共享着色器的 TSL 版（#712）', () =>
         expect(wgsl).toContain('fn vert_main(');
         expect(wgsl).toContain('fn frag_main(');
         expect((wgsl.match(/var (pos|uv): array<vec2<f32>, 6> = array<vec2<f32>, 6>\(/g) ?? []).length).toBe(2);
+    });
+
+    it('helloTriangle / RenderObjectChanges：裸 vec4 uniform + 最简三角形', () =>
+    {
+        const { vertex, fragment } = getHelloTriangleWGSL();
+        expect(vertex).toContain('@location(0) position: vec2<f32>');
+        expect(vertex).toContain('output.position = vec4<f32>(vec3<f32>(position, 0.0), 1.0);');
+        expect(fragment).toContain('var<uniform> color : vec4<f32>;');
+        expect(fragment).toContain('return color;');
+    });
+
+    it('multipleCanvases：vertex 与 fragment 各自自包含（同一 Uniforms 不去重）', () =>
+    {
+        const { vertex, fragment } = getMultipleCanvasesWGSL();
+        expect(vertex).toContain('@vertex');
+        expect(vertex).toContain('fn vs(');
+        expect(vertex).toContain('worldViewProjectionMatrix');
+        expect(fragment).toContain('@fragment');
+        expect(fragment).toContain('fn fs(');
+        // fragment 侧也带自己的 Uniforms 声明——引擎把两份 code 分别编译成两个 module，
+        // 所以这不是重复定义（曾经把它们拼成一份导致全黑，见 PR 说明）
+        expect(fragment).toContain('uniform> uni: Uniforms;');
+    });
+
+    it('RenderObjectChanges 的运行时替换变体：swizzle 赋值改成整体赋值', () =>
+    {
+        const { vertex, fragment } = getRenderObjectChangesVariantWGSL();
+        expect(vertex).toContain('var pos = position;');
+        expect(vertex).toContain('pos = vec2<f32>(position.x + 0.5, position.y);');
+        expect(fragment).toContain('var col = color;');
+        expect(fragment).toContain('col = vec4<f32>(0.5, 0.6, 0.7, color.w);');
     });
 });

@@ -37,6 +37,11 @@ export interface WebgpuExampleSpec
  * 目前只收**已把着色器改成 TSL 生成**的示例（#744 那批），
  * 这样清单的用途就是"证明 TSL 化没有改变渲染"。
  * 后续迁移更多示例时同步往里加。
+ *
+ * **不收**的示例（附理由）：
+ * - `bitonicSort`：画面由 compute 驱动，实测同一份代码的抖动在 0.30~0.73 之间（远超容差），
+ *   当前定格机制压不住它；它的 render 部分（fullscreen quad）已改用 TSL，但判据不适用。
+ * - `videoUploading` / `videoUploading` 等：依赖 `texture_external`，着色器尚不可迁。
  */
 export const WEBGPU_EXAMPLES: WebgpuExampleSpec[] = [
     { name: 'rotatingCube', url: '/src/webgpu/rotatingCube/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
@@ -46,4 +51,10 @@ export const WEBGPU_EXAMPLES: WebgpuExampleSpec[] = [
     { name: 'transparentCanvas', url: '/src/webgpu/transparentCanvas/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     { name: 'texturedCube', url: '/src/webgpu/texturedCube/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     { name: 'imageBlur', url: '/src/webgpu/imageBlur/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    // ---- 内联 WGSL 改 TSL 的那批（#712 第三批）----
+    { name: 'helloTriangle', url: '/src/webgpu/helloTriangle/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    { name: 'multipleCanvases', url: '/src/webgpu/multipleCanvases/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    { name: 'RenderObjectChanges', url: '/src/webgpu/RenderObjectChanges/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    // worker 示例由 Web Worker 驱动，实测抖动 0.04~0.07（高于别的示例），容差相应放宽
+    { name: 'worker', url: '/src/webgpu/worker/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.08 },
 ];
