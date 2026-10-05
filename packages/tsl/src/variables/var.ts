@@ -114,16 +114,18 @@ function addStatement(name: string, result: ShaderValue, expr: ShaderValue, isTy
         }
 
         // 挂到当前最近的语句容器：for 体 > if 体 > 函数体
-        const currentForStatement = getCurrentForStatement();
+        // **if 体比 for 体更近**（如 for (...) { if (...) { x = 1.0; } }）——
+        // 曾经 for 优先，导致语句被放到循环体、if 体变成空的。
         const currentIfStatement = getCurrentIfStatement();
-        if (currentForStatement)
+        const currentForStatement = getCurrentForStatement();
+        if (currentIfStatement)
         {
-            currentForStatement.addStatement(stmt);
+            currentIfStatement.addStatement(stmt);
         }
-        else if (currentIfStatement)
+        else if (currentForStatement)
         {
             // 在 if 体中时用 addStatement 自动判断添加到 if 体还是 else 体
-            currentIfStatement.addStatement(stmt);
+            currentForStatement.addStatement(stmt);
         }
         else
         {

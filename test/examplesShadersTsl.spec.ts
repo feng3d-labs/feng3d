@@ -13,6 +13,7 @@ import { getTriangleVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl
 import { getVertexPositionColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/vertexPositionColorFrag';
 import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeCompute';
 import { getComputeBoidsSpriteWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsSprite';
+import { getUpdateSpritesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsUpdateSprites';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -213,5 +214,60 @@ describe('computeBoids sprite 的 TSL 生成', () =>
         // 手写两边都是 @location(4)——不显式指定 varying 的 location 就会错位
         expect(wgsl).toContain('@location(4) color: vec4<f32>,');
         expect(wgsl).toContain('return input.color;');
+    });
+});
+
+/**
+ * computeBoids 的 updateSprites（TSL 版）离线验收。
+ *
+ * **该示例不在 e2e 画面判据列表里**，所以用"与手写逐句对照"验收。
+ */
+describe('computeBoids updateSprites 的 TSL 生成', () =>
+{
+    const wgsl = getUpdateSpritesWGSL();
+
+    it('结构体与绑定与手写一致', () =>
+    {
+        expect(wgsl).toContain('struct Particle');
+        expect(wgsl).toContain('struct SimParams');
+        expect(wgsl).toContain('@binding(0) @group(0) var<uniform> params : SimParams;');
+        expect(wgsl).toContain('@binding(1) @group(0) var<storage, read> particlesA: array<Particle>;');
+        expect(wgsl).toContain('@binding(2) @group(0) var<storage, read_write> particlesB: array<Particle>;');
+    });
+
+    it('元素成员访问（particlesA[index].pos）正确', () =>
+    {
+        expect(wgsl).toContain('let index = globalInvocationId.x;');
+        expect(wgsl).toContain('var vPos = particlesA[index].pos;');
+        expect(wgsl).toContain('var vVel = particlesA[index].vel;');
+        expect(wgsl).toContain('pos = particlesA[i].pos;');
+    });
+
+    it('回归：continue 必须在 if 体内（if 体比 for 体更近）', () =>
+    {
+        // 曾经 for 优先，生成 if ((i == index)) { } continue; —— 会把后面的语句全跳过
+        const idx = wgsl.indexOf('if ((i == index)) {');
+        const cont = wgsl.indexOf('continue;', idx);
+        const close = wgsl.indexOf('}', idx);
+        expect(cont).toBeGreaterThan(idx);
+        expect(cont).toBeLessThan(close);
+    });
+
+    it('回归：if 体内的赋值必须在 if 内（曾经 if 体是空的）', () =>
+    {
+        const ruleIdx = wgsl.indexOf('if (distance(pos, vPos) < params.rule1Distance) {');
+        const bodyIdx = wgsl.indexOf('cMass = cMass + pos;', ruleIdx);
+        const close = wgsl.indexOf('}', ruleIdx);
+        expect(bodyIdx).toBeGreaterThan(ruleIdx);
+        expect(bodyIdx).toBeLessThan(close);
+    });
+
+    it('arrayLength / 分量赋值 / 速度限制与手写一致', () =>
+    {
+        expect(wgsl).toContain('for (var i: u32 = 0u; i < arrayLength(&particlesA); i = i + 1u) {');
+        expect(wgsl).toContain('vPos.x = 1.0;');
+        expect(wgsl).toContain('vPos.y = -1.0;');
+        expect(wgsl).toContain('vVel = normalize(vVel) * clamp(length(vVel), 0.0, 0.1);');
+        expect(wgsl).toContain('particlesB[index].pos = vPos;');
     });
 });
