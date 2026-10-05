@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "feng3d": "*",
+    "@feng3d/math": "*",
     "@feng3d/reactivity": "*",
     "cannon-es": "0.20.0"
   }
