@@ -26,7 +26,7 @@
  *
  * 退出码：0 全部通过；1 有失败。
  */
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -186,6 +186,15 @@ else
 // 反向断言：旧链路（编辑器内编译出的 project.js + eval）不该再被请求
 check('不再请求废掉的 `project.js`（旧 eval 链路已废弃）',
     !requested.some((url) => /\/project\.js(\?|$)/.test(url)));
+
+// **反向**：runtime 那条"按 `fstype` 换文件系统"的路已删除（决策 ②，2026-10-05：
+// runtime 只走 HTTP(S)、不再用 IndexedDB）。这条与上一条是同一类判据 ——
+// 它们守的不是"现在能跑"，而是"**废掉的那条路不许回来**"。
+const runSource = readFileSync(resolve(process.cwd(), 'packages/editor/src/run.ts'), 'utf8');
+
+check('runtime 里不再有按 `fstype` 换文件系统的分支（决策 ②：只走 HTTP(S)）',
+    !runSource.includes('fstype') && !runSource.includes('indexedDB'),
+    runSource.includes('fstype') ? '还有 fstype' : (runSource.includes('indexedDB') ? '还有 indexedDB' : ''));
 
 // 有 GPU 时才谈画面。判据用**页面截图**而不是 `canvas.toDataURL()`：
 // WebGPU 画布的内容在"提交"与"合成"之间未必能直接从 canvas 取到（实测取到的是空白 2118 B），
