@@ -6,8 +6,8 @@ import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
 
-import basicVertWGSL from '../../shaders/basic.vert.wgsl';
-import fragmentWGSL from '../../shaders/black.frag.wgsl';
+import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
+import { getBlackFragWGSL } from '../../shaders-tsl/blackFrag';
 
 import PerfCounter from './PerfCounter';
 
@@ -74,10 +74,10 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: basicVertWGSL,
+            code: getBasicVertWGSL(),
         },
         fragment: {
-            code: fragmentWGSL,
+            code: getBlackFragWGSL(),
         },
         primitive: {
             topology: 'triangle-list',
