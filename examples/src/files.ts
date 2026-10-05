@@ -47,6 +47,9 @@ export default {
         "FrictionTest",
         "ConstraintsTest",
         "HingeTest",
+        "BodyTypesTest",
+        "CollisionFilterTest",
+        "FixedRotationTest",
     ],
     "renderer": [
         "Basic",
