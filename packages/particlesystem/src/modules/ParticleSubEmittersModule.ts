@@ -38,7 +38,7 @@ export interface WritableParticleSubEmitterEntry
 export interface ParticleSubEmittersModuleLike extends ParticleModuleLike
 {
     /** 子发射器列表 */
-    readonly subEmitters: readonly ParticleSubEmitterEntry[];
+    readonly subEmitters?: readonly ParticleSubEmitterEntry[];
 }
 
 /** 可写出的子发射器模块（写侧形状）。 */
@@ -48,7 +48,7 @@ export interface WritableParticleSubEmittersModuleLike extends WritableParticleM
 }
 
 /** 纯数据「子发射器模块」（带判别字段）。 */
-export interface ParticleSubEmittersModule extends ParticleSubEmittersModuleLike
+export interface ParticleSubEmittersModule extends Required<ParticleSubEmittersModuleLike>
 {
     readonly __type__: 'ParticleSubEmittersModule';
 }
@@ -71,7 +71,7 @@ export function particleSubEmittersModuleDefault(out: WritableParticleSubEmitter
  *
  * @param module 模块数据
  */
-export function particleSubEmittersModuleSubEmittersCount(module: ParticleSubEmittersModuleLike): number
+export function particleSubEmittersModuleSubEmittersCount(module: ParticleSubEmittersModule): number
 {
     return module.subEmitters.length;
 }
@@ -98,7 +98,7 @@ export function particleSubEmittersModuleAddSubEmitter(module: WritableParticleS
  * @param module 模块数据
  * @param index 索引
  */
-export function particleSubEmittersModuleGetSubEmitterEmitProbability(module: ParticleSubEmittersModuleLike, index: number): number
+export function particleSubEmittersModuleGetSubEmitterEmitProbability(module: ParticleSubEmittersModule, index: number): number
 {
     if (!module.subEmitters[index]) return 0;
 
@@ -111,7 +111,7 @@ export function particleSubEmittersModuleGetSubEmitterEmitProbability(module: Pa
  * @param module 模块数据
  * @param index 索引
  */
-export function particleSubEmittersModuleGetSubEmitterProperties(module: ParticleSubEmittersModuleLike, index: number): ParticleSystemSubEmitterProperties | null
+export function particleSubEmittersModuleGetSubEmitterProperties(module: ParticleSubEmittersModule, index: number): ParticleSystemSubEmitterProperties | null
 {
     if (!module.subEmitters[index]) return null;
 
@@ -124,7 +124,7 @@ export function particleSubEmittersModuleGetSubEmitterProperties(module: Particl
  * @param module 模块数据
  * @param index 索引
  */
-export function particleSubEmittersModuleGetSubEmitterSystem(module: ParticleSubEmittersModuleLike, index: number): ParticleSystem | null
+export function particleSubEmittersModuleGetSubEmitterSystem(module: ParticleSubEmittersModule, index: number): ParticleSystem | null
 {
     if (!module.subEmitters[index]) return null;
 
@@ -137,7 +137,7 @@ export function particleSubEmittersModuleGetSubEmitterSystem(module: ParticleSub
  * @param module 模块数据
  * @param index 索引
  */
-export function particleSubEmittersModuleGetSubEmitterType(module: ParticleSubEmittersModuleLike, index: number): ParticleSystemSubEmitterType | null
+export function particleSubEmittersModuleGetSubEmitterType(module: ParticleSubEmittersModule, index: number): ParticleSystemSubEmitterType | null
 {
     if (!module.subEmitters[index]) return null;
 
@@ -214,7 +214,7 @@ export function particleSubEmittersModuleSetSubEmitterType(module: WritableParti
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleSubEmittersModuleUpdateParticleState(module: ParticleSubEmittersModuleLike, particle: Particle): void
+export function particleSubEmittersModuleUpdateParticleState(module: ParticleSubEmittersModule, particle: Particle): void
 {
     for (let i = 0, n = particleSubEmittersModuleSubEmittersCount(module); i < n; i++)
     {

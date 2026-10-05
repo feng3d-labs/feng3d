@@ -27,37 +27,37 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleShapeModuleLike extends ParticleModuleLike
 {
     /** 发射粒子的形状类型（唯一权威） */
-    readonly shapeType: ParticleSystemShapeType;
+    readonly shapeType?: ParticleSystemShapeType;
 
     /** 是否按初始运动方向排列粒子 */
-    readonly alignToDirection: boolean;
+    readonly alignToDirection?: boolean;
 
     /** 随机方向量（0~1） */
-    readonly randomDirectionAmount: number;
+    readonly randomDirectionAmount?: number;
 
     /** 球面方向量（0~1） */
-    readonly sphericalDirectionAmount: number;
+    readonly sphericalDirectionAmount?: number;
 
     /** 圆锥角度（0~87） */
-    readonly angle: number;
+    readonly angle?: number;
 
     /** 圆弧角（度） */
-    readonly arc: number;
+    readonly arc?: number;
 
     /** 圆弧上生成粒子的模式 */
-    readonly arcMode: ParticleSystemShapeMultiModeValue;
+    readonly arcMode?: ParticleSystemShapeMultiModeValue;
 
     /** 沿圆弧移动发射位置的速度曲线 */
-    readonly arcSpeed: MinMaxCurve;
+    readonly arcSpeed?: MinMaxCurve;
 
     /** 圆弧上发射点之间的间隙 */
-    readonly arcSpread: number;
+    readonly arcSpread?: number;
 
     /** 盒子尺寸 */
-    readonly box: Vector3Like;
+    readonly box?: Vector3Like;
 
     /** 圆锥长度（高度） */
-    readonly length: number;
+    readonly length?: number;
 
     /** 从该网格发射（@todo 未实现） */
     readonly mesh?: Geometry;
@@ -75,28 +75,28 @@ export interface ParticleShapeModuleLike extends ParticleModuleLike
     readonly skinnedMeshRenderer?: SkinnedMeshRenderer;
 
     /** 生成源位置时对网格应用的缩放 */
-    readonly meshScale: number;
+    readonly meshScale?: number;
 
     /** 从网格的什么位置发射（@todo 未实现） */
-    readonly meshShapeType: ParticleSystemMeshShapeType;
+    readonly meshShapeType?: ParticleSystemMeshShapeType;
 
     /** 是否用顶点颜色调节粒子颜色（@todo 未实现） */
-    readonly useMeshColors: boolean;
+    readonly useMeshColors?: boolean;
 
     /** 把粒子推离源网格表面的距离 */
-    readonly normalOffset: number;
+    readonly normalOffset?: number;
 
     /** 形状半径 */
-    readonly radius: number;
+    readonly radius?: number;
 
     /** 半径上生成粒子的模式 */
-    readonly radiusMode: ParticleSystemShapeMultiModeValue;
+    readonly radiusMode?: ParticleSystemShapeMultiModeValue;
 
     /** 沿半径移动发射位置的速度曲线 */
-    readonly radiusSpeed: MinMaxCurve;
+    readonly radiusSpeed?: MinMaxCurve;
 
     /** 半径上发射点之间的间隙 */
-    readonly radiusSpread: number;
+    readonly radiusSpread?: number;
 }
 
 /** 可写出的形状模块（写侧形状）。 */
@@ -129,7 +129,7 @@ export interface WritableParticleShapeModuleLike extends WritableParticleModuleL
 }
 
 /** 纯数据「形状模块」（带判别字段）。 */
-export interface ParticleShapeModule extends ParticleShapeModuleLike
+export interface ParticleShapeModule extends Required<ParticleShapeModuleLike>
 {
     readonly __type__: 'ParticleShapeModule';
 }
@@ -195,7 +195,7 @@ export function particleShapeModuleDefault(out: WritableParticleShapeModuleLike 
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleShapeModuleInitParticleState(module: ParticleShapeModuleLike, particle: Particle): void
+export function particleShapeModuleInitParticleState(module: ParticleShapeModule, particle: Particle): void
 {
     const startSpeed = minMaxCurveGetValue(module.particleSystem!.main.startSpeed, particle.birthRateAtDuration);
     //
@@ -256,7 +256,7 @@ export function particleShapeModuleInitParticleState(module: ParticleShapeModule
  * @param position 写出的位置
  * @param dir 写出的方向
  */
-function calcShapePosDirByShapeType(module: ParticleShapeModuleLike, particle: Particle, position: Vector3Like, dir: Vector3Like): void
+function calcShapePosDirByShapeType(module: ParticleShapeModule, particle: Particle, position: Vector3Like, dir: Vector3Like): void
 {
     switch (module.shapeType)
     {

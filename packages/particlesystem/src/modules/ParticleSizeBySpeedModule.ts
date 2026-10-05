@@ -8,13 +8,13 @@ import { particleModuleVector3CurveDefault, type ParticleModuleLike, type Writab
 export interface ParticleSizeBySpeedModuleLike extends ParticleModuleLike
 {
     /** 是否分轴设置 */
-    readonly separateAxes: boolean;
+    readonly separateAxes?: boolean;
 
     /** 按速度取尺寸的曲线（三条轴） */
-    readonly size3D: MinMaxCurveVector3;
+    readonly size3D?: MinMaxCurveVector3;
 
     /** 速度归一化区间 */
-    readonly range: Vector2Like;
+    readonly range?: Vector2Like;
 }
 
 /** 可写出的缩放随速度变化模块（写侧形状）。 */
@@ -26,7 +26,7 @@ export interface WritableParticleSizeBySpeedModuleLike extends WritableParticleM
 }
 
 /** 纯数据「缩放随速度变化模块」（带判别字段）。 */
-export interface ParticleSizeBySpeedModule extends ParticleSizeBySpeedModuleLike
+export interface ParticleSizeBySpeedModule extends Required<ParticleSizeBySpeedModuleLike>
 {
     readonly __type__: 'ParticleSizeBySpeedModule';
 }
@@ -52,7 +52,7 @@ export function particleSizeBySpeedModuleDefault(out: WritableParticleSizeBySpee
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleSizeBySpeedModuleInitParticleState(module: ParticleSizeBySpeedModuleLike, particle: Particle): void
+export function particleSizeBySpeedModuleInitParticleState(module: ParticleSizeBySpeedModule, particle: Particle): void
 {
     particle[SizeBySpeedRate] = Math.random();
 }
@@ -63,7 +63,7 @@ export function particleSizeBySpeedModuleInitParticleState(module: ParticleSizeB
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleSizeBySpeedModuleUpdateParticleState(module: ParticleSizeBySpeedModuleLike, particle: Particle): void
+export function particleSizeBySpeedModuleUpdateParticleState(module: ParticleSizeBySpeedModule, particle: Particle): void
 {
     if (!module.enabled) return;
 

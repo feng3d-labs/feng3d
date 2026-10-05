@@ -8,13 +8,13 @@ import { particleModuleVector3CurveDefault, type ParticleModuleLike, type Writab
 export interface ParticleRotationBySpeedModuleLike extends ParticleModuleLike
 {
     /** 是否分轴设置 */
-    readonly separateAxes: boolean;
+    readonly separateAxes?: boolean;
 
     /** 角速度曲线（三条轴） */
-    readonly angularVelocity: MinMaxCurveVector3;
+    readonly angularVelocity?: MinMaxCurveVector3;
 
     /** 速度归一化区间 */
-    readonly range: Vector2Like;
+    readonly range?: Vector2Like;
 }
 
 /** 可写出的旋转随速度变化模块（写侧形状）。 */
@@ -26,7 +26,7 @@ export interface WritableParticleRotationBySpeedModuleLike extends WritableParti
 }
 
 /** 纯数据「旋转随速度变化模块」（带判别字段）。 */
-export interface ParticleRotationBySpeedModule extends ParticleRotationBySpeedModuleLike
+export interface ParticleRotationBySpeedModule extends Required<ParticleRotationBySpeedModuleLike>
 {
     readonly __type__: 'ParticleRotationBySpeedModule';
 }
@@ -52,7 +52,7 @@ export function particleRotationBySpeedModuleDefault(out: WritableParticleRotati
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleRotationBySpeedModuleInitParticleState(module: ParticleRotationBySpeedModuleLike, particle: Particle): void
+export function particleRotationBySpeedModuleInitParticleState(module: ParticleRotationBySpeedModule, particle: Particle): void
 {
     particle[RotationBySpeedRate] = Math.random();
     particle[RotationBySpeedPreAngularVelocity] = { x: 0, y: 0, z: 0 };
@@ -64,7 +64,7 @@ export function particleRotationBySpeedModuleInitParticleState(module: ParticleR
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleRotationBySpeedModuleUpdateParticleState(module: ParticleRotationBySpeedModuleLike, particle: Particle): void
+export function particleRotationBySpeedModuleUpdateParticleState(module: ParticleRotationBySpeedModule, particle: Particle): void
 {
     const preAngularVelocity: Vector3 = particle[RotationBySpeedPreAngularVelocity];
     vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);

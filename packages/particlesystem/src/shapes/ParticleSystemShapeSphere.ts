@@ -2,7 +2,7 @@ import { vec3Copy, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubN
 import type { WritableVector3Like } from '@feng3d/math';
 import { ParticleSystemShapeType } from '../enums/ParticleSystemShapeType';
 import type { Particle } from '../Particle';
-import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
+import type { ParticleShapeModule } from '../modules/ParticleShapeModule';
 
 /**
  * 从球体的体积 / 球面发射（原 `ParticleSystemShapeSphere.calcParticlePosDir`）。
@@ -14,7 +14,7 @@ import type { ParticleShapeModuleLike } from '../modules/ParticleShapeModule';
  * @param position 写出的位置
  * @param dir 写出的方向
  */
-export function particleSystemShapeSphereCalcParticlePosDir(module: ParticleShapeModuleLike, _particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
+export function particleSystemShapeSphereCalcParticlePosDir(module: ParticleShapeModule, _particle: Particle, position: WritableVector3Like, dir: WritableVector3Like): void
 {
     // 计算位置
     vec3NormalizeThickness(vec3SubNumber(vec3ScaleNumber(vec3Copy(vec3Random(), dir), 2), 1, dir), 1, dir);

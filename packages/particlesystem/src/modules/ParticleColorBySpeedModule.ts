@@ -9,10 +9,10 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleColorBySpeedModuleLike extends ParticleModuleLike
 {
     /** 控制粒子颜色的梯度 */
-    readonly color: MinMaxGradient;
+    readonly color?: MinMaxGradient;
 
     /** 在这些最小和最大速度之间应用颜色渐变 */
-    readonly range: Vector2Like;
+    readonly range?: Vector2Like;
 }
 
 /** 可写出的颜色随速度变化模块（写侧形状）。 */
@@ -23,7 +23,7 @@ export interface WritableParticleColorBySpeedModuleLike extends WritableParticle
 }
 
 /** 纯数据「颜色随速度变化模块」（带判别字段）。 */
-export interface ParticleColorBySpeedModule extends ParticleColorBySpeedModuleLike
+export interface ParticleColorBySpeedModule extends Required<ParticleColorBySpeedModuleLike>
 {
     readonly __type__: 'ParticleColorBySpeedModule';
 }
@@ -48,7 +48,7 @@ export function particleColorBySpeedModuleDefault(out: WritableParticleColorBySp
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleColorBySpeedModuleInitParticleState(module: ParticleColorBySpeedModuleLike, particle: Particle): void
+export function particleColorBySpeedModuleInitParticleState(module: ParticleColorBySpeedModule, particle: Particle): void
 {
     particle[ColorBySpeedRate] = Math.random();
 }
@@ -59,7 +59,7 @@ export function particleColorBySpeedModuleInitParticleState(module: ParticleColo
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleColorBySpeedModuleUpdateParticleState(module: ParticleColorBySpeedModuleLike, particle: Particle): void
+export function particleColorBySpeedModuleUpdateParticleState(module: ParticleColorBySpeedModule, particle: Particle): void
 {
     if (!module.enabled) return;
 

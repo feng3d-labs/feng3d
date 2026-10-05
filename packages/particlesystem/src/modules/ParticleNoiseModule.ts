@@ -13,40 +13,40 @@ import { particleModuleVector3CurveDefault, type ParticleModuleLike, type Writab
 export interface ParticleNoiseModuleLike extends ParticleModuleLike
 {
     /** 是否分轴控制噪声 */
-    readonly separateAxes: boolean;
+    readonly separateAxes?: boolean;
 
     /** 噪声强度（三条轴） */
-    readonly strength3D: MinMaxCurveVector3;
+    readonly strength3D?: MinMaxCurveVector3;
 
     /** 噪声频率（低值柔和、高值快速变化） */
-    readonly frequency: number;
+    readonly frequency?: number;
 
     /** 噪声图滚动速度 */
-    readonly scrollSpeed: MinMaxCurve;
+    readonly scrollSpeed?: MinMaxCurve;
 
     /** 高频噪声是否按比例衰减强度 */
-    readonly damping: boolean;
+    readonly damping?: boolean;
 
     /** 叠加的噪声层数 */
-    readonly octaveCount: number;
+    readonly octaveCount?: number;
 
     /** 每层噪声的强度系数 */
-    readonly octaveMultiplier: number;
+    readonly octaveMultiplier?: number;
 
     /** 每层噪声的频率系数 */
-    readonly octaveScale: number;
+    readonly octaveScale?: number;
 
     /** 噪声质量（决定用 perlin1/2/3） */
-    readonly quality: ParticleSystemNoiseQuality;
+    readonly quality?: ParticleSystemNoiseQuality;
 
     /** 是否启用重映射 */
-    readonly remapEnabled: boolean;
+    readonly remapEnabled?: boolean;
 
     /** 噪声值重映射曲线 */
-    readonly remap3D: MinMaxCurveVector3;
+    readonly remap3D?: MinMaxCurveVector3;
 
     /** 噪声图滚动累积值（运行时状态，由 `update` 累加） */
-    readonly scrollValue: number;
+    readonly scrollValue?: number;
 }
 
 /** 可写出的噪声模块（写侧形状）。 */
@@ -67,7 +67,7 @@ export interface WritableParticleNoiseModuleLike extends WritableParticleModuleL
 }
 
 /** 纯数据「噪声模块」（带判别字段）。 */
-export interface ParticleNoiseModule extends ParticleNoiseModuleLike
+export interface ParticleNoiseModule extends Required<ParticleNoiseModuleLike>
 {
     readonly __type__: 'ParticleNoiseModule';
 }
@@ -121,7 +121,7 @@ const NOISE_TIME_SCALE = 5;
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleNoiseModuleInitParticleState(module: ParticleNoiseModuleLike, particle: Particle): void
+export function particleNoiseModuleInitParticleState(module: ParticleNoiseModule, particle: Particle): void
 {
     particle[NoiseStrengthRate] = Math.random();
     particle[NoiseParticleRate] = Math.random();
@@ -133,7 +133,7 @@ export function particleNoiseModuleInitParticleState(module: ParticleNoiseModule
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleNoiseModuleUpdateParticleState(module: ParticleNoiseModuleLike, particle: Particle): void
+export function particleNoiseModuleUpdateParticleState(module: ParticleNoiseModule, particle: Particle): void
 {
     module.particleSystem!.removeParticlePosition(particle, NoisePreOffset);
     if (!module.enabled) return;
@@ -188,7 +188,7 @@ export function particleNoiseModuleUpdate(module: WritableParticleNoiseModuleLik
  * @param module 模块数据
  * @param image 图片数据
  */
-export function particleNoiseModuleDrawImage(module: ParticleNoiseModuleLike, image: ImageData): void
+export function particleNoiseModuleDrawImage(module: ParticleNoiseModule, image: ImageData): void
 {
     const strength = particleNoiseModuleGetDrawImageStrength(module);
     let strengthX = strength.x;
@@ -240,7 +240,7 @@ export function particleNoiseModuleDrawImage(module: ParticleNoiseModuleLike, im
  *
  * @param module 模块数据
  */
-function particleNoiseModuleGetDrawImageStrength(module: ParticleNoiseModuleLike): { x: number; y: number; z: number }
+function particleNoiseModuleGetDrawImageStrength(module: ParticleNoiseModule): { x: number; y: number; z: number }
 {
     let strengthX = 1;
     let strengthY = 1;
@@ -285,7 +285,7 @@ function getStrengthOfCurve(curve: MinMaxCurve): number
  * @param x x 坐标
  * @param y y 坐标
  */
-function particleNoiseModuleGetNoiseValue(module: ParticleNoiseModuleLike, x: number, y: number): number
+function particleNoiseModuleGetNoiseValue(module: ParticleNoiseModule, x: number, y: number): number
 {
     let value = particleNoiseModuleGetNoiseValueBase(module, x, y);
     for (let l = 1, ln = module.octaveCount; l < ln; l++)
@@ -304,7 +304,7 @@ function particleNoiseModuleGetNoiseValue(module: ParticleNoiseModuleLike, x: nu
  * @param x x 坐标
  * @param y y 坐标
  */
-function particleNoiseModuleGetNoiseValueBase(module: ParticleNoiseModuleLike, x: number, y: number): number
+function particleNoiseModuleGetNoiseValueBase(module: ParticleNoiseModule, x: number, y: number): number
 {
     const scrollValue = module.scrollValue;
     if (module.quality === ParticleSystemNoiseQuality.Low)

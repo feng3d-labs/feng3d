@@ -18,7 +18,7 @@ export interface ParticleColorOverLifetimeModuleLike extends ParticleModuleLike
      * `MinMaxGradient` 是纯数据接口：装配点显式写 `__type__`（面板按它选控件、序列化靠它识别），
      * 默认值由 `minMaxGradientDefault()` 补。
      */
-    readonly color: MinMaxGradient;
+    readonly color?: MinMaxGradient;
 }
 
 /** 可写出的颜色随时间变化模块（写侧形状）。 */
@@ -28,7 +28,7 @@ export interface WritableParticleColorOverLifetimeModuleLike extends WritablePar
 }
 
 /** 纯数据「颜色随时间变化模块」（带判别字段）。 */
-export interface ParticleColorOverLifetimeModule extends ParticleColorOverLifetimeModuleLike
+export interface ParticleColorOverLifetimeModule extends Required<ParticleColorOverLifetimeModuleLike>
 {
     readonly __type__: 'ParticleColorOverLifetimeModule';
 }
@@ -52,7 +52,7 @@ export function particleColorOverLifetimeModuleDefault(out: WritableParticleColo
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleColorOverLifetimeModuleInitParticleState(module: ParticleColorOverLifetimeModuleLike, particle: Particle): void
+export function particleColorOverLifetimeModuleInitParticleState(module: ParticleColorOverLifetimeModule, particle: Particle): void
 {
     particle[ColorOverLifetimeRate] = Math.random();
 }
@@ -63,7 +63,7 @@ export function particleColorOverLifetimeModuleInitParticleState(module: Particl
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleColorOverLifetimeModuleUpdateParticleState(module: ParticleColorOverLifetimeModuleLike, particle: Particle): void
+export function particleColorOverLifetimeModuleUpdateParticleState(module: ParticleColorOverLifetimeModule, particle: Particle): void
 {
     if (!module.enabled) return;
 

@@ -12,10 +12,10 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
 export interface ParticleVelocityOverLifetimeModuleLike extends ParticleModuleLike
 {
     /** 基于寿命的速度控制曲线（三条轴） */
-    readonly velocity: MinMaxCurveVector3;
+    readonly velocity?: MinMaxCurveVector3;
 
     /** 速度作用于局部空间还是世界空间 */
-    readonly space: ParticleSystemSimulationSpace;
+    readonly space?: ParticleSystemSimulationSpace;
 }
 
 /** 可写出的速度随时间变化模块（写侧形状）。 */
@@ -26,7 +26,7 @@ export interface WritableParticleVelocityOverLifetimeModuleLike extends Writable
 }
 
 /** 纯数据「速度随时间变化模块」（带判别字段）。 */
-export interface ParticleVelocityOverLifetimeModule extends ParticleVelocityOverLifetimeModuleLike
+export interface ParticleVelocityOverLifetimeModule extends Required<ParticleVelocityOverLifetimeModuleLike>
 {
     readonly __type__: 'ParticleVelocityOverLifetimeModule';
 }
@@ -51,7 +51,7 @@ export function particleVelocityOverLifetimeModuleDefault(out: WritableParticleV
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleVelocityOverLifetimeModuleInitParticleState(module: ParticleVelocityOverLifetimeModuleLike, particle: Particle): void
+export function particleVelocityOverLifetimeModuleInitParticleState(module: ParticleVelocityOverLifetimeModule, particle: Particle): void
 {
     particle[VelocityOverLifetimeRate] = Math.random();
 }
@@ -62,7 +62,7 @@ export function particleVelocityOverLifetimeModuleInitParticleState(module: Part
  * @param module 模块数据
  * @param particle 粒子
  */
-export function particleVelocityOverLifetimeModuleUpdateParticleState(module: ParticleVelocityOverLifetimeModuleLike, particle: Particle): void
+export function particleVelocityOverLifetimeModuleUpdateParticleState(module: ParticleVelocityOverLifetimeModule, particle: Particle): void
 {
     module.particleSystem!.removeParticleVelocity(particle, VelocityOverLifetimePreVelocity);
     if (!module.enabled) return;
