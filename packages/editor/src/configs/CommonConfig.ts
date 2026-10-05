@@ -2,7 +2,6 @@ import * as feng3d from 'feng3d';
 import { globalEmitter, loader } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { editorRS } from '../assets/EditorRS';
-import { nativeAPI } from '../assets/NativeRequire';
 import { getEditorCache } from '../caches/Editorcache';
 import { hierarchy } from '../feng3d/hierarchy/Hierarchy';
 import { useEditorStore } from '../vue-app/stores/editorStore';
@@ -222,16 +221,6 @@ export class MenuConfig
                 ],
             },
             { type: 'separator' },
-            {
-                label: '调试',
-                submenu: [{
-                    label: '打开开发者工具',
-                    click: () =>
-                    {
-                        nativeAPI.openDevTools();
-                    }, show: !!nativeAPI,
-                }],
-            },
             {
                 label: '窗口',
                 submenu: this.getWindowSubMenus(),

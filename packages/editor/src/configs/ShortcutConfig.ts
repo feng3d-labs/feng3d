@@ -35,7 +35,6 @@ export const shortcutConfig = [ //
 	//
 	{ key: 'del', command: 'deleteSeletedObject3D', when: '' },
 	//
-	{ key: 'f12', command: 'openDevTools', stateCommand: '', when: '' },
 	{ key: 'f5', command: 'refreshWindow', stateCommand: '', when: '' },
 	//
 	{ key: 'ctrl+c', command: 'copy' },
