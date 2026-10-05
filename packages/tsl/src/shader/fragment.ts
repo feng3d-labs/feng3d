@@ -150,6 +150,12 @@ export class Fragment extends Func
                 lines.push(varying.toGLSL());
             }
 
+            // storage buffer 声明（与 uniform 同层；compute 与"大量数据"场景用）
+            for (const storageBuffer of dependencies.storageBuffers)
+            {
+                lines.push(storageBuffer.toWGSL());
+            }
+
             // 收集结构体 uniform 的名称
             const structUniformNames = new Set(dependencies.structUniforms.map(s => s.uniform.name));
 
@@ -320,6 +326,12 @@ export class Fragment extends Func
                 }
                 structLines.push('};');
                 lines.push(structLines.join('\n'));
+            }
+
+            // storage buffer 声明（与 uniform 同层）
+            for (const storageBuffer of dependencies.storageBuffers)
+            {
+                lines.push(storageBuffer.toWGSL());
             }
 
             // 收集结构体 uniform 的名称

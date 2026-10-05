@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, struct, textureSampleCompare, uint, uniform, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, array, discard, float, forRange_, forU32_, fragment, if_, int, let_, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -150,5 +150,47 @@ describe('运行期上界的 for 循环（forU32_，#710）', () =>
         expect(wgsl).toContain('for (var i: u32 = 0u; i < count; i = i + 1u) {');
         // 循环变量能用在循环体里（索引 / 取值）
         expect(wgsl).toContain('acc = acc + vec4<f32>(f32(i), 0.0, 0.0, 0.0);');
+    });
+});
+
+describe('storage buffer（#785 的 C1，compute 的前置）', () =>
+{
+    it('声明与手写一致：@group/@binding var<storage, read|read_write> name: array<T>', () =>
+    {
+        const size = storageBuffer('size', { elementType: uint, group: 0, binding: 0 });
+        const current = storageBuffer('current', { elementType: uint, group: 0, binding: 1 });
+        const next = storageBuffer('next', { elementType: uint, access: 'read_write', group: 0, binding: 2 });
+
+        const f = fragment('main', () =>
+        {
+            const w = let_('w', size.index(0));
+            const cur = let_('cur', current.index(w));
+            const nx = let_('nx', next.index(cur));
+            return_(vec4(float(nx), 0.0, 0.0, 1.0));
+        });
+        const wgsl = f.toWGSL();
+
+        // 运行期长度数组（storage 的常见形态）
+        expect(wgsl).toContain('@binding(0) @group(0) var<storage, read> size: array<u32>;');
+        expect(wgsl).toContain('@binding(1) @group(0) var<storage, read> current: array<u32>;');
+        expect(wgsl).toContain('@binding(2) @group(0) var<storage, read_write> next: array<u32>;');
+        // 索引访问
+        expect(wgsl).toContain('let w = size[0];');
+        expect(wgsl).toContain('let cur = current[w];');
+        expect(wgsl).toContain('let nx = next[cur];');
+    });
+
+    it('给了 length 时生成固定长度数组', () =>
+    {
+        const data = storageBuffer('data', { elementType: float, group: 0, binding: 0, length: 64 });
+        const f = fragment('main', () =>
+        {
+            const v = let_('v', data.index(3));
+            return_(vec4(v, 0.0, 0.0, 1.0));
+        });
+        const wgsl = f.toWGSL();
+
+        expect(wgsl).toContain('@binding(0) @group(0) var<storage, read> data: array<f32, 64>;');
+        expect(wgsl).toContain('let v = data[3];');
     });
 });

@@ -4,6 +4,7 @@ export type { Array as TSLArray } from './variables/array';
 export { attribute } from './variables/attribute';
 export { struct } from './variables/struct';
 export type { Struct, StructBase, StructMembers, StructType } from './variables/struct';
+export { storageBuffer, type StorageAccess, type StorageBufferOptions } from './variables/storageBuffer';
 export { uniform } from './variables/uniform';
 export { varying } from './variables/varying';
 export { let_ } from './variables/let';

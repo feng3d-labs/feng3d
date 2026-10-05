@@ -208,6 +208,12 @@ export class Vertex extends Func
             }
 
             // 收集结构体 uniform 的名称
+            // storage buffer 声明
+            for (const storageBuffer of dependencies.storageBuffers)
+            {
+                lines.push(storageBuffer.toWGSL());
+            }
+
             const structUniformNames = new Set(dependencies.structUniforms.map(s => s.uniform.name));
 
             // 收集并生成所有嵌套结构体声明（去重）
