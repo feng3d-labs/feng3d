@@ -323,10 +323,10 @@ const { chromium } = require('playwright');
   `node scripts/editor-slots.mjs --open`（**插槽驱动的界面**：关掉一个面板插件后界面标签必须少一个、
   恢复后回来；验的是「清单变了界面真的跟着变」那一段 `slots/changed → MainLayout`，纯函数测试覆盖不到；
   已进 CI）、
-  `node scripts/editor-mcp-plugin-tools.mjs --url <dev server>`（**插件自带 AI 工具的端到端**，
-  #281 路径 A 的最后一截：起真页面 → 装载插件包 → 经真 MCP server 取 `tools/list`——
-  装载前没有、装载后**多出** `rotate_info`（描述与 schema 来自插件清单）、`tools/call`
-  **真的调得通**（动态工具走 `pluginMethods` 兜底）、卸载后**立刻消失**。已进 CI 的 `editor-e2e` job。
+  `node scripts/editor-mcp-plugin-tools.mjs`（**插件自带 AI 工具的端到端**，
+  #281 路径 A 的最后一截：**它自带宿主**（esbuild 打插件包 → 写产物 `editor.plugins.json` → 起宿主 `--new` 唯一临时目录 → 开页面），经真 MCP server 取 `tools/list`——
+  静态基线照常在、**多出** `rotate_info`（描述与 schema 来自插件清单）、`tools/call`
+  **真的调得通**（动态工具走 `pluginMethods` 兜底）、**经桥接 `editor.setPlugin` 禁用后立刻消失**。已进 CI 的 `editor-e2e` job。
   它补的是离线门禁只能给出的**文本级**证据；上线第一次就抓到"贡献表没带 description/schema"的断链）、
   `node scripts/editor-plugin-load.mjs --open`（**运行时装载（dev 形态，CI 不跑）**：不重新构建就把插件包装上——
   从真插件包导入 client 半 → 核声明 → 登记清单 → 重投插槽 → 界面标签真的多一个，卸载后回来。

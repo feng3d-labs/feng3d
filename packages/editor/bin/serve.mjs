@@ -239,6 +239,9 @@ const pluginPackages = new PluginPackages(ctx, {
     configPath: join(options.root, 'editor.plugins.json'),
     // 用户层：`--plugins`（**叠加**在产物配置之上，不再"替换"配置路径）
     userConfigPath: options.plugins,
+    // 项目级**启用集**（#274 / §5.2）：`feng3d.project.json` 的 `plugins`（只有 id）。
+    // 它回答"这个项目要用哪些"，与"插件从哪来"（产物配置，带 clientUrl）是两件事。
+    projectMetaPath: options.project ? join(options.project, 'feng3d.project.json') : undefined,
     hostDescription: hostInfo.describe(),
 });
 
