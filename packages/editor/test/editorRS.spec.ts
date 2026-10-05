@@ -40,12 +40,16 @@ describe('编辑器资源系统的装配（#278 阶段 4a）', () =>
         expect(typeof (FS.fs as { writeFile?: unknown }).writeFile).toBe('function');
     });
 
-    it('重复装配是安全的（不换实例）', () =>
+    it('重复装配是安全的（不换实例，也**不换 `FS.fs`**）', () =>
     {
         const first = installEditorResourceSystem();
+        const fs = FS.fs;
         const second = installEditorResourceSystem();
 
         expect(first).toBe(second);
+        // 幂等的关键：**不重建包装**——否则挂在 `FS.fs` 上的运行期状态会被丢掉
+        // （`App.vue` 的装配点会再调一次，所以这条不是理论问题）
+        expect(FS.fs).toBe(fs);
         expect(ReadRS.rs).toBe(editorRS);
     });
 

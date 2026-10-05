@@ -120,6 +120,14 @@ const TOP_LEVEL_NEW_BASELINE = ['editorRS'];
  */
 const EDITORDATA_MAX_REFERENCES = 0;
 
+/**
+ * `editorRS` 的**引用处数上限**（#278 阶段 4b：去单例化，**每批收紧一次**）。
+ *
+ * 为什么先立上限再动手：45 处消费面不可能一次改完，而没有上限时"顺手加一处 import"
+ * 会静悄悄把进度抹掉。数字口径与 `EDITORDATA_MAX_REFERENCES` 一致（**大小写敏感**）。
+ */
+const EDITORRS_MAX_REFERENCES = 44;
+
 let total = 0;
 let failed = 0;
 
@@ -357,6 +365,13 @@ else
         EDITORDATA_MAX_REFERENCES === 0 && MIGRATED.some((one) => one.name === 'editorData'),
         `上限=${EDITORDATA_MAX_REFERENCES}，MIGRATED 里有=${MIGRATED.some((one) => one.name === 'editorData')}`);
 }
+
+// ---------- 自证 7：`editorRS` 的去单例化只减不增（#278 阶段 4b） ----------
+const editorRSEntry = survey.find((one) => one.name === 'editorRS');
+
+check('★ `editorRS` 的消费面只减不增（#278 阶段 4b：每批收紧一次上限）',
+    (editorRSEntry?.count ?? 0) <= EDITORRS_MAX_REFERENCES,
+    `实测 ${editorRSEntry?.count ?? 0} 处 / ${editorRSEntry?.hits.size ?? 0} 文件，上限 ${EDITORRS_MAX_REFERENCES} 处`);
 
 // ---------- 自证 4（反向）：迁完的那些不许复活 ----------
 // 先证 `importedIn` 自己能用：拿一个**确定被 import** 的在册单例当探针。
