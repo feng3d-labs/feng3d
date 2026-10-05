@@ -341,10 +341,17 @@ content/features/featuresDeepDive/physics/ 下 v1/ 与 v2/ 两个子目录）
 
 ### 后续动作
 
-1. **本阶段（PR1）**：本文档（分析与判断）。
-2. **PR2**：`packages/cannon`（引擎本体 + 包内可变数学层 + 迁移测试 + 门禁登记）。
-3. **PR3**：`packages/cannon-plugin`（组件层重写为纯数据 + Logic 闭包工厂）。
-4. **待定**：是否把 `PhysicsBackend` seam 抽成公开接口（为 Rapier 留口）。
+1. ✅ **阶段一（PR #724，已合并）**：本文档（分析与判断）。
+2. ✅ **阶段二（本 PR）**：`packages/cannon-plugin`——按 §6.4 选定路线落地：引擎依赖 npm `cannon-es@0.20.0`，
+   组件层重写为纯数据接口 + Logic 闭包工厂（PhysicsWorld / Rigidbody / Box / Sphere / Plane / Cylinder 碰撞体），
+   13 个单测覆盖「缺省值 → 形状创建 → 刚体形状收集 → 步进 → 位置写回」全链路。
+   **实现期发现的一个坑**（已写进代码注释）：组件 init 发生在 owner 的 logic **构造期间**，
+   注册表里此刻是占位对象，读 `getLogic(owner)` 的任何成员都会得到 `undefined`——
+   所以 init 里必须读 raw 数据（`object3D.position` / `object3D.components`）。
+3. ⬜ **阶段三**：编辑器侧收回依赖——`packages/editor/package.json` 改指主仓包、
+   `vite.config.js` 的 externals、`vite-entry.ts` 恢复 cannon-plugin 挂载、模板 `libs/cannon*.{js,d.ts}` 去留。
+4. ⬜ **阶段四（可选）**：`CapsuleCollider`（需 Trimesh + CapsuleGeometry）与 `Cloth`；
+   以及把 `PhysicsBackend` seam 抽成公开接口（为 Rapier 留口）。
 
 ---
 

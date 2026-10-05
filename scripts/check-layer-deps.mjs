@@ -61,7 +61,7 @@ for (const { pkg, allowed, reason } of LAYER0)
  * `packages/ui` 是事实上的第三个（收尾批补登记，此前漏在清单外）：它 16 个源文件
  * `import ... from 'feng3d'`、`package.json` 声明了 `feng3d: "*"`，而 feng3d 不依赖它。
  */
-const UPPER_EXTENSIONS = ['packages/particlesystem', 'packages/terrain', 'packages/ui'];
+const UPPER_EXTENSIONS = ['packages/particlesystem', 'packages/terrain', 'packages/ui', 'packages/cannon-plugin'];
 
 const feng3dJson = JSON.parse(readFileSync(join(ROOT, 'packages/feng3d/package.json'), 'utf8'));
 const feng3dDeps = Object.keys(feng3dJson.dependencies ?? {});
