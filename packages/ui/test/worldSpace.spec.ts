@@ -10,7 +10,7 @@ import '../src/core/CanvasRenderer';
 import '../src/core/Transform2D';
 import '../src/core/UIMaterial';
 import '../src/Rect';
-import { uiMaterialWGSL } from '../src/core/UIMaterial';
+import { getUIMaterialShaderWGSL } from '../src/core/uiMaterialShader';
 import { UIRenderMode } from '../src/enums/UIRenderMode';
 import type { Canvas } from '../src/core/Canvas';
 import type { CanvasRenderer } from '../src/core/CanvasRenderer';
@@ -155,8 +155,9 @@ describe('UIRenderMode.WorldSpace（UI 画在 3D 平面上）', () =>
 
     it('着色器同时支持两种投影：世界空间走 cameraUniforms，屏幕空间走 u_Viewport', () =>
     {
-        expect(uiMaterialWGSL).toContain('cameraUniforms.u_viewProjection');
-        expect(uiMaterialWGSL).toContain('globalUniforms.u_Viewport');
-        expect(uiMaterialWGSL).toContain('u_projection.x > 0.5');
+        const vertex = getUIMaterialShaderWGSL().vertex;
+        expect(vertex).toContain('cameraUniforms.u_viewProjection');
+        expect(vertex).toContain('globalUniforms.u_Viewport');
+        expect(vertex).toContain('u_projection.x > 0.5');
     });
 });

@@ -61,6 +61,7 @@ export * from './light/shadow/ShadowType';
 export * from './light/SpotLight';
 export * from './materials/ColorMaterial';
 export * from './materials/DebugShadowMapMaterial';
+export { createCameraUniforms, createGlobalUniforms, createTransformUniforms } from './shaders/tsl/uniforms';
 export * from './materials/Material';
 export * from './materials/NormalMaterial';
 export * from './materials/ParticleMaterial';
