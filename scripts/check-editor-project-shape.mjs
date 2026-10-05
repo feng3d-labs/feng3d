@@ -3,7 +3,8 @@
  *
  * ## 为什么需要它
  *
- * `ARCHITECTURE.md` §5.2 定了目标目录布局，而模板目录（`packages/editor/resource/template/`）
+ * `ARCHITECTURE.md` §5.2 定了目标目录布局（`scenes/` / `scripts/` / `Assets/` / `plugins/`），
+ * **判据 8 就判这一条**（此前它只是文档里的一张图）。模板目录（`packages/editor/resource/template/`）
  * 一直是**旧形态**：`app.js` / `project.js` / `libs/feng3d.js` 快照 —— 没有 `package.json`、
  * 没有 `feng3d.project.json`。这套旧形态正是 #271 那条"不可用链路"的土壤。
  *
@@ -385,6 +386,52 @@ for (const item of recentCliChecks)
 if (recentProblems.length > 0)
 {
     console.error('\n❌ `recent` 没接好：最近项目清单是"我上次在改哪个"的唯一入口。');
+    process.exit(1);
+}
+
+// ---------- 判据 8：模板符合 §5.2 的目录约定（#274） ----------
+//
+// §5.2 画了目标布局，而它此前只是**一张图** —— 模板里既没有 `scenes/` 也没有 `scripts/`，
+// 而 `tsconfig.json` 的 `include` 早就写着 `scripts/**/*.ts`（**没有那个目录**，是句空承诺）。
+//
+// 四条判据，**前三条正向、后两条反向**（本仓惯例：迁完的不许回来）：
+const SECTION_52_DIRS = [
+    { name: 'scenes', why: '场景 JSON（§5.2）' },
+    { name: 'scripts', why: '用户 TS 脚本 —— tsconfig 的 include 就是指着它' },
+    { name: 'Assets', why: '资源根目录；**名字是大写**，由 ReadRS.ts:29 硬编码' },
+    { name: 'plugins', why: '项目级插件（三端形态，可选）' },
+];
+
+const dirProblems = [];
+
+for (const item of SECTION_52_DIRS)
+{
+    if (!existsSync(resolve(TEMPLATE_DIR, item.name))) dirProblems.push(`模板里没有 ${item.name}/（${item.why}）`);
+}
+
+// **反向 1**：场景文件不该还在项目根 —— 迁完的不许回来
+if (existsSync(resolve(TEMPLATE_DIR, 'default.scene.json')))
+{
+    dirProblems.push('项目根又出现了 default.scene.json（§5.2 说它在 scenes/ 下）');
+}
+
+// **反向 2**：入口场景必须指到 `scenes/` 下（目录建了、指针没跟，等于没迁）
+const entryScene = String(JSON.parse(readFileSync(resolve(TEMPLATE_DIR, 'feng3d.project.json'), 'utf8')).entryScene ?? '');
+
+if (!entryScene.startsWith('scenes/'))
+{
+    dirProblems.push(`入口场景没指到 scenes/ 下：${entryScene || '（空）'}`);
+}
+
+console.log('');
+console.log('--- 判据（§5.2 目录约定） ---');
+console.log(`  ${dirProblems.length === 0 ? 'PASS' : 'FAIL'}  模板有 scenes/ scripts/ Assets/ plugins/，且场景文件已从项目根迁走、entryScene 指对了`);
+
+for (const problem of dirProblems) console.log(`        ${problem}`);
+
+if (dirProblems.length > 0)
+{
+    console.error('\n❌ 模板的目录约定与 ARCHITECTURE.md §5.2 不一致 —— 那节画的布局不该只是文档。');
     process.exit(1);
 }
 
