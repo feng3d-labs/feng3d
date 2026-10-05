@@ -1,151 +1,82 @@
-import { vec3Add, vec3Copy, vec3From, vec3Sub, Vector3, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { minMaxCurveVector3GetValue, vec3Add, vec3Copy, vec3From, vec3Sub } from '@feng3d/math';
+import type { MinMaxCurveVector3, Vector3 } from '@feng3d/math';
+import type { Particle } from '../Particle';
+import { particleModuleVector3CurveDefault, type ParticleModuleLike, type WritableParticleModuleLike } from './ParticleModule';
+/**
+ * 旋转随时间变化模块（纯数据接口 + 模块级行为函数）。
+ *
+ * 原 class 的 `x` / `y` / `z` 与四个 `*Multiplier` getter/setter 是「转发到 `angularVelocity`」的
+ * 便捷访问器，纯数据形态下调用方直接读写 `angularVelocity`。
+ */
+export interface ParticleRotationOverLifetimeModuleLike extends ParticleModuleLike
+{
+    /** 是否分轴设置 */
+    readonly separateAxes: boolean;
+
+    /** 角速度曲线（三条轴，单位弧度/秒） */
+    readonly angularVelocity: MinMaxCurveVector3;
+}
+
+/** 可写出的旋转随时间变化模块（写侧形状）。 */
+export interface WritableParticleRotationOverLifetimeModuleLike extends WritableParticleModuleLike
+{
+    separateAxes: boolean;
+    angularVelocity: MinMaxCurveVector3;
+}
+
+/** 纯数据「旋转随时间变化模块」（带判别字段）。 */
+export interface ParticleRotationOverLifetimeModule extends ParticleRotationOverLifetimeModuleLike
+{
+    readonly __type__: 'ParticleRotationOverLifetimeModule';
+}
 
 /**
- * 粒子系统 旋转角度随时间变化模块
+ * `new ParticleRotationOverLifetimeModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
  */
-@decoratorRegisterClass()
-export class ParticleRotationOverLifetimeModule extends ParticleModule
+export function particleRotationOverLifetimeModuleDefault(out: WritableParticleRotationOverLifetimeModuleLike = { enabled: false, separateAxes: false, angularVelocity: particleModuleVector3CurveDefault(Math.PI / 4, false, Math.PI / 4) }): WritableParticleRotationOverLifetimeModuleLike
 {
-    /**
-     * Set the rotation over lifetime on each axis separately.
-     * 在每个轴上分别设置基于生命周期的旋转。
-     */
-    @serialize
-    // @oav({ tooltip: "Set the rotation over lifetime on each axis separately." })
-    @oav({ tooltip: '在每个轴上分别设置基于生命周期的旋转。' })
-    separateAxes = false;
+    out.enabled = false;
+    out.separateAxes = false;
+    out.angularVelocity = particleModuleVector3CurveDefault(Math.PI / 4, false, Math.PI / 4);
 
-    /**
-     * 角速度，基于生命周期的旋转。
-     */
-    @serialize
-    @oav({ tooltip: '角速度，基于生命周期的旋转。' })
-    angularVelocity = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, yCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, zCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 } });
-
-    /**
-     * Rotation over lifetime curve for the X axis.
-     *
-     * X轴的旋转寿命曲线。
-     */
-    get x()
-    {
-        return this.angularVelocity.xCurve;
-    }
-
-    set x(v)
-    {
-        this.angularVelocity.xCurve = v;
-    }
-
-    /**
-     * Rotation multiplier around the X axis.
-     *
-     * 绕X轴旋转乘法器
-     */
-    get xMultiplier()
-    {
-        return this.x.curveMultiplier;
-    }
-
-    set xMultiplier(v)
-    {
-        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Rotation over lifetime curve for the Y axis.
-     *
-     * Y轴的旋转寿命曲线。
-     */
-    get y()
-    {
-        return this.angularVelocity.yCurve;
-    }
-
-    set y(v)
-    {
-        this.angularVelocity.yCurve = v;
-    }
-
-    /**
-     * Rotation multiplier around the Y axis.
-     *
-     * 绕Y轴旋转乘法器
-     */
-    get yMultiplier()
-    {
-        return this.y.curveMultiplier;
-    }
-
-    set yMultiplier(v)
-    {
-        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Rotation over lifetime curve for the Z axis.
-     *
-     * Z轴的旋转寿命曲线。
-     */
-    get z()
-    {
-        return this.angularVelocity.zCurve;
-    }
-
-    set z(v)
-    {
-        this.angularVelocity.zCurve = v;
-    }
-
-    /**
-     * Rotation multiplier around the Z axis.
-     *
-     * 绕Z轴旋转乘法器
-     */
-    get zMultiplier()
-    {
-        return this.z.curveMultiplier;
-    }
-
-    set zMultiplier(v)
-    {
-        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        particle[RotationOverLifetimeRate] = Math.random();
-        particle[RotationOverLifetimePreAngularVelocity] = { x: 0, y: 0, z: 0 };
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        const preAngularVelocity: Vector3 = particle[RotationOverLifetimePreAngularVelocity];
-        vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);
-        vec3From(0, 0, 0, preAngularVelocity);
-        if (!this.enabled) return;
-
-        const v = minMaxCurveVector3GetValue(this.angularVelocity, particle.rateAtLifeTime, particle[RotationOverLifetimeRate]);
-        if (!this.separateAxes)
-        {
-            v.x = v.y = 0;
-        }
-        vec3Add(particle.angularVelocity, v, particle.angularVelocity);
-        vec3Copy(v, preAngularVelocity);
-    }
+    return out;
 }
+
+/**
+ * 初始化粒子状态（原 `ParticleRotationOverLifetimeModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleRotationOverLifetimeModuleInitParticleState(module: ParticleRotationOverLifetimeModuleLike, particle: Particle): void
+{
+    particle[RotationOverLifetimeRate] = Math.random();
+    particle[RotationOverLifetimePreAngularVelocity] = { x: 0, y: 0, z: 0 };
+}
+
+/**
+ * 更新粒子状态（原 `ParticleRotationOverLifetimeModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleRotationOverLifetimeModuleUpdateParticleState(module: ParticleRotationOverLifetimeModuleLike, particle: Particle): void
+{
+    const preAngularVelocity: Vector3 = particle[RotationOverLifetimePreAngularVelocity];
+    vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);
+    vec3From(0, 0, 0, preAngularVelocity);
+    if (!module.enabled) return;
+
+    const v = minMaxCurveVector3GetValue(module.angularVelocity, particle.rateAtLifeTime, particle[RotationOverLifetimeRate]);
+    if (!module.separateAxes)
+    {
+        v.x = v.y = 0;
+    }
+    vec3Add(particle.angularVelocity, v, particle.angularVelocity);
+    vec3Copy(v, preAngularVelocity);
+}
+
 const RotationOverLifetimeRate = '_RotationOverLifetime_rate';
 const RotationOverLifetimePreAngularVelocity = '_RotationOverLifetime_preAngularVelocity';

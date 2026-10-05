@@ -1,182 +1,76 @@
-import { vec3Multiply, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { minMaxCurveVector3GetValue, vec3Multiply } from '@feng3d/math';
+import type { MinMaxCurveVector3 } from '@feng3d/math';
+import type { Particle } from '../Particle';
+import { particleModuleVector3CurveDefault, type ParticleModuleLike, type WritableParticleModuleLike } from './ParticleModule';
+/**
+ * 缩放随时间变化模块（纯数据接口 + 模块级行为函数）。
+ *
+ * 原 class 的 `size` / `x` / `y` / `z` 与四个 `*Multiplier` getter/setter 是「转发到 `size3D`」的
+ * 便捷访问器，纯数据形态下调用方直接读写 `size3D`（`.xCurve` / `.curveMultiplier`）。
+ */
+export interface ParticleSizeOverLifetimeModuleLike extends ParticleModuleLike
+{
+    /** 是否分轴设置 */
+    readonly separateAxes: boolean;
+
+    /** 基于寿命的尺寸控制曲线（三条轴） */
+    readonly size3D: MinMaxCurveVector3;
+}
+
+/** 可写出的缩放随时间变化模块（写侧形状）。 */
+export interface WritableParticleSizeOverLifetimeModuleLike extends WritableParticleModuleLike
+{
+    separateAxes: boolean;
+    size3D: MinMaxCurveVector3;
+}
+
+/** 纯数据「缩放随时间变化模块」（带判别字段）。 */
+export interface ParticleSizeOverLifetimeModule extends ParticleSizeOverLifetimeModuleLike
+{
+    readonly __type__: 'ParticleSizeOverLifetimeModule';
+}
 
 /**
- * 粒子系统 缩放随时间变化模块
+ * `new ParticleSizeOverLifetimeModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
  */
-@decoratorRegisterClass()
-export class ParticleSizeOverLifetimeModule extends ParticleModule
+export function particleSizeOverLifetimeModuleDefault(out: WritableParticleSizeOverLifetimeModuleLike = { enabled: false, separateAxes: false, size3D: particleModuleVector3CurveDefault(1, true, 1) }): WritableParticleSizeOverLifetimeModuleLike
 {
-    /**
-     * Set the size over lifetime on each axis separately.
-     *
-     * 在每个轴上分别设置生命周期内的大小。
-     */
-    @serialize
-    // @oav({ tooltip: "Set the size over lifetime on each axis separately." })
-    @oav({ tooltip: '在每个轴上分别设置生命周期内的大小。' })
-    separateAxes = false;
+    out.enabled = false;
+    out.separateAxes = false;
+    out.size3D = particleModuleVector3CurveDefault(1, true, 1);
 
-    /**
-     * Curve to control particle size based on lifetime.
-     *
-     * 基于寿命的粒度控制曲线。
-     */
-    // @oav({ tooltip: "Curve to control particle size based on lifetime." })
-    @oav({ tooltip: '基于寿命的粒度控制曲线。' })
-    get size()
+    return out;
+}
+
+/**
+ * 初始化粒子状态（原 `ParticleSizeOverLifetimeModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleSizeOverLifetimeModuleInitParticleState(module: ParticleSizeOverLifetimeModuleLike, particle: Particle): void
+{
+    particle[SizeOverLifetimeRate] = Math.random();
+}
+
+/**
+ * 更新粒子状态（原 `ParticleSizeOverLifetimeModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleSizeOverLifetimeModuleUpdateParticleState(module: ParticleSizeOverLifetimeModuleLike, particle: Particle): void
+{
+    if (!module.enabled) return;
+
+    const size = minMaxCurveVector3GetValue(module.size3D, particle.rateAtLifeTime, particle[SizeOverLifetimeRate]);
+    if (!module.separateAxes)
     {
-        return this.size3D.xCurve;
+        size.y = size.z = size.x;
     }
-
-    set size(v)
-    {
-        this.size3D.xCurve = v;
-    }
-
-    /**
-     * Size multiplier.
-     *
-     * 尺寸的乘数。
-     */
-    get sizeMultiplier()
-    {
-        return this.size.curveMultiplier;
-    }
-
-    set sizeMultiplier(v)
-    {
-        (this.size as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Curve to control particle size based on lifetime.
-     *
-     * 基于寿命的粒度控制曲线。
-     */
-    @serialize
-    // @oav({ tooltip: "Curve to control particle size based on lifetime." })
-    @oav({ tooltip: '基于寿命的粒度控制曲线。' })
-    size3D = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, yCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 }, zCurve: { between0And1: true, constant: 1, constantMin: 1, constantMax: 1, curveMultiplier: 1 } });
-
-    /**
-     * Size over lifetime curve for the X axis.
-     *
-     * X轴的尺寸随生命周期变化曲线。
-     */
-    get x()
-    {
-        return this.size3D.xCurve;
-    }
-
-    set x(v)
-    {
-        this.size3D.xCurve;
-    }
-
-    /**
-     * X axis size multiplier.
-     *
-     * X轴尺寸的乘数。
-     */
-    get xMultiplier()
-    {
-        return this.x.curveMultiplier;
-    }
-
-    set xMultiplier(v)
-    {
-        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Size over lifetime curve for the Y axis.
-     *
-     * Y轴的尺寸随生命周期变化曲线。
-     */
-    get y()
-    {
-        return this.size3D.yCurve;
-    }
-
-    set y(v)
-    {
-        this.size3D.yCurve;
-    }
-
-    /**
-     * Y axis size multiplier.
-     *
-     * Y轴尺寸的乘数。
-     */
-    get yMultiplier()
-    {
-        return this.y.curveMultiplier;
-    }
-
-    set yMultiplier(v)
-    {
-        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Size over lifetime curve for the Z axis.
-     *
-     * Z轴的尺寸随生命周期变化曲线。
-     */
-    get z()
-    {
-        return this.size3D.zCurve;
-    }
-
-    set z(v)
-    {
-        this.size3D.zCurve;
-    }
-
-    /**
-     * Z axis size multiplier.
-     *
-     * Z轴尺寸的乘数。
-     */
-    get zMultiplier()
-    {
-        return this.z.curveMultiplier;
-    }
-
-    set zMultiplier(v)
-    {
-        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        particle[SizeOverLifetimeRate] = Math.random();
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        if (!this.enabled) return;
-
-        const size = minMaxCurveVector3GetValue(this.size3D, particle.rateAtLifeTime, particle[SizeOverLifetimeRate]);
-        if (!this.separateAxes)
-        {
-            size.y = size.z = size.x;
-        }
-        vec3Multiply(particle.size, size, particle.size);
-    }
+    vec3Multiply(particle.size, size, particle.size);
 }
 
 const SizeOverLifetimeRate = '_SizeOverLifetime_rate';

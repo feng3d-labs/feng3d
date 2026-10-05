@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 95 个类型 / 490 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 101 个类型 / 536 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -410,6 +410,12 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],
+    'ParticleEmissionBurst': [
+        { name: 'time', type: 'number', control: 'number', readonly: true },
+        { name: 'count', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'probability', type: 'number', control: 'number', readonly: true },
+        { name: 'isProbability', type: 'boolean', control: 'Boolean', readonly: true },
+    ],
     'ParticleForceOverLifetimeModule': [
         { name: 'force', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
         { name: 'space', type: 'ParticleSystemSimulationSpace', control: 'Enum', readonly: true, values: ['Local', 'World'], numericValues: { Local: 0, World: 1 } },
@@ -440,8 +446,60 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'name', type: 'string', control: 'String', optional: true },
     ],
+    'ParticleRotationBySpeedModule': [
+        { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'angularVelocity', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'range', type: 'Vector2Like', control: 'Vector2', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleRotationOverLifetimeModule': [
+        { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'angularVelocity', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleSizeBySpeedModule': [
+        { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'size3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'range', type: 'Vector2Like', control: 'Vector2', readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleSizeOverLifetimeModule': [
+        { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'size3D', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
     'ParticleSubEmittersModule': [
         { name: 'subEmitters', type: 'readonly ParticleSubEmitterEntry[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleSystemRenderer': [
+        { name: 'activeVertexStreamsCount', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'alignment', type: 'ParticleSystemRenderSpace', control: 'Enum', optional: true, readonly: true, values: ['View', 'World', 'Local', 'Facing', 'Velocity'], numericValues: { View: 0, World: 1, Local: 2, Facing: 3, Velocity: 4 } },
+        { name: 'allowRoll', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'cameraVelocityScale', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'enableGPUInstancing', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'flip', type: 'Vector3', control: 'Vector3', optional: true, readonly: true },
+        { name: 'freeformStretching', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'lengthScale', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'maskInteraction', type: 'SpriteMaskInteraction', control: 'Enum', optional: true, readonly: true, values: ['None', 'VisibleInsideMask', 'VisibleOutsideMask'], numericValues: { None: 0, VisibleInsideMask: 1, VisibleOutsideMask: 2 } },
+        { name: 'maxParticleSize', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'mesh', type: 'Geometry', control: 'Object', optional: true, readonly: true },
+        { name: 'meshCount', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'minParticleSize', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'normalDirection', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'pivot', type: 'Vector3', control: 'Vector3', optional: true, readonly: true },
+        { name: 'renderMode', type: 'ParticleSystemRenderMode', control: 'Enum', optional: true, readonly: true, values: ['Billboard', 'Stretch', 'HorizontalBillboard', 'VerticalBillboard', 'Mesh', 'None'], numericValues: { Billboard: 0, Stretch: 1, HorizontalBillboard: 2, VerticalBillboard: 3, Mesh: 4, None: 5 } },
+        { name: 'rotateWithStretchDirection', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'shadowBias', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'sortingFudge', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'sortMode', type: 'ParticleSystemSortMode', control: 'Enum', optional: true, readonly: true, values: ['None', 'Distance', 'OldestInFront', 'YoungestInFront'], numericValues: { None: 0, Distance: 1, OldestInFront: 2, YoungestInFront: 3 } },
+        { name: 'trailMaterial', type: 'Material', control: 'Object', optional: true, readonly: true },
+        { name: 'velocityScale', type: 'number', control: 'number', optional: true, readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],

@@ -1,164 +1,87 @@
-import { mathUtilClamp, minMaxCurveVector3Default, minMaxCurveVector3GetValue, type WritableMinMaxCurveLike } from '@feng3d/math';
-import { vec3Add, vec3Copy, vec3From, vec3Length, vec3Sub, Vector3 } from '@feng3d/math';
-import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass } from '@feng3d/polyfill';
-import { serialization, serialize } from '@feng3d/serialization';
-import { Particle } from '../Particle';
-import { ParticleModule } from './ParticleModule';
+import { mathUtilClamp, minMaxCurveVector3GetValue, vec3Add, vec3Copy, vec3From, vec3Length, vec3Sub } from '@feng3d/math';
+import type { MinMaxCurveVector3, Vector2Like, Vector3 } from '@feng3d/math';
+import type { Particle } from '../Particle';
+import { particleModuleVector3CurveDefault, type ParticleModuleLike, type WritableParticleModuleLike } from './ParticleModule';
+/**
+ * 旋转随速度变化模块（纯数据接口 + 模块级行为函数）。
+ */
+export interface ParticleRotationBySpeedModuleLike extends ParticleModuleLike
+{
+    /** 是否分轴设置 */
+    readonly separateAxes: boolean;
+
+    /** 角速度曲线（三条轴） */
+    readonly angularVelocity: MinMaxCurveVector3;
+
+    /** 速度归一化区间 */
+    readonly range: Vector2Like;
+}
+
+/** 可写出的旋转随速度变化模块（写侧形状）。 */
+export interface WritableParticleRotationBySpeedModuleLike extends WritableParticleModuleLike
+{
+    separateAxes: boolean;
+    angularVelocity: MinMaxCurveVector3;
+    range: Vector2Like;
+}
+
+/** 纯数据「旋转随速度变化模块」（带判别字段）。 */
+export interface ParticleRotationBySpeedModule extends ParticleRotationBySpeedModuleLike
+{
+    readonly __type__: 'ParticleRotationBySpeedModule';
+}
 
 /**
- * 粒子系统 旋转角度随速度变化模块
+ * `new ParticleRotationBySpeedModule()` 的纯函数版：字段默认值与原 class 逐字一致。
+ *
+ * @param out 结果写出目标（缺省时新建）
  */
-@decoratorRegisterClass()
-export class ParticleRotationBySpeedModule extends ParticleModule
+export function particleRotationBySpeedModuleDefault(out: WritableParticleRotationBySpeedModuleLike = { enabled: false, separateAxes: false, angularVelocity: particleModuleVector3CurveDefault(Math.PI / 4, false, Math.PI / 4), range: { x: 0, y: 1 } }): WritableParticleRotationBySpeedModuleLike
 {
-    /**
-     * Set the rotation by speed on each axis separately.
-     * 在每个轴上分别设置随速度变化的旋转。
-     */
-    @serialize
-    // @oav({ tooltip: "Set the rotation by speed on each axis separately." })
-    @oav({ tooltip: '在每个轴上分别设置随速度变化的旋转。' })
-    separateAxes = false;
+    out.enabled = false;
+    out.separateAxes = false;
+    out.angularVelocity = particleModuleVector3CurveDefault(Math.PI / 4, false, Math.PI / 4);
+    out.range = { x: 0, y: 1 };
 
-    /**
-     * 角速度，随速度变化的旋转。
-     */
-    @serialize
-    @oav({ tooltip: '角速度，随速度变化的旋转。' })
-    angularVelocity = serialization.setValue({ __type__: 'MinMaxCurveVector3', ...minMaxCurveVector3Default() }, { xCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, yCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 }, zCurve: { constant: Math.PI / 4, constantMin: Math.PI / 4, constantMax: Math.PI / 4, curveMultiplier: Math.PI / 4 } });
-
-    /**
-     * Apply the rotation curve between these minimum and maximum speeds.
-     *
-     * 在这些最小和最大速度之间应用旋转曲线。
-     */
-    @serialize
-    @oav({ tooltip: '在这些最小和最大速度之间应用旋转曲线。' })
-    range = { x: 0, y: 1 };
-
-    /**
-     * Rotation by speed curve for the X axis.
-     *
-     * X轴的旋转随速度变化曲线。
-     */
-    get x()
-    {
-        return this.angularVelocity.xCurve;
-    }
-
-    set x(v)
-    {
-        this.angularVelocity.xCurve = v;
-    }
-
-    /**
-     * Rotation multiplier around the X axis.
-     *
-     * 绕X轴旋转乘法器
-     */
-    get xMultiplier()
-    {
-        return this.x.curveMultiplier;
-    }
-
-    set xMultiplier(v)
-    {
-        (this.x as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Rotation by speed curve for the Y axis.
-     *
-     * Y轴的旋转随速度变化曲线。
-     */
-    get y()
-    {
-        return this.angularVelocity.yCurve;
-    }
-
-    set y(v)
-    {
-        this.angularVelocity.yCurve = v;
-    }
-
-    /**
-     * Rotation multiplier around the Y axis.
-     *
-     * 绕Y轴旋转乘法器
-     */
-    get yMultiplier()
-    {
-        return this.y.curveMultiplier;
-    }
-
-    set yMultiplier(v)
-    {
-        (this.y as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * Rotation by speed curve for the Z axis.
-     *
-     * Z轴的旋转随速度变化曲线。
-     */
-    get z()
-    {
-        return this.angularVelocity.zCurve;
-    }
-
-    set z(v)
-    {
-        this.angularVelocity.zCurve = v;
-    }
-
-    /**
-     * Rotation multiplier around the Z axis.
-     *
-     * 绕Z轴旋转乘法器
-     */
-    get zMultiplier()
-    {
-        return this.z.curveMultiplier;
-    }
-
-    set zMultiplier(v)
-    {
-        (this.z as WritableMinMaxCurveLike).curveMultiplier = v;
-    }
-
-    /**
-     * 初始化粒子状态
-     * @param particle 粒子
-     */
-    initParticleState(particle: Particle)
-    {
-        particle[RotationBySpeedRate] = Math.random();
-        particle[RotationBySpeedPreAngularVelocity] = { x: 0, y: 0, z: 0 };
-    }
-
-    /**
-     * 更新粒子状态
-     * @param particle 粒子
-     */
-    updateParticleState(particle: Particle)
-    {
-        const preAngularVelocity: Vector3 = particle[RotationBySpeedPreAngularVelocity];
-        vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);
-        vec3From(0, 0, 0, preAngularVelocity);
-        if (!this.enabled) return;
-
-        const velocity = vec3Length(particle.velocity);
-        const rate = mathUtilClamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
-
-        const v = minMaxCurveVector3GetValue(this.angularVelocity, rate, particle[RotationBySpeedRate]);
-        if (!this.separateAxes)
-        {
-            v.x = v.y = 0;
-        }
-        vec3Add(particle.angularVelocity, v, particle.angularVelocity);
-        vec3Copy(v, preAngularVelocity);
-    }
+    return out;
 }
+
+/**
+ * 初始化粒子状态（原 `ParticleRotationBySpeedModule.initParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleRotationBySpeedModuleInitParticleState(module: ParticleRotationBySpeedModuleLike, particle: Particle): void
+{
+    particle[RotationBySpeedRate] = Math.random();
+    particle[RotationBySpeedPreAngularVelocity] = { x: 0, y: 0, z: 0 };
+}
+
+/**
+ * 更新粒子状态（原 `ParticleRotationBySpeedModule.updateParticleState`）。
+ *
+ * @param module 模块数据
+ * @param particle 粒子
+ */
+export function particleRotationBySpeedModuleUpdateParticleState(module: ParticleRotationBySpeedModuleLike, particle: Particle): void
+{
+    const preAngularVelocity: Vector3 = particle[RotationBySpeedPreAngularVelocity];
+    vec3Sub(particle.angularVelocity, preAngularVelocity, particle.angularVelocity);
+    vec3From(0, 0, 0, preAngularVelocity);
+    if (!module.enabled) return;
+
+    const velocity = vec3Length(particle.velocity);
+    const rate = mathUtilClamp((velocity - module.range.x) / (module.range.y - module.range.x), 0, 1);
+
+    const v = minMaxCurveVector3GetValue(module.angularVelocity, rate, particle[RotationBySpeedRate]);
+    if (!module.separateAxes)
+    {
+        v.x = v.y = 0;
+    }
+    vec3Add(particle.angularVelocity, v, particle.angularVelocity);
+    vec3Copy(v, preAngularVelocity);
+}
+
 const RotationBySpeedRate = '_RotationBySpeed_rate';
 const RotationBySpeedPreAngularVelocity = '_RotationBySpeed_preAngularVelocity';
