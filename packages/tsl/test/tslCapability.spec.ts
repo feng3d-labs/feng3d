@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, while_, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, compute, return_, uint, uniform, while_, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -514,5 +514,34 @@ describe('while 循环（#712，a-buffer composite 的前置）', () =>
         expect(wgsl).toContain('var i = 0u;');
         expect(wgsl).toContain('while (i < 5u) {');
         expect(wgsl).toContain('i = (i + 1u);');
+    });
+});
+
+describe('return_ 的语句挂载 + 无返回值形态（#712）', () =>
+{
+    it('回归：return_() 写在 if_ 内时必须挂进 if 体，不能被提到外层', () =>
+    {
+        const c = compute('main', [1, 1, 1], () =>
+        {
+            const n = uniform('n', 0, 0);
+            if_(uint(n).greaterThan(uint(3)), () =>
+            {
+                return_();
+            });
+        });
+
+        const w = c.toWGSL();
+        // if 体的第一句必须是 return（不能是空体、return 也不能跑到 if 外）
+        expect(w).toMatch(/if \([^\n]*\) \{\n\s+return;\n\s+\}/);
+    });
+
+    it('无返回值生成裸 return;', () =>
+    {
+        const c = compute('main', [1, 1, 1], () =>
+        {
+            return_();
+        });
+
+        expect(c.toWGSL()).toContain('return;');
     });
 });
