@@ -23,7 +23,7 @@ export class SamplerCube extends Sampler
  * @param uniform uniform 变量
  * @returns SamplerCube 实例
  */
-export function samplerCube(uniform: Uniform): SamplerCube
+export function samplerCube(uniform: Uniform, options?: { textureOnly?: boolean }): SamplerCube
 {
-    return new SamplerCube(uniform);
+    return new SamplerCube(uniform, options?.textureOnly ?? false);
 }

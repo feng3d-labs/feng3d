@@ -11,9 +11,18 @@ export abstract class Sampler implements IElement
 
     readonly uniform: Uniform;
 
-    constructor(uniform: Uniform)
+    /**
+     * 是否**只声明纹理**（不生成配套的 sampler）。
+     *
+     * 手写的 WGSL 里有一类"裸纹理"：\`var tex: texture_2d<f32>;\`——
+     * 它只被 \`textureLoad\` 之类读取，不需要 sampler。默认 false（texture + sampler 各一个绑定）。
+     */
+    readonly textureOnly: boolean;
+
+    constructor(uniform: Uniform, textureOnly = false)
     {
         this.uniform = uniform;
+        this.textureOnly = textureOnly;
     }
 
     /**
@@ -65,6 +74,13 @@ export abstract class Sampler implements IElement
         // 在 WGSL 中，texture 和 sampler 需要分别声明
         // texture 在 binding，sampler 在 binding+1
         const textureBinding = `@binding(${effectiveBinding}) @group(${effectiveGroup})`;
+
+        // 只声明纹理：不生成配套 sampler（手写的"裸纹理"就是这种形态）
+        if (this.textureOnly)
+        {
+            return `${textureBinding} var ${this.uniform.name}_texture: ${this.getWGSLTextureType()};`;
+        }
+
         const samplerBinding = `@binding(${effectiveBinding + 1}) @group(${effectiveGroup})`;
 
         return `${textureBinding} var ${this.uniform.name}_texture: ${this.getWGSLTextureType()};\n${samplerBinding} var ${this.uniform.name}: ${this.getWGSLSamplerType()};`;

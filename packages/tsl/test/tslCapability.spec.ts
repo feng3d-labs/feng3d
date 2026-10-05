@@ -444,3 +444,26 @@ describe('saturate 与 u32 左移（#712，renderBundles 的前置）', () =>
         expect(uint(1).shiftLeft(3).toWGSL()).toBe('(1u << 3u)');
     });
 });
+
+describe('裸纹理声明（#712，showTexture 的前置）', () =>
+{
+    it('sampler2D 的 textureOnly 只声明纹理、不生成 sampler', () =>
+    {
+        const tex = sampler2D(uniform('tex', 0, 0), { textureOnly: true });
+        const f = fragment('main', () =>
+        {
+            // 只验证声明：这个纹理被 textureLoad 读取，不需要 sampler
+            void tex;
+            return_(vec4(0.0, 0.0, 0.0, 1.0));
+        });
+        // 直接看声明文本
+        expect(tex.toWGSL()).toBe('@binding(0) @group(0) var tex_texture: texture_2d<f32>;');
+        void f;
+    });
+
+    it('默认仍生成 texture + sampler 两个绑定', () =>
+    {
+        const tex = sampler2D(uniform('s', 0, 0));
+        expect(tex.toWGSL()).toBe('@binding(0) @group(0) var s_texture: texture_2d<f32>;\n@binding(1) @group(0) var s: sampler;');
+    });
+});

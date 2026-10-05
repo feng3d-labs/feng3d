@@ -22,7 +22,7 @@ export class Sampler2D extends Sampler
  * @param uniform uniform 变量
  * @returns Sampler2D 实例
  */
-export function sampler2D(uniform: Uniform): Sampler2D
+export function sampler2D(uniform: Uniform, options?: { textureOnly?: boolean }): Sampler2D
 {
-    return new Sampler2D(uniform);
+    return new Sampler2D(uniform, options?.textureOnly ?? false);
 }
