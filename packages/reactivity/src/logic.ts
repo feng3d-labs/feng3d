@@ -240,7 +240,23 @@ export function createLogicProto<T>(base: object | null, descriptors: PropertyDe
 {
     const proto = Object.create(base) as object;
 
-    Object.defineProperties(proto, descriptors);
+    // 与 class 的 prototype 语义对齐（class 方法默认 writable + configurable）：
+    // 描述符没显式给定时默认放宽，否则 `Object.assign(logic, { init })` 这类
+    // 在实例上遮蔽 / 覆写方法的写法会抛 "Cannot assign to read only property"。
+    const normalized: PropertyDescriptorMap = {};
+
+    for (const key of Object.keys(descriptors))
+    {
+        const d = descriptors[key];
+
+        normalized[key] = {
+            ...d,
+            configurable: d.configurable ?? true,
+            ...(('value' in d) ? { writable: d.writable ?? true } : {}),
+        };
+    }
+
+    Object.defineProperties(proto, normalized);
 
     return proto as T;
 }
