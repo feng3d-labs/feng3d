@@ -99,7 +99,10 @@ export class MenuConfig
                         }
                     },
                     {
-                        label: '保存场景', click: () =>
+                        // 这里写出的是**对象资源**（`.gameobject.json`），不是场景文件——原文案「保存场景」
+                        // 与行为不符（issue #113 缺口 4）。真场景序列化（写 `default.scene.json`）在
+                        // `vue-app/components/TopToolBar.vue` 的播放流程里。
+                        label: '对象存为资源', click: () =>
                         {
                             // rootnode 在编辑器里必然已初始化；未初始化时读它会与原来一样崩
                             const object3D = hierarchy.rootnode!.object3D;
