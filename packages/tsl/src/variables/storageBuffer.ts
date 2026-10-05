@@ -1,4 +1,5 @@
 import { IElement, ShaderValue } from '../core/IElement';
+import { type StructDefinition, type StructMembers, type StructType, isStructConstructor } from './struct';
 
 /**
  * storage buffer 的访问模式
@@ -12,8 +13,8 @@ export type StorageAccess = 'read' | 'read_write';
  */
 export interface StorageBufferOptions<T extends ShaderValue>
 {
-    /** 元素类型（类型构造函数或实例） */
-    elementType: T | (() => T);
+    /** 元素类型（类型构造函数、实例，或**结构体构造函数**） */
+    elementType: T | (() => T) | StructType<StructMembers>;
     /** 访问模式（默认 `read`） */
     access?: StorageAccess;
     /** 绑定的 group（默认 0） */
@@ -79,6 +80,9 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
     /** 元素工厂（用于 `index()` 生成元素实例） */
     private readonly _createElement: () => T;
 
+    /** 元素的结构体定义（元素不是结构体时为 undefined） */
+    readonly elementStructDef?: StructDefinition<StructMembers>;
+
     constructor(name: string, options: StorageBufferOptions<T>)
     {
         this.name = name;
@@ -89,21 +93,21 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
         this.isArray = options.array !== false;
 
         const elementType = options.elementType;
-        if (typeof elementType === 'function')
+        if (isStructConstructor(elementType))
         {
-            // 结构体等：类型名从定义里取（结构体的实例由构造函数产出）
-            const maybeStruct = elementType as unknown as { _definition?: { name: string } };
-            if (maybeStruct._definition)
-            {
-                this.elementTypeName = maybeStruct._definition.name;
-                this._createElement = () => elementType();
-            }
-            else
-            {
-                const sample = (elementType as () => T)();
-                this.elementTypeName = sample.wgslType;
-                this._createElement = () => (elementType as () => T)();
-            }
+            // 结构体元素：类型名取结构体名；元素实例由"父 uniform + 路径"构造
+            // （与 array(struct) 的成员访问一致，见 variables/struct.ts）
+            this.elementTypeName = elementType._definition.name;
+            this.elementStructDef = elementType._definition;
+            // 结构体的构造函数要求一个 uniform 参数；storage 的元素不需要成员路径前缀，
+            // 这里给一个占位（元素实例只用于取值/赋值表达式，不参与声明）。
+            this._createElement = (() => elementType(undefined as never) as unknown as T);
+        }
+        else if (typeof elementType === 'function')
+        {
+            const sample = (elementType as () => T)();
+            this.elementTypeName = sample.wgslType;
+            this._createElement = () => (elementType as () => T)();
         }
         else
         {
