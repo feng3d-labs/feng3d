@@ -58,7 +58,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 ### 1.3 覆盖率门禁（issue #74）
 
-`AGENTS.md` §13 早就写了「覆盖率建议 >80%」，但在此之前 `vitest.config.ts` 没有任何 coverage 配置——**建议没有执行者，等于没有**。现在由 `npm run test:coverage`（= `vitest run --coverage`）在跑完同一批测试后校验阈值，低一档就失败。
+`AGENTS.md` §13 早就写了「覆盖率建议 >80%」，但在此之前 `vitest.config.ts` 没有任何 coverage 配置——**建议没有执行者，等于没有**。现在由 `npm run test:coverage`（= `vitest run --coverage` **加** `node scripts/check-coverage-inflation.mjs`，后者见 §2.1）在跑完同一批测试后校验阈值，低一档就失败。
 
 **阈值是「防止下降」的底线，不是「已达标」的宣告**：
 
@@ -68,12 +68,28 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 > ✅ **本轮（issue #134）已按实测把那笔欠账还上**：旧阈值 `38/34/38/38` 曾落后实测 **12～18 个百分点**——覆盖率**掉 12 个点**门禁都不会红，「防下降」**当时等于失效**（正是上面那条警告说的「阈值变成摆设」）。
 > 清理批（PR #576）留下了建议值 `54/44/51/54`，本批**没有照抄**：按「本项目估数不可靠」的教训**逐项复测了三遍**（同一份代码、同一台机器），实测与建议值吻合，才按「实测基线向下留余量」的口径定为 **`54/44/51/54`**。
 
-| 指标 | 阈值 | 实测基线（2026-10-05 本机复测，vitest 5.0.2 / Node 22） | 余量 |
+| 指标 | 阈值 | 实测基线（2026-10-05 在 `69309811b` 上本机复测，vitest 5.0.2 / Node 22） | 余量 |
 |---|---|---|---|
-| 语句 | 54 | 55.96%（本次 1 次：55.96；2026-10-02 四次为 55.87～55.89） | 1.96 |
-| 分支 | 44 | 46.05%（本次 1 次：46.05；2026-10-02 四次为 45.92～45.93） | 2.05 |
-| 函数 | 51 | 53.23%（本次 1 次：53.23；2026-10-02 四次恒为 53.13） | 2.23 |
-| 行 | 54 | 56.17%（本次 1 次：56.17；2026-10-02 四次为 56.08～56.10） | 2.17 |
+| 语句 | 54 | 55.96%（2026-10-05 两次：55.96 / 55.97，= 18715～18720/33442；2026-10-02 四次为 55.87～55.89） | 1.96 |
+| 分支 | 44 | 45.39%（两次：45.39 / 45.40，= 6801～6803/14982；2026-10-02 四次为 45.92～45.93） | 1.39 |
+| 函数 | 51 | 53.83%（两次恒为 53.83，= 3106/5769；2026-10-02 四次恒为 53.13） | 2.83 |
+| 行 | 54 | 55.98%（两次：55.98 / 55.99，= 16702～16707/29835；2026-10-02 四次为 56.08～56.10） | 1.98 |
+
+> ⚠️ **本批（issue #645）复测发现这张表原先的读数已经漂了**（原记 55.96 / 46.05 / 53.23 / 56.17）：
+> 语句与行几乎没动（55.96 → 55.96、56.17 → 55.98），但**分支 −0.66（46.05 → 45.39）、函数 +0.60（53.23 → 53.83）**
+> ——这是后续批次改了被测代码 / 补了用例造成的，不是同一份代码的抖动（同一环境**连跑两次**的跑动 ≤0.01，
+> 见下表；历史四次跑动也 ≤0.02）。
+> 影响：**分支这一项的余量原先被高估了 0.66**（文档记 2.05、实际 1.39），其余三项变化不大。
+> 已按本机实测更新；取证环境：`origin/master` 的 `69309811b`，整轮 `vitest run --coverage` **两次**
+> （249 个测试文件 / 2825 个用例全过、678 个受统计文件，两次读数见上表），余量按**两次中较差的一次**算。
+>
+> ⚠️ **这一行至今没有任何门禁校验**（`coverage-by-package.mjs --check` 只比对 §1.3 那张**分包**表），
+> 所以它漂了 0.65 也没有任何东西报出来。
+> **建议（本批有意未实现，留待独立批次）**：把它纳入 `scripts/coverage-by-package.mjs --check` 的比对范围
+> ——该脚本已经在读 `coverage-summary.json` 的 `total`（全局四项就在这里），加进去**不需要新产物、不增加依赖**，
+> 用的是与分包行覆盖率相同的 `TOLERANCE`（0.5 个百分点），并沿用"文档腐化要拦、环境抖动要容"的口径。
+> 之所以不在本批动它：门禁基准应取**CI 权威读数**（`pull_request` run），而本批合并前只能取到本机读数；
+> 同时它也会把上一段的"余量"数字变成必须持续同步的项，需要一次独立的决策。
 
 > **2026-10-05 的读数为什么整体略高**：issue #134 收尾批（渐变族去 class）把 `gradient.spec.ts` /
 > `minMaxGradient.spec.ts` 改写成 `gradientOps.spec.ts` / `minMaxGradientOps.spec.ts`（用例数净增 16），
@@ -154,10 +170,28 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 >    （**函数级真实数据**），`webgpu` 包行覆盖率 40 上下（40.1，取 rebase 到最新 master 后的实测）。
 >
 > 也就是说：**只有真正执行过的代码才算覆盖**这条常识，在这批文件上此前是不成立的——它们被其它模块
-> 间接 `import`，于是 v8 provider 按"模块顶层块范围"把它们整份算成已覆盖（**虚高**）。新增用例把它们
-> 变成"被加载且被部分执行"，虚高的 100% 随之消失，露出 `~17%` 的真身。
-> **40.1 是这个包的真实读数，不是本批造成的质量退步**（同批 `ChainMap` 化本身对覆盖率几乎无影响：
-> 不放新用例时 60.5，与改动前的 60.0 同档）。
+> 间接 `import`，于是被整份算成已覆盖（**虚高**）。新增用例把它们变成"被加载且被部分执行"，
+> 虚高的 100% 随之消失，露出 `~17%` 的真身。
+>
+> ⚠️ **机制归因已在 issue #645 修正**：上面原先写的是"v8 provider 按**模块顶层块范围**把它们整份算成已覆盖"，
+> 该归因**不准确**。两条独立最小复现（`%TEMP%` 下，未写入仓库）证明：① `NODE_V8_COVERAGE` 的原始数据是
+> **准确的**——只被 `import`、自身不执行的 ESM 模块里，`constructor` / 计算属性 / 未被调用的函数如实报告
+> `count=0`，函数块没有被外层吞掉；② `ast-v8-to-istanbul` 的 `convert()` **也是准确的**（转换后
+> `constructor` / `compute` / `dispose` 正确落在未覆盖）。所以失真在 **vitest v8 provider 的
+> TS / vite transform / sourcemap / istanbul 收集映射链**上，触发条件是「该模块被加载、但这一轮里没有
+> 任何代码真正执行」——同一轮里两种形态并存也印证这点（同属 `caches/`、同样被间接 `import` 的
+> `WGPUBindGroupLayout.ts` 报 `1/10`，而 `WGPUTexture.ts` 报 `119/119`）。
+>
+> ⚠️ **「40.1 是这个包的真实读数」这句话已被 issue #645 推翻**（本行原先就是这么写的）：
+> 本批只揭穿了 `caches/*` 那一批，实测仍有 **6 个文件 / 265 条语句**保持 100%
+> ——`WGPUCanvasContext`（57 条）、`WGPURenderPassColorAttachment`（74）、`WGPUTimestampQuery`（49）、
+> `WGPURenderBundle`（34）、`WGPUCanvasTexture`（27）、`WGPUExternalTexture`（24）。
+> 它们的 `fnMap` 里是 `_onConfiguration` / `gpuCanvasContext` 这类必须真 GPU 才能走到的入口，
+> 且**躲过了 issue #645 原先"语句计数全等"的判据**（spec 访问 getter 打破了语句计数的全等，
+> 但没有打破 100%）。准确的说法因此是：**40.1 已消除大部分虚高，但仍偏高——`webgpu` 的真实行覆盖率
+> 低于 40.1**；能确定的只是「不是本批造成的质量退步」（同批 `ChainMap` 化本身对覆盖率几乎无影响：
+> 不放新用例时 60.5，与改动前的 60.0 同档）。这 6 个文件现在都登记在 issue #645 方案 C 的基线里
+> （见本节下方与 §2.1）。
 >
 > 连带影响：**本批让全局语句覆盖率下降约 1.6 个点**（本机对照：同一份 lazy 化代码，只把新增用例
 > 移走时实测 **57.58**、放回用例后 **55.97**——这 1.6 点全部来自"虚高被揭穿"，与 lazy 化本身无关）。
@@ -167,6 +201,13 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > **暴露的 R10 缺口**（独立于本批，见 §2.1）：`coverage.include` 的 `all` 语义下，
 > "被间接 `import` 但从未执行"的文件会被算成满覆盖，读数**只能上不能下**；
 > 判断某个包真实覆盖率时，不能只看这张表。
+>
+> ✅ **本批（issue #645 方案 C）已把这个缺口变成可见**：新增
+> `scripts/check-coverage-inflation.mjs` + `scripts/coverage-inflation-baseline.json`，
+> 随 `npm run test:coverage` 进 CI，**新增虚高文件即失败**（判据、实测与接入点见 §2.1）。
+> 当前基线 **13 个文件 / 448 条语句**，按包为 `webgpu` 9、`shortcut` 2、`editor` 1、`feng3d` 1
+> ——其中 **6 个 / 265 条语句**正是上面那批"躲过旧判据"的 `webgpu` 文件。
+> 方案 A（收紧 `include` 语义）与方案 B（#594 的按包阈值）**本批有意不做**，理由见 §2.1。
 
 > ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
 > worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，
@@ -236,7 +277,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | R10 | 全量 **235 个测试文件 / 2742 个测试用例**，并校验四项覆盖率不低于阈值（见 §1.3） |
+| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **249 个测试文件 / 2825 个测试用例**，校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
@@ -260,7 +301,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | R7 作用域守卫异常安全 | —— | **无执行者**：`batchRun` / `noMutationCount` 机制已有 `try/finally` 与 API 级回归，但 11 个生产调用点没有逐个异常用例 |
 | R8 视觉回归强度 | —— | **未进 CI**：容差在 `playwright.config.ts`（全局 0.01）与 `e2e/examples.config.ts`（26 处放宽）里，examples 视觉回归不在任一 workflow；`editor-e2e` 跑的是编辑器产物、不校验容差 |
 | R9 包体天花板 | 19 | `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json` |
-| R10 覆盖率门禁 | 12、13 | `npm run test:coverage`（四项阈值）+ `coverage-by-package.mjs --check`（§1.3 表一致性） |
+| R10 覆盖率门禁 | 12、13 | `npm run test:coverage`（四项阈值 + `check-coverage-inflation.mjs` 虚高自检）+ `coverage-by-package.mjs --check`（§1.3 表一致性） |
 | R11 文档现状标签 | 6 | `check-doc-status-labels.mjs` |
 | R12 提交规范 | —— | **有意不设机器门禁**（约定式提交 + PR 评审；提交信息语义无法机器判定） |
 
@@ -442,16 +483,77 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 > （**不是** lazy 化本身的开销，而是新用例把一批"被间接 `import` 却从未执行"的文件从**虚高的 100%**
 > 拉回真实值），并暴露了 R10 的一条已知缺口。
 
-**R10（覆盖率门禁）的已知缺口（ChainMap 批暴露，独立于 R2）**
+**R10（覆盖率门禁）的已知缺口（ChainMap 批暴露，独立于 R2）——已由 issue #645 方案 C 接住**
 
 `coverage.include: packages/*/src/**/*.ts` 让"没被任何测试触及的文件"也进分母，但实测发现：
 **"被其它模块间接 `import` 过、自身一行都没执行"的文件会被算成满覆盖**。
 证据（本机 2026-10-05）：`webgpu/src/caches/*` 那 29 个文件在 `WGPUTexture` 构造器里打点，跑全量单元测试
 命中 **0 次**，却被报成 `119/119`、`61/61`、`28/28`（满覆盖）。
 后果是这张表**只能上不能下**：一旦有人为这些文件补一个 `import` 它们的用例，读数会"跌"一大截
-（本批 60.0 → 40.1），看着像质量退步、其实是虚高消失。
-**处置**：本批按实测同步 §1.3、**不动阈值**；缺口本身留给专门批次（收紧 `include` 语义，
-或改成"只统计执行过的文件"的口径）——**不要**用"别 import 这些文件"来保住数字。
+（60.0 → 40.1），看着像质量退步、其实是虚高消失。
+
+**根因与最终修法**（issue #645 证据 2）：失真不在 v8 的 range 语义（`NODE_V8_COVERAGE` 原始数据准确），
+也不在 `ast-v8-to-istanbul`（其 `convert()` 准确），而在 **vitest v8 provider 的 TS / sourcemap 收集映射链**；
+触发条件是「模块被加载、但这一轮没有任何代码真正执行」。最小复现见 issue #645、机制说明见 §1.3。
+所以配置一个正则、或只改 `include` 都修不掉根因。
+
+✅ **处置：读数自检已落地成门禁**（issue #645 **方案 C**，2026-10-05）
+
+| 落地物 | 作用 |
+|---|---|
+| `scripts/check-coverage-inflation.mjs` | 扫 `coverage/coverage-final.json` 列出虚高文件；**新增即失败**、修好提示收紧 |
+| `scripts/coverage-inflation-baseline.json` | 存量基线（**13 个文件 / 448 条语句**）；只登记 `inflated`，纯 enum / 常量模块判为 `real-const` 不登记 |
+| `vitest.config.ts` 的 `coverage.reporter` 加 `json` | 判据要逐语句 / 逐函数的命中次数（`json-summary` 只有汇总百分比）；产物 7.2 MB / 678 个文件、序列化 <1 s，见 §1.3 与配置内注释 |
+| 根 `package.json`：`"test:coverage": "vitest run --coverage && node scripts/check-coverage-inflation.mjs"` | **接入点**（见下） |
+
+**为什么接入点是 `test:coverage` 之后，而不是 `prelint:ci`**：质量门禁 job 的**第一步**就是 `npm run lint:ci`，
+而覆盖率产物要到**第 12 步** `npm run test:coverage` 才产生——挂在 `prelint:ci`（`check-math-no-class.mjs` /
+`check-readonly-array-fields.mjs` 的既有位置）上，CI 里它**永远**读不到产物、只能跳过，等于没有门禁
+（只有本地"先跑覆盖率再跑 lint"才会偶然生效）。挂到 `test:coverage` 之后，产物就在同一条命令里产生、
+CI 第 12 步天然会跑到它，而且**不需要改 `.github/workflows/`**（本仓推送凭据没有 `workflow` scope，
+见 `AGENTS.md` §16）。等有 `workflow` scope 时，可把它提成紧跟第 12 步的独立步骤（脚本本身无需改动）。
+
+**判据（比 issue #645 原先的判据更准）**：一个文件的**全部函数计数完全相等**（记为 `N > 0`），
+且 `N` 等于该文件"**模块顶层语句**"的计数（= 模块加载次数）。要点：
+
+- **为什么盯函数计数**：失真就是把"模块顶层块执行了 N 次"摊到该模块**每个函数**上，
+  于是 `constructor` / `_onCreate` / getter 全被算作执行了 N 次；真执行时不同函数的调用次数几乎必然
+  互不相同（实测 `packages/math/src/geom/euler.ts` 是 5/6/7/15/16…）。
+- **为什么不用 #645 的"语句计数全等"**：① 它会命中大量纯 enum / 常量模块（实测 32 个里 **27 个**是误报，
+  那些文件加载即全执行、100% 是真的）；② 它会**漏掉**语句计数被 getter 访问打破、但函数计数仍被整份夸大的
+  文件——正是上面那 6 个 / 265 条语句。
+- **"模块顶层语句"不靠猜**：用 istanbul `fnMap[i].loc`（函数体范围）**反选**出不在任何函数体内的语句，
+  其计数最大值即加载次数。这一步很关键：若拿"全部语句计数的最大值"当加载次数，会把
+  `MinMaxCurveVector3.ts`（`getValue` 真被调用 93 次）、`ParticleSystemShapeHemisphere.ts`（真被调用 300 次）、
+  `plugins/index.ts`（真被调用 37 次）这类**真执行**的文件误报进来。
+- **自动排除纯 enum / 常量**：源码里没有可执行函数体（无 `class` / `function` / 箭头函数 / getter-setter）
+  ⇒ 判 `real-const`，不计入虚高清单（但仍统计打印）。
+
+**实测对比**（2026-10-05，`origin/master` `69309811b`，678 个受统计文件）：
+
+| 判据 | 命中 | 其中纯 enum / 常量（误报） |
+|---|---|---|
+| issue #645 原判据（语句计数全等 = 函数计数全等） | 32 | 27 |
+| **本脚本判据（函数计数全等 = 顶层语句计数）** | **13** | **0** |
+
+13 个 / 448 条语句，按包 `webgpu` 9、`shortcut` 2、`editor` 1、`feng3d` 1；
+**含 §1.3 点名的全部 6 个漏网文件**，另多抓到 `Keyboard.ts`、`webgpu/src/data/Texture.ts`、
+`webgpu/src/data/Buffer.ts`、`WGPUBindGroupLayout.ts` 等同型文件。**已知残留**（有意不追求 100% 精确，
+方案 C 本就是"登记 + 复核"）：① 函数计数**不全等**、只有个别函数被夸大的文件（如 `WGPUTexture.ts` 的
+`map` / `_writeTextures`）不命中；② `WindowEventProxy.ts`（2 条语句、1 个箭头函数）属边缘命中。
+
+**本批没做的两条**（issue #645 的方案取舍）：
+
+- **方案 A（去掉 `coverage.include` 的全量语义）**：全局语句会从 56.44% 跳到 **69.62%**
+  （issue #645 实测：237 个零覆盖文件 / 6137 条语句退出分母）——一次性改变全局数字、且会让
+  "新文件没测试"不再可见（那正是当初加 `include` 要防的事），属独立决策；
+- **方案 B（#594 的按包 / 按文件阈值）**：在虚高读数上设阈值 = **把虚高冻结成"不许下降"的基线**，
+  必须等读数可信问题解决后再做（本条即其先决条件）。
+
+另：`scripts/coverage-by-package.mjs` 的"文件"列以 `lines.covered > 0` 判"文件已覆盖"，
+对虚高文件**必然为真**（实测 `webgpu` 的 `58/132` 里有 9 个是虚高文件）——本批**有意不改**该判据
+（理由与替代读法写在 `scripts/coverage-by-package.mjs` 相应位置的注释里），
+虚高现状改由上面的脚本独立守住。
 
 **另外修掉了探针自身的一处判据缺陷**（本批实测发现）：探针原先的 `ctxOf` 用
 `CallExpression.expression === 函数节点` 认 IIFE，而最常见的写法 `(() => { ... })()`

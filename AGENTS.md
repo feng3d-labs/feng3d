@@ -213,7 +213,7 @@ registerLogic('Rotate', RotateLogic);
 ## 13. 测试
 - 测试框架：Vitest
 - 新功能必加测试，修 bug 加回归测试，改公共 API 必更新测试
-- **覆盖率由门禁守着**（issue #74）：`npm run test:coverage`（= `vitest run --coverage`）在跑完同一批测试后校验阈值，低于阈值即失败。阈值取「实测基线向下留余量」——作用是**防下降**，不是宣告达标；各包现状分档与冲击 80% 的路径见 [docs/CI.md](docs/CI.md) §1.3。上调阈值时同步更新该表
+- **覆盖率由门禁守着**（issue #74）：`npm run test:coverage`（= `vitest run --coverage`）在跑完同一批测试后校验阈值，低于阈值即失败。阈值取「实测基线向下留余量」——作用是**防下降**，不是宣告达标；各包现状分档与冲击 80% 的路径见 [docs/CI.md](docs/CI.md) §1.3。上调阈值时同步更新该表。**读数本身可能虚高**（issue #645）：只被间接 `import`、自身一行都没执行的模块会被整份算成 100%，故 `test:coverage` 末尾追加 `node scripts/check-coverage-inflation.mjs`（新增虚高文件即失败，基线 `scripts/coverage-inflation-baseline.json`；判据与残留面见该脚本文件头）
 - **升级测试基础设施（vitest / coverage provider）后必须按新口径重测阈值**，不能沿用旧值：vitest 3.2.6 → 5.0.2 时同一份代码的语句总数从 56571 变 30142、分支分母从 4366 变 12996（插桩与 sourcemap 映射方式变了），旧阈值会让门禁立刻全红
 
 ## 14. 其他约定
@@ -258,7 +258,7 @@ registerLogic('Rotate', RotateLogic);
 | R7 | 作用域守卫异常安全 | 🔶 机制已有（`batchRun` / `noMutationCount` 均 `try/finally` + API 级回归），但 11 个生产调用点没有逐个异常用例，**无执行者** |
 | R8 | 视觉回归强度 | 🔶 容差真实存在（`playwright.config.ts` 全局 0.01；`e2e/examples.config.ts` 26 处放宽、最宽 0.4），但 examples 视觉回归**未进 CI**，"放宽需说明理由"无执行者 |
 | R9 | 包体天花板 | ✅ `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（进 CI） |
-| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（54/44/51/54，2026-10-02 按实测复测上调）+ `npm run test:coverage`（进 CI） |
+| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（54/44/51/54，2026-10-02 按实测复测上调）+ `npm run test:coverage`（进 CI；末尾追加 `check-coverage-inflation.mjs` 拦新增的覆盖率虚高文件，issue #645） |
 | R11 | 文档现状标签 | ✅ `check-doc-status-labels.mjs`（进 CI） |
 | R12 | 提交规范 | ✅ 约定式提交 + PR 评审（**无机器门禁**，有意为之） |
 
