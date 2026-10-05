@@ -31,6 +31,11 @@ FS.fs = new ReadWriteFS();
 ReadRS.rs = editorRS;
 ```
 
+> **2026-10-05 决策 ① 之后**：上面这段已经不存在了 —— `native` 直连先被删（§11-9），
+> 随后 `indexedDBFS` 也整个删掉（`FSType` 现在只有 `http` / `native` / `host`）。
+> 现在 `installEditorResourceSystem()` 里的初值就是 **`FS.basefs = new HostFS()`** ——
+> **没有"页面内副本"可退**；没有项目时碰项目会如实失败（见 ARCHITECTURE §11 问题 24）。
+
 浏览器端打开项目的实际路径是：**用户选一个 zip → 解压进 `indexedDB` → 之后所有读写都对着那份副本**。
 于是"项目"有两份：磁盘上一份（VS Code 改的、`npm run build` 跑的、Git 管的），页面里一份。
 **页面那份永远追不上磁盘那份**——这不是实现问题，是形态问题。
