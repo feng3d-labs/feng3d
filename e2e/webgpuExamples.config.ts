@@ -53,8 +53,10 @@ export const WEBGPU_EXAMPLES: WebgpuExampleSpec[] = [
     { name: 'imageBlur', url: '/src/webgpu/imageBlur/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     // ---- 内联 WGSL 改 TSL 的那批（#712 第三批）----
     { name: 'helloTriangle', url: '/src/webgpu/helloTriangle/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    { name: 'helloTriangleMSAA', url: '/src/webgpu/helloTriangleMSAA/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    { name: 'resizeCanvas', url: '/src/webgpu/resizeCanvas/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     { name: 'multipleCanvases', url: '/src/webgpu/multipleCanvases/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     { name: 'RenderObjectChanges', url: '/src/webgpu/RenderObjectChanges/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
-    // worker 示例由 Web Worker 驱动，实测抖动 0.04~0.07（高于别的示例），容差相应放宽
-    { name: 'worker', url: '/src/webgpu/worker/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.08 },
+    // worker 示例由 Web Worker 驱动，实测抖动 0.04~0.07、偶发超过 0.08（高于别的示例），容差相应放宽
+    { name: 'worker', url: '/src/webgpu/worker/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.1 },
 ];
