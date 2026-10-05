@@ -1,6 +1,7 @@
 import { computed, onUnmounted, ref } from 'vue';
 import { callHost } from '../../bridge/hostCall';
 import { subscribeBridgeEvent } from '../../bridge/bridgeSocket';
+import { getEnabledPlugins } from '../../plugins/registry';
 
 /** 项目里的一条文件/目录（宿主给的是**项目内相对路径**） */
 interface HostFileEntry
@@ -193,7 +194,11 @@ export function useHostPanel()
             const result = await callHost<{
                 ok: boolean; stage?: string; file: string | null; plugins: string[]; skipped: string[];
                 bytes: number; build: { code: number; ok: boolean; output: string[] } | null;
-            }>('host.publish.run', {});
+            }>('host.publish.run', {
+                // **把编辑器里的开关传下去**（#277「开关参与构建」）：发布读的是项目/静态根的
+                // 配置，而用户真实的开关在浏览器这边——不传下去，"关掉插件"对产物没有影响。
+                enabledPlugins: getEnabledPlugins().map((manifest) => manifest.id),
+            });
 
             // 构建阶段的输出先铺上——构建失败时，它就是"为什么没发布"的答案
             if (result.build?.output?.length) output.value = result.build.output;

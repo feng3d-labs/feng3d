@@ -320,7 +320,10 @@ const projectPublish = new ProjectPublish(ctx, {
     build: projectBuild,
 });
 
-hostMethods.register('host.publish.run', async () => await projectPublish.run());
+hostMethods.register('host.publish.run', async ({ enabledPlugins } = {}) =>
+    // `enabledPlugins` 是**编辑器界面里的开关**（#277）：页面把当前启用集传下来，
+    // 宿主据此决定谁进产物——不传就退回静态配置。
+    await projectPublish.run({ enabledPlugins }));
 
 console.log(`[feng3d-editor] 宿主方法：${hostMethods.names.length} 个（${hostMethods.names.join(', ')}）`);
 
