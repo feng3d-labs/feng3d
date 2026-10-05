@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { vec3From } from '@feng3d/math';
 
 import { Particle } from '../src/Particle';
-import { ParticleColorBySpeedModule } from '../src/modules/ParticleColorBySpeedModule';
-import { ParticleColorOverLifetimeModule } from '../src/modules/ParticleColorOverLifetimeModule';
+import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState } from '../src/modules/ParticleColorBySpeedModule';
+import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState } from '../src/modules/ParticleColorOverLifetimeModule';
 
 /**
  * 两个颜色模块（issue #392，第一批）。
@@ -36,10 +36,10 @@ describe('ParticleColorOverLifetimeModule（issue #392）', () =>
 {
     it('initParticleState：写入一个 [0,1) 的速率缓存', () =>
     {
-        const module = new ParticleColorOverLifetimeModule();
+        const module = particleColorOverLifetimeModuleDefault();
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleColorOverLifetimeModuleInitParticleState(module, particle);
 
         const rate = (particle as unknown as Record<string, number>)._ColorOverLifetime_rate;
         expect(typeof rate).toBe('number');
@@ -49,11 +49,11 @@ describe('ParticleColorOverLifetimeModule（issue #392）', () =>
 
     it('enabled = false 时完全不碰颜色', () =>
     {
-        const module = new ParticleColorOverLifetimeModule();
+        const module = particleColorOverLifetimeModuleDefault();
         module.enabled = false;
         const particle = makeParticle();
 
-        module.updateParticleState(particle);
+        particleColorOverLifetimeModuleUpdateParticleState(module, particle);
 
         expect(particle.color.r).toBe(1);
         expect(particle.color.g).toBe(1);
@@ -63,7 +63,7 @@ describe('ParticleColorOverLifetimeModule（issue #392）', () =>
 
     it('enabled = true 时把梯度色乘到粒子颜色上', () =>
     {
-        const module = new ParticleColorOverLifetimeModule();
+        const module = particleColorOverLifetimeModuleDefault();
         module.enabled = true;
         module.color.color.r = 0.5;
         module.color.color.g = 0.25;
@@ -71,7 +71,7 @@ describe('ParticleColorOverLifetimeModule（issue #392）', () =>
         module.color.color.a = 1;
 
         const particle = makeParticle();
-        module.updateParticleState(particle);
+        particleColorOverLifetimeModuleUpdateParticleState(module, particle);
 
         expect(particle.color.r).toBeCloseTo(0.5, 6);
         expect(particle.color.g).toBeCloseTo(0.25, 6);
@@ -81,7 +81,7 @@ describe('ParticleColorOverLifetimeModule（issue #392）', () =>
 
     it('★ 写入是"乘法且累积"（既有语义，调用方需自行重置颜色）', () =>
     {
-        const module = new ParticleColorOverLifetimeModule();
+        const module = particleColorOverLifetimeModuleDefault();
         module.enabled = true;
         module.color.color.r = 0.5;
         module.color.color.g = 0.5;
@@ -89,8 +89,8 @@ describe('ParticleColorOverLifetimeModule（issue #392）', () =>
         module.color.color.a = 1;
 
         const particle = makeParticle();
-        module.updateParticleState(particle);
-        module.updateParticleState(particle);
+        particleColorOverLifetimeModuleUpdateParticleState(module, particle);
+        particleColorOverLifetimeModuleUpdateParticleState(module, particle);
 
         // 0.5 × 0.5 = 0.25 —— 说明它是就地累积，而不是"赋值为梯度色"
         expect(particle.color.r).toBeCloseTo(0.25, 6);
@@ -102,7 +102,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
 {
     function makeModule(range?: [number, number])
     {
-        const module = new ParticleColorBySpeedModule();
+        const module = particleColorBySpeedModuleDefault();
         module.enabled = true;
         module.color.color.r = 0.5;
         module.color.color.g = 0.5;
@@ -118,7 +118,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         const module = makeModule();
         const particle = makeParticle();
 
-        module.initParticleState(particle);
+        particleColorBySpeedModuleInitParticleState(module, particle);
 
         const rate = (particle as unknown as Record<string, number>)._ColorBySpeed_rate;
         expect(typeof rate).toBe('number');
@@ -133,7 +133,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         const particle = makeParticle();
         vec3From(10, 0, 0, particle.velocity);
 
-        module.updateParticleState(particle);
+        particleColorBySpeedModuleUpdateParticleState(module, particle);
 
         expect(particle.color.r).toBe(1);
     });
@@ -144,7 +144,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         const particle = makeParticle();
         vec3From(5, 0, 0, particle.velocity);
 
-        module.updateParticleState(particle);
+        particleColorBySpeedModuleUpdateParticleState(module, particle);
 
         expect(particle.color.r).toBeCloseTo(0.5, 6);
         expect(particle.color.g).toBeCloseTo(0.5, 6);
@@ -156,14 +156,14 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         const low = makeModule([5, 10]);
         const p1 = makeParticle();
         vec3From(0, 0, 0, p1.velocity);
-        low.updateParticleState(p1);
+        particleColorBySpeedModuleUpdateParticleState(low, p1);
         expect(p1.color.r).toBeCloseTo(0.5, 6);   // 仍是常量色（mode = Color 忽略 rate）
 
         // 上界：速度 100、range 到 10 → 夹到 1
         const high = makeModule([5, 10]);
         const p2 = makeParticle();
         vec3From(100, 0, 0, p2.velocity);
-        high.updateParticleState(p2);
+        particleColorBySpeedModuleUpdateParticleState(high, p2);
         expect(p2.color.r).toBeCloseTo(0.5, 6);
     });
 
@@ -179,7 +179,7 @@ describe('ParticleColorBySpeedModule（issue #392）', () =>
         const particle = makeParticle();
         vec3From(7, 0, 0, particle.velocity);
 
-        module.updateParticleState(particle);
+        particleColorBySpeedModuleUpdateParticleState(module, particle);
 
         expect(Number.isFinite(particle.color.r), `color.r = ${particle.color.r}`).toBe(true);
         expect(Number.isFinite(particle.color.g)).toBe(true);

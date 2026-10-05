@@ -3,7 +3,7 @@ import { vec3Copy, vec3Length, minMaxCurveDefault } from '@feng3d/math';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
-import { ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
+import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type WritableParticleLimitVelocityOverLifetimeModuleLike } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
 
 /**
  * `ParticleLimitVelocityOverLifetimeModule`（issue #392，第一批的第一个模块）。
@@ -40,9 +40,9 @@ function makeParticle(vx: number, vy = 0, vz = 0): Particle
  * `space` 与假 `particleSystem.main.simulationSpace` 都取 Local，使实现跳过矩阵变换分支
  * （那条分支要读 `logic(this.particleSystem._obj()).local2world`，需要真实场景树）。
  */
-function makeModule(options: { limit?: number; dampen?: number; separateAxes?: boolean } = {}): ParticleLimitVelocityOverLifetimeModule
+function makeModule(options: { limit?: number; dampen?: number; separateAxes?: boolean } = {}): WritableParticleLimitVelocityOverLifetimeModuleLike
 {
-    const module = new ParticleLimitVelocityOverLifetimeModule();
+    const module = particleLimitVelocityOverLifetimeModuleDefault();
     module.enabled = true;
     module.space = ParticleSystemSimulationSpace.Local;
     module.particleSystem = { main: { simulationSpace: ParticleSystemSimulationSpace.Local } } as never;
@@ -70,7 +70,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         const module = makeModule();
         const particle = makeParticle(0);
 
-        module.initParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
 
         const rate = (particle as unknown as Record<string, number>)._LimitVelocityOverLifetime_rate;
         expect(typeof rate).toBe('number');
@@ -86,7 +86,7 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         const particle = makeParticle(10, 0, 0);
         const before = vec3Copy(particle.velocity);
 
-        module.updateParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         expect(particle.velocity.x).toBe(before.x);
         expect(particle.velocity.y).toBe(before.y);
@@ -97,9 +97,9 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
     {
         const module = makeModule({ limit: 2, dampen: 1 });
         const particle = makeParticle(10, 0, 0);
-        module.initParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
 
-        module.updateParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         // 只改大小、不改方向：仍在 +X 轴上，长度被压到 limit
         expect(particle.velocity.x).toBeCloseTo(2, 5);
@@ -112,9 +112,9 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
     {
         const module = makeModule({ limit: 5, dampen: 1 });
         const particle = makeParticle(3, 0, 0);
-        module.initParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
 
-        module.updateParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         expect(vec3Length(particle.velocity)).toBeCloseTo(3, 5);
     });
@@ -123,9 +123,9 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
     {
         const module = makeModule({ limit: 2, dampen: 0.5 });
         const particle = makeParticle(10, 0, 0);
-        module.initParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
 
-        module.updateParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         // 原 10 → 限速目标 2，按 0.5 插值 → 6
         expect(vec3Length(particle.velocity)).toBeCloseTo(6, 5);
@@ -135,9 +135,9 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
     {
         const module = makeModule({ limit: 1, dampen: 1, separateAxes: true });
         const particle = makeParticle(10, -10, 0.5);
-        module.initParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
 
-        module.updateParticleState(particle);
+        particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
         // 逐轴被夹到 ±limit（limit 默认 constant 1 × multiplier 1）
         expect(Math.abs(particle.velocity.x)).toBeLessThanOrEqual(1.000001);
@@ -153,8 +153,8 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         {
             const module = makeModule({ limit, dampen: 1 });
             const particle = makeParticle(10, 0, 0);
-            module.initParticleState(particle);
-            module.updateParticleState(particle);
+            particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
+            particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
             return vec3Length(particle.velocity);
         };
@@ -171,8 +171,8 @@ describe('ParticleLimitVelocityOverLifetimeModule（issue #392）', () =>
         for (let i = 0; i < 50; i++)
         {
             particle.rateAtLifeTime = i / 50;
-            module.initParticleState(particle);
-            module.updateParticleState(particle);
+            particleLimitVelocityOverLifetimeModuleInitParticleState(module, particle);
+            particleLimitVelocityOverLifetimeModuleUpdateParticleState(module, particle);
 
             for (const v of [particle.velocity.x, particle.velocity.y, particle.velocity.z])
             {

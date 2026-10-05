@@ -3,12 +3,12 @@ import { describe, expect, it } from 'vitest';
 
 import { Particle } from '../src/Particle';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
-import { ParticleColorBySpeedModule } from '../src/modules/ParticleColorBySpeedModule';
-import { ParticleColorOverLifetimeModule } from '../src/modules/ParticleColorOverLifetimeModule';
+import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from '../src/modules/ParticleColorBySpeedModule';
+import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule } from '../src/modules/ParticleColorOverLifetimeModule';
 import { ParticleEmissionModule } from '../src/modules/ParticleEmissionModule';
-import { ParticleForceOverLifetimeModule } from '../src/modules/ParticleForceOverLifetimeModule';
-import { ParticleInheritVelocityModule } from '../src/modules/ParticleInheritVelocityModule';
-import { ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
+import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModuleInitParticleState, particleForceOverLifetimeModuleUpdateParticleState, type ParticleForceOverLifetimeModule } from '../src/modules/ParticleForceOverLifetimeModule';
+import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from '../src/modules/ParticleInheritVelocityModule';
+import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
 import { ParticleMainModule } from '../src/modules/ParticleMainModule';
 import { ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
 import { ParticleSizeBySpeedModule } from '../src/modules/ParticleSizeBySpeedModule';
@@ -94,34 +94,110 @@ function assertFiniteParticleState(name: string, particle: Particle): void
     expect(Number.isFinite(particle.lifetime), name + ": lifetime = " + particle.lifetime).toBe(true);
 }
 
-type ModuleCtor = new () => {
+/** 可测模块的最小形状（探针只需要开关与反向引用） */
+interface TestableModule
+{
     enabled: boolean;
-    particleSystem: unknown;
-    initParticleState(p: Particle): void;
-    updateParticleState(p: Particle): void;
-};
+    particleSystem?: unknown;
+}
 
-const MODULES: [string, ModuleCtor][] = [
-    ['ParticleColorBySpeedModule', ParticleColorBySpeedModule],
-    ['ParticleColorOverLifetimeModule', ParticleColorOverLifetimeModule],
-    ['ParticleEmissionModule', ParticleEmissionModule],
-    ['ParticleForceOverLifetimeModule', ParticleForceOverLifetimeModule],
-    ['ParticleInheritVelocityModule', ParticleInheritVelocityModule],
-    ['ParticleLimitVelocityOverLifetimeModule', ParticleLimitVelocityOverLifetimeModule],
-    ['ParticleMainModule', ParticleMainModule],
-    ['ParticleNoiseModule', ParticleNoiseModule],
-    ['ParticleSizeBySpeedModule', ParticleSizeBySpeedModule],
-    ['ParticleSizeOverLifetimeModule', ParticleSizeOverLifetimeModule],
-    ['ParticleSubEmittersModule', ParticleSubEmittersModule],
-    ['ParticleSystemRenderer', ParticleSystemRenderer],
-    ['ParticleVelocityOverLifetimeModule', ParticleVelocityOverLifetimeModule],
+/**
+ * 模块条目：已纯数据化的模块用默认工厂 + 模块级行为函数，未迁移的仍用 \`new\` + 方法转发。
+ */
+interface ModuleEntry
+{
+    name: string;
+    create: () => TestableModule;
+    initParticleState: (module: TestableModule, particle: Particle) => void;
+    updateParticleState: (module: TestableModule, particle: Particle) => void;
+}
+
+const MODULES: ModuleEntry[] = [
+    {
+        name: 'ParticleColorBySpeedModule',
+        create: () => ({ __type__: 'ParticleColorBySpeedModule', ...particleColorBySpeedModuleDefault() }),
+        initParticleState: (m, p) => particleColorBySpeedModuleInitParticleState(m as ParticleColorBySpeedModule, p),
+        updateParticleState: (m, p) => particleColorBySpeedModuleUpdateParticleState(m as ParticleColorBySpeedModule, p),
+    },
+    {
+        name: 'ParticleColorOverLifetimeModule',
+        create: () => ({ __type__: 'ParticleColorOverLifetimeModule', ...particleColorOverLifetimeModuleDefault() }),
+        initParticleState: (m, p) => particleColorOverLifetimeModuleInitParticleState(m as ParticleColorOverLifetimeModule, p),
+        updateParticleState: (m, p) => particleColorOverLifetimeModuleUpdateParticleState(m as ParticleColorOverLifetimeModule, p),
+    },
+    {
+        name: 'ParticleEmissionModule',
+        create: () => new ParticleEmissionModule(),
+        initParticleState: (m, p) => (m as ParticleEmissionModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleEmissionModule).updateParticleState(p),
+    },
+    {
+        name: 'ParticleForceOverLifetimeModule',
+        create: () => ({ __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() }),
+        initParticleState: (m, p) => particleForceOverLifetimeModuleInitParticleState(m as ParticleForceOverLifetimeModule, p),
+        updateParticleState: (m, p) => particleForceOverLifetimeModuleUpdateParticleState(m as ParticleForceOverLifetimeModule, p),
+    },
+    {
+        name: 'ParticleInheritVelocityModule',
+        create: () => ({ __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() }),
+        initParticleState: (m, p) => particleInheritVelocityModuleInitParticleState(m as ParticleInheritVelocityModule, p),
+        updateParticleState: (m, p) => particleInheritVelocityModuleUpdateParticleState(m as ParticleInheritVelocityModule, p),
+    },
+    {
+        name: 'ParticleLimitVelocityOverLifetimeModule',
+        create: () => ({ __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() }),
+        initParticleState: (m, p) => particleLimitVelocityOverLifetimeModuleInitParticleState(m as ParticleLimitVelocityOverLifetimeModule, p),
+        updateParticleState: (m, p) => particleLimitVelocityOverLifetimeModuleUpdateParticleState(m as ParticleLimitVelocityOverLifetimeModule, p),
+    },
+    {
+        name: 'ParticleMainModule',
+        create: () => new ParticleMainModule(),
+        initParticleState: (m, p) => (m as ParticleMainModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleMainModule).updateParticleState(p),
+    },
+    {
+        name: 'ParticleNoiseModule',
+        create: () => new ParticleNoiseModule(),
+        initParticleState: (m, p) => (m as ParticleNoiseModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleNoiseModule).updateParticleState(p),
+    },
+    {
+        name: 'ParticleSizeBySpeedModule',
+        create: () => new ParticleSizeBySpeedModule(),
+        initParticleState: (m, p) => (m as ParticleSizeBySpeedModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleSizeBySpeedModule).updateParticleState(p),
+    },
+    {
+        name: 'ParticleSizeOverLifetimeModule',
+        create: () => new ParticleSizeOverLifetimeModule(),
+        initParticleState: (m, p) => (m as ParticleSizeOverLifetimeModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleSizeOverLifetimeModule).updateParticleState(p),
+    },
+    {
+        name: 'ParticleSubEmittersModule',
+        create: () => new ParticleSubEmittersModule(),
+        initParticleState: (m, p) => (m as ParticleSubEmittersModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleSubEmittersModule).updateParticleState(p),
+    },
+    {
+        name: 'ParticleSystemRenderer',
+        create: () => new ParticleSystemRenderer(),
+        initParticleState: (m, p) => (m as ParticleSystemRenderer).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleSystemRenderer).updateParticleState(p),
+    },
+    {
+        name: 'ParticleVelocityOverLifetimeModule',
+        create: () => new ParticleVelocityOverLifetimeModule(),
+        initParticleState: (m, p) => (m as ParticleVelocityOverLifetimeModule).initParticleState(p),
+        updateParticleState: (m, p) => (m as ParticleVelocityOverLifetimeModule).updateParticleState(p),
+    },
 ];
 
 describe('可独立测试的粒子模块不变量（issue #392）', () =>
 {
-    it.each(MODULES)('%s：init + update 不抛异常', (name, Ctor) =>
+    it.each(MODULES)('$name：init + update 不抛异常', ({ name, create, initParticleState, updateParticleState }) =>
     {
-        const module = new Ctor();
+        const module = create();
         module.enabled = true;
         module.particleSystem = makeDeepPermissive();
 
@@ -130,14 +206,14 @@ describe('可独立测试的粒子模块不变量（issue #392）', () =>
 
         expect(() =>
         {
-            module.initParticleState(particle);
-            module.updateParticleState(particle);
+            initParticleState(module, particle);
+            updateParticleState(module, particle);
         }, name).not.toThrow();
     });
 
-    it.each(MODULES)('%s：跑完之后粒子状态都是有限数', (name, Ctor) =>
+    it.each(MODULES)('$name：跑完之后粒子状态都是有限数', ({ name, create, initParticleState, updateParticleState }) =>
     {
-        const module = new Ctor();
+        const module = create();
         module.enabled = true;
         module.particleSystem = makeDeepPermissive();
 
@@ -146,21 +222,21 @@ describe('可独立测试的粒子模块不变量（issue #392）', () =>
         vec3From(1, 2, 3, particle.position);
         vec3From(1, 2, 3, particle.velocity);
 
-        module.initParticleState(particle);
-        module.updateParticleState(particle);
+        initParticleState(module, particle);
+        updateParticleState(module, particle);
 
         assertFiniteParticleState(name, particle);
     });
 
-    it.each(MODULES)('%s：enabled = false 时不应抛异常（关闭路径也要安全）', (name, Ctor) =>
+    it.each(MODULES)('$name：enabled = false 时不应抛异常（关闭路径也要安全）', ({ name, create, updateParticleState }) =>
     {
-        const module = new Ctor();
+        const module = create();
         module.enabled = false;
         module.particleSystem = makeDeepPermissive();
 
         const particle = new Particle();
         particle.rateAtLifeTime = 0.5;
 
-        expect(() => module.updateParticleState(particle), name).not.toThrow();
+        expect(() => updateParticleState(module, particle), name).not.toThrow();
     });
 });
