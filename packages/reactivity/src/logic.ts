@@ -222,3 +222,25 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
 
     return l;
 }
+
+/**
+ * 创建 Logic 的共享原型（issue #674）。
+ *
+ * Logic 已从 class 改为工厂函数：实例由 `Object.create(proto)` 创建，方法 / getter 挂在
+ * 文件级共享 proto 上——保住「方法在原型上共享」的内存优势（千级对象场景不产生每实例闭包）。
+ *
+ * 必须用属性描述符一次性定义：方法覆写与 getter 都是描述符——`Object.assign` 会把 getter
+ * 求值成数据属性，也丢掉 `Object.create(base)` 建立的继承关系。
+ *
+ * @param base 基类 proto（作为 `Object.create` 的原型；根类型传 `null`）
+ * @param descriptors 本类型的属性描述符表（方法 / getter / 对基类的覆写）
+ * @returns 共享原型对象（类型断言为 Logic 接口）
+ */
+export function createLogicProto<T>(base: object | null, descriptors: PropertyDescriptorMap): T
+{
+    const proto = Object.create(base) as object;
+
+    Object.defineProperties(proto, descriptors);
+
+    return proto as T;
+}
