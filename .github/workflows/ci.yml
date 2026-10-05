@@ -333,12 +333,23 @@ jobs:
 
       - name: 插件自带 AI 工具端到端（#281 路径 A 的最后一截）
         # 前几条分别守在**离线**两侧：`editor-mcp-check.mjs`（quality job）验"声明与接线"、
-        # 纯函数单测验贡献表登记。这一步把它们连起来真跑一遍——**起真页面 → 装载插件包 →
-        # 经真 MCP server 取 `tools/list`**：装载前没有、装载后多出 `rotate_info`（描述与 schema
+        # 纯函数单测验贡献表登记。这一步把它们连起来真跑一遍——**起真页面 → 宿主装载插件包 →
+        # 经真 MCP server 取 `tools/list`**：静态基线照常在、多出 `rotate_info`（描述与 schema
         # 来自插件清单）、`tools/call` **真的调得通**（动态工具走 `pluginMethods` 兜底）、
-        # 卸载后立刻消失。缺了这一段，"装一个插件，AI 就多一个工具"只有**文本级**证据——
+        # **经桥接禁用后立刻消失**。缺了这一段，"装一个插件，AI 就多一个工具"只有**文本级**证据——
         # 它上线第一次就抓到一条离线看不见的断链（贡献表没带 description/schema）。
-        run: node scripts/editor-mcp-plugin-tools.mjs --url http://localhost:3000
+        #
+        # **2026-10-05（决策 ①）它改成自带宿主**：原先它对着上面那个宿主跑、靠页面侧的
+        # `import('/src/*.ts')` **手动装卸** —— 那要 vite，而页面现在必须有宿主（初值 `HostFS`），
+        # dev 形态整体不成立。现在它自己 esbuild 打插件包、写产物配置、起宿主（`--new` 唯一临时
+        # 目录），装载走**真实路径**（宿主注入入口图 → 页面启动时装），"卸载"改走**桥接**
+        # （`editor.setPlugin`）—— 后者正是用户切开关的动作，判据反而更硬。
+        #
+        # job 级的 `EDITOR_BRIDGE_URL` 是给上面几个"对着 CI 起的宿主跑"的脚本用的；
+        # 这一步自带宿主，所以要清掉它（否则又会走"对着外部宿主"那条路）。
+        env:
+          EDITOR_BRIDGE_URL: ''
+        run: node scripts/editor-mcp-plugin-tools.mjs
 
       - name: 宿主装载插件端到端（#276 任务 4 的完整链路）
         # 前后两个脚本分别守在两端（`check-editor-boot.mjs` 验宿主产出的入口图对不对、
