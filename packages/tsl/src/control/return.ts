@@ -122,11 +122,16 @@ export function return_<T extends ShaderValue>(expr?: T): void
         // 标记这是一个 return 语句，用于 fragment.ts 检查
         stmt._isReturn = true;
 
-        // 检查是否在 if 语句体中
+        // 检查是否在语句容器中（switch / while 也走 forStack）
+        const currentForStatement = getCurrentForStatement();
         const currentIfStatement = getCurrentIfStatement();
-        if (currentIfStatement)
+        if (currentForStatement)
         {
-            // 如果在 if 语句体中，使用 addStatement 自动判断添加到 if 体还是 else 体
+            currentForStatement.addStatement(stmt);
+        }
+        else if (currentIfStatement)
+        {
+            // 在 if 语句体中，使用 addStatement 自动判断添加到 if 体还是 else 体
             currentIfStatement.addStatement(stmt);
         }
         else

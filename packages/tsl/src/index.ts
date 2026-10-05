@@ -58,6 +58,8 @@ export { dFdy } from './glsl/derivative/dFdy';
 // control - 控制流
 export { continue_ } from './control/continue_';
 export { while_ } from './control/while_';
+export { switch_ } from './control/switch_';
+export { type SwitchBuilder } from './control/switch_';
 export { discard } from './control/discard';
 export { forRange_, forU32_ } from './control/for_';
 export { if_ } from './control/if_';
