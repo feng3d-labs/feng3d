@@ -1,5 +1,5 @@
-import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, registerComponentType, renderableLogicProto, setupRenderableLogicState, View, type RenderableLogicState } from 'feng3d';
-import { createLogicProto, logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, createRenderableLogicBase, registerComponentType, View } from 'feng3d';
+import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import {
     mat4TransformRay,
     Ray3,
@@ -58,25 +58,56 @@ export interface CanvasRendererLogic extends RenderableLogic
 {
 }
 
-/** CanvasRendererLogic 的共享原型：继承 Renderable 基类实现，覆写 worldRayIntersection */
-const canvasRendererLogicProto = createLogicProto<CanvasRendererLogic>(renderableLogicProto, {
-    /**
-     * 与世界空间射线相交（覆写基类）。
-     *
-     * 与基类的差异（迁移前 `CanvasRenderer.worldRayIntersection` 的原逻辑）：
-     * 1. 若父级上有 Canvas，则**忽略传入的射线**、改用画布的鼠标射线（`CanvasLogic.mouseRay`）；
-     * 2. 变换到本地空间后，再按 2D 尺寸/中心点把射线归一化到 UI 单位四边形（`[0,1]²`）坐标系；
-     * 3. 命中后强制 `cullFace = NONE`（UI 双面可拾取）。
-     *
-     * @param worldRay 世界空间射线
-     * @returns 相交信息；未挂载到对象、或未命中包围盒时为 `null`
-     */
-    worldRayIntersection: {
-        value: function (this: CanvasRendererLogic & RenderableLogicState, worldRay: Ray3): PickingCollisionVO
+/**
+ * 工厂函数：CanvasRendererLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：补 `geometry` / `material` 默认值（写在 raw 数据上）。
+ *
+ * @param data 画布渲染器组件数据（raw）
+ */
+export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
+{
+    // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上）。
+    // 迁移前这两个字段的初始值是 `Geometry.getDefault('Default-UIGeometry')` /
+    // `Material.getDefault('Default-UIMaterial')`——默认几何体/材质注册表已随阶段 C 删除，
+    // 旧写法会让 `{ __type__: 'CanvasRenderer' }` 落到 RenderableLogic 的 CubeGeometry /
+    // StandardMaterial 回退上（UI 着色器要的是单位四边形，不是居中的 Cube）。
+    const writable = data as UnReadonly<CanvasRenderer>;
+    if (writable.geometry === undefined) writable.geometry = createUIGeometry();
+    if (writable.material === undefined) writable.material = createUIMaterial();
+
+    const { members } = createRenderableLogicBase(data);
+
+    const logic: CanvasRendererLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        get lightPicker() { return members.lightPicker; },
+        get renderObject() { return members.renderObject; },
+        get selfLocalBounds() { return members.selfLocalBounds; },
+        get selfWorldBounds() { return members.selfWorldBounds; },
+        get isLoaded() { return members.isLoaded; },
+        baseBeforeRender(renderObject) { members.baseBeforeRender(renderObject); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        init(object3D) { members.init(object3D); },
+        update(interval) { members.update(interval); },
+        localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
+        /**
+         * 与世界空间射线相交（覆写基类）。
+         *
+         * 与基类的差异（迁移前 `CanvasRenderer.worldRayIntersection` 的原逻辑）：
+         * 1. 若父级上有 Canvas，则**忽略传入的射线**、改用画布的鼠标射线（`CanvasLogic.mouseRay`）；
+         * 2. 变换到本地空间后，再按 2D 尺寸/中心点把射线归一化到 UI 单位四边形（`[0,1]²`）坐标系；
+         * 3. 命中后强制 `cullFace = NONE`（UI 双面可拾取）。
+         *
+         * @param worldRay 世界空间射线
+         * @returns 相交信息；未挂载到对象、或未命中包围盒时为 `null`
+         */
+        worldRayIntersection(worldRay)
         {
             // `RenderableLogic` 用 `this.entity!` 断言非空；这里未挂载（没有宿主对象）时按「未命中」返回，
             // 与基类在包围盒未命中时的返回一致（`logic(单独组件)` 不会抛异常）。
-            const entity = this.entity as Object3D | null;
+            const entity = logic.entity;
             if (!entity) return null as unknown as PickingCollisionVO;
 
             const canvas = getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0];
@@ -100,7 +131,7 @@ const canvasRendererLogicProto = createLogicProto<CanvasRendererLogic>(renderabl
                 vec3NormalizeThickness(vec3Divide(localRay.direction, size, localRay.direction), 1, localRay.direction);
             }
 
-            const pickingCollisionVO = renderableLogicProto.localRayIntersection.call(this, localRay);
+            const pickingCollisionVO = members.localRayIntersection(localRay);
             if (pickingCollisionVO)
             {
                 pickingCollisionVO.cullFace = CullFace.NONE;
@@ -108,28 +139,10 @@ const canvasRendererLogicProto = createLogicProto<CanvasRendererLogic>(renderabl
 
             return pickingCollisionVO;
         },
-    },
-});
+        dispose() { members.dispose(); },
+    };
 
-/**
- * 工厂函数：CanvasRendererLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * 原构造函数体：补 `geometry` / `material` 默认值（写在 raw 数据上）。
- *
- * @param data 画布渲染器组件数据（raw）
- */
-export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
-{
-    // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上）。
-    // 迁移前这两个字段的初始值是 `Geometry.getDefault('Default-UIGeometry')` /
-    // `Material.getDefault('Default-UIMaterial')`——默认几何体/材质注册表已随阶段 C 删除，
-    // 旧写法会让 `{ __type__: 'CanvasRenderer' }` 落到 RenderableLogic 的 CubeGeometry /
-    // StandardMaterial 回退上（UI 着色器要的是单位四边形，不是居中的 Cube）。
-    const writable = data as UnReadonly<CanvasRenderer>;
-    if (writable.geometry === undefined) writable.geometry = createUIGeometry();
-    if (writable.material === undefined) writable.material = createUIMaterial();
-
-    return setupRenderableLogicState(Object.create(canvasRendererLogicProto) as CanvasRendererLogic & RenderableLogicState, data);
+    return logic;
 }
 
 // 注册到统一 logic 分发表

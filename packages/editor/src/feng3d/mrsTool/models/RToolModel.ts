@@ -1,6 +1,6 @@
-import { componentLogicProto, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, setupComponentLogicState, Vector3Like } from 'feng3d';
-import type { Color4, Component3D, Component3DLogic, ComponentLogicState, MeshRenderer, Object3D, Segment, Vector3 } from 'feng3d';
-import { createLogicProto, effect, reactive, UnReadonly } from '@feng3d/reactivity';
+import { createComponentLogicBase, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, Vector3Like } from 'feng3d';
+import type { Color4, Component3D, Component3DLogic, MeshRenderer, Object3D, Segment, Vector3 } from 'feng3d';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
 import { createSectorObject } from './SectorObject3D';
 import type { SectorObject3D } from './SectorObject3D';
@@ -78,68 +78,6 @@ export interface RToolModelLogic extends Component3DLogic
     readonly freeAxis: CoordinateRotationFreeAxis | null;
 }
 
-/** RToolModelLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface RToolModelLogicState extends ComponentLogicState
-{
-    /** 关联的组件数据（raw） */
-    _data: RToolModel;
-
-    _xAxis: CoordinateRotationAxis | null;
-    _yAxis: CoordinateRotationAxis | null;
-    _zAxis: CoordinateRotationAxis | null;
-    _cameraAxis: CoordinateRotationAxis | null;
-    _freeAxis: CoordinateRotationFreeAxis | null;
-}
-
-/** RToolModelLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const rToolModelLogicProto = createLogicProto<RToolModelLogic>(componentLogicProto, {
-    xAxis: {
-        get: function (this: RToolModelLogic & RToolModelLogicState): CoordinateRotationAxis | null { return this._xAxis; },
-    },
-    yAxis: {
-        get: function (this: RToolModelLogic & RToolModelLogicState): CoordinateRotationAxis | null { return this._yAxis; },
-    },
-    zAxis: {
-        get: function (this: RToolModelLogic & RToolModelLogicState): CoordinateRotationAxis | null { return this._zAxis; },
-    },
-    cameraAxis: {
-        get: function (this: RToolModelLogic & RToolModelLogicState): CoordinateRotationAxis | null { return this._cameraAxis; },
-    },
-    freeAxis: {
-        get: function (this: RToolModelLogic & RToolModelLogicState): CoordinateRotationFreeAxis | null { return this._freeAxis; },
-    },
-    init: {
-        value: function (this: RToolModelLogic & RToolModelLogicState, entity?: Object3D): void
-        {
-            componentLogicProto.init.call(this, entity);
-
-            const host = entity ?? (this.entity as Object3D | null);
-            if (!host) return;
-
-            // 圆环默认位于 XY 平面（绕 Z 轴）：X 轴绕 Y 转 90°、Y 轴绕 X 转 90°（旧实现角度值）
-            const xAxis = createRotationAxis('xAxis', color4(1, 0, 0, 1), { x: 0, y: 90 * DEG2RAD, z: 0 });
-            const yAxis = createRotationAxis('yAxis', color4(0, 1, 0, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
-            const zAxis = createRotationAxis('zAxis', color4(0, 0, 1, 1));
-            const cameraAxis = createRotationAxis('cameraAxis', color4(1, 1, 1, 1), undefined, CAMERA_AXIS_RADIUS);
-            const freeAxis = createFreeAxis('freeAxis', color4(1, 1, 1, 1));
-
-            this._xAxis = xAxis.data;
-            this._yAxis = yAxis.data;
-            this._zAxis = zAxis.data;
-            this._cameraAxis = cameraAxis.data;
-            this._freeAxis = freeAxis.data;
-
-            const r_host = reactive(host);
-            if (!r_host.children) (host as { children: Object3D[] }).children = [];
-            // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
-            const children = r_host.children!;
-            children.push(xAxis.object3D, yAxis.object3D, zAxis.object3D, cameraAxis.object3D, freeAxis.object3D);
-
-            void this._data;
-        },
-    },
-});
-
 /**
  * 工厂函数：RToolModelLogic 的唯一创建入口。
  *
@@ -147,13 +85,57 @@ const rToolModelLogicProto = createLogicProto<RToolModelLogic>(componentLogicPro
  */
 export function rToolModelLogic(data: RToolModel): RToolModelLogic
 {
-    const logic = setupComponentLogicState(Object.create(rToolModelLogicProto) as RToolModelLogic & RToolModelLogicState, data);
-    logic._data = data;
-    logic._xAxis = null;
-    logic._yAxis = null;
-    logic._zAxis = null;
-    logic._cameraAxis = null;
-    logic._freeAxis = null;
+    const { members } = createComponentLogicBase(data);
+
+    /** 各旋转轴部件（init 前为 null） */
+    let xAxis: CoordinateRotationAxis | null = null;
+    let yAxis: CoordinateRotationAxis | null = null;
+    let zAxis: CoordinateRotationAxis | null = null;
+    let cameraAxis: CoordinateRotationAxis | null = null;
+    let freeAxis: CoordinateRotationFreeAxis | null = null;
+
+    const logic: RToolModelLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity as Object3D | null; },
+        get xAxis() { return xAxis; },
+        get yAxis() { return yAxis; },
+        get zAxis() { return zAxis; },
+        get cameraAxis() { return cameraAxis; },
+        get freeAxis() { return freeAxis; },
+        init(entity)
+        {
+            members.init(entity);
+
+            const host = (entity ?? members.entity) as Object3D | null;
+            if (!host) return;
+
+            // 圆环默认位于 XY 平面（绕 Z 轴）：X 轴绕 Y 转 90°、Y 轴绕 X 转 90°（旧实现角度值）
+            const xAxisPart = createRotationAxis('xAxis', color4(1, 0, 0, 1), { x: 0, y: 90 * DEG2RAD, z: 0 });
+            const yAxisPart = createRotationAxis('yAxis', color4(0, 1, 0, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
+            const zAxisPart = createRotationAxis('zAxis', color4(0, 0, 1, 1));
+            const cameraAxisPart = createRotationAxis('cameraAxis', color4(1, 1, 1, 1), undefined, CAMERA_AXIS_RADIUS);
+            const freeAxisPart = createFreeAxis('freeAxis', color4(1, 1, 1, 1));
+
+            xAxis = xAxisPart.data;
+            yAxis = yAxisPart.data;
+            zAxis = zAxisPart.data;
+            cameraAxis = cameraAxisPart.data;
+            freeAxis = freeAxisPart.data;
+
+            const r_host = reactive(host);
+            if (!r_host.children) (host as { children: Object3D[] }).children = [];
+            // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+            const children = r_host.children!;
+            children.push(xAxisPart.object3D, yAxisPart.object3D, zAxisPart.object3D, cameraAxisPart.object3D, freeAxisPart.object3D);
+
+            void data;
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }
@@ -280,35 +262,47 @@ export interface CoordinateRotationAxisLogic extends Component3DLogic
     hideSector(): void;
 }
 
-/** CoordinateRotationAxisLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface CoordinateRotationAxisLogicState extends ComponentLogicState
+/**
+ * 工厂函数：CoordinateRotationAxisLogic 的唯一创建入口。
+ *
+ * @param data 旋转轴数据（raw）
+ */
+export function coordinateRotationAxisLogic(data: CoordinateRotationAxis): CoordinateRotationAxisLogic
 {
-    /** 关联的组件数据（raw） */
-    _data: CoordinateRotationAxis;
+    // 默认值填充
+    const writable = data as UnReadonly<CoordinateRotationAxis>;
+    if (data.radius === undefined) writable.radius = ROTATION_AXIS_RADIUS;
+    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+    if (data.backColor === undefined) writable.backColor = BACK_COLOR;
+    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+    if (data.selected === undefined) writable.selected = false;
+
+    const { members } = createComponentLogicBase(data);
 
     /** 扇形对象（拖拽时挂到宿主下，平时游离） */
-    _sector: { data: SectorObject3D; object3D: Object3D } | null;
-}
+    let sector: { data: SectorObject3D; object3D: Object3D } | null = null;
 
-/** CoordinateRotationAxisLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const coordinateRotationAxisLogicProto = createLogicProto<CoordinateRotationAxisLogic>(componentLogicProto, {
-    init: {
-        value: function (this: CoordinateRotationAxisLogic & CoordinateRotationAxisLogicState, entity?: Object3D): void
+    const logic: CoordinateRotationAxisLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity as Object3D | null; },
+        init(entity)
         {
-            componentLogicProto.init.call(this, entity);
+            members.init(entity);
 
-            const host = entity ?? (this.entity as Object3D | null);
+            const host = (entity ?? members.entity) as Object3D | null;
             if (!host) return;
 
             // 扇形对象：不挂在宿主下，showSector 时才挂（旧实现 `this.object3D.addChild(sector)`）
-            this._sector = createSectorObject(this._data.radius ?? ROTATION_AXIS_RADIUS);
+            sector = createSectorObject(data.radius ?? ROTATION_AXIS_RADIUS);
 
             // @过渡 effect：圆环/扇形从 data 派生的部分可由 computed 承担
             // （随 mrsTool 状态派生重构迁移）
             effect(() =>
             {
                 // 经响应式代理读取：selected / filterNormal / 颜色 / 半径变化都会重建
-                const r_data = reactive(this._data);
+                const r_data = reactive(data);
                 const selected = r_data.selected;
                 const radius = r_data.radius ?? ROTATION_AXIS_RADIUS;
                 const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
@@ -316,7 +310,7 @@ const coordinateRotationAxisLogicProto = createLogicProto<CoordinateRotationAxis
                 const filterNormal = r_data.filterNormal;
 
                 // 扇形半径跟随圆环半径
-                if (this._sector) reactive(this._sector.data).radius = radius;
+                if (sector) reactive(sector.data).radius = radius;
 
                 // 圆环热区半径跟随
                 const children = reactive(host).children ?? [];
@@ -359,13 +353,11 @@ const coordinateRotationAxisLogicProto = createLogicProto<CoordinateRotationAxis
                 }
             });
         },
-    },
-    /** 显示旋转扇形区（入参为世界坐标起点/终点） */
-    showSector: {
-        value: function (this: CoordinateRotationAxisLogic & CoordinateRotationAxisLogicState, startPos: Vector3Like, endPos: Vector3Like): void
+        /** 显示旋转扇形区（入参为世界坐标起点/终点） */
+        showSector(startPos, endPos)
         {
-            const host = this.entity as Object3D | null;
-            if (!host || !this._sector) return;
+            const host = members.entity as Object3D | null;
+            if (!host || !sector) return;
 
             const world2local = getLogic(host)?.world2local;
             if (!world2local) return;
@@ -381,7 +373,7 @@ const coordinateRotationAxisLogicProto = createLogicProto<CoordinateRotationAxis
             // 跨过 ±180 边界时取另一侧
             if (max - min > 180) min += 360;
 
-            const r_sector = reactive(this._sector.data);
+            const r_sector = reactive(sector.data);
             r_sector.startAngle = min;
             r_sector.endAngle = max;
 
@@ -390,42 +382,23 @@ const coordinateRotationAxisLogicProto = createLogicProto<CoordinateRotationAxis
             // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
             const children = r_host.children!;
 
-            if (!children.includes(this._sector.object3D)) children.push(this._sector.object3D);
+            if (!children.includes(sector.object3D)) children.push(sector.object3D);
         },
-    },
-    /** 隐藏旋转扇形区 */
-    hideSector: {
-        value: function (this: CoordinateRotationAxisLogic & CoordinateRotationAxisLogicState): void
+        /** 隐藏旋转扇形区 */
+        hideSector()
         {
-            const host = this.entity as Object3D | null;
-            if (!host || !this._sector) return;
+            const host = members.entity as Object3D | null;
+            if (!host || !sector) return;
 
             const children = reactive(host).children;
             if (!children) return;
-            const index = children.indexOf(this._sector.object3D);
+            const index = children.indexOf(sector.object3D);
             if (index >= 0) children.splice(index, 1);
         },
-    },
-});
-
-/**
- * 工厂函数：CoordinateRotationAxisLogic 的唯一创建入口。
- *
- * @param data 旋转轴数据（raw）
- */
-export function coordinateRotationAxisLogic(data: CoordinateRotationAxis): CoordinateRotationAxisLogic
-{
-    // 默认值填充
-    const writable = data as UnReadonly<CoordinateRotationAxis>;
-    if (data.radius === undefined) writable.radius = ROTATION_AXIS_RADIUS;
-    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
-    if (data.backColor === undefined) writable.backColor = BACK_COLOR;
-    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
-    if (data.selected === undefined) writable.selected = false;
-
-    const logic = setupComponentLogicState(Object.create(coordinateRotationAxisLogicProto) as CoordinateRotationAxisLogic & CoordinateRotationAxisLogicState, data);
-    logic._data = data;
-    logic._sector = null;
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }
@@ -460,45 +433,51 @@ export interface CoordinateRotationFreeAxisLogic extends Component3DLogic
     readonly sector: SectorObject3D | null;
 }
 
-/** CoordinateRotationFreeAxisLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface CoordinateRotationFreeAxisLogicState extends ComponentLogicState
+/**
+ * 工厂函数：CoordinateRotationFreeAxisLogic 的唯一创建入口。
+ *
+ * @param data 自由旋转轴数据（raw）
+ */
+export function coordinateRotationFreeAxisLogic(data: CoordinateRotationFreeAxis): CoordinateRotationFreeAxisLogic
 {
-    /** 关联的组件数据（raw） */
-    _data: CoordinateRotationFreeAxis;
+    // 默认值填充
+    const writable = data as UnReadonly<CoordinateRotationFreeAxis>;
+    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+    if (data.backColor === undefined) writable.backColor = BACK_COLOR;
+    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+    if (data.selected === undefined) writable.selected = false;
+
+    const { members } = createComponentLogicBase(data);
 
     /** 整圈扇形（初始不可见，仅参与拾取） */
-    _sector: { data: SectorObject3D; object3D: Object3D } | null;
-}
+    let sector: { data: SectorObject3D; object3D: Object3D } | null = null;
 
-/** CoordinateRotationFreeAxisLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const coordinateRotationFreeAxisLogicProto = createLogicProto<CoordinateRotationFreeAxisLogic>(componentLogicProto, {
-    /** 整圈扇形数据（供 `RTool` 调整半径/挂载关系） */
-    sector: {
-        get: function (this: CoordinateRotationFreeAxisLogic & CoordinateRotationFreeAxisLogicState): SectorObject3D | null
+    const logic: CoordinateRotationFreeAxisLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity as Object3D | null; },
+        /** 整圈扇形数据（供 `RTool` 调整半径/挂载关系） */
+        get sector() { return sector?.data ?? null; },
+        init(entity)
         {
-            return this._sector?.data ?? null;
-        },
-    },
-    init: {
-        value: function (this: CoordinateRotationFreeAxisLogic & CoordinateRotationFreeAxisLogicState, entity?: Object3D): void
-        {
-            componentLogicProto.init.call(this, entity);
+            members.init(entity);
 
-            const host = entity ?? (this.entity as Object3D | null);
+            const host = (entity ?? members.entity) as Object3D | null;
             if (!host) return;
 
             // 自由轴扇形：已挂载、不可见、可拾取（旧实现 `sector.update(0, 360)` + activeSelf = false）
-            this._sector = createSectorObject(ROTATION_AXIS_RADIUS, 0, 360);
+            sector = createSectorObject(ROTATION_AXIS_RADIUS, 0, 360);
 
             // @过渡 effect：角度刻度线的生成可由 computed 派生（随 mrsTool 状态派生重构迁移）
             effect(() =>
             {
-                const r_data = reactive(this._data);
+                const r_data = reactive(data);
                 const selected = r_data.selected;
                 const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
                 const radius = ROTATION_AXIS_RADIUS;
 
-                if (this._sector) reactive(this._sector.data).radius = radius;
+                if (sector) reactive(sector.data).radius = radius;
 
                 const segments: Segment[] = [];
                 let prev = circlePoint(0, radius);
@@ -518,26 +497,10 @@ const coordinateRotationFreeAxisLogicProto = createLogicProto<CoordinateRotation
                 }
             });
         },
-    },
-});
-
-/**
- * 工厂函数：CoordinateRotationFreeAxisLogic 的唯一创建入口。
- *
- * @param data 自由旋转轴数据（raw）
- */
-export function coordinateRotationFreeAxisLogic(data: CoordinateRotationFreeAxis): CoordinateRotationFreeAxisLogic
-{
-    // 默认值填充
-    const writable = data as UnReadonly<CoordinateRotationFreeAxis>;
-    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
-    if (data.backColor === undefined) writable.backColor = BACK_COLOR;
-    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
-    if (data.selected === undefined) writable.selected = false;
-
-    const logic = setupComponentLogicState(Object.create(coordinateRotationFreeAxisLogicProto) as CoordinateRotationFreeAxisLogic & CoordinateRotationFreeAxisLogicState, data);
-    logic._data = data;
-    logic._sector = null;
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }

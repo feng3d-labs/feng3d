@@ -1,9 +1,8 @@
 import { effect, logic as getLogic, reactive, shortcut, ticker, Vector3, Vector3Like, MATHF_DEG2RAD } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, SpotLight, TextureMaterial } from 'feng3d';
-import { createLogicProto } from '@feng3d/reactivity';
 import { useEditorStore } from '../vue-app/stores/editorStore';
-import { editorScriptLogicProto, setupEditorScriptLogicState } from './EditorScript';
-import type { EditorScript, EditorScriptLogic, EditorScriptLogicState } from './EditorScript';
+import { createEditorScriptLogicBase } from './EditorScript';
+import type { EditorScript, EditorScriptLogic } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, setWorldMatrix } from './iconUtils';
 
 declare module 'feng3d'
@@ -52,67 +51,151 @@ export interface SpotLightIconLogic extends EditorScriptLogic
     selectLight(): void;
 }
 
-/** SpotLightIconLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SpotLightIconLogicState extends EditorScriptLogicState
+/**
+ * 工厂函数：SpotLightIconLogic 的唯一创建入口。
+ *
+ * @param data 聚光灯图标数据（raw）
+ */
+export function spotLightIconLogic(data: SpotLightIcon): SpotLightIconLogic
 {
-    /** 组件数据（raw） */
-    _data: SpotLightIcon;
+    const { members } = createEditorScriptLogicBase(data);
+
+    // 自身状态：全部为工厂闭包变量（原挂在实例上的 _xxx 字段）
 
     /** 图标根对象（懒创建） */
-    _lightIcon: Object3D | null;
+    let lightIcon: Object3D | null = null;
     /** 锥体线段对象（懒创建） */
-    _lightLines: Object3D | null;
+    let lightLines: Object3D | null = null;
     /** 锥底轴向点对象（懒创建） */
-    _lightpoints: Object3D | null;
+    let lightpoints: Object3D | null = null;
     /** 图标贴图材质（用于按灯光颜色更新 u_color） */
-    _textureMaterial: TextureMaterial | null;
+    let textureMaterial: TextureMaterial | null = null;
     /** 线段几何体（update 中重算 segments） */
-    _segmentGeometry: SegmentGeometry | null;
+    let segmentGeometry: SegmentGeometry | null = null;
     /** 点几何体（update 中重算 points） */
-    _pointGeometry: PointGeometry | null;
-}
+    let pointGeometry: PointGeometry | null = null;
 
-/** SpotLightIconLogic 的共享原型：继承 EditorScript 基类实现，覆写 init / update / dispose */
-const spotLightIconLogicProto = createLogicProto<SpotLightIconLogic>(editorScriptLogicProto, {
-    init: {
-        value: function (this: SpotLightIconLogic & SpotLightIconLogicState, object3D?: Object3D): void
+    /**
+     * 构建图标子对象（幂等）。
+     *
+     * `hideFlags = HideFlags.Hide` 无替代（主仓 Object3D 无该字段）。
+     *
+     * 原 `SpotLightIconLogic.#initIcon`：工厂闭包形态下作为工厂内函数，直接读写闭包状态。
+     */
+    function initIcon(): void
+    {
+        if (lightIcon) return;
+
+        const host = members.entity;
+        const editorCamera = data.editorCamera;
+        if (!host || !editorCamera) return;
+
+        const iconMaterial: TextureMaterial = {
+            __type__: 'TextureMaterial',
+            uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
+            s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/spot.png') },
+            blend: ALPHA_BLEND,
+        };
+        const iconObject3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'SpotLightIcon',
+            components: [
+                { __type__: 'Billboard' },
+                {
+                    __type__: 'MeshRenderer',
+                    material: iconMaterial,
+                    geometry: { __type__: 'PlaneGeometry', width: 1, height: 1, segmentsW: 1, segmentsH: 1, yUp: false },
+                },
+            ],
+        };
+
+        const linesGeometry: SegmentGeometry = { __type__: 'SegmentGeometry', segments: [] };
+        const linesObject3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'Lines',
+            mouseEnabled: false,
+            components: [
+                {
+                    __type__: 'MeshRenderer',
+                    geometry: linesGeometry,
+                    material: {
+                        __type__: 'SegmentMaterial',
+                        uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.5 } },
+                    },
+                },
+            ],
+        };
+
+        const pointsGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
+        const pointsObject3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'points',
+            mouseEnabled: false,
+            components: [
+                {
+                    __type__: 'MeshRenderer',
+                    geometry: pointsGeometry,
+                    material: {
+                        __type__: 'PointMaterial',
+                        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 1 },
+                    },
+                },
+            ],
+        };
+
+        // 用 `appendChildren`：本方法在组件 init 内同步执行，此时宿主 children 可能尚未
+        // 被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
+        appendChildren(host, iconObject3D, linesObject3D, pointsObject3D);
+
+        lightIcon = iconObject3D;
+        lightLines = linesObject3D;
+        lightpoints = pointsObject3D;
+        textureMaterial = iconMaterial;
+        segmentGeometry = linesGeometry;
+        pointGeometry = pointsGeometry;
+    }
+
+    const logic: SpotLightIconLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        init(object3D)
         {
-            editorScriptLogicProto.init.call(this, object3D);
+            members.init(object3D);
 
             effect(() =>
             {
-                reactive(this._data).editorCamera; // 建立依赖
+                reactive(data).editorCamera; // 建立依赖
 
-                if (this._data.editorCamera) initIcon(this);
+                if (data.editorCamera) initIcon();
             });
 
             effect(() =>
             {
-                const r_data = reactive(this._data);
+                const r_data = reactive(data);
                 r_data.light; // 建立依赖
 
-                const light = this._data.light;
+                const light = data.light;
                 if (!light) return;
 
                 const lightObject3D = getLogic(light).entity;
-                const host = this.entity;
+                const host = members.entity;
                 if (!lightObject3D || !host) return;
 
                 setWorldMatrix(host, getLogic(lightObject3D).local2world);
             });
         },
-    },
-    update: {
-        value: function (this: SpotLightIconLogic & SpotLightIconLogicState): void
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update()
         {
-            const light = this._data.light;
+            const light = data.light;
             if (!light) return;
 
-            const lines = this._lightLines;
-            const points = this._lightpoints;
+            const lines = lightLines;
+            const points = lightpoints;
             if (!lines || !points) return;
 
-            const material = this._textureMaterial;
+            const material = textureMaterial;
             if (material)
             {
                 const color = light.color!;
@@ -168,17 +251,15 @@ const spotLightIconLogicProto = createLogicProto<SpotLightIconLogic>(editorScrip
             // 锥尖
             pointInfos.unshift({ position: { x: 0, y: 0, z: distance }, color: yellow });
 
-            if (this._pointGeometry) reactive(this._pointGeometry).points = pointInfos;
-            if (this._segmentGeometry) reactive(this._segmentGeometry).segments = segments;
+            if (pointGeometry) reactive(pointGeometry).points = pointInfos;
+            if (segmentGeometry) reactive(segmentGeometry).segments = segments;
 
             reactive(lines).activeSelf = true;
             reactive(points).activeSelf = true;
         },
-    },
-    selectLight: {
-        value: function (this: SpotLightIconLogic & SpotLightIconLogicState): void
+        selectLight()
         {
-            const light = this._data.light;
+            const light = data.light;
             if (!light) return;
 
             const lightObject3D = getLogic(light).entity;
@@ -192,125 +273,26 @@ const spotLightIconLogicProto = createLogicProto<SpotLightIconLogic>(editorScrip
                 shortcut.deactivityState('selectInvalid');
             });
         },
-    },
-    dispose: {
-        value: function (this: SpotLightIconLogic & SpotLightIconLogicState): void
+        get isLoaded() { return members.isLoaded; },
+        dispose()
         {
-            const icon = this._lightIcon;
-            const lines = this._lightLines;
-            const points = this._lightpoints;
-            this._lightIcon = null;
-            this._lightLines = null;
-            this._lightpoints = null;
-            this._textureMaterial = null;
-            this._segmentGeometry = null;
-            this._pointGeometry = null;
+            const icon = lightIcon;
+            const lines = lightLines;
+            const points = lightpoints;
+            lightIcon = null;
+            lightLines = null;
+            lightpoints = null;
+            textureMaterial = null;
+            segmentGeometry = null;
+            pointGeometry = null;
 
             if (icon) getLogic(icon).dispose();
             if (lines) getLogic(lines).dispose();
             if (points) getLogic(points).dispose();
 
-            editorScriptLogicProto.dispose.call(this);
+            members.dispose();
         },
-    },
-});
-
-/**
- * 工厂函数：SpotLightIconLogic 的唯一创建入口。
- *
- * @param data 聚光灯图标数据（raw）
- */
-export function spotLightIconLogic(data: SpotLightIcon): SpotLightIconLogic
-{
-    const logic = setupEditorScriptLogicState(Object.create(spotLightIconLogicProto) as SpotLightIconLogic & SpotLightIconLogicState, data);
-
-    // 原构造体内的字段初始化
-    logic._lightIcon = null;
-    logic._lightLines = null;
-    logic._lightpoints = null;
-    logic._textureMaterial = null;
-    logic._segmentGeometry = null;
-    logic._pointGeometry = null;
+    };
 
     return logic;
-}
-
-/**
- * 构建图标子对象（幂等）。
- *
- * `hideFlags = HideFlags.Hide` 无替代（主仓 Object3D 无该字段）。
- *
- * 原 `SpotLightIconLogic.#initIcon`：工厂范式下改为模块级函数并显式接收实例。
- */
-function initIcon(logic: SpotLightIconLogic & SpotLightIconLogicState): void
-{
-    if (logic._lightIcon) return;
-
-    const host = logic.entity;
-    const editorCamera = logic._data.editorCamera;
-    if (!host || !editorCamera) return;
-
-    const textureMaterial: TextureMaterial = {
-        __type__: 'TextureMaterial',
-        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-        s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/spot.png') },
-        blend: ALPHA_BLEND,
-    };
-    const iconObject3D: Object3D = {
-        __type__: 'Object3D',
-        name: 'SpotLightIcon',
-        components: [
-            { __type__: 'Billboard' },
-            {
-                __type__: 'MeshRenderer',
-                material: textureMaterial,
-                geometry: { __type__: 'PlaneGeometry', width: 1, height: 1, segmentsW: 1, segmentsH: 1, yUp: false },
-            },
-        ],
-    };
-
-    const segmentGeometry: SegmentGeometry = { __type__: 'SegmentGeometry', segments: [] };
-    const linesObject3D: Object3D = {
-        __type__: 'Object3D',
-        name: 'Lines',
-        mouseEnabled: false,
-        components: [
-            {
-                __type__: 'MeshRenderer',
-                geometry: segmentGeometry,
-                material: {
-                    __type__: 'SegmentMaterial',
-                    uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.5 } },
-                },
-            },
-        ],
-    };
-
-    const pointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
-    const pointsObject3D: Object3D = {
-        __type__: 'Object3D',
-        name: 'points',
-        mouseEnabled: false,
-        components: [
-            {
-                __type__: 'MeshRenderer',
-                geometry: pointGeometry,
-                material: {
-                    __type__: 'PointMaterial',
-                    uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 1 },
-                },
-            },
-        ],
-    };
-
-    // 用 `appendChildren`：本方法在组件 init 内同步执行，此时宿主 children 可能尚未
-    // 被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
-    appendChildren(host, iconObject3D, linesObject3D, pointsObject3D);
-
-    logic._lightIcon = iconObject3D;
-    logic._lightLines = linesObject3D;
-    logic._lightpoints = pointsObject3D;
-    logic._textureMaterial = textureMaterial;
-    logic._segmentGeometry = segmentGeometry;
-    logic._pointGeometry = pointGeometry;
 }

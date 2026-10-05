@@ -1,6 +1,6 @@
-import { componentLogicProto, setupComponentLogicState } from 'feng3d';
-import type { Camera, Color4, Component3D, Component3DLogic, ComponentLogicState, CustomGeometry, Object3D, StandardMaterial } from 'feng3d';
-import { createLogicProto, reactive, UnReadonly } from '@feng3d/reactivity';
+import { createComponentLogicBase } from 'feng3d';
+import type { Camera, Color4, Component3D, Component3DLogic, CustomGeometry, Object3D, StandardMaterial } from 'feng3d';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 
 /**
  * 地面网格（纯数据接口）。
@@ -124,30 +124,35 @@ export interface GroundGridLogic extends Component3DLogic
     update(): void;
 }
 
-/** GroundGridLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface GroundGridLogicState extends ComponentLogicState
+/**
+ * 工厂函数：GroundGridLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function groundGridLogic(data: GroundGrid): GroundGridLogic
 {
-    /** 数据引用 */
-    _data: GroundGrid;
+    // 默认值填充（须在 super 之前完成）
+    const writable = data as UnReadonly<GroundGrid>;
+    if (data.num === undefined) writable.num = 100;
 
-    /** 所属 Object3D（收窄基类的 Entity） */
-    _entity: Object3D | null;
+    const { state, members } = createComponentLogicBase(data);
 
     /** 网格几何体（分组顺序与 {@link GroundGridLogic} 的网格子对象一致） */
-    _geometries: CustomGeometry[];
+    const geometries: CustomGeometry[] = [];
 
     /** 网格子对象（每组一个，不参与鼠标拾取） */
-    _gridObjects: Object3D[];
-}
+    const gridObjects: Object3D[] = [];
 
-/** GroundGridLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const groundGridLogicProto = createLogicProto<GroundGridLogic>(componentLogicProto, {
-    init: {
-        value: function (this: GroundGridLogic & GroundGridLogicState, entity?: Object3D): void
+    const logic: GroundGridLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return state.entity as Object3D | null; },
+        init(entity)
         {
-            componentLogicProto.init.call(this, entity);
+            members.init(entity);
 
-            const host = entity ?? (this.entity as Object3D | null);
+            const host = (entity ?? state.entity) as Object3D | null;
             if (!host) return;
 
             // 挂载网格子对象（父子关系由 ContainerLogic 的 effect 维护；
@@ -156,18 +161,16 @@ const groundGridLogicProto = createLogicProto<GroundGridLogic>(componentLogicPro
             if (!r_host.children) (host as { children: Object3D[] }).children = [];
             // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
             const children = r_host.children!;
-            children.push(...this._gridObjects);
+            children.push(...gridObjects);
         },
-    },
-    /**
-     * 重建网格数据（`num` 变化时由外部调用）。
-     *
-     * 网格固定在原点（与旧实现一致：`startX = startZ = 0; step = 1`）。
-     */
-    update: {
-        value: function (this: GroundGridLogic & GroundGridLogicState): void
+        /**
+         * 重建网格数据（`num` 变化时由外部调用）。
+         *
+         * 网格固定在原点（与旧实现一致：`startX = startZ = 0; step = 1`）。
+         */
+        update()
         {
-            const num = this._data.num ?? 100;
+            const num = data.num ?? 100;
             const halfNum = num / 2;
 
             const plain: GridLine[] = [];
@@ -192,31 +195,20 @@ const groundGridLogicProto = createLogicProto<GroundGridLogic>(componentLogicPro
             for (let i = 0; i < lineGroups.length; i++)
             {
                 const geometry = createGridGeometry(halfNum, lineGroups[i]);
-                const r_geometry = reactive(this._geometries[i]);
+                const r_geometry = reactive(geometries[i]);
                 r_geometry.positions = geometry.positions;
                 r_geometry.normals = geometry.normals;
                 r_geometry.uvs = geometry.uvs;
                 r_geometry.indices = geometry.indices;
             }
         },
-    },
-});
-
-/**
- * 工厂函数：GroundGridLogic 的唯一创建入口。
- *
- * @param data 组件数据（raw）
- */
-export function groundGridLogic(data: GroundGrid): GroundGridLogic
-{
-    // 默认值填充（须在 super 之前完成）
-    const writable = data as UnReadonly<GroundGrid>;
-    if (data.num === undefined) writable.num = 100;
-
-    const logic = setupComponentLogicState(Object.create(groundGridLogicProto) as GroundGridLogic & GroundGridLogicState, data);
-    logic._data = data;
-    logic._geometries = [];
-    logic._gridObjects = [];
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 是否加载完成（继承 Component 基类） */
+        get isLoaded() { return members.isLoaded; },
+        /** 释放（默认空） */
+        dispose() { members.dispose(); },
+    };
 
     /** 创建 4 组网格子对象与几何体数据（构造期一次性完成，不依赖相机） */
     function createGridObjects(): void
@@ -232,8 +224,8 @@ export function groundGridLogic(data: GroundGrid): GroundGridLogic
         for (const group of groups)
         {
             const geometry: CustomGeometry = { __type__: 'CustomGeometry' };
-            logic._geometries.push(geometry);
-            logic._gridObjects.push({
+            geometries.push(geometry);
+            gridObjects.push({
                 __type__: 'Object3D',
                 name: group.name,
                 // 抬高一点：避免与地面共面（深度冲突）以及排序并列时被地面覆盖

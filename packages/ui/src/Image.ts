@@ -1,7 +1,6 @@
-import { Component3D, Component3DLogic, componentLogicProto, defaultTexture, Object3D, registerComponentType, resolveTexture, setupComponentLogicState, TextureField, type ComponentLogicState } from 'feng3d';
-import { createLogicProto, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, createComponentLogicBase, defaultTexture, Object3D, registerComponentType, resolveTexture, TextureField } from 'feng3d';
+import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
-import type { RenderObject } from '@feng3d/webgpu';
 import { uiUniforms } from './core/UIMaterial';
 import { getTransform2D } from './core/Transform2D';
 // 副作用导入：`createImageObject3D()` 返回的纯数据字面量要在运行时分发到 Transform2DLogic /
@@ -76,39 +75,6 @@ export interface ImageLogic extends Component3DLogic
     setNativeSize(): void;
 }
 
-/** ImageLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface ImageLogicState extends ComponentLogicState
-{
-    _data: Image;
-}
-
-/** ImageLogic 的共享原型：继承 Component 基类实现，覆写 beforeRender，新增 setNativeSize */
-const imageLogicProto = createLogicProto<ImageLogic>(componentLogicProto, {
-    setNativeSize: {
-        value: function (this: ImageLogic & ImageLogicState): void
-        {
-            const entity = this.entity as Object3D | null;
-            const transform2D = entity ? getTransform2D(entity) : null;
-            if (!transform2D) return;
-
-            const size = resolveTexture(this._data.image).descriptor.size;
-            reactive(transform2D).size = { x: size[0], y: size[1] };
-        },
-    },
-    beforeRender: {
-        value: function (this: ImageLogic & ImageLogicState, renderObject: RenderObject): void
-        {
-            componentLogicProto.beforeRender.call(this, renderObject);
-
-            // 迁移前直接写 Texture2D 实例；现按主仓纹理模型在消费点解析
-            // （`TextureResource` 走响应式缓存，`undefined` 回退占位纹理）
-            const uniforms = uiUniforms(renderObject);
-            uniforms.s_texture = resolveTexture(this._data.image);
-            uniforms.u_color = this._data.color;
-        },
-    },
-});
-
 /**
  * 工厂函数：ImageLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -125,8 +91,34 @@ export function imageLogic(data: Image): ImageLogic
     if (writable.image === undefined) writable.image = defaultTexture;
     if (writable.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
 
-    const logic = setupComponentLogicState(Object.create(imageLogicProto) as ImageLogic & ImageLogicState, data);
-    logic._data = data;
+    const { state, members } = createComponentLogicBase(data);
+
+    const logic: ImageLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(entity) { members.init(entity); },
+        beforeRender(renderObject)
+        {
+            members.beforeRender(renderObject);
+
+            // 迁移前直接写 Texture2D 实例；现按主仓纹理模型在消费点解析
+            // （`TextureResource` 走响应式缓存，`undefined` 回退占位纹理）
+            const uniforms = uiUniforms(renderObject);
+            uniforms.s_texture = resolveTexture(data.image);
+            uniforms.u_color = data.color;
+        },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+        setNativeSize()
+        {
+            const entity = logic.entity;
+            const transform2D = entity ? getTransform2D(entity) : null;
+            if (!transform2D) return;
+
+            const size = resolveTexture(data.image).descriptor.size;
+            reactive(transform2D).size = { x: size[0], y: size[1] };
+        },
+    };
 
     return logic;
 }

@@ -1,6 +1,6 @@
-import { componentLogicProto, setupComponentLogicState } from 'feng3d';
-import type { Color4, Component3D, Component3DLogic, ComponentLogicState, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { createLogicProto, effect, reactive, UnReadonly } from '@feng3d/reactivity';
+import { createComponentLogicBase } from 'feng3d';
+import type { Color4, Component3D, Component3DLogic, MeshRenderer, Object3D, Segment } from 'feng3d';
+import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
 
 // ---------------------------------------------------------------------------
@@ -68,33 +68,6 @@ export interface SectorObject3DLogic extends Component3DLogic
 {
 }
 
-/** SectorObject3DLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SectorObject3DLogicState extends ComponentLogicState
-{
-    /** 关联的组件数据（raw） */
-    _data: SectorObject3D;
-
-    /** 重建三角扇顶点/索引与边框线段（init 的 effect 调用） */
-    _rebuild: (host: Object3D) => void;
-}
-
-/** SectorObject3DLogic 的共享原型：继承 Component 基类实现，覆写 init */
-const sectorObject3DLogicProto = createLogicProto<SectorObject3DLogic>(componentLogicProto, {
-    init: {
-        value: function (this: SectorObject3DLogic & SectorObject3DLogicState, entity?: Object3D): void
-        {
-            componentLogicProto.init.call(this, entity);
-
-            const host = entity ?? (this.entity as Object3D | null);
-            if (!host) return;
-
-            // @过渡 effect：几何体顶点可由 computed 派生（随 mrsTool 状态派生重构迁移）
-            // 起止角 / 半径 / 边框色任一变化都重建几何体
-            effect(() => this._rebuild(host));
-        },
-    },
-});
-
 /**
  * 工厂函数：SectorObject3DLogic 的唯一创建入口。
  *
@@ -109,8 +82,7 @@ export function sectorObject3DLogic(data: SectorObject3D): SectorObject3DLogic
     if (data.startAngle === undefined) writable.startAngle = 0;
     if (data.endAngle === undefined) writable.endAngle = 0;
 
-    const logic = setupComponentLogicState(Object.create(sectorObject3DLogicProto) as SectorObject3DLogic & SectorObject3DLogicState, data);
-    logic._data = data;
+    const { members } = createComponentLogicBase(data);
 
     /** 重建三角扇顶点/索引与边框线段 */
     function rebuild(host: Object3D): void
@@ -180,7 +152,27 @@ export function sectorObject3DLogic(data: SectorObject3D): SectorObject3DLogic
             ];
         }
     }
-    logic._rebuild = rebuild;
+
+    const logic: SectorObject3DLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity as Object3D | null; },
+        init(entity)
+        {
+            members.init(entity);
+
+            const host = (entity ?? members.entity) as Object3D | null;
+            if (!host) return;
+
+            // @过渡 effect：几何体顶点可由 computed 派生（随 mrsTool 状态派生重构迁移）
+            // 起止角 / 半径 / 边框色任一变化都重建几何体
+            effect(() => rebuild(host));
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
     return logic;
 }

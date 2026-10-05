@@ -1,8 +1,8 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import type { Component3D, Components } from './Component';
-import { componentLogicProto, setupComponentLogicState, type Component3DLogic, type ComponentLogicState } from './Component';
+import { createComponentLogicBase, type Component3DLogic, type ComponentLogicState } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic as getLogic, computed, reactive, createLogicProto, type Computed } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, computed, reactive, type Computed } from '@feng3d/reactivity';
 
 /**
  * 行为（纯数据接口）。
@@ -35,8 +35,8 @@ declare module '@feng3d/reactivity'
  * - update: 空默认实现（子类覆盖）
  * - dispose: 写入 enabled=false（触发依赖 enabled 的子 logic 清理）
  *
- * 子类 logic（Animation/FPSController 等）经 {@link behaviourLogic} 组合函数
- * 获取实例后叠加自身行为。
+ * 子类 logic（Animation/FPSController 等）经 {@link createBehaviourLogicBase}
+ * 组合函数获取实例后叠加自身行为。
  */
 export interface BehaviourLogic extends Component3DLogic
 {
@@ -50,87 +50,88 @@ export interface BehaviourLogic extends Component3DLogic
     update(interval: number): void;
 }
 
-/** BehaviourLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+/**
+ * Behaviour 系 Logic 的内部状态（不进公开接口，工厂闭包持有）。
+ */
 export interface BehaviourLogicState extends ComponentLogicState
 {
     /** 关联的行为数据（raw） */
-    _data: Behaviour;
+    data: Behaviour;
 
     /** 是否可见且启用（enabled && object3D.activeSelf） */
-    _isVisibleAndEnabled: Computed<boolean>;
-
-    /** 所属 Object3D（由 init 注入；覆写基类状态的 Entity 类型） */
-    _entity: Object3D | null;
+    isVisibleAndEnabled: Computed<boolean>;
 
     /** 是否已 init（幂等保护） */
-    _inited: boolean;
+    inited: boolean;
 }
 
 /**
- * BehaviourLogic 的共享原型：继承 Component 基类实现，覆写 entity / init / beforeRender /
- * update / dispose。
- */
-export const behaviourLogicProto = createLogicProto<BehaviourLogic>(componentLogicProto, {
-    /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
-    entity: {
-        get: function (this: BehaviourLogic & BehaviourLogicState): Object3D | null { return this._entity; },
-    },
-    /** 是否可见且启用 */
-    isVisibleAndEnabled: {
-        get: function (this: BehaviourLogic & BehaviourLogicState): Computed<boolean> { return this._isVisibleAndEnabled; },
-    },
-    /** 初始化：注入所属 Object3D（幂等） */
-    init: {
-        value: function (this: BehaviourLogic & BehaviourLogicState, object3D?: Object3D): void
-        {
-            if (this._inited) return;
-            this._inited = true;
-            if (object3D) this._entity = object3D;
-        },
-    },
-    beforeRender: {
-        value: function (this: BehaviourLogic & BehaviourLogicState, _renderObject: never): void { /* 默认空 */ },
-    },
-    update: {
-        value: function (this: BehaviourLogic & BehaviourLogicState, _interval: number): void { /* 默认空，子类覆盖 */ },
-    },
-    dispose: {
-        value: function (this: BehaviourLogic & BehaviourLogicState): void
-        {
-            reactive(this._data).enabled = false;
-            this._entity = null;
-        },
-    },
-});
-
-/**
- * 装配 Behaviour 系 Logic 的**基类状态**（供子类工厂组合调用）。
+ * 创建 Behaviour 系 Logic 的**基类状态与成员**（供子类工厂组合调用）。
  *
- * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
- * 子类先 `Object.create(xxxLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。子类工厂的用法：
+ * ```ts
+ * const { state, members } = createBehaviourLogicBase(data);
+ * const logic: XxxLogic = {
+ *     get component() { return members.component; },
+ *     get entity() { return members.entity; },
+ *     get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+ *     init(object3D) { members.init(object3D); },
+ *     // ...自身成员
+ * };
+ * ```
  *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
  * @param data 行为数据（raw）
- * @returns 同一实例（便于链式装配）
+ * @returns Behaviour 系 Logic 的基类状态与成员（同一份 state 与 Component 基座共享）
  */
-export function setupBehaviourLogicState<T extends BehaviourLogic & BehaviourLogicState>(logic: T, data: Behaviour): T
+export function createBehaviourLogicBase(data: Behaviour): { state: BehaviourLogicState; members: BehaviourLogic }
 {
     // Behaviour 是抽象基接口，不在 Components 联合里；strictNullChecks 下需显式断言
-    setupComponentLogicState(logic, data as Components);
-    logic._data = data;
-    logic._inited = false;
+    const { state: componentState, members: componentMembers } = createComponentLogicBase(data as Components);
+
+    // 与 Component 基座复用同一份 state（entity / component 是同一组字段）
+    const state = componentState as BehaviourLogicState;
+    state.data = data;
+    state.inited = false;
 
     const r_behaviour = reactive(data);
-    logic._isVisibleAndEnabled = computed<boolean>(() =>
+    state.isVisibleAndEnabled = computed<boolean>(() =>
     {
-        if (!logic._entity) return false;
+        if (!state.entity) return false;
 
         const enabled = r_behaviour.enabled ?? true;
 
-        return enabled !== false && getLogic(logic._entity).activeSelf;
+        return enabled !== false && getLogic(state.entity as Object3D).activeSelf;
     });
 
-    return logic;
+    const members: BehaviourLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return componentMembers.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return state.entity as Object3D | null; },
+        /** 是否可见且启用 */
+        get isVisibleAndEnabled() { return state.isVisibleAndEnabled; },
+        /** 初始化：注入所属 Object3D（幂等） */
+        init(object3D)
+        {
+            if (state.inited) return;
+            state.inited = true;
+            if (object3D) state.entity = object3D;
+        },
+        /** 渲染前回调（默认空） */
+        beforeRender(_renderObject) { /* 默认空 */ },
+        /** 每帧更新（默认空，子类覆盖） */
+        update(_interval) { /* 默认空，子类覆盖 */ },
+        /** 是否加载完成（继承 Component 基类） */
+        get isLoaded() { return componentMembers.isLoaded; },
+        /** 释放：写入 enabled=false（触发依赖 enabled 的子 logic 清理） */
+        dispose()
+        {
+            reactive(state.data).enabled = false;
+            state.entity = null;
+        },
+    };
+
+    return { state, members };
 }
 
 /**
@@ -140,7 +141,20 @@ export function setupBehaviourLogicState<T extends BehaviourLogic & BehaviourLog
  */
 export function behaviourLogic(data: Behaviour): BehaviourLogic
 {
-    return setupBehaviourLogicState(Object.create(behaviourLogicProto) as BehaviourLogic & BehaviourLogicState, data);
+    const { members } = createBehaviourLogicBase(data);
+
+    const logic: BehaviourLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        init(object3D) { members.init(object3D); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval) { members.update(interval); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
+
+    return logic;
 }
 
 // 注册到 logic 分发表（Behaviour 自身也可作为组件使用）

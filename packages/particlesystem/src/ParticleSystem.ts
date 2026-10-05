@@ -1,8 +1,8 @@
 // registerLogic/logic 直接从 @feng3d/reactivity 导入（不经 feng3d barrel）：
 // feng3d barrel 在 particlesystem 之后才 re-export reactivity，node/vitest 下
 // barrel 模块求值顺序会取到未初始化的绑定（浏览器/vite 不受影响）
-import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, renderableLogicProto, RunEnvironment, setupRenderableLogicState, StandardMaterial, type RenderableLogicState } from 'feng3d';
-import { createLogicProto, registerLogic } from '@feng3d/reactivity';
+import { AddComponentMenu, createRenderableLogicBase, Object3D, QuadGeometry, Renderable, RenderableLogic, RunEnvironment, StandardMaterial } from 'feng3d';
+import { registerLogic } from '@feng3d/reactivity';
 import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
 import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
@@ -1228,20 +1228,48 @@ interface ParticleSystemLogic extends RenderableLogic
 {
 }
 
-/** ParticleSystemLogic 的共享原型（issue #674） */
-const particleSystemLogicProto = createLogicProto<ParticleSystemLogic>(renderableLogicProto, {
-    beforeRender: {
-        value: function (this: ParticleSystemLogic & RenderableLogicState, ro: RenderObject): void
-        {
-            (this.component as ParticleSystem).beforeRender(ro);
-        },
-    },
-});
-
 /** 工厂函数：ParticleSystem Logic 的唯一创建入口 */
 export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 {
-    return setupRenderableLogicState(Object.create(particleSystemLogicProto) as ParticleSystemLogic & RenderableLogicState, data);
+    const { members } = createRenderableLogicBase(data);
+
+    const logic: ParticleSystemLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return members.entity; },
+        /** 是否可见且启用 */
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        /** 光源拾取器（init 时创建，持有引用防止被 GC） */
+        get lightPicker() { return members.lightPicker; },
+        /** 渲染对象（computed，依赖 transform 与组件） */
+        get renderObject() { return members.renderObject; },
+        /** 自身局部包围盒 */
+        get selfLocalBounds() { return members.selfLocalBounds; },
+        /** 自身世界包围盒 */
+        get selfWorldBounds() { return members.selfWorldBounds; },
+        /** 是否加载完成（材质异步资源就绪） */
+        get isLoaded() { return members.isLoaded; },
+        /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
+        baseBeforeRender(renderObject) { members.baseBeforeRender(renderObject); },
+        /** 渲染前回调：委托 ParticleSystem 自身逻辑 */
+        beforeRender(ro)
+        {
+            (members.component as ParticleSystem).beforeRender(ro);
+        },
+        /** 初始化：注入所属 Object3D（幂等），并创建光源拾取器 */
+        init(object3D) { members.init(object3D); },
+        /** 每帧更新（委托 Behaviour 基类） */
+        update(interval) { members.update(interval); },
+        /** 与局部空间射线相交 */
+        localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
+        /** 与世界空间射线相交 */
+        worldRayIntersection(worldRay) { return members.worldRayIntersection(worldRay); },
+        /** 释放 */
+        dispose() { members.dispose(); },
+    };
+
+    return logic;
 }
 registerLogic('ParticleSystem', particleSystemLogic);
 

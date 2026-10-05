@@ -1,6 +1,6 @@
 import { mat4Copy, mat4Identity, mat4Prepend, Matrix4x4 } from '@feng3d/math';
-import { createLogicProto, logic, registerLogic } from '@feng3d/reactivity';
-import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from '../../component/Component';
+import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, createComponentLogicBase } from '../../component/Component';
 import type { Object3D } from '../../core/Object3D';
 
 declare module '../../component/Component'
@@ -73,33 +73,51 @@ export interface SkeletonLogic extends Component3DLogic
     readonly globalMatrices: Matrix4x4[];
 }
 
-/** SkeletonLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SkeletonLogicState extends ComponentLogicState
+/**
+ * 工厂函数：SkeletonLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 组件数据（raw）
+ */
+export function skeletonLogic(data: Skeleton): SkeletonLogic
 {
-    /** 当前骨骼姿势的全局矩阵列表（内部可变，外部通过 getter 只读访问） */
-    _globalMatrices: Matrix4x4[];
-}
+    const { state, members } = createComponentLogicBase(data);
 
-/** SkeletonLogic 的共享原型：继承 Component 基类实现，新增 globalMatrices getter */
-const skeletonLogicProto = createLogicProto<SkeletonLogic>(componentLogicProto, {
-    globalMatrices: {
-        get: function (this: SkeletonLogic & SkeletonLogicState): Matrix4x4[]
+    /** 当前骨骼姿势的全局矩阵列表（内部可变，外部通过 getter 只读访问） */
+    const globalMatrices: Matrix4x4[] = [];
+
+    const logic: SkeletonLogic = {
+        // ---- Component 基类成员（显式委托基座 members）----
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return state.entity as Object3D | null; },
+        /** 初始化：注入 entity */
+        init(entity) { members.init(entity); },
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 是否加载完成 */
+        get isLoaded() { return members.isLoaded; },
+        /** 释放 */
+        dispose() { members.dispose(); },
+
+        // ---- Skeleton 自身成员 ----
+        get globalMatrices(): Matrix4x4[]
         {
-            const data = this.component as Skeleton | undefined;
+            const data = members.component as Skeleton | undefined;
             const boneNames = data?.boneNames ?? [];
             const boneInverses = data?.boneInverses ?? [];
-            const root = this.entity as Object3D | null;
+            const root = members.entity as Object3D | null;
 
             // 没有实体（尚未 init）时不做无意义的重算
-            if (!root) return this._globalMatrices;
+            if (!root) return globalMatrices;
 
             // 以 boneNames 为权威长度对齐结果数组（着色器侧对长度有预期，见 SkinnedMeshRenderer 的 default）
-            if (this._globalMatrices.length !== boneNames.length) this._globalMatrices.length = boneNames.length;
+            if (globalMatrices.length !== boneNames.length) globalMatrices.length = boneNames.length;
 
             for (let i = 0; i < boneNames.length; i++)
             {
                 // 阶段 C-e：`Matrix4x4` 的 class 已删除，新建即「单位矩阵字面量 + 判别字段」
-                const matrix = this._globalMatrices[i] ?? (this._globalMatrices[i] = { __type__: 'Matrix4x4', ...mat4Identity() });
+                const matrix = globalMatrices[i] ?? (globalMatrices[i] = { __type__: 'Matrix4x4', ...mat4Identity() });
                 const bone = findBoneByName(root, boneNames[i]);
                 const boneInverse = boneInverses[i];
 
@@ -111,24 +129,13 @@ const skeletonLogicProto = createLogicProto<SkeletonLogic>(componentLogicProto, 
                     continue;
                 }
 
-                mat4Copy(logic(bone).local2world, matrix);
+                mat4Copy(getLogic(bone).local2world, matrix);
                 mat4Prepend(matrix, boneInverse, matrix);
             }
 
-            return this._globalMatrices;
+            return globalMatrices;
         },
-    },
-});
-
-/**
- * 工厂函数：SkeletonLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * @param data 组件数据（raw）
- */
-export function skeletonLogic(data: Skeleton): SkeletonLogic
-{
-    const logic = setupComponentLogicState(Object.create(skeletonLogicProto) as SkeletonLogic & SkeletonLogicState, data);
-    logic._globalMatrices = [];
+    };
 
     return logic;
 }

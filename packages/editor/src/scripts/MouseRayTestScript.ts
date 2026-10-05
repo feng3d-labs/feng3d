@@ -1,8 +1,7 @@
 import { Ray3, Vector3, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, reactive, windowEventProxy } from 'feng3d';
 import type { Camera, ColorMaterial, MeshRenderer, Object3D, PerspectiveCamera, SphereGeometry } from 'feng3d';
-import { createLogicProto } from '@feng3d/reactivity';
-import { editorScriptLogicProto, setupEditorScriptLogicState } from './EditorScript';
-import type { EditorScript, EditorScriptLogic, EditorScriptLogicState } from './EditorScript';
+import { createEditorScriptLogicBase } from './EditorScript';
+import type { EditorScript, EditorScriptLogic } from './EditorScript';
 
 declare module 'feng3d'
 {
@@ -46,31 +45,6 @@ export interface MouseRayTestScriptLogic extends EditorScriptLogic
 {
 }
 
-/** MouseRayTestScriptLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface MouseRayTestScriptLogicState extends EditorScriptLogicState
-{
-}
-
-/** MouseRayTestScriptLogic 的共享原型：继承 EditorScript 基类实现，覆写 init / dispose */
-const mouseRayTestScriptLogicProto = createLogicProto<MouseRayTestScriptLogic>(editorScriptLogicProto, {
-    init: {
-        value: function (this: MouseRayTestScriptLogic & MouseRayTestScriptLogicState, object3D?: Object3D): void
-        {
-            editorScriptLogicProto.init.call(this, object3D);
-
-            windowEventProxy.on('click', onClick, this);
-        },
-    },
-    dispose: {
-        value: function (this: MouseRayTestScriptLogic & MouseRayTestScriptLogicState): void
-        {
-            windowEventProxy.off('click', onClick, this);
-
-            editorScriptLogicProto.dispose.call(this);
-        },
-    },
-});
-
 /**
  * 工厂函数：MouseRayTestScriptLogic 的唯一创建入口。
  *
@@ -78,97 +52,118 @@ const mouseRayTestScriptLogicProto = createLogicProto<MouseRayTestScriptLogic>(e
  */
 export function mouseRayTestScriptLogic(data: MouseRayTestScript): MouseRayTestScriptLogic
 {
-    const logic = setupEditorScriptLogicState(Object.create(mouseRayTestScriptLogicProto) as MouseRayTestScriptLogic & MouseRayTestScriptLogicState, data);
+    const { members } = createEditorScriptLogicBase(data);
+
+    /**
+     * 点击回调（原 `MouseRayTestScriptLogic.onClick`）。
+     *
+     * 工厂闭包形态下作为工厂内函数：既能被 `init` / `dispose` 以同一函数引用
+     * 注册与注销，又直接读写闭包状态（不再需要 `windowEventProxy` 的 thisObject 绑定）。
+     */
+    function onClick(): void
+    {
+        const host = members.entity;
+        if (!host) return;
+
+        const mouseRay3D = getMouseRay();
+        if (!mouseRay3D) return;
+
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            name: 'test',
+            mouseEnabled: false,
+            components: [
+                {
+                    __type__: 'MeshRenderer',
+                    material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } } },
+                    geometry: { __type__: 'SphereGeometry', radius: 10 },
+                },
+            ],
+        };
+        const r_children = reactive(host).children as unknown as Object3D[];
+        r_children.push(object3D);
+
+        // 射线起点/方向 → 球体本地空间
+        // 阶段 C-d：`ray.origin` / `ray.direction` 已是纯数据字段（不再有 `Vector3.clone()`），
+        // 改用纯函数 + 全新的 `out` 字面量，等价于原来的 `transformPoint3(origin.clone())`
+        const world2local = getLogic(object3D).world2local;
+        const position = mat4TransformPoint3(world2local, mouseRay3D.origin, { x: 0, y: 0, z: 0 });
+        const direction = mat4TransformVector3(world2local, mouseRay3D.direction, { x: 0, y: 0, z: 0 });
+        reactive(object3D).position = { x: position.x, y: position.y, z: position.z };
+
+        let num = 1000;
+        const translate = () =>
+        {
+            // 沿本地方向平移 15（替代旧 logic(transform).translate(direction, 15)）
+            const current = object3D.position ?? { x: 0, y: 0, z: 0 };
+            reactive(object3D).position = {
+                x: current.x + direction.x * 15,
+                y: current.y + direction.y * 15,
+                z: current.z + direction.z * 15,
+            };
+            if (num > 0)
+            {
+                setTimeout(function ()
+                {
+                    translate();
+                }, 1000 / 60);
+            }
+            else
+            {
+                getLogic(object3D).dispose();
+            }
+            num--;
+        };
+        translate();
+    }
+
+    /**
+     * 计算当前的鼠标射线。
+     *
+     * 主仓已移除 `Scene.mouseRay3D`（鼠标射线改由调用方按需用相机 `getRay3D` 计算），
+     * 这里从场景中取相机组件并按窗口坐标换算 NDC 后求射线。
+     *
+     * 原 `MouseRayTestScriptLogic.#getMouseRay`：工厂闭包形态下作为工厂内函数，直接读写闭包状态。
+     */
+    function getMouseRay(): Ray3
+    {
+        const host = members.entity;
+        if (!host) return null!;
+
+        const scene = getLogic(host).scene;
+        const sceneEntity = scene ? getLogic(scene).entity : null;
+        if (!sceneEntity) return null!;
+
+        const camera = getLogic(sceneEntity as Object3D).getComponentInChildren<Camera>('Camera');
+        if (!camera) return null!;
+
+        // 窗口坐标 → NDC（编辑器视口占满窗口）
+        const x = (windowEventProxy.clientX / window.innerWidth) * 2 - 1;
+        const y = 1 - (windowEventProxy.clientY / window.innerHeight) * 2;
+
+        return getLogic(camera as PerspectiveCamera).getRay3D(x, y);
+    }
+
+    const logic: MouseRayTestScriptLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        init(object3D)
+        {
+            members.init(object3D);
+
+            windowEventProxy.on('click', onClick);
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval) { members.update(interval); },
+        get isLoaded() { return members.isLoaded; },
+        dispose()
+        {
+            windowEventProxy.off('click', onClick);
+
+            members.dispose();
+        },
+    };
 
     return logic;
-}
-
-/**
- * 点击回调（原 `MouseRayTestScriptLogic.onClick`）。
- *
- * 工厂范式下改为模块级函数：既要能被 `init` / `dispose` 以同一函数引用注册与注销，
- * 又要保持 `this` 绑定（经 `windowEventProxy` 的 thisObject 传入）。
- */
-function onClick(this: MouseRayTestScriptLogic & MouseRayTestScriptLogicState): void
-{
-    const host = this.entity;
-    if (!host) return;
-
-    const mouseRay3D = getMouseRay(this);
-    if (!mouseRay3D) return;
-
-    const object3D: Object3D = {
-        __type__: 'Object3D',
-        name: 'test',
-        mouseEnabled: false,
-        components: [
-            {
-                __type__: 'MeshRenderer',
-                material: { __type__: 'ColorMaterial', uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } } },
-                geometry: { __type__: 'SphereGeometry', radius: 10 },
-            },
-        ],
-    };
-    const r_children = reactive(host).children as unknown as Object3D[];
-    r_children.push(object3D);
-
-    // 射线起点/方向 → 球体本地空间
-    // 阶段 C-d：`ray.origin` / `ray.direction` 已是纯数据字段（不再有 `Vector3.clone()`），
-    // 改用纯函数 + 全新的 `out` 字面量，等价于原来的 `transformPoint3(origin.clone())`
-    const world2local = getLogic(object3D).world2local;
-    const position = mat4TransformPoint3(world2local, mouseRay3D.origin, { x: 0, y: 0, z: 0 });
-    const direction = mat4TransformVector3(world2local, mouseRay3D.direction, { x: 0, y: 0, z: 0 });
-    reactive(object3D).position = { x: position.x, y: position.y, z: position.z };
-
-    let num = 1000;
-    const translate = () =>
-    {
-        // 沿本地方向平移 15（替代旧 logic(transform).translate(direction, 15)）
-        const current = object3D.position ?? { x: 0, y: 0, z: 0 };
-        reactive(object3D).position = {
-            x: current.x + direction.x * 15,
-            y: current.y + direction.y * 15,
-            z: current.z + direction.z * 15,
-        };
-        if (num > 0)
-        {
-            setTimeout(function ()
-            {
-                translate();
-            }, 1000 / 60);
-        }
-        else
-        {
-            getLogic(object3D).dispose();
-        }
-        num--;
-    };
-    translate();
-}
-
-/**
- * 计算当前的鼠标射线。
- *
- * 主仓已移除 `Scene.mouseRay3D`（鼠标射线改由调用方按需用相机 `getRay3D` 计算），
- * 这里从场景中取相机组件并按窗口坐标换算 NDC 后求射线。
- *
- * 原 `MouseRayTestScriptLogic.#getMouseRay`：工厂范式下改为模块级函数并显式接收实例。
- */
-function getMouseRay(logic: MouseRayTestScriptLogic): Ray3
-{
-    const host = logic.entity;
-    if (!host) return null!;
-
-    const scene = getLogic(host).scene;
-    const sceneEntity = scene ? getLogic(scene).entity : null;
-    if (!sceneEntity) return null!;
-
-    const camera = getLogic(sceneEntity as Object3D).getComponentInChildren<Camera>('Camera');
-    if (!camera) return null!;
-
-    // 窗口坐标 → NDC（编辑器视口占满窗口）
-    const x = (windowEventProxy.clientX / window.innerWidth) * 2 - 1;
-    const y = 1 - (windowEventProxy.clientY / window.innerHeight) * 2;
-
-    return getLogic(camera as PerspectiveCamera).getRay3D(x, y);
 }

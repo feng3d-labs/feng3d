@@ -1,6 +1,5 @@
-import { componentLogicProto, globalEmitter, logic as getLogic, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, setupComponentLogicState, ticker, Vector3, WritableVector3Like } from 'feng3d';
-import type { Color4, Component3D, Component3DLogic, ComponentLogicState, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
-import { createLogicProto } from '@feng3d/reactivity';
+import { createComponentLogicBase, globalEmitter, logic as getLogic, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, ticker, Vector3, WritableVector3Like } from 'feng3d';
+import type { Color4, Component3D, Component3DLogic, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
 import type { EditorView } from '../EditorView';
 
 declare module 'feng3d'
@@ -127,65 +126,63 @@ export interface SceneRotateToolLogic extends Component3DLogic
     readonly data: SceneRotateTool;
 }
 
-/** SceneRotateToolLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface SceneRotateToolLogicState extends ComponentLogicState
+/**
+ * 工厂函数：SceneRotateToolLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function sceneRotateToolLogic(data: SceneRotateTool): SceneRotateToolLogic
 {
-    /** 组件数据（raw） */
-    _data: SceneRotateTool;
-
-    /** 所属 Object3D（收窄基类的 Entity） */
-    _entity: Object3D | null;
+    const { state, members } = createComponentLogicBase(data);
 
     /** 小视图画布 */
-    _canvas: HTMLCanvasElement | null;
+    let canvas: HTMLCanvasElement | null = null;
 
     /** 小视图 logic */
-    _viewLogic: ViewLogic | null;
+    let viewLogic: ViewLogic | null = null;
 
     /** 小视图相机组件 */
-    _camera: PerspectiveCamera | null;
+    let camera: PerspectiveCamera | null = null;
 
     /** 箭头对象（顺序与 {@link ARROW_SPECS} 一致） */
-    _arrows: Object3D[];
+    let arrows: Object3D[] = [];
 
     /** 每帧提交回调（dispose 时移除） */
-    _frame: (() => void) | null;
+    let frame: (() => void) | null = null;
 
     /** 画布 mouseup 监听（dispose 时移除） */
-    _onMouseUp: ((event: MouseEvent) => void) | null;
+    let onMouseUp: ((event: MouseEvent) => void) | null = null;
 
-    /** 在小视图里拾取被点击的箭头并切换视图 */
-    _pickArrow(event: MouseEvent): void;
-}
-
-/** SceneRotateToolLogic 的共享原型：继承 Component 基类实现，覆写 init / dispose */
-const sceneRotateToolLogicProto = createLogicProto<SceneRotateToolLogic>(componentLogicProto, {
-    init: {
-        value: function (this: SceneRotateToolLogic & SceneRotateToolLogicState, entity?: Object3D): void
+    const logic: SceneRotateToolLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return state.entity as Object3D | null; },
+        init(entity)
         {
-            componentLogicProto.init.call(this, entity);
+            members.init(entity);
 
-            const editorView = this._data.view;
-            const container = this._data.layerContainer ?? document.getElementById('SceneRotateToolLayer');
+            const editorView = data.view;
+            const container = data.layerContainer ?? document.getElementById('SceneRotateToolLayer');
             if (!editorView || !container) return;
 
             // ---- 小画布：撑满图层容器（80×80） ----
-            const canvas = document.createElement('canvas');
-            canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:auto;';
-            container.appendChild(canvas);
-            this._canvas = canvas;
+            const canvasElement = document.createElement('canvas');
+            canvasElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:auto;';
+            container.appendChild(canvasElement);
+            canvas = canvasElement;
 
             // ---- 箭头模型 ----
             const model = createRotateToolModel();
-            this._arrows = model.children as Object3D[];
+            arrows = model.children as Object3D[];
 
             // ---- 小视图场景：相机 + 光照 + 模型（相机斜视，六个箭头互不遮挡） ----
-            const camera: PerspectiveCamera = { __type__: 'PerspectiveCamera', fov: 45, aspect: 1, near: 0.01, far: 10 };
+            const cameraData: PerspectiveCamera = { __type__: 'PerspectiveCamera', fov: 45, aspect: 1, near: 0.01, far: 10 };
             const cameraObject: Object3D = {
                 __type__: 'Object3D',
                 name: 'rotateToolCamera',
                 position: { x: 0.62, y: 0.5, z: 0.82 },
-                components: [camera],
+                components: [cameraData],
             };
             const sceneComponent: Scene = {
                 __type__: 'Scene',
@@ -204,82 +201,45 @@ const sceneRotateToolLogicProto = createLogicProto<SceneRotateToolLogic>(compone
                 components: [sceneComponent],
                 children: [cameraObject, lightObject, model],
             };
-            const view = { __type__: 'View', canvas, root } as View;
+            const view = { __type__: 'View', canvas: canvasElement, root } as View;
 
-            this._camera = camera;
-            this._viewLogic = getLogic(view);
+            camera = cameraData;
+            viewLogic = getLogic(view);
             // 小视图相机看向原点
             getLogic(cameraObject).lookAt({ x: 0, y: 0, z: 0 });
 
             // ---- 每帧提交（复用编辑器 WebGPU 设备） ----
-            const viewLogic = this._viewLogic;
-            const frame = () => { editorView.submit(viewLogic.submit); };
-            this._frame = frame;
-            ticker.onframe(frame);
+            const viewLogicData = viewLogic;
+            const frameFn = () => { editorView.submit(viewLogicData.submit); };
+            frame = frameFn;
+            ticker.onframe(frameFn);
 
             // ---- 点击箭头 → 切换编辑器相机视图 ----
-            const onMouseUp = (event: MouseEvent) => { this._pickArrow(event); };
-            this._onMouseUp = onMouseUp;
-            canvas.addEventListener('mouseup', onMouseUp);
+            const onMouseUpFn = (event: MouseEvent) => { pickArrow(event); };
+            onMouseUp = onMouseUpFn;
+            canvasElement.addEventListener('mouseup', onMouseUpFn);
         },
-    },
-    dispose: {
-        value: function (this: SceneRotateToolLogic & SceneRotateToolLogicState): void
+        dispose()
         {
-            if (this._frame) ticker.offframe(this._frame);
-            this._frame = null;
-            if (this._canvas && this._onMouseUp) this._canvas.removeEventListener('mouseup', this._onMouseUp);
-            this._onMouseUp = null;
-            if (this._canvas?.parentElement) this._canvas.parentElement.removeChild(this._canvas);
-            this._canvas = null;
-            this._viewLogic = null;
+            if (frame) ticker.offframe(frame);
+            frame = null;
+            if (canvas && onMouseUp) canvas.removeEventListener('mouseup', onMouseUp);
+            onMouseUp = null;
+            if (canvas?.parentElement) canvas.parentElement.removeChild(canvas);
+            canvas = null;
+            viewLogic = null;
 
-            componentLogicProto.dispose.call(this);
+            members.dispose();
         },
-    },
-    /** 在小视图里拾取被点击的箭头并切换视图 */
-    _pickArrow: {
-        value: function (this: SceneRotateToolLogic & SceneRotateToolLogicState, event: MouseEvent): void
-        {
-            const canvas = this._canvas;
-            const camera = this._camera;
-            if (!canvas || !camera) return;
-
-            const rect = canvas.getBoundingClientRect();
-            if (!rect.width || !rect.height) return;
-
-            // 屏幕坐标 → GPU 坐标（-1~1，Y 翻转）
-            const gx = ((event.clientX - rect.left) * 2 - rect.width) / rect.width;
-            const gy = -((event.clientY - rect.top) * 2 - rect.height) / rect.height;
-            const ray = getLogic(camera).getRay3D(gx, gy);
-
-            let nearest: Object3D | null = null;
-            let nearestDistance = Number.MAX_VALUE;
-            for (const arrow of this._arrows)
-            {
-                const model = arrow.components?.[0];
-                if (!model) continue;
-                const hit = (getLogic(model) as unknown as { worldRayIntersection(ray: Ray3): { rayEntryDistance: number } | null })
-                    .worldRayIntersection(ray);
-                if (hit && hit.rayEntryDistance < nearestDistance)
-                {
-                    nearestDistance = hit.rayEntryDistance;
-                    nearest = arrow;
-                }
-            }
-            if (nearest) this.clickItem(nearest);
-        },
-    },
-    /**
-     * 点击某个轴向箭头 → 把编辑器相机旋转到对应视图。
-     *
-     * 与旧实现一致：由目标视图角度算出相机朝向，并广播 `editorCameraRotate`
-     * （供其它编辑器模块订阅）；相机朝向经响应式写入宿主对象。
-     *
-     * @param item 被点击的箭头对象
-     */
-    clickItem: {
-        value: function (this: SceneRotateToolLogic & SceneRotateToolLogicState, item: Object3D): void
+        /**
+         * 点击某个轴向箭头 → 把编辑器相机旋转到对应视图。
+         *
+         * 与旧实现一致：由目标视图角度算出相机朝向，并广播 `editorCameraRotate`
+         * （供其它编辑器模块订阅）；相机朝向经响应式写入宿主对象。
+         *
+         * @param item 被点击的箭头对象
+         */
+        clickItem(item)
         {
             if (!item) return;
 
@@ -327,38 +287,53 @@ const sceneRotateToolLogicProto = createLogicProto<SceneRotateToolLogic>(compone
             globalEmitter.emit('editorCameraRotate', result);
 
             // 写入编辑器相机宿主对象（rotation 单位为弧度）
-            const editorCamera = this._data.view?.camera;
+            const editorCamera = data.view?.camera;
             const cameraObject = editorCamera ? getLogic(editorCamera).entity as Object3D | null : null;
             if (cameraObject)
             {
                 reactive(cameraObject).rotation = { x: result.x, y: result.y, z: result.z };
             }
         },
-    },
-    /** 组件数据（raw） */
-    data: {
-        get: function (this: SceneRotateToolLogic & SceneRotateToolLogicState): SceneRotateTool
+        /** 组件数据（raw） */
+        get data()
         {
-            return this._data;
+            return data;
         },
-    },
-});
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 是否加载完成（继承 Component 基类） */
+        get isLoaded() { return members.isLoaded; },
+    };
 
-/**
- * 工厂函数：SceneRotateToolLogic 的唯一创建入口。
- *
- * @param data 组件数据（raw）
- */
-export function sceneRotateToolLogic(data: SceneRotateTool): SceneRotateToolLogic
-{
-    const logic = setupComponentLogicState(Object.create(sceneRotateToolLogicProto) as SceneRotateToolLogic & SceneRotateToolLogicState, data);
-    logic._data = data;
-    logic._canvas = null;
-    logic._viewLogic = null;
-    logic._camera = null;
-    logic._arrows = [];
-    logic._frame = null;
-    logic._onMouseUp = null;
+    /** 在小视图里拾取被点击的箭头并切换视图 */
+    function pickArrow(event: MouseEvent): void
+    {
+        if (!canvas || !camera) return;
+
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        // 屏幕坐标 → GPU 坐标（-1~1，Y 翻转）
+        const gx = ((event.clientX - rect.left) * 2 - rect.width) / rect.width;
+        const gy = -((event.clientY - rect.top) * 2 - rect.height) / rect.height;
+        const ray = getLogic(camera).getRay3D(gx, gy);
+
+        let nearest: Object3D | null = null;
+        let nearestDistance = Number.MAX_VALUE;
+        for (const arrow of arrows)
+        {
+            const model = arrow.components?.[0];
+            if (!model) continue;
+            const hit = (getLogic(model) as unknown as { worldRayIntersection(ray: Ray3): { rayEntryDistance: number } | null })
+                .worldRayIntersection(ray);
+            if (hit && hit.rayEntryDistance < nearestDistance)
+            {
+                nearestDistance = hit.rayEntryDistance;
+                nearest = arrow;
+            }
+        }
+        if (nearest) logic.clickItem(nearest);
+    }
 
     return logic;
 }

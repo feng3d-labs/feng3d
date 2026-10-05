@@ -1,7 +1,6 @@
-import { behaviourLogicProto, setupBehaviourLogicState, Behaviour, BehaviourLogic, type BehaviourLogicState } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, effect, reactive, createLogicProto } from "@feng3d/reactivity";
+import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
+import { registerLogic, logic as getLogic, effect, reactive } from '@feng3d/reactivity';
 import { mat4GetAxisY, mat4GetAxisZ, mat4GetPosition } from '@feng3d/math';
-import type { Object3D } from '../core/Object3D';
 
 
 declare module '../component/Component'
@@ -99,78 +98,6 @@ export interface AudioListenerLogic extends BehaviourLogic
     volume: number;
 }
 
-/** AudioListenerLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface AudioListenerLogicState extends BehaviourLogicState
-{
-    /** 数据引用 */
-    _audioListener: AudioListener;
-
-    _gain: GainNode | null;
-    _volume: number;
-    /** init 去重标志（同一 component 只初始化一次） */
-    _subInited: boolean;
-
-    /** enabled 变化时连接/断开 gain（工厂内定义后挂到实例，供 proto 的 init 调用） */
-    _enabledChanged: () => void;
-    /** local2world 变化时更新 listener 位置/朝向（工厂内定义后挂到实例，供 proto 的 init 调用） */
-    _onScenetransformChanged: () => void;
-}
-
-/** AudioListenerLogic 的共享原型：继承 Behaviour 基类实现，实现 volume 并覆写 init / dispose */
-const audioListenerLogicProto = createLogicProto<AudioListenerLogic>(behaviourLogicProto, {
-    /** 音量 */
-    volume: {
-        get: function (this: AudioListenerLogic & AudioListenerLogicState): number
-        {
-            return this._volume;
-        },
-        set: function (this: AudioListenerLogic & AudioListenerLogicState, v: number): void
-        {
-            this._volume = v;
-            if (this._gain)
-            {
-                this._gain.gain.setTargetAtTime(v, getAudioCtx().currentTime, 0.01);
-            }
-        },
-    },
-    init: {
-        value: function (this: AudioListenerLogic & AudioListenerLogicState, object3D?: Object3D): void
-        {
-            if (this._subInited) return;
-            this._subInited = true;
-            behaviourLogicProto.init.call(this, object3D);
-
-            this._gain = getAudioCtx().createGain();
-            this._gain.connect(getAudioCtx().destination);
-            reactive(this._audioListener).gain = this._gain;
-            reactive(this._audioListener).enabled = true;
-
-            // @边界 effect：WebAudio 外设同步（gain 连接状态，推模式）
-            // effect 监听 enabled 变化时连接/断开 gain
-            effect(() =>
-            {
-                reactive(this._audioListener).enabled;
-                this._enabledChanged();
-            });
-
-            // @边界 effect：WebAudio 外设同步（listener 位置/朝向）
-            // effect 监听 local2world 变化时更新 listener
-            effect(() =>
-            {
-                getLogic(this.entity!).local2world;
-                this._onScenetransformChanged();
-            });
-        },
-    },
-    dispose: {
-        value: function (this: AudioListenerLogic & AudioListenerLogicState): void
-        {
-            behaviourLogicProto.dispose.call(this);
-            this._gain = null;
-        },
-    },
-});
-
 /**
  * 工厂函数：AudioListenerLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -178,29 +105,29 @@ const audioListenerLogicProto = createLogicProto<AudioListenerLogic>(behaviourLo
  */
 export function audioListenerLogic(data: AudioListener): AudioListenerLogic
 {
-    const logic = setupBehaviourLogicState(Object.create(audioListenerLogicProto) as AudioListenerLogic & AudioListenerLogicState, data);
+    const { members } = createBehaviourLogicBase(data);
 
-    logic._audioListener = data;
-    logic._gain = null;
-    logic._volume = 1;
-    logic._subInited = false;
+    const audioListener = data;
+    let gain: GainNode | null = null;
+    let volume = 1;
+    let subInited = false;
 
     function enabledChanged(): void
     {
-        if (!logic._gain) return;
-        if (logic._audioListener.enabled)
+        if (!gain) return;
+        if (audioListener.enabled)
         {
-            getGlobalGain().connect(logic._gain);
+            getGlobalGain().connect(gain);
         }
         else
         {
-            getGlobalGain().disconnect(logic._gain);
+            getGlobalGain().disconnect(gain);
         }
     }
 
     function onScenetransformChanged(): void
     {
-        const local2world = getLogic(logic.entity!).local2world;
+        const local2world = getLogic(members.entity!).local2world;
         const position = mat4GetPosition(local2world);
         // 相机/监听器 forward 为本地 -Z（投影矩阵 m[11]=-1 约定）
         const forward = mat4GetAxisZ(local2world); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
@@ -227,8 +154,57 @@ export function audioListenerLogic(data: AudioListener): AudioListenerLogic
         }
     }
 
-    logic._enabledChanged = enabledChanged;
-    logic._onScenetransformChanged = onScenetransformChanged;
+    const logic: AudioListenerLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        /** 音量 */
+        get volume() { return volume; },
+        set volume(v)
+        {
+            volume = v;
+            if (gain)
+            {
+                gain.gain.setTargetAtTime(v, getAudioCtx().currentTime, 0.01);
+            }
+        },
+        /** 初始化：注入 entity（同一 component 只初始化一次） */
+        init(object3D)
+        {
+            if (subInited) return;
+            subInited = true;
+            members.init(object3D);
+
+            gain = getAudioCtx().createGain();
+            gain.connect(getAudioCtx().destination);
+            reactive(audioListener).gain = gain;
+            reactive(audioListener).enabled = true;
+
+            // @边界 effect：WebAudio 外设同步（gain 连接状态，推模式）
+            // effect 监听 enabled 变化时连接/断开 gain
+            effect(() =>
+            {
+                reactive(audioListener).enabled;
+                enabledChanged();
+            });
+
+            // @边界 effect：WebAudio 外设同步（listener 位置/朝向）
+            // effect 监听 local2world 变化时更新 listener
+            effect(() =>
+            {
+                getLogic(members.entity!).local2world;
+                onScenetransformChanged();
+            });
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval) { members.update(interval); },
+        get isLoaded() { return members.isLoaded; },
+        dispose()
+        {
+            members.dispose();
+            gain = null;
+        },
+    };
 
     return logic;
 }

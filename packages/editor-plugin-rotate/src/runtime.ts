@@ -1,4 +1,4 @@
-import { createLogicProto, registerLogic } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 import { ROTATE_TYPE } from './shared';
 import type { Rotate } from './shared';
 
@@ -34,9 +34,8 @@ declare module '@feng3d/reactivity'
  * 与界面端共享同一份 {@link Rotate} 数据（见 `./shared`）——**同一个 `__type__`，两端都有行为**，
  * 这就是"编辑格式 = 运行格式"的最小可验证形态。
  *
- * 实例由 `Object.create(rotateLogicProto)` 创建，方法 / getter 挂在文件级共享 proto 上
- * （千级对象场景不产生每实例闭包）；创建入口是 {@link rotateLogic} 工厂，
- * `registerLogic` 只接受工厂函数（issue #653）。
+ * 形态：**工厂闭包直接返回对象字面量**——无共享原型、无 this、无 `_` 前缀状态字段；
+ * 创建入口是 {@link rotateLogic} 工厂，`registerLogic` 只接受工厂函数（issue #653）。
  * 编辑器侧同理由 `LogicFactoryRef` 描述（见 `packages/editor/src/plugins/types.ts`）。
  */
 export interface RotateLogic
@@ -53,50 +52,26 @@ export interface RotateLogic
     update(interval: number): number;
 }
 
-/** RotateLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface RotateLogicState
-{
-    /** 关联的纯数据 */
-    _data: Rotate;
-
-    /** 当前累计角度（度） */
-    _angle: number;
-}
-
-/** RotateLogic 的共享原型（issue #674）：独立根（无 Logic 父类），基传 null */
-const rotateLogicProto = createLogicProto<RotateLogic>(null, {
-    /** 当前累计角度（度） */
-    angle: {
-        get: function (this: RotateLogic & RotateLogicState): number { return this._angle; },
-    },
-    /**
-     * 推进一帧。
-     *
-     * @param interval 距上一帧的秒数
-     * @returns 推进后的累计角度（度）
-     */
-    update: {
-        value: function (this: RotateLogic & RotateLogicState, interval: number): number
-        {
-            this._angle += (this._data.speed ?? 0) * interval;
-
-            return this._angle;
-        },
-    },
-});
-
 /**
  * 工厂函数：RotateLogic 的唯一创建入口（registerLogic 注册它）。
  *
- * 独立根（无 Logic 父类）：实例装配自己的全部内部状态。
+ * 工厂闭包直接返回对象字面量：累计角度是闭包内 `let` 状态，getter 与 update 读写同一变量。
  *
  * @param data 纯数据 Rotate（raw）
  */
 export function rotateLogic(data: Rotate): RotateLogic
 {
-    const logic = Object.create(rotateLogicProto) as RotateLogic & RotateLogicState;
-    logic._data = data;
-    logic._angle = 0;
+    let angle = 0;
+
+    const logic: RotateLogic = {
+        get angle() { return angle; },
+        update(interval)
+        {
+            angle += (data.speed ?? 0) * interval;
+
+            return angle;
+        },
+    };
 
     return logic;
 }

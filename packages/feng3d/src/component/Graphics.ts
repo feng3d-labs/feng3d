@@ -1,7 +1,7 @@
-import { createLogicProto, registerLogic } from '@feng3d/reactivity';
+import { registerLogic } from '@feng3d/reactivity';
 import { dataTransform } from '@feng3d/polyfill';
 import type { Object3D } from '../core/Object3D';
-import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from './Component';
+import { Component3D, Component3DLogic, createComponentLogicBase } from './Component';
 
 
 declare module './Component'
@@ -39,26 +39,34 @@ export interface GraphicsLogic extends Component3DLogic
     draw(width: number, height: number): Promise<CanvasRenderingContext2D>;
 }
 
-/** GraphicsLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface GraphicsLogicState extends ComponentLogicState
+/**
+ * 工厂函数：GraphicsLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 自身状态（主画布 / 上下文 / 图片缓存）全部为闭包内变量；
+ * 覆写 init / draw / dispose。
+ *
+ * @param data 组件数据（raw）
+ */
+export function graphicsLogic(data: Graphics): GraphicsLogic
 {
-    /** draw 生成的图片缓存（当前仅写入，待消费点接入后读取） */
-    _image: HTMLImageElement | null;
+    const { state, members } = createComponentLogicBase(data);
+
     /** 主画布（init 时创建） */
-    _canvas: HTMLCanvasElement | null;
+    let canvas: HTMLCanvasElement | null = null;
     /** 主画布 2D 上下文（init 时创建） */
-    _context2D: CanvasRenderingContext2D | null;
-}
+    let context2D: CanvasRenderingContext2D | null = null;
+    /** draw 生成的图片缓存（当前仅写入，待消费点接入后读取） */
+    const imageCache: { image: HTMLImageElement | null } = { image: null };
 
-/** GraphicsLogic 的共享原型：继承 Component 基类实现，覆写 init / draw / dispose */
-const graphicsLogicProto = createLogicProto<GraphicsLogic>(componentLogicProto, {
-    init: {
-        value: function (this: GraphicsLogic & GraphicsLogicState, object3D?: Object3D): void
+    const logic: GraphicsLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(object3D)
         {
-            componentLogicProto.init.call(this, object3D);
-            this._canvas = document.createElement('canvas');
+            members.init(object3D);
+            canvas = document.createElement('canvas');
 
-            const ctxt = this._canvas.getContext('2d');
+            const ctxt = canvas.getContext('2d');
 
             // strictNullChecks：拿不到 2D 上下文就没法画（显式抛错，不再静默继续）
             if (!ctxt)
@@ -66,12 +74,10 @@ const graphicsLogicProto = createLogicProto<GraphicsLogic>(componentLogicProto, 
                 throw new Error('Graphics.init：无法创建 2D 画布上下文');
             }
 
-            this._context2D = ctxt;
-            watchContext2D(this._context2D);
+            context2D = ctxt;
+            watchContext2D(context2D);
         },
-    },
-    draw: {
-        value: async function (this: GraphicsLogic & GraphicsLogicState, width: number, height: number): Promise<CanvasRenderingContext2D>
+        async draw(width, height)
         {
             const canvas = document.createElement('canvas');
             canvas.width = width;
@@ -83,32 +89,19 @@ const graphicsLogicProto = createLogicProto<GraphicsLogic>(componentLogicProto, 
                 throw new Error('Graphics.draw：无法创建 2D 画布上下文');
             }
 
-            this._image = await dataTransform.canvasToImage(canvas, 'png', 1);
+            imageCache.image = await dataTransform.canvasToImage(canvas, 'png', 1);
 
             return ctxt;
         },
-    },
-    dispose: {
-        value: function (this: GraphicsLogic & GraphicsLogicState): void
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose()
         {
-            this._image = null;
-            this._canvas = null;
-            this._context2D = null;
+            imageCache.image = null;
+            canvas = null;
+            context2D = null;
         },
-    },
-});
-
-/**
- * 工厂函数：GraphicsLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * @param data 组件数据（raw）
- */
-export function graphicsLogic(data: Graphics): GraphicsLogic
-{
-    const logic = setupComponentLogicState(Object.create(graphicsLogicProto) as GraphicsLogic & GraphicsLogicState, data);
-    logic._image = null;
-    logic._canvas = null;
-    logic._context2D = null;
+    };
 
     return logic;
 }

@@ -1,10 +1,10 @@
 import { box3Clone, box3GetCenter, box3Union } from '@feng3d/math';
 // `vec3Sub` 与本文件里 wgpu-matrix 风格的本地 `vec3Sub(a: Vec3, b: Vec3)` 同名，导入时起别名
 import { Box3, Matrix4x4, vec3Add, vec3ScaleNumber, vec3Sub as mathVec3Sub } from '@feng3d/math';
-import { logic as getLogic, registerLogic, createLogicProto } from '@feng3d/reactivity';
+import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
 import type { Texture } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
-import { Light, LightLogic, lightLogicProto, setupLightLogicState, type LightLogicState } from './Light';
+import { Light, LightLogic, createLightLogicBase } from './Light';
 import type { Renderable } from '../core/Renderable';
 import type { Scene } from '../scene/Scene';
 
@@ -60,27 +60,67 @@ export interface DirectionalLightLogic extends LightLogic
     updateShadowByCamera(scene: Scene, viewCamera: Camera, models: Renderable[]): void;
 }
 
-/** DirectionalLightLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface DirectionalLightLogicState extends LightLogicState
+/**
+ * 工厂函数：DirectionalLightLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 灯光数据（raw）
+ */
+export function directionalLightLogic(data: DirectionalLight): DirectionalLightLogic
 {
-    /**
-     * 方向光阴影深度纹理（depth32float，懒创建）。
-     */
-    _shadowDepthTexture: Texture | null;
-}
+    const { members } = createLightLogicBase(data);
 
-/** DirectionalLightLogic 的共享原型：继承 Light 基类实现，覆写/新增阴影成员 */
-const directionalLightLogicProto = createLogicProto<DirectionalLightLogic>(lightLogicProto, {
-    /** 方向光阴影深度纹理，懒创建（默认尺寸 1024×1024 depth32float） */
-    shadowDepthTexture: {
-        get: function (this: DirectionalLightLogic & DirectionalLightLogicState): Texture
+    /** 方向光阴影深度纹理（depth32float，懒创建） */
+    let shadowDepthTexture: Texture | null = null;
+
+    const logic: DirectionalLightLogic = {
+        // ---- Light / Behaviour / Component 基类成员（显式委托基座 members）----
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D */
+        get entity() { return members.entity; },
+        /** 是否可见且启用 */
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        /** 初始化：注入所属 Object3D（幂等） */
+        init(object3D) { members.init(object3D); },
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 每帧更新（默认空，子类覆盖） */
+        update(interval) { members.update(interval); },
+        /** 是否加载完成 */
+        get isLoaded() { return members.isLoaded; },
+        /** 释放 */
+        dispose() { members.dispose(); },
+        /** 阴影 view-projection 矩阵 */
+        get shadowViewProjection() { return members.shadowViewProjection; },
+        /** 阴影相机近平面 */
+        get shadowNear() { return members.shadowNear; },
+        /** 阴影相机远平面 */
+        get shadowFar() { return members.shadowFar; },
+        /** 更新阴影参数（供子类的 updateShadowXxx 方法调用） */
+        updateShadowParams(viewProjection, near, far) { members.updateShadowParams(viewProjection, near, far); },
+        /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
+        get position() { return members.position; },
+        /** 光源方向（object3D 的 local2world Z 轴取反） */
+        get direction() { return members.direction; },
+        /** 阴影相机近平面（供 shader uniform） */
+        get shadowCameraNear() { return members.shadowCameraNear; },
+        /** 阴影相机远平面（供 shader uniform） */
+        get shadowCameraFar() { return members.shadowCameraFar; },
+        /** 阴影图尺寸（默认 1024×1024） */
+        get shadowMapSize() { return members.shadowMapSize; },
+        /** 阴影采样纹理（DirectionalLight 用 shadowDepthTexture） */
+        get shadowMap() { return members.shadowMap; },
+
+        // ---- DirectionalLight 自身成员 ----
+        /** 方向光阴影深度纹理，懒创建（默认尺寸 1024×1024 depth32float） */
+        get shadowDepthTexture(): Texture
         {
-            if (!this._shadowDepthTexture)
+            if (!shadowDepthTexture)
             {
-                const size = this.shadowMapSize;
+                const size = members.shadowMapSize;
                 // 直接用 webgpu 的 Texture 接口构造纯数据对象（无 __type__ 要求），
                 // 与 PointLight 的 depth cubemap 同范式。
-                this._shadowDepthTexture = {
+                shadowDepthTexture = {
                     descriptor: {
                         label: 'DirectionalLightShadowDepth',
                         size: [size.x, size.y, 1],
@@ -89,29 +129,25 @@ const directionalLightLogicProto = createLogicProto<DirectionalLightLogic>(light
                 } as Texture;
             }
 
-            return this._shadowDepthTexture;
+            return shadowDepthTexture;
         },
-    },
-    /** 调试阴影图用的纹理：返回 shadowDepthTexture */
-    debugShadowTexture: {
-        get: function (this: DirectionalLightLogic & DirectionalLightLogicState): Texture | null
+        /** 调试阴影图用的纹理：返回 shadowDepthTexture */
+        get debugShadowTexture(): Texture | null
         {
-            return this.shadowDepthTexture;
+            return logic.shadowDepthTexture;
         },
-    },
-    /**
-     * 根据场景投射阴影物体的包围盒，算出阴影 viewProjection 矩阵。
-     *
-     * 完全照搬 packages/webgpu/examples/src/webgpu/shadowMapping/index.ts 的算法：
-     * - 用 wgpu-matrix 风格的 mat4.lookAt / mat4.ortho / mat4.multiply 构建 VP
-     * - ortho 把 z 映射到 [0,1]（WebGPU 风格，与 OpenGL 的 [-1,1] 不同）
-     * - lookAt 是右手系，相机看向 -Z（与 feng3d Matrix4x4.lookAt 的 +Z 约定相反）
-     *
-     * WGSL 端配合：shadowPos.z 不做 *0.5+0.5（已与 depth buffer 同空间 [0,1]）。
-     * 结果写入 `shadowViewProjection`，ShadowRenderer 与 ForwardRenderer 读取。
-     */
-    updateShadowByCamera: {
-        value: function (this: DirectionalLightLogic & DirectionalLightLogicState, scene: Scene, viewCamera: Camera, models: Renderable[]): void
+        /**
+         * 根据场景投射阴影物体的包围盒，算出阴影 viewProjection 矩阵。
+         *
+         * 完全照搬 packages/webgpu/examples/src/webgpu/shadowMapping/index.ts 的算法：
+         * - 用 wgpu-matrix 风格的 mat4.lookAt / mat4.ortho / mat4.multiply 构建 VP
+         * - ortho 把 z 映射到 [0,1]（WebGPU 风格，与 OpenGL 的 [-1,1] 不同）
+         * - lookAt 是右手系，相机看向 -Z（与 feng3d Matrix4x4.lookAt 的 +Z 约定相反）
+         *
+         * WGSL 端配合：shadowPos.z 不做 *0.5+0.5（已与 depth buffer 同空间 [0,1]）。
+         * 结果写入 `shadowViewProjection`，ShadowRenderer 与 ForwardRenderer 读取。
+         */
+        updateShadowByCamera(scene, viewCamera, models)
         {
             void scene;
             void viewCamera;
@@ -134,7 +170,7 @@ const directionalLightLogicProto = createLogicProto<DirectionalLightLogic>(light
 
             // 2. 光源位置：沿光源反方向退到包围盒外足够远处，朝向包围盒中心
             const center = box3GetCenter(worldBounds, { x: 0, y: 0, z: 0 });
-            const lightDir = this.direction; // 光源方向（世界空间单位向量）
+            const lightDir = members.direction; // 光源方向（世界空间单位向量）
             // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
             const maxVec = { x: worldBounds.max.x, y: worldBounds.max.y, z: worldBounds.max.z };
             const minVec = { x: worldBounds.min.x, y: worldBounds.min.y, z: worldBounds.min.z };
@@ -196,20 +232,9 @@ const directionalLightLogicProto = createLogicProto<DirectionalLightLogic>(light
             // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成纯数据字面量（先铺 16 个 0 再逐位写入）
             const m: Matrix4x4 = { __type__: 'Matrix4x4', elements: new Array<number>(16).fill(0) };
             for (let i = 0; i < 16; i++) m.elements[i] = lightViewProjMatrix[i];
-            this.updateShadowParams(m, near, far);
+            members.updateShadowParams(m, near, far);
         },
-    },
-});
-
-/**
- * 工厂函数：DirectionalLightLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * @param data 灯光数据（raw）
- */
-export function directionalLightLogic(data: DirectionalLight): DirectionalLightLogic
-{
-    const logic = setupLightLogicState(Object.create(directionalLightLogicProto) as DirectionalLightLogic & DirectionalLightLogicState, data);
-    logic._shadowDepthTexture = null;
+    };
 
     return logic;
 }

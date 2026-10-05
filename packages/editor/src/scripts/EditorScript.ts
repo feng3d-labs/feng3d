@@ -1,6 +1,6 @@
-import { RunEnvironment, behaviourLogicProto, setupBehaviourLogicState } from 'feng3d';
+import { createBehaviourLogicBase, RunEnvironment } from 'feng3d';
 import type { Behaviour, BehaviourLogic, BehaviourLogicState } from 'feng3d';
-import { createLogicProto, UnReadonly } from '@feng3d/reactivity';
+import type { UnReadonly } from '@feng3d/reactivity';
 
 /**
  * 编辑器脚本（纯数据接口）。
@@ -30,33 +30,33 @@ export interface EditorScriptLogic extends BehaviourLogic
 {
 }
 
-/** EditorScriptLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-export interface EditorScriptLogicState extends BehaviourLogicState
-{
-}
-
-/** EditorScriptLogic 的共享原型：继承 Behaviour 基类实现（本层无覆写） */
-export const editorScriptLogicProto = createLogicProto<EditorScriptLogic>(behaviourLogicProto, {
-});
-
 /**
- * 装配 EditorScript 系 Logic 的**基类状态**（供子类工厂组合调用）。
+ * 创建 EditorScript 系 Logic 的**基类状态与成员**（供子类工厂组合调用）。
  *
- * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
- * 子类先 `Object.create(xxxLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。子类工厂的用法：
+ * ```ts
+ * const { members } = createEditorScriptLogicBase(data);
+ * const logic: XxxLogic = {
+ *     get component() { return members.component; },
+ *     get entity() { return members.entity; },
+ *     get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+ *     init(object3D) { members.init(object3D); },
+ *     // ...其余基类成员 + 自身成员
+ * };
+ * ```
+ *
  * 默认值填充在基类状态装配之前完成，等价于旧写法在 `super(data)` 之前的赋值。
  *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
  * @param data 编辑器脚本数据（raw）
- * @returns 同一实例（便于链式装配）
+ * @returns EditorScript 系 Logic 的基类状态与成员（state 与 Behaviour 基座共享）
  */
-export function setupEditorScriptLogicState<T extends EditorScriptLogic & EditorScriptLogicState>(logic: T, data: EditorScript): T
+export function createEditorScriptLogicBase(data: EditorScript): { state: BehaviourLogicState; members: EditorScriptLogic }
 {
     // 默认值填充（须在 super 之前完成，构造完成即已填充）
     const writable = data as UnReadonly<EditorScript>;
     if (data.runEnvironment === undefined) writable.runEnvironment = RunEnvironment.editor;
 
-    return setupBehaviourLogicState(logic, data);
+    return createBehaviourLogicBase(data);
 }
 
 /**
@@ -66,5 +66,18 @@ export function setupEditorScriptLogicState<T extends EditorScriptLogic & Editor
  */
 export function editorScriptLogic(data: EditorScript): EditorScriptLogic
 {
-    return setupEditorScriptLogicState(Object.create(editorScriptLogicProto) as EditorScriptLogic & EditorScriptLogicState, data);
+    const { members } = createEditorScriptLogicBase(data);
+
+    const logic: EditorScriptLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        init(object3D) { members.init(object3D); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval) { members.update(interval); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
+
+    return logic;
 }

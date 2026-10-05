@@ -1,5 +1,5 @@
 import { Components, ComponentLogic, getComponentTypeInfo } from '../component/Component';
-import { computed, createLogicProto, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
+import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
 /**
@@ -171,72 +171,76 @@ export interface EntityLogic
     getComponents<T extends Components>(typeName: string, results?: T[]): T[];
 }
 
-/** Entity 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入） */
+/**
+ * Entity 系 Logic 实例的内部状态（不进公开接口，工厂闭包持有）。
+ */
 export interface EntityLogicState
 {
     /** 纯数据引用（子类读取自身具体数据字段用） */
-    _data: Entity;
+    data: Entity;
 
     /** 组件列表（建立对 raw.components 的响应式依赖） */
-    _components: Computed<Components[]>;
+    components: Computed<Components[]>;
 
     /** 组件初始化 effect 是否已安装（幂等） */
-    _componentsEffectInstalled: boolean;
+    componentsEffectInstalled: boolean;
 }
 
-/** EntityLogic 的共享原型（issue #674）：子类 proto 用 Object.create(entityLogicProto) 继承 */
-export const entityLogicProto = createLogicProto<EntityLogic>(null, {
-    /** 关联的 Entity 数据（raw） */
-    entity: {
-        get: function (this: EntityLogic & EntityLogicState): Entity { return this._data; },
-    },
-    /** 组件列表（响应式 computed） */
-    components: {
-        get: function (this: EntityLogic & EntityLogicState): Components[] { return this._components.value; },
-    },
-    /** 获取指定类型的第一个组件 */
-    getComponent: {
-        value: function <T extends Components>(this: EntityLogic & EntityLogicState, typeName: string): T
-        {
-            return this._components.value.find(c => matchType(c, typeName)) as T;
-        },
-    },
-    /** 获取所有匹配类型的组件 */
-    getComponents: {
-        value: function <T extends Components>(this: EntityLogic & EntityLogicState, typeName: string, results: T[] = []): T[]
-        {
-            for (const c of this._components.value)
-            {
-                if (!typeName || matchType(c, typeName)) results.push(c as T);
-            }
-
-            return results;
-        },
-    },
-});
-
 /**
- * 装配 Entity 系 Logic 的**基类状态**（子类工厂组合调用，issue #674）。
+ * EntityLogic 的**基类行为**（组合用）：成员都读写同一个 `state`。
  *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。子类工厂的用法：
+ * ```ts
+ * const { state, members } = createEntityLogicBase(data);
+ * const logic: XxxLogic = {
+ *     get entity() { return members.entity; },
+ *     get components() { return members.components; },
+ *     getComponent(typeName) { return members.getComponent(typeName); },
+ *     getComponents(typeName, results) { return members.getComponents(typeName, results); },
+ *     // ...自身成员
+ * };
+ * ```
+ *
  * @param data 实体数据（raw）
- * @returns 同一实例（便于链式装配）
  */
-export function setupEntityLogicState<T extends EntityLogic & EntityLogicState>(logic: T, data: Entity): T
+export function createEntityLogicBase(data: Entity): { state: EntityLogicState; members: EntityLogic }
 {
-    logic._data = data;
-    logic._componentsEffectInstalled = false;
-
     // ---- pre-fill：components 必须存在数组（push/splice 写入路径依赖） ----
     if (data.components === undefined)
     {
         (data as { components: Components[] }).components = [];
     }
 
-    // 组件列表：computed 建立对 raw.components 的响应式依赖
-    logic._components = computed(() => reactive(logic._data).components as Components[]);
+    const state: EntityLogicState = {
+        data,
+        // 组件列表：computed 建立对 raw.components 的响应式依赖
+        components: computed(() => reactive(data).components as Components[]),
+        componentsEffectInstalled: false,
+    };
 
-    return logic;
+    const members: EntityLogic = {
+        /** 关联的 Entity 数据（raw） */
+        get entity() { return state.data; },
+        /** 组件列表（响应式 computed） */
+        get components() { return state.components.value; },
+        /** 获取指定类型的第一个组件 */
+        getComponent<T extends Components>(typeName: string): T
+        {
+            return state.components.value.find(c => matchType(c, typeName)) as T;
+        },
+        /** 获取所有匹配类型的组件 */
+        getComponents<T extends Components>(typeName: string, results: T[] = []): T[]
+        {
+            for (const c of state.components.value)
+            {
+                if (!typeName || matchType(c, typeName)) results.push(c as T);
+            }
+
+            return results;
+        },
+    };
+
+    return { state, members };
 }
 
 /**
@@ -246,23 +250,24 @@ export function setupEntityLogicState<T extends EntityLogic & EntityLogicState>(
  * children / computed 上读写，而那些字段要到最派生工厂才装完，所以必须推迟。
  * 工厂版本下不再有 `new.target`——由各工厂显式选择是否调用本函数：
  * `entityLogic` / `containerLogic` 各自是所在链的最派生，直接调用；
- * `object3DLogic` 则走 `setupContainerLogicState`、在自己的字段装完后调用。
+ * `object3DLogic` 则走 `createContainerLogicBase`、在自己的字段装完后调用。
  *
  * @param logic 已装配好的实例
+ * @param state 该实例的 Entity 基类状态
  */
-export function initComponents(logic: EntityLogic & EntityLogicState): void
+export function initComponents(logic: EntityLogic, state: EntityLogicState): void
 {
-    if (logic._componentsEffectInstalled) return;
-    logic._componentsEffectInstalled = true;
+    if (state.componentsEffectInstalled) return;
+    state.componentsEffectInstalled = true;
 
     // @边界 effect：结构变更 → logic.init 命令式分发（init 是外部副作用，无法 pull 化）
     // ---- 自动初始化 effect：监听 components 变化 ----
     effect(() =>
     {
-        const r_components = logic._components.value;
+        const r_components = logic.components;
         for (const r_component of r_components)
         {
-            initComponent(toRaw(r_component), logic._data as Object3D);
+            initComponent(toRaw(r_component), state.data as Object3D);
         }
     });
 }
@@ -270,15 +275,15 @@ export function initComponents(logic: EntityLogic & EntityLogicState): void
 /**
  * 工厂函数：EntityLogic 的唯一创建入口。
  *
- * EntityLogic 是这条链的最派生（子类工厂走 `setupEntityLogicState` 组合），
+ * EntityLogic 是这条链的最派生（子类工厂走 `createEntityLogicBase` 组合），
  * 因此装配完直接初始化组件。
  */
 export function entityLogic(data: Entity): EntityLogic
 {
-    const logic = setupEntityLogicState(Object.create(entityLogicProto) as EntityLogic & EntityLogicState, data);
-    initComponents(logic);
+    const { state, members } = createEntityLogicBase(data);
+    initComponents(members, state);
 
-    return logic;
+    return members;
 }
 
 // 注册到统一 logic 分发表（Entity 为抽象基类，通常不直接实例化；

@@ -1,10 +1,10 @@
 import { planeFromNormalAndPoint, planeFromPoints } from 'feng3d';
 import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4GetPosition, mat4PrependTranslation, mat4TransformPoint3, Matrix4x4, Plane, shortcut, vec3Cross, vec3Sub, Vector3, windowEventProxy } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { createLogicProto, reactive, UnReadonly } from '@feng3d/reactivity';
+import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinatePlane, MToolModel, MToolModelLogic } from './models/MToolModel';
-import { mrsToolBaseLogicProto, setupMRSToolBaseLogicState } from './MRSToolBase';
-import type { MRSToolBase, MRSToolBaseLogic, MRSToolBaseLogicState, MRSToolSelectedItem } from './MRSToolBase';
+import { createMRSToolBaseLogicBase } from './MRSToolBase';
+import type { MRSToolBase, MRSToolBaseLogic, MRSToolSelectedItem } from './MRSToolBase';
 
 /**
  * 位移工具（纯数据接口）。
@@ -54,54 +54,64 @@ export interface MToolLogic extends MRSToolBaseLogic
     readonly toolModelLogic: MToolModelLogic | null;
 }
 
-/** MToolLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface MToolLogicState extends MRSToolBaseLogicState
+/**
+ * 工厂函数：MToolLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function mToolLogic(data: MTool): MToolLogic
 {
-    /** 关联的组件数据（raw） */
-    _data: MTool;
+    // 默认值填充（须在 super 之前完成）
+    const writable = data as UnReadonly<MTool>;
+    if (data.changeXYZ === undefined) writable.changeXYZ = { x: 0, y: 0, z: 0 };
 
-    onMouseMove(): void;
-}
+    const { state, members: baseMembers } = createMRSToolBaseLogicBase(data);
 
-/** MToolLogic 的共享原型：继承 MRSToolBase 基类实现，覆写 init / 拖拽回调 */
-const mToolLogicProto = createLogicProto<MToolLogic>(mrsToolBaseLogicProto, {
-    /** 工具模型 Logic（拾取与平面翻转使用） */
-    toolModelLogic: {
-        get: function (this: MToolLogic & MToolLogicState): MToolModelLogic | null
+    const logic: MToolLogic = {
+        // ---- MRSToolBase 基类成员（显式委托） ----
+        /** 关联的组件数据（raw） */
+        get component() { return baseMembers.component; },
+        /** 所属 Object3D */
+        get entity() { return baseMembers.entity; },
+        init(entity)
         {
-            const component = this._data.toolModel;
-
-            return component ? getLogic(component) : null;
-        },
-    },
-    init: {
-        value: function (this: MToolLogic & MToolLogicState, entity?: Object3D): void
-        {
-            mrsToolBaseLogicProto.init.call(this, entity);
+            baseMembers.init(entity);
 
             // 工具模型：3 轴 + 3 平面 + 中心方块（旧实现 `new Object3D().addComponent(MToolModel)`）
-            this.setToolModel({
+            baseMembers.setToolModel({
                 __type__: 'Object3D',
                 name: 'Object3DMoveModel',
                 components: [{ __type__: 'MToolModel' }],
             });
         },
-    },
-    onItemMouseDown: {
-        value: function (this: MToolLogic & MToolLogicState, item: MRSToolSelectedItem): void
+        beforeRender(renderObject) { baseMembers.beforeRender(renderObject); },
+        get isLoaded() { return baseMembers.isLoaded; },
+        dispose() { baseMembers.dispose(); },
+        get editorCamera() { return baseMembers.editorCamera; },
+        set editorCamera(v) { baseMembers.editorCamera = v; },
+        get host() { return baseMembers.host; },
+        get editorCameraObject() { return baseMembers.editorCameraObject; },
+        get toolModel() { return baseMembers.toolModel; },
+        setToolModel(object3D) { baseMembers.setToolModel(object3D); },
+        get toolModelEntity() { return baseMembers.toolModelEntity; },
+        get selectedItem() { return baseMembers.selectedItem; },
+        set selectedItem(v) { baseMembers.selectedItem = v; },
+        onAddedToScene() { baseMembers.onAddedToScene(); },
+        onRemovedFromScene() { baseMembers.onRemovedFromScene(); },
+        onItemMouseDown(item)
         {
             if (!shortcut.getState('mouseInView3D')) return;
             if (shortcut.keyState.getKeyState('alt')) return;
-            if (!this.editorCamera) return;
+            if (!baseMembers.editorCamera) return;
 
-            const host = this.host;
-            const modelLogic = this.toolModelLogic;
+            const host = baseMembers.host;
+            const modelLogic = getToolModelLogic();
             if (!host || !modelLogic) return;
 
-            mrsToolBaseLogicProto.onItemMouseDown.call(this, item);
+            baseMembers.onItemMouseDown(item);
 
             // gizmo 宿主的世界矩阵，以及中心与 X/Y/Z 轴上点坐标
-            const cameraObject = this.editorCameraObject;
+            const cameraObject = baseMembers.editorCameraObject;
             const globalMatrix = getLogic(host)?.local2world;
             const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
             if (!globalMatrix || !cameraSceneTransform) return;
@@ -126,44 +136,44 @@ const mToolLogicProto = createLogicProto<MToolLogic>(mrsToolBaseLogicProto, {
 
             mat4GetAxisZ(cameraSceneTransform, cameraDir);
             const movePlane3D: Plane = { __type__: 'Plane', a: 0, b: 1, c: 0, d: 0 };
-            const writable = this._data as UnReadonly<MTool>;
+            const writable = data as UnReadonly<MTool>;
             writable.movePlane3D = movePlane3D;
 
             // 单轴：过该轴且面向相机的平面；平面：由两个轴确定的平面；中心方块：面向相机的平面
             switch (item)
             {
                 case modelLogic.xAxis:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromNormalAndPoint(vec3Cross(vec3Cross(cameraDir, ox), ox), po);
                     writable.changeXYZ = { x: 1, y: 0, z: 0 };
                     break;
                 case modelLogic.yAxis:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromNormalAndPoint(vec3Cross(vec3Cross(cameraDir, oy), oy), po);
                     writable.changeXYZ = { x: 0, y: 1, z: 0 };
                     break;
                 case modelLogic.zAxis:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromNormalAndPoint(vec3Cross(vec3Cross(cameraDir, oz), oz), po);
                     writable.changeXYZ = { x: 0, y: 0, z: 1 };
                     break;
                 case modelLogic.yzPlane:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromPoints(po, py, pz, movePlane3D);
                     writable.changeXYZ = { x: 0, y: 1, z: 1 };
                     break;
                 case modelLogic.xzPlane:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromPoints(po, px, pz, movePlane3D);
                     writable.changeXYZ = { x: 1, y: 0, z: 1 };
                     break;
                 case modelLogic.xyPlane:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromPoints(po, px, py, movePlane3D);
                     writable.changeXYZ = { x: 1, y: 1, z: 0 };
                     break;
                 case modelLogic.oCube:
-                    this.selectedItem = item;
+                    baseMembers.selectedItem = item;
                     planeFromNormalAndPoint(cameraDir, po);
                     writable.changeXYZ = { x: 1, y: 1, z: 1 };
                     break;
@@ -172,72 +182,25 @@ const mToolLogicProto = createLogicProto<MToolLogic>(mrsToolBaseLogicProto, {
             }
 
             writable.startSceneTransform = { __type__: 'Matrix4x4', ...mat4Copy(globalMatrix) };
-            writable.startPlanePos = toPlain(this.getLocalMousePlaneCross());
+            writable.startPlanePos = toPlain(baseMembers.getLocalMousePlaneCross());
             // 工具宿主的本地位置（raw 数据可能缺失，缺失时按原点计）
             const sp = host.position ?? { x: 0, y: 0, z: 0 };
             writable.startPos = { x: sp.x, y: sp.y, z: sp.z };
-            this._data.mrsToolTarget?.startTranslation();
+            data.mrsToolTarget?.startTranslation();
 
-            windowEventProxy.on('mousemove', this.onMouseMove, this);
+            windowEventProxy.on('mousemove', onMouseMoveHandler, state);
         },
-    },
-    onMouseMove: {
-        value: function (this: MToolLogic & MToolLogicState): void
-        {
-            const target = this._data.mrsToolTarget;
-            const startPlanePos = this._data.startPlanePos;
-            const startSceneTransform = this._data.startSceneTransform;
-            const changeXYZ = this._data.changeXYZ;
-            if (!target || !startPlanePos || !startSceneTransform || !changeXYZ) return;
-
-            const crossPos = this.getLocalMousePlaneCross();
-            if (!crossPos) return;
-
-            // 平面内位移，按受影响的轴筛选
-            const addPos = vec3Sub(crossPos, { x: startPlanePos.x, y: startPlanePos.y, z: startPlanePos.z });
-            addPos.x *= changeXYZ.x;
-            addPos.y *= changeXYZ.y;
-            addPos.z *= changeXYZ.z;
-
-            // 换算为场景空间位移（旧实现用起点矩阵叠加平移后取位置差）
-            const sceneTransform: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(startSceneTransform) };
-
-            mat4PrependTranslation(sceneTransform, addPos.x, addPos.y, addPos.z, sceneTransform);
-            const scenePos = { x: 0, y: 0, z: 0 };
-            const startPos3 = { x: 0, y: 0, z: 0 };
-
-            mat4GetPosition(sceneTransform, scenePos);
-            mat4GetPosition(startSceneTransform, startPos3);
-            const sceneAddpos = vec3Sub(scenePos, startPos3);
-
-            target.translation(sceneAddpos);
-        },
-    },
-    onMouseUp: {
-        value: function (this: MToolLogic & MToolLogicState): void
-        {
-            mrsToolBaseLogicProto.onMouseUp.call(this);
-            windowEventProxy.off('mousemove', this.onMouseMove, this);
-            this._data.mrsToolTarget?.stopTranslation();
-
-            const writable = this._data as UnReadonly<MTool>;
-            writable.startPos = undefined;
-            writable.startPlanePos = undefined;
-            writable.startSceneTransform = undefined;
-        },
-    },
-    updateToolModel: {
-        value: function (this: MToolLogic & MToolLogicState): void
+        updateToolModel()
         {
             // 鼠标按下（拖拽中）时不更新平面朝向
-            if (this._data.ismouseDown) return;
-            if (!this.editorCamera) return;
+            if (data.ismouseDown) return;
+            if (!baseMembers.editorCamera) return;
 
-            const host = this.host;
-            const modelLogic = this.toolModelLogic;
+            const host = baseMembers.host;
+            const modelLogic = getToolModelLogic();
             if (!host || !modelLogic) return;
 
-            const cameraObject = this.editorCameraObject;
+            const cameraObject = baseMembers.editorCameraObject;
             const cameraPos = cameraObject ? getLogic(cameraObject)?.worldPosition : null;
             const toolWorld2Local = getLogic(host)?.world2local;
             if (!cameraPos || !toolWorld2Local) return;
@@ -248,21 +211,76 @@ const mToolLogicProto = createLogicProto<MToolLogic>(mrsToolBaseLogicProto, {
             flipPlane(modelLogic.yzPlane, localCameraPos.y, localCameraPos.z);
             flipPlane(modelLogic.xzPlane, localCameraPos.x, localCameraPos.z);
         },
-    },
-});
+        pickItem() { return baseMembers.pickItem(); },
+        onMouseDown() { baseMembers.onMouseDown(); },
+        onMouseUp()
+        {
+            baseMembers.onMouseUp();
+            windowEventProxy.off('mousemove', onMouseMoveHandler, state);
+            data.mrsToolTarget?.stopTranslation();
 
-/**
- * 工厂函数：MToolLogic 的唯一创建入口。
- *
- * @param data 组件数据（raw）
- */
-export function mToolLogic(data: MTool): MToolLogic
-{
-    // 默认值填充（须在 super 之前完成）
-    const writable = data as UnReadonly<MTool>;
-    if (data.changeXYZ === undefined) writable.changeXYZ = { x: 0, y: 0, z: 0 };
+            const writable = data as UnReadonly<MTool>;
+            writable.startPos = undefined;
+            writable.startPlanePos = undefined;
+            writable.startSceneTransform = undefined;
+        },
+        getLocalMousePlaneCross() { return baseMembers.getLocalMousePlaneCross(); },
+        getMousePlaneCross() { return baseMembers.getMousePlaneCross(); },
+        getMouseRay3D() { return baseMembers.getMouseRay3D(); },
 
-    return setupMRSToolBaseLogicState(Object.create(mToolLogicProto) as MToolLogic & MToolLogicState, data);
+        // ---- MTool 自身成员 ----
+        /** 工具模型 Logic（拾取与平面翻转使用） */
+        get toolModelLogic() { return getToolModelLogic(); },
+    };
+
+    /** 工具模型 Logic（拾取与平面翻转使用） */
+    function getToolModelLogic(): MToolModelLogic | null
+    {
+        const component = data.toolModel;
+
+        return component ? getLogic(component) : null;
+    }
+
+    function onMouseMove(): void
+    {
+        const target = data.mrsToolTarget;
+        const startPlanePos = data.startPlanePos;
+        const startSceneTransform = data.startSceneTransform;
+        const changeXYZ = data.changeXYZ;
+        if (!target || !startPlanePos || !startSceneTransform || !changeXYZ) return;
+
+        const crossPos = baseMembers.getLocalMousePlaneCross();
+        if (!crossPos) return;
+
+        // 平面内位移，按受影响的轴筛选
+        const addPos = vec3Sub(crossPos, { x: startPlanePos.x, y: startPlanePos.y, z: startPlanePos.z });
+        addPos.x *= changeXYZ.x;
+        addPos.y *= changeXYZ.y;
+        addPos.z *= changeXYZ.z;
+
+        // 换算为场景空间位移（旧实现用起点矩阵叠加平移后取位置差）
+        const sceneTransform: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(startSceneTransform) };
+
+        mat4PrependTranslation(sceneTransform, addPos.x, addPos.y, addPos.z, sceneTransform);
+        const scenePos = { x: 0, y: 0, z: 0 };
+        const startPos3 = { x: 0, y: 0, z: 0 };
+
+        mat4GetPosition(sceneTransform, scenePos);
+        mat4GetPosition(startSceneTransform, startPos3);
+        const sceneAddpos = vec3Sub(scenePos, startPos3);
+
+        target.translation(sceneAddpos);
+    }
+
+    function onMouseMoveHandler(): void
+    {
+        onMouseMove();
+    }
+
+    // 基座内部按子类覆写分派（闭包形态下没有原型链）
+    state.self = logic;
+
+    return logic;
 }
 
 /**

@@ -1,7 +1,7 @@
-import { createLogicProto, reactive, registerLogic } from '@feng3d/reactivity';
-import { RenderObject } from '@feng3d/webgpu';
+import { reactive, registerLogic } from '@feng3d/reactivity';
 import { mat4Copy, mat4GetAxisY, mat4GetPosition, mat4Invert, mat4LookAt, mat4Transpose, Matrix4x4 } from '@feng3d/math';
-import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from './Component';
+import type { Object3D } from '../core/Object3D';
+import { Component3D, Component3DLogic, createComponentLogicBase } from './Component';
 
 declare module './Component'
 {
@@ -40,14 +40,22 @@ export interface BillboardLogic extends Component3DLogic
 }
 
 /**
- * BillboardLogic 的共享原型（issue #674）：继承 Component 基类实现，覆写 beforeRender。
+ * 工厂函数：BillboardLogic 的唯一创建入口（registerLogic 注册它）。
  *
- * 方法 / getter 挂在模块级 proto 上、实例由 Object.create(proto) 创建，
- * 保住「方法在原型上共享」的内存优势（千级组件场景不产生每实例闭包）。
+ * 覆写 beforeRender：从 renderObject 的 transform uniform 取已写入的 u_modelMatrix，
+ * 复制后 lookAt 相机，再写回 u_modelMatrix / u_ITModelMatrix。
+ *
+ * @param data 组件数据（raw）
  */
-const billboardLogicProto = createLogicProto<BillboardLogic>(componentLogicProto, {
-    beforeRender: {
-        value: function (this: BillboardLogic & ComponentLogicState, renderObject: RenderObject): void
+export function billboardLogic(data: Billboard): BillboardLogic
+{
+    const { state, members } = createComponentLogicBase(data);
+
+    const logic: BillboardLogic = {
+        get component() { return members.component; },
+        get entity() { return state.entity as Object3D | null; },
+        init(object3D) { members.init(object3D); },
+        beforeRender(renderObject)
         {
             // 从 renderObject 的 transform uniform 取已写入的 u_modelMatrix（Renderable 的 transform binding 写入先执行）
             const bindingResources = renderObject.bindingResources;
@@ -58,7 +66,7 @@ const billboardLogicProto = createLogicProto<BillboardLogic>(componentLogicProto
             const modelMatrix = transformUniforms.u_modelMatrix;
             if (!modelMatrix) return;
 
-            if (!this.entity) return;
+            if (!state.entity) return;
 
             // 从 cameraUniforms 获取相机数据（u_cameraMatrix=local2world，取 position + Y 轴）。
             // cameraUniforms 由 ForwardRenderer 在 draw 阶段注入，组件 beforeRender（在 _renderObject
@@ -84,17 +92,11 @@ const billboardLogicProto = createLogicProto<BillboardLogic>(componentLogicProto
             mat4Transpose(itMatrix, itMatrix);
             r_transformUniforms.u_ITModelMatrix = itMatrix;
         },
-    },
-});
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
 
-/**
- * 工厂函数：BillboardLogic 的唯一创建入口（registerLogic 注册它）。
- *
- * @param data 组件数据（raw）
- */
-export function billboardLogic(data: Billboard): BillboardLogic
-{
-    return setupComponentLogicState(Object.create(billboardLogicProto) as BillboardLogic & ComponentLogicState, data);
+    return logic;
 }
 
 // 注册到 logic 分发表

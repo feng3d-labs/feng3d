@@ -1,7 +1,7 @@
 import { planeIntersectWithLine3 } from 'feng3d';
-import { componentLogicProto, logic as getLogic, mat4Copy, mat4Invert, mat4TransformPoint3, Plane, raycaster, setupComponentLogicState, shortcut, ticker, windowEventProxy } from 'feng3d';
-import type { Camera, Component3D, Component3DLogic, ComponentLogicState, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
-import { createLogicProto, reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
+import { createComponentLogicBase, logic as getLogic, mat4Copy, mat4Invert, mat4TransformPoint3, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
+import type { Camera, Component3D, Component3DLogic, ComponentLogicState, Components, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
+import { reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
 import { CoordinateAxis, CoordinateCube, CoordinatePlane } from './models/MToolModel';
 import { CoordinateRotationAxis, CoordinateRotationFreeAxis } from './models/RToolModel';
 import { CoordinateScaleCube } from './models/SToolModel';
@@ -131,94 +131,76 @@ export interface MRSToolBaseLogic extends Component3DLogic
 }
 
 /**
- * MRSToolBase 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入）。
+ * MRSToolBase 系 Logic 的内部状态（不进公开接口，工厂闭包持有）。
  *
- * 其中 `inScene` / `onFrame` 等是原 class 的私有成员：实现挂在共享 proto 上，
- * 这里只声明类型，供 proto 方法经 `this` 互调。
+ * 其中 `registered` / `toolModelObject` / `self` 是原 class 的私有成员：
+ * 工厂闭包形态下由基座闭包持有，子类经基座 `members` 间接使用。
  */
 export interface MRSToolBaseLogicState extends ComponentLogicState
 {
     /** 关联的组件数据（raw） */
-    _data: MRSToolBase;
-
-    /** 所属 Object3D（收窄基类的 Entity） */
-    _entity: Object3D | null;
+    data: MRSToolBase;
 
     /** 全局事件是否已注册（工具在场景中时为 true） */
-    _registered: boolean;
+    registered: boolean;
 
     /** 工具模型实体对象（承载工具模型组件） */
-    _toolModelObject: Object3D | null;
-
-    /** 工具是否已挂在场景中（`MRSTool` 在选中对象非空时才会把它挂到场景下） */
-    readonly inScene: boolean;
-
-    /** 逐帧入口：先保持 gizmo 屏幕尺寸，再交给子类更新工具模型 */
-    onFrame(): void;
+    toolModelObject: Object3D | null;
 
     /**
-     * 按相机距离缩放工具对象，使 gizmo 的屏幕尺寸恒定。
+     * 最终 logic 实例（工厂装配完成后写入）。
+     *
+     * 基座内部需要调用**子类覆写**的成员（`onAddedToScene` / `onRemovedFromScene` /
+     * `onItemMouseDown` / `onMouseUp` / `updateToolModel`）。闭包形态下没有原型链分派，
+     * 故由最派生工厂把最终实例写入本字段，基座经它分派。
      */
-    updateHoldSize(): void;
-
-    /** 进入场景的内部处理（注册全局事件 / 逐帧回调 / 控制器） */
-    onAddedToSceneInternal(): void;
-
-    /** 离开场景的内部处理（与 {@link onAddedToSceneInternal} 对称） */
-    onRemovedFromSceneInternal(): void;
-
-    /** 全局 mousedown：命中 gizmo 部件则交给子类拖拽，否则清空选中 */
-    onWindowMouseDown(): void;
+    self: MRSToolBaseLogic | null;
 }
 
 /**
- * MRSToolBase 系 Logic 的共享原型（issue #674）。
+ * 创建 MRSToolBase 系 Logic 的**基类状态与成员**（供子类工厂组合调用）。
  *
- * 方法 / getter 挂在模块级 proto 上、实例由 `Object.create(proto)` 创建；子类 proto 用
- * `Object.create(mrsToolBaseLogicProto)` 继承基类实现，覆写处显式调用
- * `mrsToolBaseLogicProto.xxx.call(this, ...)`。
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。子类工厂的用法：
+ * ```ts
+ * const { state, members: baseMembers } = createMRSToolBaseLogicBase(data);
+ * const logic: XxxLogic = {
+ *     get component() { return baseMembers.component; },
+ *     get entity() { return baseMembers.entity; },
+ *     // ...显式委托全部基类成员，覆写的成员直接写实现
+ * };
+ * state.self = logic;              // 基座内部按子类覆写分派（无原型链）
+ * ```
+ *
+ * @param data 组件数据（raw）
+ * @returns MRSToolBase 系 Logic 的基类状态与成员（同一份 state 与 Component 基座共享）
  */
-export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componentLogicProto, {
-    editorCamera: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Camera
-        {
-            return this._data.editorCamera!;
-        },
-        set: function (this: MRSToolBaseLogic & MRSToolBaseLogicState, v: Camera): void
-        {
-            // §8.4：从 raw 读当前值，向响应式代理写新值
-            const current = this._data.editorCamera;
-            if (current === v) return;
-            (this._data as UnReadonly<MRSToolBase>).editorCamera = v;
-        },
-    },
-    /** 宿主对象（工具 gizmo 的根对象） */
-    host: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Object3D | null
-        {
-            return (this.entity as Object3D | null) ?? null;
-        },
-    },
-    /**
-     * 编辑器相机的宿主对象。
-     *
-     * `editorCamera` 是 **Camera 组件**数据，`local2world` / `worldPosition` 等世界变换属于其
-     * 宿主 `Object3D` 的 logic（CameraLogic 只提供 `getRay3D` 等相机行为）。
-     */
-    editorCameraObject: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Object3D | null
-        {
-            const camera = this._data.editorCamera;
+export function createMRSToolBaseLogicBase(data: MRSToolBase): { state: MRSToolBaseLogicState; members: MRSToolBaseLogic }
+{
+    // 默认值填充（与旧的「须在 super 之前完成」等价：先补齐 raw 数据再装配）
+    const writable = data as UnReadonly<MRSToolBase>;
+    if (data.ismouseDown === undefined) writable.ismouseDown = false;
 
-            return camera ? (getLogic(camera)?.entity as Object3D ?? null) : null;
-        },
-    },
-    init: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState, entity?: Object3D): void
-        {
-            componentLogicProto.init.call(this, entity);
+    const { state: componentState, members: componentMembers } = createComponentLogicBase(data as Components);
 
-            const host = entity ?? this.host;
+    // 与 Component 基座复用同一份 state（entity / component 是同一组字段）
+    const state = componentState as MRSToolBaseLogicState;
+    state.data = data;
+    state.registered = false;
+    state.toolModelObject = null;
+    state.self = null;
+
+    const members: MRSToolBaseLogic = {
+        // ---- Component 基类成员（显式委托） ----
+        /** 关联的组件数据（raw） */
+        get component() { return componentMembers.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return componentMembers.entity as Object3D | null; },
+        /** 初始化：注入所属 Object3D（幂等），并注册全局事件与逐帧回调 */
+        init(entity)
+        {
+            componentMembers.init(entity);
+
+            const host = (entity ?? members.host) as Object3D | null;
             if (!host) return;
 
             // gizmo 屏幕尺寸恒定：主仓 `HoldSize` 组件只缩放**自身对象**的 renderObject，
@@ -230,66 +212,74 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
             // 注册全局鼠标事件与逐帧回调。
             //
             // 旧实现监听 'addedToScene' / 'removedFromScene' 字符串事件；新范式改为**一次性注册**
-            // 并在运行时用 {@link inScene} 判定工具是否挂在场景中（工具根对象由 `MRSTool` 在选中
+            // 并在运行时用 {@link isInScene} 判定工具是否挂在场景中（工具根对象由 `MRSTool` 在选中
             // 对象非空时挂到场景下），避免依赖 `parent` 的响应式追踪。
-            this.onAddedToSceneInternal();
+            onAddedToSceneInternal();
         },
-    },
-    dispose: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { componentMembers.beforeRender(renderObject); },
+        /** 是否加载完成（继承 Component 基类） */
+        get isLoaded() { return componentMembers.isLoaded; },
+        /** 释放 */
+        dispose()
         {
-            this.onRemovedFromSceneInternal();
-            componentLogicProto.dispose.call(this);
+            onRemovedFromSceneInternal();
+            componentMembers.dispose();
         },
-    },
-    /** 进入场景：接管控制器、注册鼠标事件与逐帧更新（子类可覆写扩展） */
-    onAddedToScene: {
-        value: function (): void
+
+        // ---- MRSToolBase 自身成员 ----
+        /** 编辑器相机 */
+        get editorCamera() { return data.editorCamera!; },
+        set editorCamera(v)
         {
-            // 由子类覆写
+            // §8.4：从 raw 读当前值，向响应式代理写新值
+            const current = data.editorCamera;
+            if (current === v) return;
+            (data as UnReadonly<MRSToolBase>).editorCamera = v;
         },
-    },
-    /** 离开场景：释放控制器与事件（子类可覆写扩展） */
-    onRemovedFromScene: {
-        value: function (): void
+        /** 宿主对象（工具 gizmo 的根对象） */
+        get host()
         {
-            // 由子类覆写
+            return (state.entity as Object3D | null) ?? null;
         },
-    },
-    onItemMouseDown: {
-        value: function (_item: MRSToolSelectedItem): void
+        /**
+         * 编辑器相机的宿主对象。
+         *
+         * `editorCamera` 是 **Camera 组件**数据，`local2world` / `worldPosition` 等世界变换属于其
+         * 宿主 `Object3D` 的 logic（CameraLogic 只提供 `getRay3D` 等相机行为）。
+         */
+        get editorCameraObject()
         {
-            shortcut.activityState('inTransforming');
+            const camera = data.editorCamera;
+
+            return camera ? (getLogic(camera)?.entity as Object3D ?? null) : null;
         },
-    },
-    toolModel: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Component3D
+        /** 工具模型组件 */
+        get toolModel()
         {
-            return this._data.toolModel!;
+            return data.toolModel!;
         },
-    },
-    /**
-     * 设置工具模型（传入承载工具模型组件的 `Object3D` 字面量）。
-     *
-     * 旧实现 `this.object3D.addChild(toolModel.object3D)`；新范式把工具模型实体对象挂到
-     * 宿主 `children` 下（父子关系由 ContainerLogic 的 effect 维护），并把其组件数据写入
-     * `toolModel` 字段供外部读取。
-     */
-    setToolModel: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState, object3D: Object3D | null): void
+        /**
+         * 设置工具模型（传入承载工具模型组件的 `Object3D` 字面量）。
+         *
+         * 旧实现 `this.object3D.addChild(toolModel.object3D)`；新范式把工具模型实体对象挂到
+         * 宿主 `children` 下（父子关系由 ContainerLogic 的 effect 维护），并把其组件数据写入
+         * `toolModel` 字段供外部读取。
+         */
+        setToolModel(object3D)
         {
-            const host = this.host;
+            const host = members.host;
 
             // 先移除旧工具模型实体
-            if (this._toolModelObject && host)
+            if (state.toolModelObject && host)
             {
                 const children = reactive(host).children;
-                const index = children ? children.indexOf(this._toolModelObject) : -1;
+                const index = children ? children.indexOf(state.toolModelObject) : -1;
                 // index >= 0 已经蕴含 children 存在（否则 index 恒为 -1），补上前置条件只为让类型收窄
                 if (children && index >= 0) children.splice(index, 1);
             }
-            this._toolModelObject = object3D;
-            (this._data as UnReadonly<MRSToolBase>).toolModel = object3D?.components?.[0] as Component3D;
+            state.toolModelObject = object3D;
+            (data as UnReadonly<MRSToolBase>).toolModel = object3D?.components?.[0] as Component3D;
 
             if (object3D && host)
             {
@@ -300,23 +290,19 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
                 children.push(object3D);
             }
         },
-    },
-    /** 工具模型对应的实体对象（拾取与挂载使用） */
-    toolModelEntity: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Object3D | null
+        /** 工具模型对应的实体对象（拾取与挂载使用） */
+        get toolModelEntity()
         {
-            return this._toolModelObject;
+            return state.toolModelObject;
         },
-    },
-    selectedItem: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): MRSToolSelectedItem
+        get selectedItem()
         {
             // selectedItem 在数据接口里可选（未选中时缺省），未选中时读它会与原来一样崩
-            return this._data.selectedItem!;
+            return data.selectedItem!;
         },
-        set: function (this: MRSToolBaseLogic & MRSToolBaseLogicState, value: MRSToolSelectedItem): void
+        set selectedItem(value)
         {
-            const current = this._data.selectedItem;
+            const current = data.selectedItem;
             if (current === value)
             {
                 return;
@@ -326,77 +312,39 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
                 // §8.4：向响应式代理写入选中态
                 reactive(current).selected = false;
             }
-            (this._data as UnReadonly<MRSToolBase>).selectedItem = value;
+            (data as UnReadonly<MRSToolBase>).selectedItem = value;
             if (value)
             {
                 reactive(value).selected = true;
             }
         },
-    },
-    updateToolModel: {
-        value: function (): void
+        /** 进入场景：接管控制器、注册鼠标事件与逐帧更新（子类可覆写扩展） */
+        onAddedToScene()
+        {
+            // 由子类覆写
+        },
+        /** 离开场景：释放控制器与事件（子类可覆写扩展） */
+        onRemovedFromScene()
+        {
+            // 由子类覆写
+        },
+        onItemMouseDown(_item)
+        {
+            shortcut.activityState('inTransforming');
+        },
+        updateToolModel()
         {
             // 由子类覆盖
         },
-    },
-    /** 逐帧入口：先保持 gizmo 屏幕尺寸，再交给子类更新工具模型 */
-    onFrame: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
+        /**
+         * 拾取 gizmo 部件（屏幕射线 → 工具模型树下 `mouseEnabled` 的网格对象）。
+         *
+         * 命中后向上回溯到持有部件组件的对象，返回部件数据供拖拽逻辑分支。
+         */
+        pickItem()
         {
-            if (!this.inScene) return;
-            this.updateHoldSize();
-            this.updateToolModel();
-        },
-    },
-    /** 工具是否已挂在场景中（`MRSTool` 在选中对象非空时才会把它挂到场景下） */
-    inScene: {
-        get: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): boolean
-        {
-            const host = this.host;
-
-            return !!host && !!getLogic(host)?.parent;
-        },
-    },
-    /**
-     * 按相机距离缩放工具对象，使 gizmo 的屏幕尺寸恒定。
-     *
-     * 工具模型按世界单位建模（轴长 100、平面 20），必须随相机远近等比缩放，否则近距离下
-     * 平面会覆盖整个视口。系数沿用旧实现的 `holdSize = 0.005`。
-     */
-    updateHoldSize: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
-        {
-            const cameraObject = this.editorCameraObject;
-            const host = this.host;
-            if (!cameraObject || !host) return;
-
-            const cameraPos = getLogic(cameraObject)?.worldPosition;
-            const objectPos = getLogic(host)?.worldPosition;
-            if (!cameraPos || !objectPos) return;
-
-            const dx = cameraPos.x - objectPos.x;
-            const dy = cameraPos.y - objectPos.y;
-            const dz = cameraPos.z - objectPos.z;
-            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            const scale = Math.max(distance * HOLD_SIZE, 1e-4);
-
-            // 值未变化时跳过写入（逐帧写入会让渲染树每帧重算）
-            const current = host.scale;
-            if (current && Math.abs(current.x - scale) < 1e-4) return;
-
-            reactive(host).scale = { x: scale, y: scale, z: scale };
-        },
-    },
-    /**
-     * 拾取 gizmo 部件（屏幕射线 → 工具模型树下 `mouseEnabled` 的网格对象）。
-     *
-     * 命中后向上回溯到持有部件组件的对象，返回部件数据供拖拽逻辑分支。
-     */
-    pickItem: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): MRSToolSelectedItem | null
-        {
-            const ray3 = this.getMouseRay3D();
-            const root = this.toolModelEntity;
+            const ray3 = members.getMouseRay3D();
+            const root = state.toolModelObject;
             if (!ray3 || !root) return null;
 
             const pickables: Object3D[] = [];
@@ -409,20 +357,16 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
 
             return findItemComponent(object3D);
         },
-    },
-    onMouseDown: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
+        onMouseDown()
         {
-            const item = this.pickItem();
-            if (item) this.onItemMouseDown(item);
-            else this.selectedItem = undefined!;
-            (this._data as UnReadonly<MRSToolBase>).ismouseDown = true;
+            const item = members.pickItem();
+            if (item) state.self!.onItemMouseDown(item);
+            else members.selectedItem = undefined!;
+            (data as UnReadonly<MRSToolBase>).ismouseDown = true;
         },
-    },
-    onMouseUp: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
+        onMouseUp()
         {
-            const writable = this._data as UnReadonly<MRSToolBase>;
+            const writable = data as UnReadonly<MRSToolBase>;
             writable.ismouseDown = false;
             writable.movePlane3D = undefined;
             writable.startSceneTransform = undefined;
@@ -432,17 +376,15 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
                 shortcut.deactivityState('inTransforming');
             });
         },
-    },
-    /**
-     * 获取鼠标射线与移动平面的交点（模型空间）
-     */
-    getLocalMousePlaneCross: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Vector3
+        /**
+         * 获取鼠标射线与移动平面的交点（模型空间）
+         */
+        getLocalMousePlaneCross()
         {
             // 射线与平面交点
-            const crossPos = this.getMousePlaneCross();
+            const crossPos = members.getMousePlaneCross();
             // 把交点从世界转换为模型空间
-            const startSceneTransform = this._data.startSceneTransform;
+            const startSceneTransform = data.startSceneTransform;
             if (!crossPos || !startSceneTransform) return crossPos;
 
             // 阶段 C-e：`Matrix4x4` 的 class 已删除，`clone().invert()` / `transformPoint3` 换成纯函数
@@ -452,12 +394,10 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
 
             return crossPos;
         },
-    },
-    getMousePlaneCross: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Vector3
+        getMousePlaneCross()
         {
-            const line3D = this.getMouseRay3D();
-            const movePlane3D = this._data.movePlane3D;
+            const line3D = members.getMouseRay3D();
+            const movePlane3D = data.movePlane3D;
             if (!line3D || !movePlane3D) return undefined!;
 
             // 射线与平面交点
@@ -465,17 +405,15 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
             // 与原实现一致地按「唯一交点」使用）
             return planeIntersectWithLine3(movePlane3D, line3D) as unknown as Vector3;
         },
-    },
-    /**
-     * 当前鼠标位置的场景射线。
-     *
-     * 主仓 `Scene` 已无 `mouseRay3D` 字段，改为按画布矩形把鼠标位置换算成 NDC 后
-     * 由编辑器相机现算（与 {@link EditorView.getRay3D} 的换算一致）。
-     */
-    getMouseRay3D: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): Ray3 | null
+        /**
+         * 当前鼠标位置的场景射线。
+         *
+         * 主仓 `Scene` 已无 `mouseRay3D` 字段，改为按画布矩形把鼠标位置换算成 NDC 后
+         * 由编辑器相机现算（与 {@link EditorView.getRay3D} 的换算一致）。
+         */
+        getMouseRay3D()
         {
-            const camera = this._data.editorCamera;
+            const camera = data.editorCamera;
             if (!camera) return null;
 
             // 编辑器同时存在多个画布（主视图 / 右上角视角工具 / 隐藏画布），必须取鼠标所在的那个
@@ -492,74 +430,108 @@ export const mrsToolBaseLogicProto = createLogicProto<MRSToolBaseLogic>(componen
 
             return getLogic(camera)?.getRay3D(gx, gy) ?? null;
         },
-    },
-    /** 进入场景的内部处理（注册全局事件 / 逐帧回调 / 控制器） */
-    onAddedToSceneInternal: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
-        {
-            if (this._registered) return;
-            this._registered = true;
+    };
 
-            const host = this.host;
-            if (host && this._data.mrsToolTarget) this._data.mrsToolTarget.controllerTool = host;
+    /** 工具是否已挂在场景中（`MRSTool` 在选中对象非空时才会把它挂到场景下） */
+    function isInScene(): boolean
+    {
+        const host = members.host;
 
-            windowEventProxy.on('mousedown', this.onWindowMouseDown, this);
-            windowEventProxy.on('mouseup', this.onMouseUp, this);
-            ticker.onframe(this.onFrame, this);
+        return !!host && !!getLogic(host)?.parent;
+    }
 
-            this.onAddedToScene();
-        },
-    },
-    /** 离开场景的内部处理（与 {@link onAddedToSceneInternal} 对称） */
-    onRemovedFromSceneInternal: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
-        {
-            if (!this._registered) return;
-            this._registered = false;
-
-            windowEventProxy.off('mousedown', this.onWindowMouseDown, this);
-            windowEventProxy.off('mouseup', this.onMouseUp, this);
-            ticker.offframe(this.onFrame, this);
-
-            this.onRemovedFromScene();
-        },
-    },
     /** 全局 mousedown：命中 gizmo 部件则交给子类拖拽，否则清空选中 */
-    onWindowMouseDown: {
-        value: function (this: MRSToolBaseLogic & MRSToolBaseLogicState): void
-        {
-            if (!this.inScene) return;
-            if (!shortcut.getState('mouseInView3D')) return;
-            if (shortcut.keyState.getKeyState('alt')) return;
+    function onWindowMouseDown(): void
+    {
+        if (!isInScene()) return;
+        if (!shortcut.getState('mouseInView3D')) return;
+        if (shortcut.keyState.getKeyState('alt')) return;
 
-            this.onMouseDown();
-        },
-    },
-});
+        members.onMouseDown();
+    }
 
-/**
- * 装配 MRSToolBase 系 Logic 的**基类状态**（供子类工厂组合调用）。
- *
- * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
- * 子类先 `Object.create(xxxLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
- * 原构造体中 `super(data)` 之前的默认值填充也一并在本函数内完成。
- *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
- * @param data 组件数据（raw）
- * @returns 同一实例（便于链式装配）
- */
-export function setupMRSToolBaseLogicState<T extends MRSToolBaseLogic & MRSToolBaseLogicState>(logic: T, data: MRSToolBase): T
-{
-    // 默认值填充（须在 super 之前完成）
-    const writable = data as UnReadonly<MRSToolBase>;
-    if (data.ismouseDown === undefined) writable.ismouseDown = false;
+    /** 逐帧入口：先保持 gizmo 屏幕尺寸，再交给子类更新工具模型 */
+    function onFrame(): void
+    {
+        if (!isInScene()) return;
+        updateHoldSize();
+        state.self!.updateToolModel();
+    }
 
-    setupComponentLogicState(logic, data);
-    (logic as MRSToolBaseLogicState)._data = data;
-    logic._registered = false;
-    logic._toolModelObject = null;
+    /**
+     * 按相机距离缩放工具对象，使 gizmo 的屏幕尺寸恒定。
+     *
+     * 工具模型按世界单位建模（轴长 100、平面 20），必须随相机远近等比缩放，否则近距离下
+     * 平面会覆盖整个视口。系数沿用旧实现的 `holdSize = 0.005`。
+     */
+    function updateHoldSize(): void
+    {
+        const cameraObject = members.editorCameraObject;
+        const host = members.host;
+        if (!cameraObject || !host) return;
 
-    return logic;
+        const cameraPos = getLogic(cameraObject)?.worldPosition;
+        const objectPos = getLogic(host)?.worldPosition;
+        if (!cameraPos || !objectPos) return;
+
+        const dx = cameraPos.x - objectPos.x;
+        const dy = cameraPos.y - objectPos.y;
+        const dz = cameraPos.z - objectPos.z;
+        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        const scale = Math.max(distance * HOLD_SIZE, 1e-4);
+
+        // 值未变化时跳过写入（逐帧写入会让渲染树每帧重算）
+        const current = host.scale;
+        if (current && Math.abs(current.x - scale) < 1e-4) return;
+
+        reactive(host).scale = { x: scale, y: scale, z: scale };
+    }
+
+    /** 进入场景的内部处理（注册全局事件 / 逐帧回调 / 控制器） */
+    function onAddedToSceneInternal(): void
+    {
+        if (state.registered) return;
+        state.registered = true;
+
+        const host = members.host;
+        if (host && data.mrsToolTarget) data.mrsToolTarget.controllerTool = host;
+
+        windowEventProxy.on('mousedown', onWindowMouseDownHandler, state);
+        windowEventProxy.on('mouseup', onMouseUpHandler, state);
+        ticker.onframe(onFrameHandler, state);
+
+        state.self!.onAddedToScene();
+    }
+
+    /** 离开场景的内部处理（与 {@link onAddedToSceneInternal} 对称） */
+    function onRemovedFromSceneInternal(): void
+    {
+        if (!state.registered) return;
+        state.registered = false;
+
+        windowEventProxy.off('mousedown', onWindowMouseDownHandler, state);
+        windowEventProxy.off('mouseup', onMouseUpHandler, state);
+        ticker.offframe(onFrameHandler, state);
+
+        state.self!.onRemovedFromScene();
+    }
+
+    function onWindowMouseDownHandler(): void
+    {
+        onWindowMouseDown();
+    }
+
+    function onMouseUpHandler(): void
+    {
+        state.self!.onMouseUp();
+    }
+
+    function onFrameHandler(): void
+    {
+        onFrame();
+    }
+
+    return { state, members };
 }
 
 /**
@@ -569,7 +541,12 @@ export function setupMRSToolBaseLogicState<T extends MRSToolBaseLogic & MRSToolB
  */
 export function mrsToolBaseLogic(data: MRSToolBase): MRSToolBaseLogic
 {
-    return setupMRSToolBaseLogicState(Object.create(mrsToolBaseLogicProto) as MRSToolBaseLogic & MRSToolBaseLogicState, data);
+    const { state, members } = createMRSToolBaseLogicBase(data);
+
+    // 基座自身没有子类覆写：把基座成员直接作为最终实例
+    state.self = members;
+
+    return members;
 }
 
 /** 找到鼠标位置所在的画布（取面积最大者，排除隐藏画布与角落小画布） */

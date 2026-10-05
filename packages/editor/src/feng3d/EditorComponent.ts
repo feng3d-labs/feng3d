@@ -1,6 +1,6 @@
-import { componentLogicProto, matchType, logic as getLogic, reactive, effect, setupComponentLogicState } from 'feng3d';
-import type { Camera, Component3D, Component3DLogic, ComponentLogicState, Components, DirectionalLight, Object3D, PointLight, Scene, SpotLight } from 'feng3d';
-import { createLogicProto, toRaw } from '@feng3d/reactivity';
+import { createComponentLogicBase, matchType, logic as getLogic, reactive, effect } from 'feng3d';
+import type { Camera, Component3D, Component3DLogic, Components, DirectionalLight, Object3D, PointLight, Scene, SpotLight } from 'feng3d';
+import { toRaw } from '@feng3d/reactivity';
 import { CameraIcon } from '../scripts/CameraIcon';
 import { DirectionLightIcon } from '../scripts/DirectionLightIcon';
 import { PointLightIcon } from '../scripts/PointLightIcon';
@@ -62,99 +62,18 @@ export interface EditorComponentLogic extends Component3DLogic
 {
 }
 
-/** EditorComponentLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface EditorComponentLogicState extends ComponentLogicState
+/**
+ * 工厂函数：EditorComponentLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function editorComponentLogic(data: EditorComponent): EditorComponentLogic
 {
-    /** 组件数据（raw） */
-    _data: EditorComponent;
-
-    /** 所属 Object3D（收窄基类的 Entity） */
-    _entity: Object3D | null;
+    const { state, members } = createComponentLogicBase(data);
 
     /** 被跟随组件（raw 对象引用） → 图标宿主对象 */
-    _iconMap: Map<Components, Object3D>;
+    const iconMap = new Map<Components, Object3D>();
 
-    /**
-     * 响应式遍历场景树，收集需要图标的组件。
-     *
-     * @param root 场景根对象
-     */
-    _collectIconTargets(root: Object3D): Components[];
-
-    /** 按目标集合同步图标：已消失的销毁、新出现的创建 */
-    _syncIcons(targets: Components[]): void;
-
-    /**
-     * 创建被跟随组件的图标对象。
-     *
-     * @param target 被跟随的相机 / 光源组件（raw）
-     * @param host 图标挂载的父对象（本组件宿主）
-     */
-    _addIcon(target: Components, host: Object3D): void;
-
-    /**
-     * 销毁被跟随组件的图标对象。
-     *
-     * @param target 被跟随组件（raw）
-     */
-    _removeIcon(target: Components): void;
-}
-
-/** EditorComponentLogic 的共享原型：继承 Component 基类实现，覆写 init / dispose */
-const editorComponentLogicProto = createLogicProto<EditorComponentLogic>(componentLogicProto, {
-    init: {
-        value: function (this: EditorComponentLogic & EditorComponentLogicState, entity?: Object3D): void
-        {
-            componentLogicProto.init.call(this, entity);
-
-            // @边界 effect：场景树结构变化 → 同步图标
-            //
-            // 替代旧 `scene.on/off('addComponent' | 'removeComponent' | 'addChild' | 'removeChild')`。
-            // 遍历时经 reactive 代理读取 children / components，组件与子对象的增删均可追踪；
-            // 不能用 `ContainerLogic.getComponentsInChildren`——它迭代原始数组、不建立依赖
-            //（见主仓 `packages/feng3d/src/scene/Scene.ts` 中 `collectComponentsInChildren` 的说明）。
-            effect(() =>
-            {
-                reactive(this._data).scene; // 建立对 scene 字段的依赖
-                const scene = this._data.scene; // 原始值
-
-                if (!scene) return;
-
-                const root = getLogic(scene).entity as Object3D | null;
-                if (!root) return;
-
-                this._syncIcons(this._collectIconTargets(root));
-            });
-
-            // @边界 effect：编辑器相机变化 → 广播给全部图标
-            // 替代旧 `set editorCamera` 内 `update()` 的遍历赋值。
-            effect(() =>
-            {
-                reactive(this._data).editorCamera; // 建立对 editorCamera 字段的依赖
-                const editorCamera = this._data.editorCamera; // 原始值
-
-                for (const iconObject3D of this._iconMap.values())
-                {
-                    const iconData = iconObject3D.components?.[0] as IconComponentData | undefined;
-                    if (iconData) reactive(iconData).editorCamera = editorCamera;
-                }
-            });
-        },
-    },
-    dispose: {
-        value: function (this: EditorComponentLogic & EditorComponentLogicState): void
-        {
-            // 销毁全部图标：`Object3DLogic.dispose` 会从父级 children 中移除自身，
-            // 并递归释放图标对象上的组件（等价旧写法逐个 `object3D.remove()`）。
-            for (const iconObject3D of this._iconMap.values())
-            {
-                getLogic(iconObject3D).dispose();
-            }
-            this._iconMap.clear();
-
-            componentLogicProto.dispose.call(this);
-        },
-    },
     /**
      * 响应式遍历场景树，收集需要图标的组件。
      *
@@ -163,53 +82,51 @@ const editorComponentLogicProto = createLogicProto<EditorComponentLogic>(compone
      *
      * @param root 场景根对象
      */
-    _collectIconTargets: {
-        value: function (this: EditorComponentLogic & EditorComponentLogicState, root: Object3D): Components[]
+    function collectIconTargets(root: Object3D): Components[]
+    {
+        const results: Components[] = [];
+        const stack: Object3D[] = [root];
+
+        while (stack.length > 0)
         {
-            const results: Components[] = [];
-            const stack: Object3D[] = [root];
+            const object3D = stack.pop()!;
+            const r_object3D = reactive(object3D);
 
-            while (stack.length > 0)
+            for (const component of r_object3D.components ?? [])
             {
-                const object3D = stack.pop()!;
-                const r_object3D = reactive(object3D);
-
-                for (const component of r_object3D.components ?? [])
+                if (ICON_TARGET_TYPES.some((typeName) => matchType(component, typeName)))
                 {
-                    if (ICON_TARGET_TYPES.some((typeName) => matchType(component, typeName)))
-                    {
-                        // 收集 raw 对象作为 Map 键，保证与后续遍历取到的键一致
-                        results.push(toRaw(component) as Components);
-                    }
-                }
-
-                for (const child of r_object3D.children ?? [])
-                {
-                    stack.push(toRaw(child) as Object3D);
+                    // 收集 raw 对象作为 Map 键，保证与后续遍历取到的键一致
+                    results.push(toRaw(component) as Components);
                 }
             }
 
-            return results;
-        },
-    },
+            for (const child of r_object3D.children ?? [])
+            {
+                stack.push(toRaw(child) as Object3D);
+            }
+        }
+
+        return results;
+    }
+
     /** 按目标集合同步图标：已消失的销毁、新出现的创建 */
-    _syncIcons: {
-        value: function (this: EditorComponentLogic & EditorComponentLogicState, targets: Components[]): void
+    function syncIcons(targets: Components[]): void
+    {
+        const host = state.entity as Object3D | null;
+        if (!host) return;
+
+        for (const target of Array.from(iconMap.keys()))
         {
-            const host = this.entity as Object3D | null;
-            if (!host) return;
+            if (targets.indexOf(target) === -1) removeIcon(target);
+        }
 
-            for (const target of Array.from(this._iconMap.keys()))
-            {
-                if (targets.indexOf(target) === -1) this._removeIcon(target);
-            }
+        for (const target of targets)
+        {
+            if (!iconMap.has(target)) addIcon(target, host);
+        }
+    }
 
-            for (const target of targets)
-            {
-                if (!this._iconMap.has(target)) this._addIcon(target, host);
-            }
-        },
-    },
     /**
      * 创建被跟随组件的图标对象。
      *
@@ -220,54 +137,53 @@ const editorComponentLogicProto = createLogicProto<EditorComponentLogic>(compone
      * @param target 被跟随的相机 / 光源组件（raw）
      * @param host 图标挂载的父对象（本组件宿主）
      */
-    _addIcon: {
-        value: function (this: EditorComponentLogic & EditorComponentLogicState, target: Components, host: Object3D): void
+    function addIcon(target: Components, host: Object3D): void
+    {
+        const editorCamera = data.editorCamera;
+        let iconObject3D: Object3D;
+
+        if (matchType(target, 'DirectionalLight'))
         {
-            const editorCamera = this._data.editorCamera;
-            let iconObject3D: Object3D;
+            iconObject3D = {
+                __type__: 'Object3D',
+                name: 'DirectionLightIcon',
+                components: [{ __type__: 'DirectionLightIcon', light: target as DirectionalLight, editorCamera }],
+            };
+        }
+        else if (matchType(target, 'PointLight'))
+        {
+            iconObject3D = {
+                __type__: 'Object3D',
+                name: 'PointLightIcon',
+                components: [{ __type__: 'PointLightIcon', light: target as PointLight, editorCamera }],
+            };
+        }
+        else if (matchType(target, 'SpotLight'))
+        {
+            iconObject3D = {
+                __type__: 'Object3D',
+                name: 'SpotLightIcon',
+                components: [{ __type__: 'SpotLightIcon', light: target as SpotLight, editorCamera }],
+            };
+        }
+        else if (matchType(target, 'Camera'))
+        {
+            iconObject3D = {
+                __type__: 'Object3D',
+                name: 'CameraIcon',
+                components: [{ __type__: 'CameraIcon', camera: target as Camera, editorCamera }],
+            };
+        }
+        else
+        {
+            return;
+        }
 
-            if (matchType(target, 'DirectionalLight'))
-            {
-                iconObject3D = {
-                    __type__: 'Object3D',
-                    name: 'DirectionLightIcon',
-                    components: [{ __type__: 'DirectionLightIcon', light: target as DirectionalLight, editorCamera }],
-                };
-            }
-            else if (matchType(target, 'PointLight'))
-            {
-                iconObject3D = {
-                    __type__: 'Object3D',
-                    name: 'PointLightIcon',
-                    components: [{ __type__: 'PointLightIcon', light: target as PointLight, editorCamera }],
-                };
-            }
-            else if (matchType(target, 'SpotLight'))
-            {
-                iconObject3D = {
-                    __type__: 'Object3D',
-                    name: 'SpotLightIcon',
-                    components: [{ __type__: 'SpotLightIcon', light: target as SpotLight, editorCamera }],
-                };
-            }
-            else if (matchType(target, 'Camera'))
-            {
-                iconObject3D = {
-                    __type__: 'Object3D',
-                    name: 'CameraIcon',
-                    components: [{ __type__: 'CameraIcon', camera: target as Camera, editorCamera }],
-                };
-            }
-            else
-            {
-                return;
-            }
+        const r_children = reactive(host).children as unknown as Object3D[];
+        r_children.push(iconObject3D);
+        iconMap.set(target, iconObject3D);
+    }
 
-            const r_children = reactive(host).children as unknown as Object3D[];
-            r_children.push(iconObject3D);
-            this._iconMap.set(target, iconObject3D);
-        },
-    },
     /**
      * 销毁被跟随组件的图标对象。
      *
@@ -277,36 +193,83 @@ const editorComponentLogicProto = createLogicProto<EditorComponentLogic>(compone
      *
      * @param target 被跟随组件（raw）
      */
-    _removeIcon: {
-        value: function (this: EditorComponentLogic & EditorComponentLogicState, target: Components): void
+    function removeIcon(target: Components): void
+    {
+        const iconObject3D = iconMap.get(target);
+        if (!iconObject3D) return;
+
+        iconMap.delete(target);
+
+        const iconData = iconObject3D.components?.[0];
+        if (iconData)
         {
-            const iconObject3D = this._iconMap.get(target);
-            if (!iconObject3D) return;
+            if (matchType(iconData, 'Camera')) reactive(iconData as CameraIcon).camera = undefined;
+            else reactive(iconData as DirectionLightIcon | PointLightIcon | SpotLightIcon).light = undefined;
+        }
 
-            this._iconMap.delete(target);
+        getLogic(iconObject3D).dispose();
+    }
 
-            const iconData = iconObject3D.components?.[0];
-            if (iconData)
+    const logic: EditorComponentLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return members.component; },
+        /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+        get entity() { return state.entity as Object3D | null; },
+        init(entity)
+        {
+            members.init(entity);
+
+            // @边界 effect：场景树结构变化 → 同步图标
+            //
+            // 替代旧 `scene.on/off('addComponent' | 'removeComponent' | 'addChild' | 'removeChild')`。
+            // 遍历时经 reactive 代理读取 children / components，组件与子对象的增删均可追踪；
+            // 不能用 `ContainerLogic.getComponentsInChildren`——它迭代原始数组、不建立依赖
+            //（见主仓 `packages/feng3d/src/scene/Scene.ts` 中 `collectComponentsInChildren` 的说明）。
+            effect(() =>
             {
-                if (matchType(iconData, 'Camera')) reactive(iconData as CameraIcon).camera = undefined;
-                else reactive(iconData as DirectionLightIcon | PointLightIcon | SpotLightIcon).light = undefined;
-            }
+                reactive(data).scene; // 建立对 scene 字段的依赖
+                const scene = data.scene; // 原始值
 
-            getLogic(iconObject3D).dispose();
+                if (!scene) return;
+
+                const root = getLogic(scene).entity as Object3D | null;
+                if (!root) return;
+
+                syncIcons(collectIconTargets(root));
+            });
+
+            // @边界 effect：编辑器相机变化 → 广播给全部图标
+            // 替代旧 `set editorCamera` 内 `update()` 的遍历赋值。
+            effect(() =>
+            {
+                reactive(data).editorCamera; // 建立对 editorCamera 字段的依赖
+                const editorCamera = data.editorCamera; // 原始值
+
+                for (const iconObject3D of iconMap.values())
+                {
+                    const iconData = iconObject3D.components?.[0] as IconComponentData | undefined;
+                    if (iconData) reactive(iconData).editorCamera = editorCamera;
+                }
+            });
         },
-    },
-});
+        /** 渲染前回调（默认空） */
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        /** 是否加载完成（继承 Component 基类） */
+        get isLoaded() { return members.isLoaded; },
+        /** 释放 */
+        dispose()
+        {
+            // 销毁全部图标：`Object3DLogic.dispose` 会从父级 children 中移除自身，
+            // 并递归释放图标对象上的组件（等价旧写法逐个 `object3D.remove()`）。
+            for (const iconObject3D of iconMap.values())
+            {
+                getLogic(iconObject3D).dispose();
+            }
+            iconMap.clear();
 
-/**
- * 工厂函数：EditorComponentLogic 的唯一创建入口。
- *
- * @param data 组件数据（raw）
- */
-export function editorComponentLogic(data: EditorComponent): EditorComponentLogic
-{
-    const logic = setupComponentLogicState(Object.create(editorComponentLogicProto) as EditorComponentLogic & EditorComponentLogicState, data);
-    logic._data = data;
-    logic._iconMap = new Map<Components, Object3D>();
+            members.dispose();
+        },
+    };
 
     return logic;
 }

@@ -1,7 +1,7 @@
-import { behaviourLogicProto, setupBehaviourLogicState, Behaviour, BehaviourLogic, type BehaviourLogicState } from '../component/Behaviour';
+import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
 import type { Component } from '../component/Component';
 import type { AnimationClipData } from './AnimationClip';
-import { registerLogic, effect, reactive, createLogicProto } from "@feng3d/reactivity";
+import { registerLogic, effect, reactive } from '@feng3d/reactivity';
 import { classUtils } from '@feng3d/polyfill';
 import { findObject3DChild } from '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
@@ -50,70 +50,6 @@ export interface AnimationLogic extends BehaviourLogic
 {
 }
 
-/** AnimationLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface AnimationLogicState extends BehaviourLogicState
-{
-    /** 数据引用（工厂装配后不变，computed/effect 闭包内经 reactive 读取建立依赖） */
-    _animation: Animation;
-
-    /** init 去重标志（同一 component 只初始化一次） */
-    _subInited: boolean;
-
-    /** 应用动画（工厂内定义后挂到实例，供 proto 的 init / update 调用） */
-    _updateAni: () => void;
-}
-
-/** AnimationLogic 的共享原型：继承 Behaviour 基类实现，覆写 init / update / dispose */
-const animationLogicProto = createLogicProto<AnimationLogic>(behaviourLogicProto, {
-    /** 初始化：注入 entity（同一 component 只初始化一次） */
-    init: {
-        value: function (this: AnimationLogic & AnimationLogicState, object3D?: Object3D): void
-        {
-            if (this._subInited) return;
-            this._subInited = true;
-            behaviourLogicProto.init.call(this, object3D);
-
-            // @边界 effect：设计 4.5 时间驱动动画——animation 变更源桥
-            // animation 变化时重置 time=0
-            effect(() =>
-            {
-                reactive(this._animation).animation;
-                reactive(this._animation).time = 0;
-            });
-
-            // @边界 effect：设计 4.5 时间驱动动画——时间源 → 属性宿主写桥
-            // time 变化时应用动画
-            effect(() =>
-            {
-                const r_animation = reactive(this._animation);
-                r_animation.time;
-                this._updateAni();
-            });
-        },
-    },
-    update: {
-        value: function (this: AnimationLogic & AnimationLogicState, interval: number): void
-        {
-            behaviourLogicProto.update.call(this, interval);
-            const r_animation = reactive(this._animation);
-            if (r_animation.isplaying)
-            {
-                r_animation.time = r_animation.time + interval * this._animation.playspeed;
-            }
-        },
-    },
-    dispose: {
-        value: function (this: AnimationLogic & AnimationLogicState): void
-        {
-            const r_animation = reactive(this._animation);
-            // 字段类型是非可选的（用 undefined 而不是 null 清空，strictNullChecks 下只有前者合法）
-            r_animation.animation = undefined;
-            r_animation.animations = undefined;
-            behaviourLogicProto.dispose.call(this);
-        },
-    },
-});
-
 /**
  * 工厂函数：AnimationLogic 的唯一创建入口（registerLogic 注册它）。
  *
@@ -121,14 +57,14 @@ const animationLogicProto = createLogicProto<AnimationLogic>(behaviourLogicProto
  */
 export function animationLogic(data: Animation): AnimationLogic
 {
-    const logic = setupBehaviourLogicState(Object.create(animationLogicProto) as AnimationLogic & AnimationLogicState, data);
+    const { members } = createBehaviourLogicBase(data);
 
-    logic._animation = data;
-    logic._subInited = false;
+    const animation = data;
+    let subInited = false;
 
     function getPropertyHost(propertyClip: PropertyClip): Record<string, unknown> | null
     {
-        let propertyHost: Object3D | Component | null = logic.entity;
+        let propertyHost: Object3D | Component | null = members.entity;
         const path = propertyClip.path;
 
         for (let i = 0; i < path.length; i++)
@@ -160,12 +96,12 @@ export function animationLogic(data: Animation): AnimationLogic
 
     function updateAni(): void
     {
-        if (!logic._animation.animation) return;
+        if (!animation.animation) return;
 
-        const cycle = logic._animation.animation.length;
-        const cliptime = (logic._animation.time % cycle + cycle) % cycle;
+        const cycle = animation.animation.length;
+        const cliptime = (animation.time % cycle + cycle) % cycle;
 
-        const propertyClips = logic._animation.animation.propertyClips;
+        const propertyClips = animation.animation.propertyClips;
 
         for (let i = 0; i < propertyClips.length; i++)
         {
@@ -179,7 +115,54 @@ export function animationLogic(data: Animation): AnimationLogic
         }
     }
 
-    logic._updateAni = updateAni;
+    const logic: AnimationLogic = {
+        get component() { return members.component; },
+        get entity() { return members.entity; },
+        get isVisibleAndEnabled() { return members.isVisibleAndEnabled; },
+        /** 初始化：注入 entity（同一 component 只初始化一次） */
+        init(object3D)
+        {
+            if (subInited) return;
+            subInited = true;
+            members.init(object3D);
+
+            // @边界 effect：设计 4.5 时间驱动动画——animation 变更源桥
+            // animation 变化时重置 time=0
+            effect(() =>
+            {
+                reactive(animation).animation;
+                reactive(animation).time = 0;
+            });
+
+            // @边界 effect：设计 4.5 时间驱动动画——时间源 → 属性宿主写桥
+            // time 变化时应用动画
+            effect(() =>
+            {
+                const r_animation = reactive(animation);
+                r_animation.time;
+                updateAni();
+            });
+        },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        update(interval)
+        {
+            members.update(interval);
+            const r_animation = reactive(animation);
+            if (r_animation.isplaying)
+            {
+                r_animation.time = r_animation.time + interval * animation.playspeed;
+            }
+        },
+        get isLoaded() { return members.isLoaded; },
+        dispose()
+        {
+            const r_animation = reactive(animation);
+            // 字段类型是非可选的（用 undefined 而不是 null 清空，strictNullChecks 下只有前者合法）
+            r_animation.animation = undefined;
+            r_animation.animations = undefined;
+            members.dispose();
+        },
+    };
 
     return logic;
 }

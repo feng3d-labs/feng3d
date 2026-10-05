@@ -1,4 +1,4 @@
-import { computed, createLogicProto, type Computed, reactive, registerLogic } from '@feng3d/reactivity';
+import { computed, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
 
 declare module '@feng3d/reactivity'
 {
@@ -25,8 +25,8 @@ declare module '@feng3d/reactivity'
 /**
  * Color4 logic 接口（issue #674 工厂范式）：暴露响应式扁平数据。
  *
- * 实例由 `Object.create(color4LogicProto)` 创建，getter 挂在文件级共享 proto 上
- * （千级对象场景不产生每实例闭包）；内部状态落在实例字段上（见 {@link Color4LogicState}）。
+ * 形态：**工厂闭包直接返回对象字面量**——无共享原型、无 this、无 `_` 前缀状态字段；
+ * `value` 的 computed 在工厂闭包内创建并缓存，getter 返回同一实例。
  */
 export interface Color4Logic
 {
@@ -34,41 +34,28 @@ export interface Color4Logic
     readonly value: Computed<number[]>;
 }
 
-/** Color4Logic 实例的内部状态（不进公开接口，工厂装配时写入） */
-interface Color4LogicState
-{
-    /** [r, g, b, a] 响应式扁平数组 */
-    _value: Computed<number[]>;
-}
-
-/** Color4Logic 的共享原型（issue #674）：独立根（无 Logic 父类），基传 null */
-const color4LogicProto = createLogicProto<Color4Logic>(null, {
-    /** [r, g, b, a] 响应式扁平数组（修改 r/g/b/a 会自动失效）。 */
-    value: {
-        get: function (this: Color4Logic & Color4LogicState): Computed<number[]>
-        {
-            return this._value;
-        },
-    },
-});
-
 /**
  * 工厂函数：Color4Logic 的唯一创建入口（registerLogic 注册它）。
  *
- * 独立根（无 Logic 父类）：实例装配自己的全部内部状态。
+ * 工厂闭包直接返回对象字面量：`value` 的 computed 在闭包内创建并缓存，getter 返回同一实例。
  *
  * @param color4 纯数据 Color4（raw）
  */
 export function color4Logic(color4: Color4Data): Color4Logic
 {
-    const logic = Object.create(color4LogicProto) as Color4Logic & Color4LogicState;
-
-    logic._value = computed(() =>
+    const valueComputed = computed(() =>
     {
         const c = reactive(color4);
 
         return [c.r ?? 1, c.g ?? 1, c.b ?? 1, c.a ?? 1];
     });
+
+    const logic: Color4Logic = {
+        get value()
+        {
+            return valueComputed;
+        },
+    };
 
     return logic;
 }

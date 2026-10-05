@@ -1,7 +1,7 @@
 import type { Entity } from '../core/Entity';
 import type { Object3D } from '../core/Object3D';
 import type { RenderObject } from '@feng3d/webgpu';
-import { createLogicProto } from '@feng3d/reactivity';
+
 
 // ---- 组件数据接口 ----
 
@@ -205,70 +205,53 @@ export interface Component3DLogic extends ComponentLogic
 }
 
 /**
- * ComponentLogic 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入）。
+ * ComponentLogic 系 Logic 的内部状态（不进公开接口，工厂闭包持有）。
  */
 export interface ComponentLogicState
 {
     /** 关联的组件数据（raw） */
-    _component: Components | undefined;
+    component: Components | undefined;
 
     /** 所属实体（由 init 注入） */
-    _entity: Entity | null;
+    entity: Entity | null;
 }
 
 /**
- * ComponentLogic 基接口的共享原型（issue #674）。
+ * ComponentLogic 的**基类行为**（组合用）：成员都读写同一个 `state`。
  *
- * 组合链最底层：子类 proto 用 `Object.create(componentLogicProto)` 继承，子类工厂用
- * `setupComponentLogicState(...)` 装配 `_component` / `_entity`（不再有 `extends`）；
- * 方法在原型上共享（千级组件场景避免每实例闭包）。
- */
-export const componentLogicProto = createLogicProto<ComponentLogic>(null, {
-    /** 关联的组件数据（raw） */
-    component: {
-        get: function (this: ComponentLogicState): Components | undefined { return this._component; },
-    },
-    /** 所属实体（由 init 注入，只读） */
-    entity: {
-        get: function (this: ComponentLogicState): Entity | null { return this._entity; },
-    },
-    /** 初始化：注入 entity */
-    init: {
-        value: function (this: ComponentLogicState, entity?: Entity): void
-        {
-            if (entity) this._entity = entity;
-        },
-    },
-    /** 渲染前回调（默认空） */
-    beforeRender: {
-        value: function (_renderObject: RenderObject): void { /* 默认空 */ },
-    },
-    /** 是否加载完成（基类恒 true，含异步资源的组件覆盖） */
-    isLoaded: {
-        get: function (): boolean { return true; },
-    },
-    /** 释放（默认空） */
-    dispose: {
-        value: function (): void { /* 默认空 */ },
-    },
-});
-
-/**
- * 装配 Component 系 Logic 的**基类状态**（供子类工厂组合调用）。
+ * 形态：工厂闭包直接返回对象字面量（无共享 proto、无 this）。子类工厂的用法：
+ * ```ts
+ * const { state, members } = createComponentLogicBase(data);
+ * const logic: XxxLogic = {
+ *     get component() { return members.component; },
+ *     get entity() { return state.entity as Object3D | null; },   // 需要时按子接口收窄
+ *     init(entity) { members.init(entity); },
+ *     // ...自身成员
+ * };
+ * ```
  *
- * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
- * 子类先 `Object.create(xxxLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
- *
- * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
  * @param component 关联的组件数据（raw）
- * @returns 同一实例（便于链式装配）
  */
-export function setupComponentLogicState<T extends ComponentLogicState>(logic: T, component?: Components): T
+export function createComponentLogicBase(component?: Components): { state: ComponentLogicState; members: ComponentLogic }
 {
-    logic._component = component;
-    logic._entity = null;
+    const state: ComponentLogicState = { component, entity: null };
 
-    return logic;
+    const members: ComponentLogic = {
+        /** 关联的组件数据（raw） */
+        get component() { return state.component; },
+        /** 所属实体（由 init 注入，只读） */
+        get entity() { return state.entity; },
+        /** 初始化：注入 entity */
+        init(entity) { if (entity) state.entity = entity; },
+        /** 渲染前回调（默认空） */
+        beforeRender(_renderObject) { /* 默认空 */ },
+        /** 是否加载完成（基类恒 true，含异步资源的组件覆盖） */
+        get isLoaded() { return true; },
+        /** 释放（默认空） */
+        dispose() { /* 默认空 */ },
+    };
+
+    return { state, members };
 }
 
 /**
@@ -276,5 +259,16 @@ export function setupComponentLogicState<T extends ComponentLogicState>(logic: T
  */
 export function componentLogic(component?: Components): ComponentLogic
 {
-    return setupComponentLogicState(Object.create(componentLogicProto) as ComponentLogic & ComponentLogicState, component);
+    const { state, members } = createComponentLogicBase(component);
+
+    const logic: ComponentLogic = {
+        get component() { return state.component; },
+        get entity() { return state.entity; },
+        init(entity) { members.init(entity); },
+        beforeRender(renderObject) { members.beforeRender(renderObject); },
+        get isLoaded() { return members.isLoaded; },
+        dispose() { members.dispose(); },
+    };
+
+    return logic;
 }
