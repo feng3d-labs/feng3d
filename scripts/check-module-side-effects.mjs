@@ -16,10 +16,33 @@
  * ## 判据为什么是 AST（issue #614）
  *
  * 原判据是**行级**的（「行首无空白 = 模块顶层」+ 单行正则）。实测（`scripts/probe-r2-blindspots.mjs`）
- * `packages/` 下真正在 import 时执行的 `new` 有 **158 处**，两条行级脚本合计只看见 **97 处**，
- * 漏 **61 处**——四类盲区（类 `static` 字段 / `static` 块、顶层 IIFE、多行声明、
- * 模块级块 / 对象字面量 / 回调）全部由缩进造成。现在判据是「**顶层代码路径上的节点**」，
+ * `packages/` 下真正在 import 时执行的 `new` 有 **158 处**，两条行级脚本合计只看见 **96 处**，
+ * 漏 **62 处**——四类盲区（类 `static` 字段 / `static` 块、顶层 IIFE、多行声明、
+ * 模块级块 / 对象字面量 / 回调）全部由缩进造成
+ * （数字口径：`probe-r2-blindspots.mjs` 头注释的对照表；#614 当时的文档记的是 97 / 61，
+ * 已按实测校正为 96 / 62，见 `docs/CI.md` §2.1 的「数字校正」）。现在判据是「**顶层代码路径上的节点**」，
  * 实现与两条脚本的共用层在 `scripts/r2-module-scope.mjs`（先例：`scripts/check-editor-module-effects.mjs`）。
+ *
+ * ## 门禁自身的回归保护（issue #652）
+ *
+ * 本脚本的三类判据此前**既无单测也无任何自检**——"判据写错时 CI 一路全绿"不是假设，
+ * #652 用一个可复现的破坏性实验证明了（把共用层 `effectiveParent` 的剥括号改掉 →
+ * 两条 R2 门禁**都 exit 0**，而且 `check-toplevel-new.mjs` 把它读成
+ * "有 1 个存量已被清理，可以跑 `--update` 收紧基线"）。所以本批加了两层：
+ *
+ *   1. **判据层单测**：`test/r2ModuleScope.spec.ts` 直接 import `scripts/r2-module-scope.mjs`，
+ *      对 4 类上下文 + 顶层 IIFE 剥壳 + 入口豁免 + 基线读取逐个断言（含反例）；
+ *   2. **脚本内联合成样例自检**（本文件末尾的 `SELF_CHECKS`）：把合成片段喂给判据，
+ *      断言"该报的报、不该报的不报"，**启动时先跑、失败即 exit 1**。
+ *
+ * ⚠️ **做法 2 的局限（必须如实说明，别把它当成万能）**：`SELF_CHECKS` 与被测判据
+ * **同文件同进程**，判据写错时自检会**一起错**——它发现不了"两处都错"
+ * （判据与自检共享同一个错误理解，例如都以为"不剥括号"才是对的）。
+ * 它防的是**单点回归**（改判据时手滑、名单漂移），判据形状本身靠上面那份单测守。
+ *
+ * 名单漂移另有一道机器断言：启动时比对脚本侧 `CACHE_NAMES` / `PROJECT_CACHE_NAMES` 与
+ * 自研规则 `CACHE_CONSTRUCTORS`、`check-editor-module-effects.mjs` 的 `MUTABLE_MODULE_CACHE`
+ * （`checkCacheNameLists`，issue #652 做法 5；探针那份刻意冻结历史读数、**不比对**）。
  *
  * 最直接的两个例子：`packages/feng3d/src/textures/createTexture.ts` 模块级 `if` 块里 7 处
  * `new ImageUtil`（`docs/CI.md` §1.1 自己就写着"`ImageUtil` 在模块加载期构造占位默认纹理"），
@@ -30,7 +53,7 @@
  *
  * ## 存量怎么办：与 `check-toplevel-new.mjs` 共用一份基线
  *
- * AST 化会一次性暴露出 46 个未登记的「文件::构造器」键（issue #614 实测；其中 12 处是
+ * AST 化会一次性暴露出 47 个未登记的「文件::构造器」键（issue #614 实测；其中 12 处是
  * 本该"新增即失败"的空参缓存，如 `EventEmitter` 的三个 `static ... = new Map()`——
  * 那三个已在 #614 欠账批改成 lazy-init：12 处清掉 9 处 / 7 个键，基线 135 → 128（rebase 到最新 master 后 125），
  * 剩下 3 处的保留理由见 `docs/CI.md` §2.1；ChainMap 批再清掉 30 处 / 29 个键，基线 125 →（#624 清掉 terrain 的 1 个键）124 → 95）。
@@ -67,6 +90,7 @@ import { join } from 'node:path';
 import ts from 'typescript';
 import {
     baselineKey,
+    checkCacheNameLists,
     collectModuleLevelCalls,
     collectModuleLevelGlobalThisWrites,
     collectModuleLevelNews,
@@ -127,6 +151,178 @@ const PROJECT_CACHE_NAMES = new Set(['ChainMap']);
 /** 注册型调用（顶层注册模型改造范围，只统计不报错） */
 const REGISTRATION_CALLS = /^(?:registerLogic|unregisterLogic)$/;
 
+/**
+ * 判一条「模块级 `new`」命中是否算**缓存创建**（本脚本规则 1 的判据）。
+ *
+ * 抽成函数是为了让下面的 `SELF_CHECKS` 能直接喂合成样例——判据写在扫描循环里时没法自检。
+ *
+ * @param {{ name: string, argumentCount: number }} hit `collectModuleLevelNews` 的一条命中
+ * @returns {boolean} 是缓存创建则 true
+ */
+function isCacheCreation(hit)
+{
+    // 内置容器：空参（含"只有泛型实参"）才算按需缓存。
+    // 项目自有容器（`ChainMap`）：不看实参个数——它没有"构造即常量表"的合法写法（理由见名单注释）。
+    return (hit.argumentCount === 0 && CACHE_NAMES.has(hit.name))
+        || PROJECT_CACHE_NAMES.has(hit.name);
+}
+
+/** 脚本侧的缓存容器名单（内置 + 项目自有）：既是判据的输入，也是名单一致性断言的**基准** */
+const SCRIPT_CACHE_NAMES = [...CACHE_NAMES, ...PROJECT_CACHE_NAMES];
+
+// ---- 做法 5（issue #652）：名单一致性断言 ----
+// 这份名单在本仓有四份、靠人手工同步（#606 / #647 反复踩的就是这条）：漏改一处只表现为
+// "某个新写法没人拦"，而门禁照样绿。探针那份刻意冻结历史读数、不参与比对。
+const cacheNameLists = checkCacheNameLists(ROOT, SCRIPT_CACHE_NAMES);
+
+if (!cacheNameLists.ok)
+{
+    console.error('❌ R2 缓存容器名单不一致（issue #652 做法 5）：');
+
+    for (const problem of cacheNameLists.problems) console.error(`  - ${problem}`);
+
+    console.error('   基准 = 本脚本的 CACHE_NAMES + PROJECT_CACHE_NAMES；对侧有两份：');
+    console.error('     packages/eslint-plugin-feng3d/src/rules/no-module-side-effect.ts 的 CACHE_CONSTRUCTORS');
+    console.error('     scripts/check-editor-module-effects.mjs 的 MUTABLE_MODULE_CACHE');
+    console.error('   名单漂移 = 某个新写法没人拦而门禁照样绿，先补名单再谈门禁结论。');
+    process.exit(1);
+}
+
+// ---- 做法 2（issue #652）：脚本内联合成样例自检 ----
+//
+// 门禁最怕永远绿（`check-runtime-half-deps.mjs` 的原话），而本脚本的三类判据此前既无单测、
+// 也无自检。这里把合成片段直接喂给判据，断言"该报的报、不该报的不报"。
+//
+// ⚠️ **局限（如实写在这里，别把它当万能）**：自检与判据**同文件同进程**，判据写错时自检会
+// **一起错**——它发现不了"两处都错"（判据与自检共享同一个错误理解），只能防**单点回归**
+// （改判据时手滑 / 名单漂移）。判据形状本身由 `test/r2ModuleScope.spec.ts` 守。
+const SELF_CHECKS = [
+    {
+        kind: 'cache',
+        title: '模块顶层多行声明里的 `new Map()` 拦下',
+        code: 'export const a =\n    new Map<string, number>();',
+        expect: ['Map/module'],
+    },
+    {
+        kind: 'cache',
+        title: '泛型实参不挡匹配：`new WeakSet<T>()` 拦下（#606）',
+        code: 'export const a = new WeakSet<Foo>();',
+        expect: ['WeakSet/module'],
+    },
+    {
+        kind: 'cache',
+        title: '类 static 字段初始化器里的 `new Map()` 拦下',
+        code: 'class A\n{\n    private static cache = new Map<string, number>();\n}',
+        expect: ['Map/static-field'],
+    },
+    {
+        kind: 'cache',
+        title: '类 static 块里的 `new ChainMap()` 拦下（上下文 + 项目自有名单一起判）',
+        code: 'class A\n{\n    static\n    {\n        A.cache = new ChainMap<[A], string>();\n    }\n}',
+        expect: ['ChainMap/static-block'],
+    },
+    {
+        kind: 'cache',
+        title: '★ 带括号 IIFE 里的 `new Map()` 拦下（#652 实测 6 改坏的就是这一处）',
+        code: 'const c = (() =>\n{\n    const m = new Map<string, number>();\n    return m;\n})();',
+        expect: ['Map/module'],
+    },
+    {
+        kind: 'cache',
+        title: '模块级调用回调里的 `new Set()` 拦下',
+        code: '[1, 2].forEach(() => { const s = new Set<string>(); });',
+        expect: ['Set/module-call-callback'],
+    },
+    {
+        kind: 'cache',
+        title: '函数体内的 `new Map()` 不拦（函数被调用时才执行）',
+        code: 'export function f() { return new Map<string, number>(); }',
+        expect: [],
+    },
+    {
+        kind: 'cache',
+        title: '类实例字段里的 `new Map()` 不拦（new 实例时才执行）',
+        code: 'class A\n{\n    private cache = new Map<string, number>();\n}',
+        expect: [],
+    },
+    {
+        kind: 'cache',
+        title: '`new Set([...])` 只读常量集合不拦（只统计）',
+        code: "export const s = new Set(['a', 'b']);",
+        expect: [],
+    },
+    {
+        kind: 'startup',
+        title: '模块级启动型调用 `setTimeout(...)` 拦下',
+        code: 'setTimeout(() => { work(); }, 0);',
+        expect: ['setTimeout'],
+    },
+    {
+        kind: 'startup',
+        title: '函数体内的 `setTimeout(...)` 不拦（显式启动是允许的）',
+        code: 'export function boot() { setTimeout(() => { work(); }, 0); }',
+        expect: [],
+    },
+    {
+        kind: 'global',
+        title: '模块级写 `globalThis` 拦下',
+        code: 'globalThis.__feng3d = {};',
+        expect: ['globalThis.__feng3d'],
+    },
+    {
+        kind: 'global',
+        title: '函数体内的 `globalThis` 写入不拦（显式安装函数是允许的）',
+        code: 'export function install() { globalThis.__feng3d = {}; }',
+        expect: [],
+    },
+];
+
+/**
+ * 把一段合成源码喂给判据，返回实际命中的字符串数组（`名字/上下文`、调用名、或写入文本）。
+ *
+ * @param {{ kind: string, code: string }} check 一条自检
+ * @returns {string[]} 实际命中
+ */
+function runSelfCheck(check)
+{
+    const sourceFile = ts.createSourceFile('__r2_self_check__.ts', check.code, ts.ScriptTarget.Latest, true);
+
+    if (check.kind === 'cache')
+    {
+        return collectModuleLevelNews(sourceFile)
+            .filter(isCacheCreation)
+            .map((hit) => `${hit.name}/${hit.context}`);
+    }
+    if (check.kind === 'startup')
+    {
+        return collectModuleLevelCalls(sourceFile, () => true)
+            .filter((hit) => STARTUP_CALLS.test(hit.callee))
+            .map((hit) => hit.callee);
+    }
+
+    return collectModuleLevelGlobalThisWrites(sourceFile).map((hit) => hit.text);
+}
+
+let selfCheckFailed = 0;
+
+console.log('--- 自检（判据喂合成样例，issue #652 做法 2）---');
+
+for (const check of SELF_CHECKS)
+{
+    const actual = runSelfCheck(check);
+    const ok = actual.join('|') === check.expect.join('|');
+
+    if (!ok) selfCheckFailed++;
+    console.log(`  ${ok ? 'PASS' : 'FAIL'}  ${check.title}`
+        + (ok ? '' : `（期望 [${check.expect.join(', ')}]，实际 [${actual.join(', ')}]）`));
+}
+
+if (selfCheckFailed > 0)
+{
+    console.error(`❌ 判据自检失败 ${selfCheckFailed} 条：判据被改坏了，先修判据再谈门禁结论（issue #652）。`);
+    process.exit(1);
+}
+
 /** 应用入口（页面入口）：清单在 `scripts/r2-module-scope.mjs` 的 `ENTRY_FILES`，两条 R2 脚本共用 */
 const entries = entryFileList();
 
@@ -170,12 +366,7 @@ for (const file of collectTsFiles(PACKAGES))
 
         const label = CONTEXT_LABELS[hit.context] ?? hit.context;
 
-        // 内置容器：空参（含"只有泛型实参"）才算按需缓存。
-        // 项目自有容器（`ChainMap`）：不看实参个数——它没有"构造即常量表"的合法写法（理由见名单注释）。
-        const isCache = (hit.argumentCount === 0 && CACHE_NAMES.has(hit.name))
-            || PROJECT_CACHE_NAMES.has(hit.name);
-
-        if (isCache)
+        if (isCacheCreation(hit))
         {
             if (isEntry) continue;                       // 入口页整类豁免（页面装配 + 应用启动）
 
@@ -255,6 +446,9 @@ console.log(`   应用入口豁免（清单 ${entries.length} 个文件，见 sc
 console.log(`   存量冻结（基线 ${baseline.size} 个组合）：缓存创建 ${frozen.length} 处已登记放行`);
 console.log(`   缓存容器候选名单：内置 \`Map\` / \`WeakMap\` / \`Set\` / \`WeakSet\`（限空参形态）`
     + `+ 项目自有 \`ChainMap\`（不看实参，定义见 packages/webgpu/src/utils/ChainMap.ts）`);
+console.log(`   门禁自身的保护（issue #652）：判据自检 ${SELF_CHECKS.length} 条全过、`
+    + `名单一致性断言通过（脚本侧 vs 自研规则 \`CACHE_CONSTRUCTORS\` vs 编辑器侧 \`MUTABLE_MODULE_CACHE\`）；`
+    + '判据层单测见 test/r2ModuleScope.spec.ts');
 console.log(`   存量统计（不在本次门禁范围）：注册型顶层调用 ${stats.registeredCalls} 处、`
     + `其它顶层**裸调用语句** ${stats.otherTopLevelCalls} 处、只读常量集合 ${stats.constantSets} 处`);
 console.log('   口径边界：模块级 `new` 的**全量**存量（含上面三类之外的构造）见'
