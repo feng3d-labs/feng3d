@@ -191,12 +191,13 @@ export default defineConfig(({ mode }) =>
                 //   · 本地 `packages/feng3d/package.json` 的 0.6.0 与源码不匹配。
                 // 编辑器 tarball 本就含 64MB 资源（resource/ 与 projects/ 的 zip），
                 // 内置几 MB JS 换来「打开即用、无外部网络依赖」是划算的。
-                // 保留 `@feng3d-plugins/*` 外部化（旧版插件，依赖已构建的 feng3d）。
+                // `@feng3d/cannon-plugin` 同样**不再外部化**：原先 `@feng3d-plugins/*` 靠 importmap
+                // 指向 esm.sh，而 CDN 上的是依赖旧版 feng3d dist 的 0.7.x，链接期就报
+                // `does not provide an export named 'Behaviour'`（编辑器白屏的根因）。
+                // 收回主仓后它与 `feng3d` 同仓库同版本、源码发布，内置进产物即可。
                 external: (id) =>
-                    id === '@feng3d-plugins/cannon'
-                    || id === '@feng3d-plugins/cannon-plugin'
                     // 外部化 libs、node_modules、packages、dist 下的文件
-                    || id.startsWith('./libs/')
+                    id.startsWith('./libs/')
                     || id.startsWith('../libs/')
                     || id.startsWith('./node_modules/')
                     || id.startsWith('../node_modules/')
@@ -274,9 +275,8 @@ export default defineConfig(({ mode }) =>
                 '@feng3d/terrain',
                 '@feng3d/watcher',
                 '@feng3d/webgpu',
-                // 旧版外部插件（依赖已构建的 feng3d），同样不预构建
-                '@feng3d-plugins/cannon',
-                '@feng3d-plugins/cannon-plugin'
+                // 物理插件：同样是源码发布 workspace 包，必须排除预构建（理由同上）
+                '@feng3d/cannon-plugin'
             ],
             // 依赖扫描入口。
             //
@@ -379,8 +379,9 @@ function injectImportMap()
         transformIndexHtml()
         {
             // 外部化的裸模块说明符（与 build.rollupOptions.external 保持一致）
-            // 注意 `feng3d` 已改为内置进产物，不再需要 CDN 解析
-            const externals = ['@feng3d-plugins/cannon', '@feng3d-plugins/cannon-plugin'];
+            // 注意 `feng3d` 与 `@feng3d/cannon-plugin` 都已改为内置进产物，不再需要 CDN 解析，
+            // 故这里当前为空数组；保留这个插件是为了将来若再有需要外部化的包时不必重搭。
+            const externals = [];
             const imports = {};
 
             for (const depName of externals)

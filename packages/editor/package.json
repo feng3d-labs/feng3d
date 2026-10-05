@@ -55,8 +55,7 @@
   ],
   "dependencies": {
     "@deepseek-ai/cordis": "4.0.4",
-    "@feng3d-plugins/cannon": "*",
-    "@feng3d-plugins/cannon-plugin": "*",
+    "@feng3d/cannon-plugin": "*",
     "@feng3d/filesaver": "^0.0.1",
     "@feng3d/particlesystem": "*",
     "@iconify/iconify": "^3.1.1",
