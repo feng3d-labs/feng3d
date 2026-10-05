@@ -909,9 +909,11 @@ history.status { labels: 5 }     # 我刚做了什么、还能退几步（栈被
   场景根（`Scene` 组件）识别）
 - **模糊测试** 90 例（写方法 63 + 只读方法 27）+ 4 个合法操作序列：`node scripts/editor-bridge-fuzz.mjs`
   （非法/边界参数逐个轰，每步探活+体检，并统计"引擎报错"）
-- **MCP 一致性** 7 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 方法表 ↔ 文档三方对齐；
-  其中 6 项**离线可跑**，第 7 项"源码解析的方法表 ↔ 页面运行时 `editor.info`"需要页面在线——
-  页面不可达时它会打印 `SKIP` 并**单列在汇总里**，不会被算成"通过"）
+- **MCP 一致性** 9 项：`node scripts/editor-mcp-check.mjs`（工具表 ↔ 桥接方法表 **↔ 宿主方法表** ↔ 文档
+  四方对齐；其中 8 项**离线可跑**，最后一项"源码解析的方法表 ↔ 页面运行时 `editor.info`"需要页面在线——
+  页面不可达时它会打印 `SKIP` 并**单列在汇总里**，不会被算成"通过"。两条判据专为宿主能力：
+  "关键宿主能力（构建 / 发布）必须暴露"与"暴露的 `host.*` 必须真在宿主方法表里"，后者还带
+  "宿主方法表扫到 0 个就失败"的方法自证）
 - **类型检查**：editor 自身代码零错误（15 个既有错误全在 `feng3d`/`polyfill`）
 - **lint**：`npm run lint` 退出码 0
 - **集成验收** 12 项：`node scripts/editor-bridge-scenario.mjs`（从零搭一张桌子并逐项验证——
@@ -948,3 +950,92 @@ scene.validate
 
 总共 4 次写调用 + 3 次验证。四个角的位置不用自己算——`arrange` 用世界包围盒推导步长，
 对象尺寸不同也不会叠在一起。实测截图确认桌面与四条腿都到位。
+
+---
+
+## 15. AI 工具的插件化（第四端）：评估
+
+> 结论先说：现状是**能力插件化、暴露面手写**；推荐 **先走路径 A（清单贡献 `aiTools`）让插件今天就能自带
+> AI 工具，再用路径 B（方法自带元数据 + 动态 `tools/list`）收口**。契约草案、代价与门禁都在下面。
+> 这一条是 [#281](https://github.com/feng3d-labs/feng3d/issues/281) 的任务 5「评估是否需要 AI 专用贡献点」，
+> 此前**没有任何评估痕迹**，也不在 #267 的 8 项决策清单里（属"没有归属的决策"，见 §15.5）。
+
+### 15.1 现状：一半是插件，一半是脚本
+
+| 维度 | 现状 | 证据 |
+|---|---|---|
+| **能力来源**（AI 能调什么） | ✅ **插件贡献点**：`contributes.bridgeMethods`，走层叠加 / 同层冲突报错 / 启用过滤 | `packages/editor/src/plugins/types.ts:162`、`src/plugins/builtinLogics.ts:58`、`src/plugins/registry.ts:353` |
+| **暴露面**（AI 看到的工具表） | ❌ **手写脚本**：`TOOLS` 是模块级静态数组，映射在 `handleTool` 的 map 里 | `scripts/editor-mcp-server.mjs` |
+| **装配** | 由 **DSH 侧**在 `$DSH_HOME/profiles/web/cordis.patch.yml` 里起子进程（**不在**编辑器的插件体系内） | 本文 §5 |
+| **宿主方法**（`host.*`） | ❌ 也不是贡献点：`hostMethods.register(...)` 硬编码在宿主入口 | `packages/editor/bin/serve.mjs:256-309` |
+| **对齐靠什么** | 门禁 `editor-mcp-check.mjs`：桥接有、MCP 没有就**判红**——即"必须回来手改脚本" | `scripts/editor-mcp-check.mjs` |
+
+**具体后果**：第三方插件贡献一个 `bridgeMethod` 之后，**AI 用不上它**。这与
+[#276](https://github.com/feng3d-labs/feng3d/issues/276)「插件自带能力」的目标相比，是在三端之外
+还差**第四端（AI 客户端）**。
+
+**已经具备的一条关键线索**：`editor.plugins` 桥接方法**已经返回 `bridgeMethods` 贡献表**
+（`src/bridge/read/pluginRead.ts:69`）——MCP server 运行期**完全能问出**"现在有哪些方法"。
+缺的不是发现机制，而是每个方法的 **`description` 与 `inputSchema`**：它们现在写在脚本里，不在注册处。
+
+### 15.2 路径 A：清单贡献 `contributes.aiTools`（推荐起步）
+
+```ts
+// EditorPluginManifest.contributes 里新增（纯数据，符合 R3）
+readonly aiTools?: readonly AiToolContribution[];
+
+interface AiToolContribution
+{
+    readonly name: string;         // MCP 工具名（snake_case，如 'scene_add'）
+    readonly method: string;       // 桥接方法名，或 'host.*'（宿主方法）
+    readonly description: string;  // 给 AI 看的说明——可发现性全靠它
+    readonly inputSchema: object;  // JSON Schema（纯数据）
+}
+```
+
+MCP server 从 `editor.plugins` 汇总**已启用**插件的 `aiTools` 生成 `tools/list`；
+**插件启停即工具增删**，与界面贡献点同一条纪律。
+
+| | |
+|---|---|
+| ✅ 优点 | 改动最小；纯数据；与既有清单同构；**第三方插件无需改本仓**就能自带 AI 工具 |
+| ⚠️ 代价 | 同一个方法**两处声明**（`bridgeMethods` 给运行时、`aiTools` 给 AI），有漂移风险 |
+| 需要的门禁 | ① `aiTools.method` 必须存在于桥接 / 宿主方法表；② `aiTools.name` 与 MCP 实际 `tools/list` 一致；③ **保留"关键能力必须暴露"的白名单**（现有 `REQUIRED_HOST_TOOLS` 的做法），否则"插件能贡献"会退化成"可以忘记暴露" |
+
+### 15.3 路径 B：方法自带元数据 + 动态生成（推荐收口）
+
+```ts
+interface BridgeMethodContribution
+{
+    readonly name: string;
+    readonly handler: ...;
+    readonly description?: string;   // 新增
+    readonly inputSchema?: object;   // 新增
+}
+```
+
+一处声明、AI 视图与方法同源，`tools/list` 由贡献表动态生成——**"装插件 → AI 立刻多工具"最彻底**。
+
+| | |
+|---|---|
+| ✅ 优点 | 无重复声明；AI 视图永远跟随方法表 |
+| ⚠️ 代价 | ① 描述 / schema 从脚本搬进编辑器源码（进产物，体积略增）；② `tools/list` 变**运行期**；③ 既有的 **40 个桥接方法 + 14 个宿主方法**都要补元数据——**一次性大迁移**，而脚本里那些长描述很值钱，搬的时候最容易丢信息 |
+| 必须解决 | **离线 / 无编辑器时怎么办**：连不上编辑器就没有工具表。所以形态应是 **静态兜底 + 运行期增量**——把现有 `TOOLS` 留作兜底，连上后再以贡献表为准 |
+
+### 15.4 推荐与迁移路径
+
+1. **先 A**：让"插件自带 AI 工具"**今天就能成立**，同时补上 §15.2 的三条门禁；
+2. **再 B**：把描述 / schema 搬到方法注册处，`tools/list` 改成"静态兜底 + 运行期贡献表"。
+   A 的 `aiTools` 契约届时可**保留为逃生门**（给"方法元数据不够用"的复杂工具），也可整体收掉；
+3. **明确不做什么**：插件包**不需要**新增第四份入口（如 `"./ai"`）——AI 工具是**界面侧清单**
+   （`./client` 那一半）的一部分，它描述的是"这个方法在 AI 眼里长什么样"，与 runtime 端无关。
+   所以 #276 的 triple-half **形态不变**，第四端是**贡献点维度的扩展**，不是入口维度的。
+
+### 15.5 待拍板
+
+**不在** #267 的 8 项清单里（属"没有归属的决策"）。要定三件事：
+
+- 走 **A** 还是直接 **B**（或 A → B 的两步走）；
+- 若走 A：对齐纪律取**宽松**（`aiTools` 可选声明，门禁只查一致性）还是**严格**（每个 `bridgeMethod`
+  都必须有对应 `aiTool`，即把现状"全部暴露"的纪律移到声明侧）；
+- 工具名与描述的命名纪律（现有 43 个工具是 `snake_case`）。
