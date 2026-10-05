@@ -4,7 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import solidColorLitWGSL from './solidColorLit.wgsl';
+import { getSolidColorLitWGSL } from '../../shaders-tsl/solidColorLit';
 
 const info = document.querySelector('#info');
 
@@ -25,10 +25,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: solidColorLitWGSL,
+            code: getSolidColorLitWGSL().vertex,
         },
         fragment: {
-            code: solidColorLitWGSL,
+            code: getSolidColorLitWGSL().fragment,
         },
         primitive: {
             topology: 'triangle-list',
