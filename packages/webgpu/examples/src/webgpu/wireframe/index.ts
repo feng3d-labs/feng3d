@@ -5,7 +5,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 import { modelData } from './models';
-import solidColorLitWGSL from './solidColorLit.wgsl';
+import { getSolidColorLitWGSL } from '../../shaders-tsl/solidColorLit';
 import { randColor, randElement } from './utils';
 import wireframeWGSL from './wireframe.wgsl';
 
@@ -56,10 +56,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
         litPipeline = {
             label: 'lit pipeline',
             vertex: {
-                code: solidColorLitWGSL,
+                code: getSolidColorLitWGSL().vertex,
             },
             fragment: {
-                code: solidColorLitWGSL,
+                code: getSolidColorLitWGSL().fragment,
             },
             primitive: {
                 cullFace: 'back',

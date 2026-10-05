@@ -27,6 +27,7 @@ import { getReversedZVertexTextureQuadWGSL } from '../packages/webgpu/examples/s
 import { getReversedZFragmentTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentTextureQuad';
 import { getReversedZFragmentPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentPrecisionErrorPass';
 import { getCheckerShaderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/checker';
+import { getSolidColorLitWGSL } from '../packages/webgpu/examples/src/shaders-tsl/solidColorLit';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -486,5 +487,39 @@ describe('resizeObserverHDDPI 棋盘格着色器', () =>
         expect(shader.fragment).toContain('let checker = (((grid.x + grid.y) % 2u) == 1u);');
         // WGSL 的 select(f, t, cond)：cond 为 true 取 color1——与手写一致
         expect(shader.fragment).toContain('return select(uni.color0, uni.color1, checker);');
+    });
+});
+
+/**
+ * solidColorLit 着色器（TSL 版）离线验收。
+ *
+ * 三份手写 WGSL（multipleCanvases / occlusionQuery / wireframe）逐字节相同，
+ * 现在共用一份 TSL 实现；multipleCanvases 那份是**孤儿文件**（无人 import），一并删除。
+ */
+describe('solidColorLit 着色器', () =>
+{
+    const shader = getSolidColorLitWGSL();
+
+    it('顶点：变换与法线', () =>
+    {
+        expect(shader.vertex).toContain('@location(0) position: vec4<f32>');
+        expect(shader.vertex).toContain('@location(1) normal: vec3<f32>');
+        expect(shader.vertex).toContain('output.position = uni.worldViewProjectionMatrix * position;');
+        expect(shader.vertex).toContain('output.normal = (uni.worldMatrix * vec4<f32>(normal, 0.0)).xyz;');
+    });
+
+    it('片元：朗伯光照 + color.rgb 相乘、alpha 直取', () =>
+    {
+        expect(shader.fragment).toContain('let lightDirection = normalize(vec3<f32>(4.0, 10.0, 6.0));');
+        expect(shader.fragment).toContain('let light = dot(normalize(input.normal), lightDirection) * 0.5 + 0.5;');
+        expect(shader.fragment).toContain('return vec4<f32>(uni.color.xyz * light, uni.color.w);');
+    });
+
+    it('uniform 布局与手写一致', () =>
+    {
+        expect(shader.vertex).toContain('worldViewProjectionMatrix: mat4x4<f32>');
+        expect(shader.vertex).toContain('worldMatrix: mat4x4<f32>');
+        expect(shader.vertex).toContain('color: vec4<f32>');
+        expect(shader.vertex).toContain('@group(0) @binding(0) var<uniform> uni: Uniforms;');
     });
 });
