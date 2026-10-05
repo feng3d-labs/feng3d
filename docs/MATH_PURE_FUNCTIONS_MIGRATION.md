@@ -677,6 +677,8 @@ junction，包名导入会被解析到主工作区源码，而 `coverage.include
 | **第二批·渐变族（Gradient / MinMaxGradient）** | ✅ 完成（见 **§11.17**）：① 两个 class 删除，接口落在 `gradient/gradient.ts` 与 `gradient/minMaxGradient.ts`（都带 `readonly __type__`），`index.ts` 的两行 `export *` 改指 ops 文件（消费方 `import { Gradient } from '@feng3d/math'` 一字不改）；② **判据名单扩到 21 个类型**（19 + 渐变 2），基线重跑后仍为 `entries: {}`；③ `ImageUtil.drawMinMaxGradient` 的入参放宽为 `GradientLike`（`ImageUtilColorLike` 同款做法），调用方不必补判别字段；④ 全部 `new Gradient(` / `new MinMaxGradient(` 归零（math/src 1 + particlesystem 3 + editor `.vue` 1，测试另行改写为 ops 用例）；⑤ **顺带修一处面板回归**：`objectview.getObjectInfo` 的控件类型原先只看 `constructor.name`，纯数据字面量会得到 `'Object'`、专用控件静默退回默认文本框——改成优先按 `__type__` 判别（见 §11.17.4）；⑥ `gen-objectview-schema` 产物 82/421 → **84/431**；⑦ 文档同步：本节、`ARCHITECTURE_V2.md` §3.1、`packages/editor/docs/API_MIGRATION.md` §9 / §10.3 |
 | **批 A·纯 static 工具容器（math 全树去 class 的第一批，issue #603）** | ✅ 完成（见 **§11.18**）：① `Mathf` / `Time` / `ShapeUtils` / `Interpolations` / `HighFunction` / `EquationSolving` 六个 class 删除，形态分别是「44 个 `mathf*` 纯函数 + 6 个 `MATHF_*` 常量」/「**删除**（零消费方的 `throw '未实现'` 骨架）」/「3 个 `shapeUtils*`」/「3 个 `interpolations*`」/「`interface HighFunction` + `highFunctionGetValue`」/「7 个 `equationSolving*`（模块级单例删除）」；② **判据名单扩到 27 个类型**（21 + 6），基线重跑后仍为 `entries: {}`；③ 调用点实测 172 + 13 + 23 + 29 + 22 + 8 处 → 0，**包外消费方为 0**（爆炸半径 0）；④ `Mathf.SmoothDamp*` / `SmoothDampAngle*` 六个重载合并为 2 个**显式传 `deltaTime`** 的纯函数（与 `vec3SmoothDamp` 逐字同构）；⑤ `Time` 连同 math → `Time` 的隐式时间源一并删除（决策与三条实测证据见 §11.18.2）；⑥ 给出 `Mathf` vs `MathUtil` 的**重叠对照表与合并建议**（§11.18.4，**本批不合并**，避免与并发批次冲突）；⑦ 覆盖率表 `math` 行按实测更新（54/63 → 54/62）；⑧ 剩余 **23 个** `export class` 的清单与后续分批方案见 §11.18.6 |
 
+| **批 A 收尾·纯转发清理（分支 `refactor/mathf-drop-passthrough`）** | ✅ 完成（见 **§11.18.9**）：① 删除 `mathf.ts` 里 **19 个「对原生 `Math.*` 的纯转发」**（`mathfSin` / `mathfCos` / `mathfTan` / `mathfAsin` / `mathfAcos` / `mathfAtan` / `mathfAtan2` / `mathfSqrt` / `mathfAbs` / `mathfPow` / `mathfExp` / `mathfLog` / `mathfLog10` / `mathfCeil` / `mathfFloor` / `mathfRound` / `mathfCeilToInt` / `mathfFloorToInt` / `mathfRoundToInt`）；② 判据是三层核对（源码层抽单表达式 + 21 个边界值的一元 21 / 二元 441 组样本实调 + `Object.is` 比较），**与批 A 的清单逐名一致**；③ 消费点实测：包内 15 处（8 个函数体）+ `vector2.ts` 1 处；**包外消费方为 0**；④ 测试：删掉 3 组「只在测 `Math.*`」的用例，补一组**不回退守卫**（断言这 19 个名字不再导出）；⑤ 覆盖率表 `math` 行按实测更新（语句 83.3 → 83.2、函数 90.9 → 90.7；行覆盖率与文件数不变）；⑥ §11.18.8 的欠账 2 结案 |
+
 ### 11.1 B2 实测：Object3D / Transform 家族
 
 B2 放宽的三个签名（**纯放开**：class 实例在结构上满足 `Vector3Like`，既有调用点零改动）：
@@ -2470,6 +2472,7 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 2. **批 A 保留的纯转发仍在**（`mathfTan` / `mathfSin` / `mathfSqrt` / `mathfCeil` … 共 19 个）。
    本批**没有**动它们——那是批 A 刚合入的代码，删除属独立一批的改动面
    （要同步改 `mathf.spec.ts` / `mathfAngles.spec.ts`）。若要清理，建议单开一批。
+   ✅ **已由 §11.18.9（分支 `refactor/mathf-drop-passthrough`）清理完毕**，清单与核对方法见该节。
 3. **`scripts/check-layer-deps.mjs` 里 `math` 的白名单原先还挂着两项过期允许项**
    （`@feng3d/polyfill` 与 `@feng3d/serialization`）。`serialization` 早在 **A1（§5.6 / §11 进度表）
    就已解开**（13 个文件的 `@serialize` 与依赖声明一并移除），白名单那一项纯属未同步；
@@ -2482,6 +2485,100 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
    且写着 `DefaultRotationOrder = YXZ`（源码早已是 `XYZ`）——**快照与源码本就不一致**，
    属既有问题、非本批引入。
 
+
+#### 11.18.9 批 A 收尾批：删除 19 个「对原生 `Math.*` 的纯转发」（分支 `refactor/mathf-drop-passthrough`）
+
+**背景**：§11.18.8 的欠账 2 记着「批 A 保留的纯转发仍在（`mathfTan` / `mathfSin` / `mathfSqrt` / `mathfCeil` … 共 19 个），
+建议单开一批」。本批就是那次清理——按用户要求「移除 `Mathf.Tan` 这类无异议的重写函数」，
+**只删有实测证据的纯转发，清单之外的成员一个都没动**。
+
+##### 判据：三层核对（本批独立复现，不沿用前任结论）
+
+| 层 | 做法 |
+|---|---|
+| 源码层 | 正则抽 `packages/math/src/mathf.ts` 里所有「单表达式」`export function mathfX(形参) { return <表达式>; }`，命中 **25 个**（带重载签名的 `mathfMin` / `mathfMax`、多行 `if` 的 `mathfClamp` / `mathfClamp01` 天然不入选） |
+| 样本层 | 用 `new Function(原形参名, 'return ' + 表达式)` 重建表达式；样本 = **21 个边界值**（`NaN` / `+0` / `-0` / `±1` / `±0.5` / `±1.5` / `±2` / `±Infinity` / `±1e308` / `±Number.EPSILON` / `±Math.PI` / `±1e-320`），一元 21 组、二元 **441 组** |
+| 比较层 | **一律 `Object.is`，不用 `===`**：`0 === -0` 会掩盖符号差、`NaN === NaN` 恒假，用 `===` 会把 `-0` 与 `NaN` 两类差异全放过 |
+
+脚本另加一层**保真性**校验：模块里真函数的实调结果 vs「用原形参名重建的表达式」实调结果，
+25 个函数逐样本 `Object.is` 全等（证明重建忠实、形参名未被改名）。
+
+> ★ **踩坑记录（必须写进脚本注释）**：重建表达式时**必须沿用源码里的原形参名**。
+> 把形参统一改名成 `a0` / `a1` 会让函数体里引用的 `f` / `power` 解析不到，**18 个函数会被全部误报**成「有差异」。
+>
+> ★ 第二处容易误报的地方：`mathfLerp` / `mathfRepeat` / `mathfGetNumberOfDecimalsForMinimumDifference`
+> 的表达式引用了模块内的 `mathfClamp01` / `mathfClamp` / 私有常量 `K_MAX_DECIMALS`，
+> 用 `new Function` 重建时要**一并注入**，否则拿到的是 `ReferenceError` 而不是真结果。
+
+##### 删除清单（19 个：441 组样本逐组 `Object.is` 全等）
+
+| 函数 | 实现（逐字） | 样本数 |
+|---|---|---|
+| `mathfSin` / `mathfCos` / `mathfTan` / `mathfAsin` / `mathfAcos` / `mathfAtan` | `Math.sin` / `cos` / `tan` / `asin` / `acos` / `atan` | 各 21 |
+| `mathfAtan2` | `Math.atan2(y, x)` | 441 |
+| `mathfSqrt` / `mathfAbs` / `mathfExp` / `mathfLog` / `mathfLog10` | `Math.sqrt` / `abs` / `exp` / `log` / `log10` | 各 21 |
+| `mathfPow` | `Math.pow(f, p)` | 441 |
+| `mathfCeil` / `mathfCeilToInt` | `Math.ceil(f)` | 各 21 |
+| `mathfFloor` / `mathfFloorToInt` | `Math.floor(f)` | 各 21 |
+| `mathfRound` / `mathfRoundToInt` | `Math.round(f)` | 各 21 |
+
+⚠️ 三个 `*ToInt` 名字里的 `ToInt` 是**误导**：实现就是 `Math.ceil/floor/round`，返回值仍是 `number`，
+**没有**取整成 int 的转换——所以它们同样是纯转发。
+
+##### 为什么这些保留（看似转发，实测有语义差异）
+
+| 成员 | 与「直觉的 `Math.*` 写法」的差异（本批实测样本） |
+|---|---|
+| `mathfMin` / `mathfMax` | `NaN` **不传播**：`(NaN, 5)` → `5`（`Math.min` 给 `NaN`）；空数组返回 `0`（`Math.min()` 给 `Infinity`）。**420/441** 组相等 |
+| `mathfSign` | `sign(0) === 1`、`sign(-0) === 1`（`Math.sign` 分别给 `+0` / `-0`）、`sign(NaN) === -1`（给 `NaN`）。**18/21** |
+| `mathfClamp` | `min > max` **不交换端点**：`(0.5, 1, 0)` → `1`，而 `Math.min(Math.max(v, min), max)` 给 `0`；`(0.5, NaN, 1)` → `0.5`（直觉写法给 `NaN`）。**7/10** |
+| `mathfClamp01` | `Clamp01(-0) === -0`，而 `Math.min(Math.max(v, 0), 1)` 给 `+0`——`Object.is` 抓出的唯一差异（`===` 会放过）。**20/21** |
+| `mathfLerp` / `mathfLerpUnclamped` | 公式 `a + (b−a)·t`，前者先 `Clamp01(t)`；`Math` 里**根本没有** `lerp`，无从转发 |
+| `mathfRepeat` | 组合式；负 `length` 时钳到 `0`（直觉写法给负值）。**366/441** |
+| `mathfRoundToMultipleOf` / `mathfGetClosestPowerOfTen` | 组合式（`roundingValue === 0` 短路返回原值 / `<= 0` 返回 `1`），不是单函数转发 |
+| `LerpAngle` / `MoveTowards` / `MoveTowardsAngle` / `SmoothStep` / `Gamma` / `Approximately` / `PingPong` / `InverseLerp` / `DeltaAngle` / `SmoothDamp` / `SmoothDampAngle` / `LineIntersection` / `LineSegmentIntersection` / `GetNumberOfDecimalsForMinimumDifference` | 实现都是**多步表达式或多行分支**，`Math` 里没有对应成员 |
+| 7 个 `MATHF_*` 常量 | 是常量不是函数；`MATHF_PI === Math.PI` 该不该删属**另一议题**（要改所有消费点、收益小于风险），本批不动 |
+
+##### 消费点与测试
+
+| 位置 | 改动 |
+|---|---|
+| `packages/math/src/mathf.ts` | 删掉 19 个函数定义；**8 个函数体内的 15 处**转发调用改 `Math.*`（`mathfMoveTowards` 1、`mathfGamma` 2、`mathfApproximately` 3、`mathfRepeat` 1、`mathfPingPong` 1、`mathfRoundToMultipleOf` 1、`mathfGetClosestPowerOfTen` 3、`mathfGetNumberOfDecimalsForMinimumDifference` 3） |
+| `packages/math/src/geom/vector2.ts` | 1 处调用（`mathfSqrt` → `Math.sqrt`）+ 1 行 import |
+| 其余全部 `packages/` | **0 处**——`git grep` 全仓（含 `examples/` / `editor/` / `scripts/` / `.vue` / 文档）实测只有上面两个源文件 + 两个 spec + 本文档 |
+| `packages/math/test/mathf.spec.ts` | 删除「三角函数按弧度（不是度）」「与 `Math.*` 一致的取整族」两组（5 个 `it`——它们本来就只是在测 `Math.*`，不覆盖本包任何实现）；新增 1 组**不回退守卫**（2 个 `it`：19 个名字不得再导出 + 7 个保留成员仍在） |
+| `packages/math/test/mathfAngles.spec.ts` | 删除「`Tan` / `Atan`」组（2 个 `it`），import 同步 |
+
+> `packages/math/src/index.ts` 用的是 `export * from './mathf'`（**不是逐名导出**），所以桶导出无需改动。
+
+##### 验收（本批实测）
+
+| 命令 | 结果 |
+|---|---|
+| `npx vitest run` | ✅ 234 个文件 / **2733** 个测试全绿（删掉 7 个「只在测 `Math.*`」的 `it`、新增 2 个守卫 `it`） |
+| `npm run test:coverage`（含 R10 阈值） | ✅ 通过；`math` 行 **行 83.3 / 文件 55/63 / 语句 83.2 / 分支 75.1 / 函数 90.7**，`docs/CI.md` §1.3 已按实测更新 |
+| `node scripts/coverage-by-package.mjs --check` | ✅ 与 §1.3 一致（20 个包） |
+| `node ./node_modules/typescript/bin/tsc -p packages/math/tsconfig.json --noEmit` | ✅ 无输出 |
+| `npm run lint:ci` | ✅ 零警告（含 `prelint:ci` 的 `gates:host` 16 条：通过 10 / 失败 0） |
+| `npm run lint:examples` | ✅ 零警告（185 个示例页面 / 185 个脚本入口） |
+| `npm run types:packages` | ✅ 19 个包的 types 全通过 |
+| `npm run build:packages` | ✅ 20 个包的 build 全通过 |
+| `node scripts/check-math-no-class.mjs` | ✅ 27 个目标类型 0 命中（存量 0 已冻结） |
+| `node scripts/check-imperative-construction.mjs` | ✅ 基线 `entries` 为空 |
+| `node scripts/check-readonly-array-fields.mjs` | ✅ 存量 16 处未增长 |
+| `node scripts/check-module-side-effects.mjs --strict` | ✅ 通过（纯函数删除，无模块级副作用面变化） |
+| `node scripts/check-toplevel-new.mjs` | ✅ 基线 132 个组合未增长 |
+| `node scripts/check-docs-links.mjs` | ✅ 51 个文件 / 381 条相对链接、坏链 0 条 |
+
+##### 结论
+
+1. 复验结果与批 A 的清单**逐名一致**（19 个可删、其余保留），**未发现任何不一致**；
+2. 删除范围为**包内 15 处 + `vector2.ts` 1 处**消费点，**包外消费方为 0**；
+3. **行覆盖率与文件数不变**（83.3 / 55/63），语句与函数列各降 0.1 / 0.2 个百分点 ——
+   原因是**删掉的行全是已覆盖行**（19 个函数本来都被测试打过），分子分母同减、
+   剩余未覆盖部分的比例因此微升；R10 阈值（54/44/51/54）不受影响；
+4. 「删除」这件事留下了**机器执行者**：`mathf.spec.ts` 末尾的守卫用例会在这 19 个名字
+   被重新导出时立刻变红。
 
 ## 12. 需要同步的既有文档
 
@@ -2496,4 +2593,6 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 | 本文 | **issue #134 收尾批（分支 `refactor/134-tail-fix`）**：§8「范围边界」的 `ShapeUtils` 归类矛盾（先前同时出现在第二批清单与「不进本方案」表里）修正为**第二批**，并在两处写明读源码的核实依据；「不进本方案」表按类型逐条重写（原先是三合一的一行）；`packages/math/README.md` 的已腐化示例同批修正 | ✅ 本批已完成 |
 | 本文 | **批 A（math 全树去 class 第一批，分支 `refactor/math-noclass-a`）**：§8 顶部加「范围已扩到 math 全树」的告示、原「不进本方案」表改写为「后排批次」、新增 §8.1 全树台账（29 → 23）；新增 §11.18（六类型成员构成与最终形态 / **`Time` 删除决策与三条实测证据** / 调用点迁移实测 / `Mathf` vs `MathUtil` 重叠对照表与合并建议 / 门禁判据扩展与破坏性实验 / 剩余 23 个 class 的分批方案 / 验收）；§11 进度表加「批 A」行并更新「第二批」行；§7 C 第 7 条与 §9 第 7 条的判据计数（21 → 27，并写明终极目标是全树归零） | ✅ 本批已完成 |
 | [CI.md](./CI.md) | §1.3 分包覆盖率表的 `math` 行按实测更新（82.7 / 54/63 → 83.1 / 54/62） | ✅ 本批已完成 |
+| 本文 | **批 A 收尾批（分支 `refactor/mathf-drop-passthrough`）**：新增 §11.18.9（三层核对方法 + 19 个纯转发的删除清单 + 「为什么保留那些」的差异实测表 + 消费点/测试处置）；§11.18.8 的欠账 2 结案；§11 进度表加「批 A 收尾·纯转发清理」一行；§12 本表加两行 | ✅ 本批已完成 |
+| [CI.md](./CI.md) | §1.3 分包覆盖率表的 `math` 行按实测再更新（语句 83.3 → 83.2、函数 90.9 → 90.7；**行覆盖率 83.3 与文件数 55/63 不变**，`coverage-by-package.mjs --check` 通过） | ✅ 本批已完成 |
 
