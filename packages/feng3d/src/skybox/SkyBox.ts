@@ -1,6 +1,7 @@
 import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
-import { Camera, CameraUniforms, cameraUniformsWGSL } from "../cameras/Camera";
+import { Camera, CameraUniforms } from "../cameras/Camera";
+import { getSkyBoxShaderWGSL } from '../shaders/tsl/skybox';
 import { Component3D, Component3DLogic, createComponentLogicBase } from '../component/Component';
 import type { Object3D } from "../core/Object3D";
 import { Scene } from "../scene/Scene";
@@ -75,18 +76,24 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
 
     let s_skyboxTexture: TextureView;
 
+    // TSL 构建的着色器（首次调用时构建并缓存，见 shaders/tsl/skybox.ts）
+    const shaderWGSL = getSkyBoxShaderWGSL();
+
     const renderObject: RenderObject = {
         pipeline: {
-            vertex: { wgsl: skyboxWGSL, },
-            fragment: { wgsl: skyboxWGSL },
+            vertex: { wgsl: shaderWGSL.vertex },
+            fragment: { wgsl: shaderWGSL.fragment },
             primitive: { cullFace: 'none' },
             depthStencil: { depthWriteEnabled: false, depthCompare: 'less-equal' }
         },
         draw: { __type__: 'DrawVertex' as const, vertexCount: 36, instanceCount: 1, firstVertex: 0, firstInstance: 0 },
         bindingResources: {
             cameraUniforms: cameraUniforms = { value: {} },
-            s_skyboxTextureSampler: {},
-            s_skyboxTexture: s_skyboxTexture = { texture: null as unknown as TextureView['texture'], dimension: 'cube', arrayLayerCount: 6, }
+            // 键名与 TSL 的采样器展开约定一致（见 shaders/tsl/skybox.ts）：
+            // TSL 把 samplerCube(uniform('s_skyboxTexture')) 展开成
+            // s_skyboxTexture_texture（texture_cube）+ s_skyboxTexture（sampler）
+            s_skyboxTexture_texture: s_skyboxTexture = { texture: null as unknown as TextureView['texture'], dimension: 'cube', arrayLayerCount: 6, },
+            s_skyboxTexture: {}
         },
     };
 
@@ -119,70 +126,3 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         get renderObject() { return renderObjectComput.value; }
     };
 }
-
-/**
- * 天空盒顶点着色器代码
- *
- * CameraUniforms 由 cameraUniformsWGSL 拼接，避免重复声明
- * （struct 定义在数据源 Camera.ts 中维护）。天空盒不使用 TransformUniforms。
- */
-const skyboxWGSL = `
-struct VertexOutput {
-    @builtin(position) position: vec4<f32>,
-    @location(0) dir: vec3<f32>,
-}
-` + cameraUniformsWGSL + `
-// 硬编码立方体 36 个顶点（6 个面 × 2 三角形 × 3 顶点，按索引展开）
-var<private> pos: array<vec3<f32>, 36> = array<vec3<f32>, 36>(
-    // +Z face
-    vec3<f32>(-1,  1,  1), vec3<f32>( 1,  1,  1), vec3<f32>( 1, -1,  1),
-    vec3<f32>( 1, -1,  1), vec3<f32>(-1, -1,  1), vec3<f32>(-1,  1,  1),
-    // -Z face
-    vec3<f32>( 1,  1, -1), vec3<f32>(-1,  1, -1), vec3<f32>(-1, -1, -1),
-    vec3<f32>(-1, -1, -1), vec3<f32>( 1, -1, -1), vec3<f32>( 1,  1, -1),
-    // +X face
-    vec3<f32>( 1,  1,  1), vec3<f32>( 1,  1, -1), vec3<f32>( 1, -1, -1),
-    vec3<f32>( 1, -1, -1), vec3<f32>( 1, -1,  1), vec3<f32>( 1,  1,  1),
-    // -X face
-    vec3<f32>(-1,  1, -1), vec3<f32>(-1,  1,  1), vec3<f32>(-1, -1,  1),
-    vec3<f32>(-1, -1,  1), vec3<f32>(-1, -1, -1), vec3<f32>(-1,  1, -1),
-    // +Y face
-    vec3<f32>(-1,  1, -1), vec3<f32>( 1,  1, -1), vec3<f32>( 1,  1,  1),
-    vec3<f32>( 1,  1,  1), vec3<f32>(-1,  1,  1), vec3<f32>(-1,  1, -1),
-    // -Y face
-    vec3<f32>(-1, -1,  1), vec3<f32>( 1, -1,  1), vec3<f32>( 1, -1, -1),
-    vec3<f32>( 1, -1, -1), vec3<f32>(-1, -1, -1), vec3<f32>(-1, -1,  1),
-);
-
-@vertex
-fn vertex(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
-    var output: VertexOutput;
-    let p = pos[vertexIndex];
-    // 去掉视图矩阵的平移分量，让天空盒跟随相机
-    let viewNoTrans = mat4x4<f32>(
-        vec4<f32>(cameraUniforms.u_viewMatrix[0].xyz, 0.0),
-        vec4<f32>(cameraUniforms.u_viewMatrix[1].xyz, 0.0),
-        vec4<f32>(cameraUniforms.u_viewMatrix[2].xyz, 0.0),
-        vec4<f32>(0.0, 0.0, 0.0, 1.0),
-    );
-    let viewProjectionNoTrans = cameraUniforms.u_projectionMatrix * viewNoTrans;
-    let clipPos = viewProjectionNoTrans * vec4<f32>(p, 1.0);
-    output.position = clipPos.xyww;
-    output.dir = p;
-    return output;
-}
-
-struct FragmentOutput {
-    @location(0) color: vec4<f32>,
-}
-
-@group(1) @binding(0) var s_skyboxTextureSampler: sampler;
-@group(1) @binding(1) var s_skyboxTexture: texture_cube<f32>;
-
-@fragment
-fn fragment(input: VertexOutput) -> FragmentOutput {
-    var output: FragmentOutput;
-    output.color = textureSample(s_skyboxTexture, s_skyboxTextureSampler, input.dir);
-    return output;
-}
-`;
