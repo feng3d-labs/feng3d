@@ -1,6 +1,5 @@
 import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, createRenderableLogicBase, registerComponentType, View } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
-import type { RenderObject } from '@feng3d/webgpu';
 import {
     mat4TransformRay,
     Ray3,
@@ -90,7 +89,6 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
         get selfWorldBounds() { return members.selfWorldBounds; },
         get isLoaded() { return members.isLoaded; },
         baseBeforeRender(renderObject) { members.baseBeforeRender(renderObject); },
-        beforeRender(renderObject) { members.beforeRender(renderObject); },
         init(object3D) { members.init(object3D); },
         update(interval) { members.update(interval); },
         localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
