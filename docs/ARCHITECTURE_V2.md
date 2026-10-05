@@ -506,6 +506,29 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > npx playwright test --config playwright.webgpu-examples.config.ts --update-snapshots   # 更新基线（须在 master 上）
 > ```
 >
+> ✅ **第九批（#712 内联 WGSL 批，2026-10-05）**：清点并迁掉 examples 里**内联在 `.ts` 中**的手写 WGSL。
+> 上一批发现 `bitonicSort/utils.ts` 内联了一份 `fullscreenTexturedQuad`，于是做了一次完整清点
+> （按 `@vertex` / `@fragment` / `@compute`）：共 **6 个文件**，其中 5 个是 render（本批全部迁完）、
+> 1 个是 compute（`bitonicSort/bitonicCompute.ts`，需 #710 的能力）。
+> **examples 的 `.ts` 里现已无 render 内联手写 WGSL。**
+>
+> | 文件 | 处理 |
+> |---|---|
+> | `helloTriangle/index.ts` / `RenderObjectChanges/index.ts` | 新增 `shaders-tsl/helloTriangle.ts`（裸 `vec4` uniform → `vec4(uniform(...))`） |
+> | `multipleCanvases/index.ts` | 新增 `shaders-tsl/multipleCanvases.ts`（struct uniform + 简单兰伯特） |
+> | `RenderObjectChanges` 的运行时替换变体 | 新增 `shaders-tsl/renderObjectChangesVariant.ts`（swizzle 赋值改成整体赋值） |
+> | `worker/worker.ts` / `bitonicSort/utils.ts` | 复用已有的 `getBasicVertWGSL()` / `getVertexPositionColorFragWGSL()` / `getFullscreenTexturedQuadWGSL()` |
+>
+> **踩到的坑（值得单列）**：`multipleCanvases` 的 vertex 与 fragment **都用同一个 `Uniforms`**。
+> 我一开始把两份 TSL 输出拼成一个 `code` 给两个 stage，结果同一份 module 里出现**两份 `struct Uniforms` 定义**，
+> WGSL 编译失败、画面全黑（截图判据抓到的）。根因是 **TSL 的 `fragment.toWGSL(vertexShader)` 只对齐
+> binding 与 varying location，并不做跨 stage 的声明去重**；而引擎是把 vertex / fragment 的 code
+> **分别**编译成两个 module 的，所以正确做法是**每个 stage 各给一份自包含的 code**。
+> （feng3d 的材质不受影响：它们的 vertex 与 fragment 用的是**不同**的 uniform。）
+>
+> 画面判据清单扩到 **11 个示例**并全部通过。两条例外也已写明理由：`worker`（Worker 驱动，抖动 0.04~0.07，容差放宽到 0.08）
+> 与 `bitonicSort`（compute 驱动，抖动 0.30~0.73，**移出清单**——当前定格机制压不住它）。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
