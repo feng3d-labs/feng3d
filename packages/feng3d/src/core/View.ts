@@ -308,6 +308,29 @@ export class ViewLogic
         return new ViewLogic(view);
     }
 
+    /**
+     * 场景（`root` 上的 Scene 组件；缺失时就地创建默认 Scene 并挂到 `root.components`）。
+     *
+     * 只读 getter（规范 §11.2）：与渲染链读的是同一个 `#sceneComputed`，
+     * 供渲染链之外的消费方（如 `@feng3d/ui` 的 UI 绘制）取场景而无需自己重查 `root.components`。
+     */
+    get scene(): Scene
+    {
+        return this.#sceneComputed.value;
+    }
+
+    /**
+     * 宿主画布元素（`view.canvas` 为字符串时按元素 id 解析，见设计文档 3.3）。
+     *
+     * 只读 getter（规范 §11.2）：`View.canvas` 的类型是 `HTMLCanvasElement | string`，
+     * 解析逻辑原先是私有 `#resolveCanvas`，这里作为公开只读入口暴露给画布尺寸消费方
+     * （如 `@feng3d/ui` 的 UI 布局）。
+     */
+    get canvasElement(): HTMLCanvasElement
+    {
+        return this.#resolveCanvas();
+    }
+
     /** 宿主锚点解析（设计文档 3.3）：字符串按元素 id 解析为 HTMLCanvasElement */
     #resolveCanvas(): HTMLCanvasElement
     {
