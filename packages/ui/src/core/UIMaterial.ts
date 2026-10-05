@@ -43,12 +43,16 @@ export interface UIUniforms
  * 创建 UI uniform 默认值（等价于迁移前的 `new UIUniforms()`）。
  *
  * 各 Color4 / Vector4 字面量每次新建，避免调用方之间共享同一个可变对象。
+ *
+ * ⚠️ `u_color` 是**白色**：原 `UIUniforms.u_color = new Color4()`，而旧 math `Color4` class 的
+ * 无参默认值是 `r = g = b = a = 1`（不是黑色，见 `packages/math/src/color/color4.ts` 文件头
+ * 关于 `a` 的说明）。第 1 批迁移时误写成黑色，第 3 批核对旧 class 默认值后修正。
  */
 export function createUIUniforms(): UIUniforms
 {
     return {
         u_rect: { __type__: 'Vector4', x: 0, y: 0, z: 100, w: 100 },
-        u_color: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
+        u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         s_texture: defaultTexture,
         u_uvRect: { __type__: 'Vector4', x: 0, y: 0, z: 1, w: 1 },
     };
