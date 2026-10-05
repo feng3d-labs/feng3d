@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { EquationSolving, equationSolving } from '../src/bezier/EquationSolving';
+import { equationSolvingBinary, equationSolvingGetDerivative, equationSolvingHasSolution, equationSolvingLine, equationSolvingSecant, equationSolvingTangent } from '../src/bezier/equationSolving';
 
 /**
  * `EquationSolving`（`packages/math/src/bezier/`；此前行覆盖率 0.68%）。
@@ -22,7 +22,7 @@ describe('EquationSolving（math/bezier）', () =>
     {
         it('★ x² − 4 在 [0, 5] 上的根是 2', () =>
         {
-            const root = equationSolving.binary((x) => x * x - 4, 0, 5);
+            const root = equationSolvingBinary((x) => x * x - 4, 0, 5);
 
             expect(root).toBeDefined();
             expect(root!).toBeCloseTo(2, 5);
@@ -30,14 +30,14 @@ describe('EquationSolving（math/bezier）', () =>
 
         it('★ 线性函数的根可以精确求得', () =>
         {
-            const root = equationSolving.binary((x) => x - 3, 0, 10);
+            const root = equationSolvingBinary((x) => x - 3, 0, 10);
 
             expect(root!).toBeCloseTo(3, 5);
         });
 
         it('★ cos(x) 在 [0, 3] 上的根是 π/2', () =>
         {
-            const root = equationSolving.binary((x) => Math.cos(x), 0, 3);
+            const root = equationSolvingBinary((x) => Math.cos(x), 0, 3);
 
             expect(root!).toBeCloseTo(Math.PI / 2, 5);
         });
@@ -45,15 +45,15 @@ describe('EquationSolving（math/bezier）', () =>
         it('★ 端点是根时直接返回该端点（实现里的提前返回）', () =>
         {
             // f(0) = 0 → 直接返回 a
-            expect(equationSolving.binary((x) => x, 0, 5)).toBeCloseTo(0, 10);
+            expect(equationSolvingBinary((x) => x, 0, 5)).toBeCloseTo(0, 10);
             // f(5) = 0 → 直接返回 b
-            expect(equationSolving.binary((x) => x - 5, 0, 5)).toBeCloseTo(5, 10);
+            expect(equationSolvingBinary((x) => x - 5, 0, 5)).toBeCloseTo(5, 10);
         });
 
         it('★ 无实根时返回 undefined', () =>
         {
             // x² + 1 恒正 → 区间两端同号 → 无解
-            expect(equationSolving.binary((x) => x * x + 1, 0, 5)).toBeUndefined();
+            expect(equationSolvingBinary((x) => x * x + 1, 0, 5)).toBeUndefined();
         });
 
         it('★ 无解时会调用 errorcallback', () =>
@@ -61,7 +61,7 @@ describe('EquationSolving（math/bezier）', () =>
             let called = 0;
             let message = '';
 
-            const root = equationSolving.binary((x) => x * x + 1, 0, 5, 1e-7, (err) =>
+            const root = equationSolvingBinary((x) => x * x + 1, 0, 5, 1e-7, (err) =>
             {
                 called++;
                 message = err.message;
@@ -85,10 +85,10 @@ describe('EquationSolving（math/bezier）', () =>
             // f(x) = x² - 4 在 x = 0 处 f'(0) = 0，从 0 起步会除以 0 而发散，
             // 实现此时**返回 undefined（静默失败）**——这是本轮实测到的行为，已记进 issue。
             const roots: [string, number | undefined][] = [
-                ['binary', equationSolving.binary(f, 0, 5)],
-                ['line', equationSolving.line(f, 0, 5)],
-                ['secant', equationSolving.secant(f, 0, 5)],
-                ['tangent', equationSolving.tangent(f, f1, f2, 1, 5)],
+                ['binary', equationSolvingBinary(f, 0, 5)],
+                ['line', equationSolvingLine(f, 0, 5)],
+                ['secant', equationSolvingSecant(f, 0, 5)],
+                ['tangent', equationSolvingTangent(f, f1, f2, 1, 5)],
             ];
 
             for (const [name, root] of roots)
@@ -102,7 +102,7 @@ describe('EquationSolving（math/bezier）', () =>
         {
             // f'(0) = 0 → 牛顿法除以 0 → 实现返回 undefined，而不是抛错或报告原因。
             // 这里如实钉住当前行为（是否应改为报错，留给后续讨论，不在本 PR 改 src）。
-            expect(equationSolving.tangent(f, f1, f2, 0, 5)).toBeUndefined();
+            expect(equationSolvingTangent(f, f1, f2, 0, 5)).toBeUndefined();
         });
     });
 
@@ -110,12 +110,12 @@ describe('EquationSolving（math/bezier）', () =>
     {
         it('★ 两端异号 → 有解', () =>
         {
-            expect(equationSolving.hasSolution((x) => x * x - 4, 0, 5)).toBe(true);
+            expect(equationSolvingHasSolution((x) => x * x - 4, 0, 5)).toBe(true);
         });
 
         it('★ 两端同号且无根 → 无解', () =>
         {
-            expect(equationSolving.hasSolution((x) => x * x + 1, 0, 5)).toBe(false);
+            expect(equationSolvingHasSolution((x) => x * x + 1, 0, 5)).toBe(false);
         });
     });
 
@@ -128,7 +128,7 @@ describe('EquationSolving（math/bezier）', () =>
 
             for (const x of [-2, -0.5, 0, 1, 3])
             {
-                expect(equationSolving.getDerivative(f, 1e-6)(x), `x=${x}`).toBeCloseTo(df(x), 4);
+                expect(equationSolvingGetDerivative(f, 1e-6)(x), `x=${x}`).toBeCloseTo(df(x), 4);
             }
         });
 
@@ -139,13 +139,13 @@ describe('EquationSolving（math/bezier）', () =>
 
             for (const x of [0, 1, 2])
             {
-                expect(equationSolving.getDerivative(f, 1e-6)(x), `x=${x}`).toBeCloseTo(df(x), 4);
+                expect(equationSolvingGetDerivative(f, 1e-6)(x), `x=${x}`).toBeCloseTo(df(x), 4);
             }
         });
 
         it('返回的是一个函数（可以反复调用）', () =>
         {
-            const d = equationSolving.getDerivative((x) => x * x, 1e-6);
+            const d = equationSolvingGetDerivative((x) => x * x, 1e-6);
 
             expect(typeof d).toBe('function');
             expect(d(2)).toBeCloseTo(4, 4);
@@ -153,14 +153,12 @@ describe('EquationSolving（math/bezier）', () =>
         });
     });
 
-    describe('实例与单例', () =>
+    describe('纯函数无状态', () =>
     {
-        it('可以自行 new 一个实例，行为与导出的单例一致', () =>
+        it('同一输入重复调用结果一致（原「实例与单例一致」的等价形式）', () =>
         {
-            const own = new EquationSolving();
-
-            expect(own.binary((x) => x - 7, 0, 10)!).toBeCloseTo(7, 5);
-            expect(equationSolving.binary((x) => x - 7, 0, 10)!).toBeCloseTo(7, 5);
+            expect(equationSolvingBinary((x) => x - 7, 0, 10)!).toBeCloseTo(7, 5);
+            expect(equationSolvingBinary((x) => x - 7, 0, 10)!).toBeCloseTo(7, 5);
         });
     });
 });

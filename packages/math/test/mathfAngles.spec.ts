@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Mathf } from '../src/MathF';
+import { MATHF_DEG2RAD, MATHF_RAD2DEG, mathfAtan, mathfClamp01, mathfGamma, mathfLerpAngle, mathfMoveTowardsAngle, mathfTan } from '../src/mathf';
 
 /**
  * `MathF`（`packages/math/src/MathF.ts`，158 行）里 **`mathf.spec.ts` 尚未覆盖**的部分
@@ -32,8 +32,8 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
         {
             for (const x of [0, 0.5, 1, -0.75, 2])
             {
-                expect(Mathf.Tan(x), `Tan(${x})`).toBeCloseTo(Math.tan(x), 12);
-                expect(Mathf.Atan(x), `Atan(${x})`).toBeCloseTo(Math.atan(x), 12);
+                expect(mathfTan(x), `Tan(${x})`).toBeCloseTo(Math.tan(x), 12);
+                expect(mathfAtan(x), `Atan(${x})`).toBeCloseTo(Math.atan(x), 12);
             }
         });
 
@@ -41,7 +41,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
         {
             for (const x of [-1e6, -1, 0, 1, 1e6])
             {
-                const v = Mathf.Atan(x);
+                const v = mathfAtan(x);
 
                 expect(v, `Atan(${x})`).toBeGreaterThan(-Math.PI / 2 - 1e-9);
                 expect(v, `Atan(${x})`).toBeLessThan(Math.PI / 2 + 1e-9);
@@ -58,7 +58,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
             {
                 for (const t of [0, 0.25, 0.5, 0.75, 1])
                 {
-                    expect(Mathf.LerpAngle(a, a, t), `LerpAngle(${a}, ${a}, ${t})`).toBeCloseTo(a, 6);
+                    expect(mathfLerpAngle(a, a, t), `LerpAngle(${a}, ${a}, ${t})`).toBeCloseTo(a, 6);
                 }
             }
         });
@@ -67,8 +67,8 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
         {
             for (const [a, b] of [[0, 90], [10, 100], [-30, 30], [0, Math.PI]] as [number, number][])
             {
-                expect(Mathf.LerpAngle(a, b, 0), `t=0 (${a}→${b})`).toBeCloseTo(a, 6);
-                expect(Mathf.LerpAngle(a, b, 1), `t=1 (${a}→${b})`).toBeCloseTo(b, 6);
+                expect(mathfLerpAngle(a, b, 0), `t=0 (${a}→${b})`).toBeCloseTo(a, 6);
+                expect(mathfLerpAngle(a, b, 1), `t=1 (${a}→${b})`).toBeCloseTo(b, 6);
             }
         });
 
@@ -78,7 +78,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
             {
                 for (const t of [0, 0.1, 0.5, 0.9, 1])
                 {
-                    expect(Number.isFinite(Mathf.LerpAngle(a, b, t)), `(${a},${b},${t})`).toBe(true);
+                    expect(Number.isFinite(mathfLerpAngle(a, b, t)), `(${a},${b},${t})`).toBe(true);
                 }
             }
         });
@@ -90,13 +90,13 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
         {
             for (const a of [0, 45, 180, -90])
             {
-                expect(Mathf.MoveTowardsAngle(a, a, 10), `a=${a}`).toBeCloseTo(a, 6);
+                expect(mathfMoveTowardsAngle(a, a, 10), `a=${a}`).toBeCloseTo(a, 6);
             }
         });
 
         it('★ maxDelta 足够大时直接到达目标（或与之等价的角度）', () =>
         {
-            const r = Mathf.MoveTowardsAngle(0, 90, 1e9);
+            const r = mathfMoveTowardsAngle(0, 90, 1e9);
 
             // "等价" = 相差若干个整圈（单位未知，所以用 mod 判定：sin/cos 分量应当一致）
             const sameAngle = (a: number, b: number, period: number) =>
@@ -115,7 +115,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
             {
                 for (const d of [0, 0.5, 5, 1000])
                 {
-                    expect(Number.isFinite(Mathf.MoveTowardsAngle(a, b, d)), `(${a},${b},${d})`).toBe(true);
+                    expect(Number.isFinite(mathfMoveTowardsAngle(a, b, d)), `(${a},${b},${d})`).toBe(true);
                 }
             }
         });
@@ -129,7 +129,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
             {
                 for (const v of [-5, -1, 0, 0.25, 1, 7])
                 {
-                    expect(Mathf.Gamma(v, absmax, 1), `Gamma(${v}, ${absmax}, 1)`).toBeCloseTo(v, 6);
+                    expect(mathfGamma(v, absmax, 1), `Gamma(${v}, ${absmax}, 1)`).toBeCloseTo(v, 6);
                 }
             }
         });
@@ -140,7 +140,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
             {
                 for (const gamma of [0.5, 1, 2])
                 {
-                    expect(Mathf.Gamma(0, absmax, gamma), `absmax=${absmax} gamma=${gamma}`).toBeCloseTo(0, 10);
+                    expect(mathfGamma(0, absmax, gamma), `absmax=${absmax} gamma=${gamma}`).toBeCloseTo(0, 10);
                 }
             }
         });
@@ -149,8 +149,8 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
         {
             for (const gamma of [0.5, 1, 2, 3])
             {
-                expect(Mathf.Gamma(4, 10, gamma), `gamma=${gamma} 正数`).toBeGreaterThan(0);
-                expect(Mathf.Gamma(-4, 10, gamma), `gamma=${gamma} 负数`).toBeLessThan(0);
+                expect(mathfGamma(4, 10, gamma), `gamma=${gamma} 正数`).toBeGreaterThan(0);
+                expect(mathfGamma(-4, 10, gamma), `gamma=${gamma} 负数`).toBeLessThan(0);
             }
         });
 
@@ -160,7 +160,7 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
             {
                 for (const v of [-10, -1e-6, 0, 1e-6, 10])
                 {
-                    expect(Number.isFinite(Mathf.Gamma(v, 10, gamma)), `(${v},10,${gamma})`).toBe(true);
+                    expect(Number.isFinite(mathfGamma(v, 10, gamma)), `(${v},10,${gamma})`).toBe(true);
                 }
             }
         });
@@ -168,8 +168,8 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
         it('★ 对 |v| ≤ absmax 的部分，gamma 越小结果越大（压暗曲线走向饱和）', () =>
         {
             // 这是 gamma 校正的定性性质：0 < v/absmax < 1 时，(v/absmax)^gamma 随 gamma 减小而增大
-            const a = Mathf.Gamma(2, 10, 0.5);
-            const b = Mathf.Gamma(2, 10, 2);
+            const a = mathfGamma(2, 10, 0.5);
+            const b = mathfGamma(2, 10, 2);
 
             expect(Math.abs(a)).toBeGreaterThan(Math.abs(b));
         });
@@ -179,15 +179,15 @@ describe('MathF 的角度与 gamma 函数（math）', () =>
     {
         it('★ Deg2Rad 与 Rad2Deg 依然互为倒数（回归）', () =>
         {
-            expect(Mathf.Deg2Rad * Mathf.Rad2Deg).toBeCloseTo(1, 12);
+            expect(MATHF_DEG2RAD * MATHF_RAD2DEG).toBeCloseTo(1, 12);
         });
 
         it('★ Clamp01 与 Gamma 的组合不产生越界值（|Gamma| ≤ 1 时）', () =>
         {
             for (const v of [-1, -0.5, 0, 0.5, 1])
             {
-                expect(Mathf.Clamp01(Mathf.Gamma(v, 1, 1))).toBeGreaterThanOrEqual(0);
-                expect(Mathf.Clamp01(Mathf.Gamma(v, 1, 1))).toBeLessThanOrEqual(1);
+                expect(mathfClamp01(mathfGamma(v, 1, 1))).toBeGreaterThanOrEqual(0);
+                expect(mathfClamp01(mathfGamma(v, 1, 1))).toBeLessThanOrEqual(1);
             }
         });
     });

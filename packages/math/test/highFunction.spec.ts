@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HighFunction } from '../src/bezier/HighFunction';
+import { highFunctionGetValue } from '../src/bezier/highFunction';
 
 /**
  * `HighFunction`（`packages/math/src/bezier/`；此前行覆盖率 0%）。
@@ -36,48 +36,48 @@ describe('HighFunction（math/bezier）', () =>
 {
     it('★ [2, 3] 表示 f(x) = 2x + 3', () =>
     {
-        const f = new HighFunction([2, 3]);
+        const f = { as: [2, 3] };
 
-        expect(f.getValue(0)).toBeCloseTo(3, 10);
-        expect(f.getValue(1)).toBeCloseTo(5, 10);
-        expect(f.getValue(-1.5)).toBeCloseTo(0, 10);
-        expect(f.getValue(10)).toBeCloseTo(23, 10);
+        expect(highFunctionGetValue(f, 0)).toBeCloseTo(3, 10);
+        expect(highFunctionGetValue(f, 1)).toBeCloseTo(5, 10);
+        expect(highFunctionGetValue(f, -1.5)).toBeCloseTo(0, 10);
+        expect(highFunctionGetValue(f, 10)).toBeCloseTo(23, 10);
     });
 
     it('★ [1, 0, 0] 表示 f(x) = x²', () =>
     {
-        const f = new HighFunction([1, 0, 0]);
+        const f = { as: [1, 0, 0] };
 
         for (const x of [-3, -1, 0, 1, 2, 5])
         {
-            expect(f.getValue(x), `x=${x}`).toBeCloseTo(x * x, 10);
+            expect(highFunctionGetValue(f, x), `x=${x}`).toBeCloseTo(x * x, 10);
         }
     });
 
     it('★ [1] 是 0 次常数函数（与 x 无关）', () =>
     {
-        const f = new HighFunction([7]);
+        const f = { as: [7] };
 
         for (const x of [-100, 0, 0.5, 100])
         {
-            expect(f.getValue(x), `x=${x}`).toBeCloseTo(7, 10);
+            expect(highFunctionGetValue(f, x), `x=${x}`).toBeCloseTo(7, 10);
         }
     });
 
     it('空系数数组返回 0（循环不执行）', () =>
     {
-        const f = new HighFunction([]);
+        const f = { as: [] };
 
-        for (const x of [-1, 0, 1]) expect(f.getValue(x), `x=${x}`).toBe(0);
+        for (const x of [-1, 0, 1]) expect(highFunctionGetValue(f, x), `x=${x}`).toBe(0);
     });
 
     it('★ 三次多项式展开对照：[2, -3, 0, 5] = 2x³ − 3x² + 5', () =>
     {
-        const f = new HighFunction([2, -3, 0, 5]);
+        const f = { as: [2, -3, 0, 5] };
 
         for (const x of [-2, -0.5, 0, 0.5, 1, 3])
         {
-            expect(f.getValue(x), `x=${x}`).toBeCloseTo(2 * x ** 3 - 3 * x ** 2 + 5, 9);
+            expect(highFunctionGetValue(f, x), `x=${x}`).toBeCloseTo(2 * x ** 3 - 3 * x ** 2 + 5, 9);
         }
     });
 
@@ -96,35 +96,35 @@ describe('HighFunction（math/bezier）', () =>
 
         for (const as of coefficientSets)
         {
-            const f = new HighFunction(as);
+            const f = { as: as };
 
             for (const x of xs)
             {
-                expect(f.getValue(x), `as=[${as}] x=${x}`).toBeCloseTo(naive(as, x), 8);
+                expect(highFunctionGetValue(f, x), `as=[${as}] x=${x}`).toBeCloseTo(naive(as, x), 8);
             }
         }
     });
 
-    it('系数数组被按引用持有（构造后修改会影响结果 —— 如实钉住该行为）', () =>
+    it('系数数组被按引用持有（装配后修改原数组会影响结果 —— 如实钉住该行为）', () =>
     {
         const as = [1, 0];
-        const f = new HighFunction(as);
+        const f = { as: as };
 
-        expect(f.getValue(2)).toBeCloseTo(2, 10);
+        expect(highFunctionGetValue(f, 2)).toBeCloseTo(2, 10);
 
-        // 实现是 `this.as = as`（不做拷贝），因此外部改动会生效
+        // 纯数据装配是 `{ as }`（不做拷贝），因此外部改动会生效
         as[0] = 3;
 
-        expect(f.getValue(2)).toBeCloseTo(6, 10);
+        expect(highFunctionGetValue(f, 2)).toBeCloseTo(6, 10);
     });
 
     it('不产生 NaN / Infinity（有限系数与有限 x）', () =>
     {
-        const f = new HighFunction([1, -2, 3, -4, 5]);
+        const f = { as: [1, -2, 3, -4, 5] };
 
         for (const x of [-10, -1, 0, 1, 10])
         {
-            expect(Number.isFinite(f.getValue(x)), `x=${x}`).toBe(true);
+            expect(Number.isFinite(highFunctionGetValue(f, x)), `x=${x}`).toBe(true);
         }
     });
 });

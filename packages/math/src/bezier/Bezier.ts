@@ -1,4 +1,4 @@
-import { equationSolving } from './EquationSolving';
+import { equationSolvingLine } from './equationSolving';
 
 /**
  * Bézier曲线
@@ -397,8 +397,8 @@ export class Bezier
         {
             if (samples[i] * samples[i + 1] < 0)
             {
-                // samples 两端异号说明该分段内必有解，equationSolving.line 不会返回 undefined；?? Number.NaN 仅是类型兜底
-                const guessT = equationSolving.line((x) => this.getDerivative(x, ps), i / numSamples, (i + 1) / numSamples, precision) ?? Number.NaN;
+                // samples 两端异号说明该分段内必有解，equationSolvingLine 不会返回 undefined；?? Number.NaN 仅是类型兜底
+                const guessT = equationSolvingLine((x) => this.getDerivative(x, ps), i / numSamples, (i + 1) / numSamples, precision) ?? Number.NaN;
                 resultTs.push(guessT);
                 resultVs.push(this.getValue(guessT, ps));
             }
@@ -455,8 +455,8 @@ export class Bezier
                 const fx = (x) => this.getValue(x, ps) - targetV;
 
                 // 连线法
-                const result = equationSolving.line(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
-                // 区间两端函数值异号，方程必有解，equationSolving.line 不会返回 undefined
+                const result = equationSolvingLine(fx, monotoneIntervalTs[i], monotoneIntervalTs[i + 1], precision);
+                // 区间两端函数值异号，方程必有解，equationSolvingLine 不会返回 undefined
                 results.push(result ?? Number.NaN);
             }
         }

@@ -541,7 +541,7 @@ export function tri3Area(a: Triangle3Like): number
  * `Triangle3.rasterize` 的纯函数版：把三角形点阵化为 XYZ 轴间距 1 的整数格点。
  *
  * 注意原实现用的是 `Vector3.min` / `Vector3.max`（`Math.min` / `Math.max` 语义，与静态
- * `Vector3.Min` / `Vector3.Max` 的 `Mathf.Min` / `Mathf.Max` 不同），所以对应 `vec3Min` / `vec3Max`。
+ * `Vector3.Min` / `Vector3.Max` 的 `mathfMin` / `mathfMax` 不同），所以对应 `vec3Min` / `vec3Max`。
  */
 export function tri3Rasterize(a: Triangle3Like): number[]
 {

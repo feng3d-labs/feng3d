@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { Mathf } from '../MathF';
+import { MATHF_EPSILON, MATHF_RAD2DEG, mathfClamp, mathfClamp01, mathfMax, mathfMin, mathfSign } from '../mathf';
 import type { Vector2Like, WritableVector2Like } from './vector2';
 import type { WritableVector4Like } from './vector4';
 
@@ -552,11 +552,11 @@ export function vec3LerpNumber(a: Vector3Like, b: Vector3Like, t: number, out: W
 }
 
 /**
- * `Vector3.Lerp` 的纯函数形式：按标量 `t` 插值，`t` 先经 `Mathf.Clamp01` 夹取。
+ * `Vector3.Lerp` 的纯函数形式：按标量 `t` 插值，`t` 先经 `mathfClamp01` 夹取。
  */
 export function vec3LerpClamped(a: Vector3Like, b: Vector3Like, t: number, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
-    t = Mathf.Clamp01(t);
+    t = mathfClamp01(t);
 
     out.x = a.x + ((b.x - a.x) * t);
     out.y = a.y + ((b.y - a.y) * t);
@@ -578,7 +578,7 @@ export function vec3Clamp(a: Vector3Like, min: Vector3Like, max: Vector3Like, ou
 }
 
 /**
- * `Vector3.min` 的纯函数形式：逐分量取较小值（`Math.min` 语义，与 `Vector3.Min` 的 `Mathf.Min` 不同，见下）。
+ * `Vector3.min` 的纯函数形式：逐分量取较小值（`Math.min` 语义，与 `Vector3.Min` 的 `mathfMin` 不同，见下）。
  */
 export function vec3Min(a: Vector3Like, b: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
@@ -771,9 +771,9 @@ export function vec3Angle(a: Vector3Like, b: Vector3Like): number
         return 0;
     }
 
-    const dot = Mathf.Clamp(vec3Dot(a, b) / denominator, -1, 1);
+    const dot = mathfClamp(vec3Dot(a, b) / denominator, -1, 1);
 
-    return Math.acos(dot) * Mathf.Rad2Deg;
+    return Math.acos(dot) * MATHF_RAD2DEG;
 }
 
 /**
@@ -786,7 +786,7 @@ export function vec3SignedAngle(a: Vector3Like, b: Vector3Like, axis: Vector3Lik
     const crossX = (a.y * b.z) - (a.z * b.y);
     const crossY = (a.z * b.x) - (a.x * b.z);
     const crossZ = (a.x * b.y) - (a.y * b.x);
-    const sign = Mathf.Sign((axis.x * crossX) + (axis.y * crossY) + (axis.z * crossZ));
+    const sign = mathfSign((axis.x * crossX) + (axis.y * crossY) + (axis.z * crossZ));
 
     return unsignedAngle * sign;
 }
@@ -912,7 +912,7 @@ export function vec3SmoothDamp(
     let outputZ = 0;
 
     // Based on Game Programming Gems 4 Chapter 1.10
-    smoothTime = Mathf.Max(0.0001, smoothTime);
+    smoothTime = mathfMax(0.0001, smoothTime);
     const omega = 2 / smoothTime;
 
     const x = omega * deltaTime;
@@ -983,7 +983,7 @@ export function vec3SmoothDamp(
 /**
  * `Vector3.Project`（静态）的纯函数形式：把 `vector` 投影到 `onNormal` 上。
  *
- * ★ **行为变更（方案 §5.3 的定案）**：原实现在退化分支（`|onNormal|² < Mathf.Epsilon`）
+ * ★ **行为变更（方案 §5.3 的定案）**：原实现在退化分支（`|onNormal|² < MATHF_EPSILON`）
  * **返回共享的冻结常量 `Vector3.zero`**，纯函数层改为**把 `out` 写零并返回 `out`**。
  * 取值语义完全一致（都是 `(0,0,0)`），差别只在身份：拿返回值去写会抛 `TypeError`
  * 这个既有缺陷一并没有了。全仓可执行调用点只有在 `math/test`。
@@ -992,7 +992,7 @@ export function vec3Project(vector: Vector3Like, onNormal: Vector3Like, out: Wri
 {
     const sqrMag = vec3Dot(onNormal, onNormal);
 
-    if (sqrMag < Mathf.Epsilon)
+    if (sqrMag < MATHF_EPSILON)
     {
         out.x = 0;
         out.y = 0;
@@ -1012,7 +1012,7 @@ export function vec3Project(vector: Vector3Like, onNormal: Vector3Like, out: Wri
 /**
  * `Vector3.ProjectOnPlane`（静态）的纯函数形式：把 `vector` 投影到「以 `planeNormal` 为法线的平面」上。
  *
- * ★ **行为变更（方案 §5.3 的定案）**：原实现在退化分支（`|planeNormal|² < Mathf.Epsilon`）
+ * ★ **行为变更（方案 §5.3 的定案）**：原实现在退化分支（`|planeNormal|² < MATHF_EPSILON`）
  * **直接返回入参 `vector` 本身**，纯函数层改为**把 `vector` 的取值拷进 `out` 并返回 `out`**。
  * 取值语义一致，身份语义从「共享入参」变成「新建」。
  */
@@ -1020,7 +1020,7 @@ export function vec3ProjectOnPlane(vector: Vector3Like, planeNormal: Vector3Like
 {
     const sqrMag = vec3Dot(planeNormal, planeNormal);
 
-    if (sqrMag < Mathf.Epsilon)
+    if (sqrMag < MATHF_EPSILON)
     {
         return vec3Copy(vector, out);
     }
@@ -1063,29 +1063,29 @@ export function vec3ClampMagnitude(vector: Vector3Like, maxLength: number, out: 
 }
 
 /**
- * `Vector3.Min`（**静态**）的纯函数形式：逐分量取较小值（`Mathf.Min`，即 `a < b ? a : b`）。
+ * `Vector3.Min`（**静态**）的纯函数形式：逐分量取较小值（`mathfMin`，即 `a < b ? a : b`）。
  *
  * **与 `vec3Min` 不是同一个函数**（`Vector3` 里就是这么分的）：`vec3Min` 对应实例方法
- * `min()`，用的是 `Math.min`。两者的 `NaN` 语义不同——`Mathf.Min(NaN, 5) === 5`，
+ * `min()`，用的是 `Math.min`。两者的 `NaN` 语义不同——`mathfMin(NaN, 5) === 5`，
  * 而 `Math.min(NaN, 5) === NaN`。既有不一致，逐字保留（方案 §10.1 的 P8e）。
  */
 export function vec3MinMathf(lhs: Vector3Like, rhs: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
-    out.x = Mathf.Min(lhs.x, rhs.x);
-    out.y = Mathf.Min(lhs.y, rhs.y);
-    out.z = Mathf.Min(lhs.z, rhs.z);
+    out.x = mathfMin(lhs.x, rhs.x);
+    out.y = mathfMin(lhs.y, rhs.y);
+    out.z = mathfMin(lhs.z, rhs.z);
 
     return out;
 }
 
 /**
- * `Vector3.Max`（**静态**）的纯函数形式：逐分量取较大值（`Mathf.Max`，理由见 `vec3MinMathf`）。
+ * `Vector3.Max`（**静态**）的纯函数形式：逐分量取较大值（`mathfMax`，理由见 `vec3MinMathf`）。
  */
 export function vec3MaxMathf(lhs: Vector3Like, rhs: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
-    out.x = Mathf.Max(lhs.x, rhs.x);
-    out.y = Mathf.Max(lhs.y, rhs.y);
-    out.z = Mathf.Max(lhs.z, rhs.z);
+    out.x = mathfMax(lhs.x, rhs.x);
+    out.y = mathfMax(lhs.y, rhs.y);
+    out.z = mathfMax(lhs.z, rhs.z);
 
     return out;
 }

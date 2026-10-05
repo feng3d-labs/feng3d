@@ -1,7 +1,7 @@
 import type { Vector2Like, WritableVector2Like } from '../../geom/vector2';
 import { vec2From } from '../../geom/vector2';
 import { Curve } from '../core/Curve';
-import { Interpolations } from '../core/Interpolations';
+import { interpolationsCubicBezier } from '../core/interpolations';
 
 export class CubicBezierCurve2 extends Curve<Vector2Like>
 {
@@ -30,8 +30,8 @@ export class CubicBezierCurve2 extends Curve<Vector2Like>
         const v3 = this.v3;
 
         vec2From(
-            Interpolations.CubicBezier(t, v0.x, v1.x, v2.x, v3.x),
-            Interpolations.CubicBezier(t, v0.y, v1.y, v2.y, v3.y),
+            interpolationsCubicBezier(t, v0.x, v1.x, v2.x, v3.x),
+            interpolationsCubicBezier(t, v0.y, v1.y, v2.y, v3.y),
             point
         );
 
