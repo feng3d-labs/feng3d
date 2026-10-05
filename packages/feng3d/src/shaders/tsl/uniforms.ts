@@ -65,3 +65,20 @@ export function createGlobalUniforms()
 
     return GlobalUniforms(uniform('globalUniforms', 0, 2));
 }
+
+/**
+ * 声明阴影 Pass 用的精简相机 uniform（ShadowCameraUniforms，@group(0) @binding(1)）。
+ *
+ * 与手写片段同义：阴影 Pass 只写 `u_viewProjection` 一个字段，若复用完整
+ * `CameraUniforms`，其余 6 个字段每次上传都会报「没有找到统一块变量属性」警告。
+ *
+ * @returns ShadowCameraUniforms 实例
+ */
+export function createShadowCameraUniforms()
+{
+    const ShadowCameraUniforms = struct('ShadowCameraUniforms', {
+        u_viewProjection: mat4,
+    });
+
+    return ShadowCameraUniforms(uniform('cameraUniforms', 0, 1));
+}

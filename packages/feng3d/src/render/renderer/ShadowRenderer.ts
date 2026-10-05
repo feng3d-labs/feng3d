@@ -9,7 +9,7 @@ import { ShadowType } from '../../light/shadow/ShadowType';
 import type { SpotLight } from '../../light/SpotLight';
 import type { Camera } from '../../cameras/Camera';
 import type { Scene } from '../../scene/Scene';
-import { shadowVertexWGSL } from '../../shaders/shadow.vertex.wgsl';
+import { getShadowVertexShaderWGSL } from '../../shaders/tsl/shadow';
 // 引入全局 uniform 类型定义（TransformUniforms 通过 declare global 声明）
 import '../../render/data/Uniform';
 
@@ -343,7 +343,7 @@ export class ShadowRenderer
                 pipeline: {
                     // depth-only Pass：vertex-only pipeline（无 fragment），深度由光栅化写入。
                     // 参照 webgpu shadowMapping 示例：vertex-only pipeline 是 depth-only 渲染的标准做法。
-                    vertex: { wgsl: shadowVertexWGSL, entryPoint: 'main' },
+                    vertex: { wgsl: getShadowVertexShaderWGSL(), entryPoint: 'main' },
                     primitive: { cullFace: 'back' },
                     depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
                 },
