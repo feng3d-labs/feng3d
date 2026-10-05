@@ -462,12 +462,17 @@ export interface PluginContributionTable
      * AI 工具贡献点（含来源插件；#281 路径 A）。
      *
      * MCP 侧在 `tools/list` 时现算它并与**静态基线**合并——于是"装一个插件，AI 立刻多一个工具"，
-     * 而编辑器不在线时静态基线照常可用。这里只报工具名与转发方法：
-     * `inputSchema` 是给 MCP 用的，dump 出来太长（要看得细就查插件源码）。
+     * 而编辑器不在线时静态基线照常可用。
+     *
+     * **带完整定义**（`description` + `inputSchema`）：MCP 直接拿它当工具定义用。
+     * 只报名字是不够的——那样 AI 看到的是一个"没有说明、参数未知"的工具
+     * （端到端脚本 `editor-mcp-plugin-tools.mjs` 真的抓到过这个断链）。
      */
     readonly aiTools: readonly (ContributionSource & {
         readonly name: string;
         readonly method: string;
+        readonly description: string;
+        readonly inputSchema: Record<string, unknown>;
     })[];
 
     /**

@@ -314,6 +314,15 @@ jobs:
         # 裸包名（阶段 4 实测踩到），说明符得由模块表给出可解析形式。
         run: node scripts/editor-plugin-load.mjs --open
 
+      - name: 插件自带 AI 工具端到端（#281 路径 A 的最后一截）
+        # 前几条分别守在**离线**两侧：`editor-mcp-check.mjs`（quality job）验"声明与接线"、
+        # 纯函数单测验贡献表登记。这一步把它们连起来真跑一遍——**起真页面 → 装载插件包 →
+        # 经真 MCP server 取 `tools/list`**：装载前没有、装载后多出 `rotate_info`（描述与 schema
+        # 来自插件清单）、`tools/call` **真的调得通**（动态工具走 `pluginMethods` 兜底）、
+        # 卸载后立刻消失。缺了这一段，"装一个插件，AI 就多一个工具"只有**文本级**证据——
+        # 它上线第一次就抓到一条离线看不见的断链（贡献表没带 description/schema）。
+        run: node scripts/editor-mcp-plugin-tools.mjs --url http://localhost:3000
+
       - name: 宿主装载插件端到端（#276 任务 4 的完整链路）
         # 前后两个脚本分别守在两端（`check-editor-boot.mjs` 验宿主产出的入口图对不对、
         # `pluginBoot.spec.ts` 验页面读入口图的逻辑对不对，二者都在 `gates:host` 里），
