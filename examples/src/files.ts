@@ -29,6 +29,11 @@ export default {
         "PointLightTest",
     ],
     "ui": [
+        "ButtonTest",
+        "ImageTest",
+        "LayoutTest",
+        "RectTest",
+        "TextTest",
         "UITest",
     ],
     "advanced": [

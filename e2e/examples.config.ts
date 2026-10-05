@@ -60,6 +60,13 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     // ---- 全面测试档（full）----
     // UI 独立 Pass 的可视化验证：UI 覆盖在 3D 之上、树序层级、不再依赖 frustumCulling:false
     { category: "ui", name: "UITest", warmupFrames: 60, freezeFrames: 30 },
+    // 每种 UI 组件的示例页：Rect / Text / Image / Button / 布局
+    { category: "ui", name: "UITest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "ui", name: "RectTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "ui", name: "TextTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "ui", name: "ImageTest", warmupFrames: 180, freezeFrames: 30 },
+    { category: "ui", name: "ButtonTest", warmupFrames: 60, freezeFrames: 30 },
+    { category: "ui", name: "LayoutTest", warmupFrames: 90, freezeFrames: 30 },
     { category: "geometry", name: "GeometryTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "material", name: "ColorMaterialTest", warmupFrames: 60, freezeFrames: 30 },
     { category: "advanced", name: "TerrainMergeTest", warmupFrames: 180, freezeFrames: 10 },
