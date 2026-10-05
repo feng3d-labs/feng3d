@@ -70,12 +70,26 @@ issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）�
 > ✅ **本轮（issue #134）已按实测把那笔欠账还上**：旧阈值 `38/34/38/38` 曾落后实测 **12～18 个百分点**——覆盖率**掉 12 个点**门禁都不会红，「防下降」**当时等于失效**（正是上面那条警告说的「阈值变成摆设」）。
 > 清理批（PR #576）留下了建议值 `54/44/51/54`，本批**没有照抄**：按「本项目估数不可靠」的教训**逐项复测了三遍**（同一份代码、同一台机器），实测与建议值吻合，才按「实测基线向下留余量」的口径定为 **`54/44/51/54`**。
 
-| 指标 | 阈值 | 实测基线（2026-10-05 在 `69309811b` 上本机复测，vitest 5.0.2 / Node 22） | 余量 |
+| 指标 | 阈值 | 实测基线（2026-10-05 **修复 issue #667 后**本机复测，vitest 5.0.2 / Node 22，683 个受统计文件） | 余量 |
 |---|---|---|---|
-| 语句 | 54 | 55.96%（2026-10-05 两次：55.96 / 55.97，= 18715～18720/33442；2026-10-02 四次为 55.87～55.89） | 1.96 |
-| 分支 | 44 | 45.39%（两次：45.39 / 45.40，= 6801～6803/14982；2026-10-02 四次为 45.92～45.93） | 1.39 |
-| 函数 | 51 | 53.83%（两次恒为 53.83，= 3106/5769；2026-10-02 四次恒为 53.13） | 2.83 |
-| 行 | 54 | 55.98%（两次：55.98 / 55.99，= 16702～16707/29835；2026-10-02 四次为 56.08～56.10） | 1.98 |
+| 语句 | 52 | 54.41%（18939/33575） | 2.41 |
+| 分支 | 42 | 44.38%（6868/15036） | 2.38 |
+| 函数 | 49 | 51.49%（3133/5785） | 2.49 |
+| 行 | 52 | 54.36%（16905/29953） | 2.36 |
+
+> ✅ **issue #667 本批修掉了读数的「整份虚高」，阈值与新基线同步重定**（2026-10-05）。
+> 根因是**内置 v8 provider 跨 worker 合并 V8 coverage 时丢函数条目**——`@bcoe/v8-coverage` 的
+> `mergeScriptCovs` 用「函数根 range」当函数身份，而 V8 对未执行函数报的根 range 会与别的函数雷同，
+> 于是 `count = 0` 的条目被丢弃，剩下的模块顶层 range（count = 模块加载次数）把整份文件算成已执行。
+> 修法是 `vitest.config.ts` 改用本仓自定义 provider
+> （`scripts/vitest-v8-coverage-provider.mjs`，只把合并 key 换成「函数名 + 根 range」）。机制、最小复现
+> 与方案选型见 §2.1。
+>
+> **改动前后（本机、同一口径对照）**：语句 **56.40 → 54.41**、分支 **45.67 → 44.38**、
+> 函数 **54.15 → 51.49**、行 **56.45 → 54.36**——下降全部来自「虚高消失」，不是覆盖率退步。
+> 13 个虚高基线文件里 **8 个**落回真实值（如 `PointGeometry.ts` 64/64 → 1/64、
+> `WGPURenderPassColorAttachment.ts` 74/74 → 3/74）；`webgpu` 包从 40.1 落到 **23.5**。
+> 阈值按新基线向下留约 2 个百分点重定为 **52 / 42 / 49 / 52**。
 
 > ⚠️ **本批（issue #645）复测发现这张表原先的读数已经漂了**（原记 55.96 / 46.05 / 53.23 / 56.17）：
 > 语句与行几乎没动（55.96 → 55.96、56.17 → 55.98），但**分支 −0.66（46.05 → 45.39）、函数 +0.60（53.23 → 53.83）**
@@ -139,14 +153,14 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `ui` | 78.5 | 12/14 | 77.5 | 58.5 | 96.4 |
 | `objectview` | 75.2 | 2/3 | 75.2 | 70.2 | 66.7 |
 | `shortcut` | 68.8 | 8/8 | 69.4 | 51.2 | 78.0 |
-| `feng3d` | 68.0 | 94/110 | 67.9 | 55.3 | 70.3 |
+| `feng3d` | 66.9 | 93/110 | 66.8 | 54.4 | 69.0 |
 | `polyfill` | 62.1 | 7/9 | 63.2 | 66.9 | 58.3 |
-| `terrain` | 50.0 | 2/6 | 49.1 | 24.1 | 48.3 |
-| `webgpu` | 42.5 | 58/132 | 42.7 | 29.1 | 53.0 |
-| `assets` | 39.7 | 19/20 | 41.1 | 27.0 | 27.0 |
+| `terrain` | 49.0 | 2/6 | 48.3 | 24.1 | 50.0 |
 | `particlesystem` | 39.0 | 38/49 | 41.7 | 29.5 | 22.7 |
 | `filesystem` | 34.8 | 10/14 | 37.0 | 42.6 | 36.3 |
-| `editor` | 18.1 | 77/189 | 18.3 | 15.2 | 20.5 |
+| `assets` | 32.0 | 19/20 | 33.4 | 21.3 | 17.2 |
+| `webgpu` | 23.5 | 58/132 | 24.2 | 17.6 | 32.0 |
+| `editor` | 17.3 | 76/189 | 17.5 | 14.8 | 18.9 |
 
 > **2026-10-05（蒙皮第二批 #337）本机实测**：已 rebase 到最新 master（含 #674 批 1 的 Geometry 工厂化、
 > #652 的门禁脚本退出码回归用例），新增测试文件
@@ -226,6 +240,12 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > 当前基线 **13 个文件 / 448 条语句**，按包为 `webgpu` 9、`shortcut` 2、`editor` 1、`feng3d` 1
 > ——其中 **6 个 / 265 条语句**正是上面那批"躲过旧判据"的 `webgpu` 文件。
 > 方案 A（收紧 `include` 语义）与方案 B（#594 的按包阈值）**本批有意不做**，理由见 §2.1。
+>
+> ✅ **issue #667 已修掉根因**（2026-10-05）：`vitest.config.ts` 改用本仓自定义 v8 provider
+> （`scripts/vitest-v8-coverage-provider.mjs`），把跨 worker 合并的函数身份从「根 range」改成
+> 「**函数名 + 根 range**」，8/13 个虚高文件落回真实值，基线收紧到 **5 个文件 / 44 条语句**
+> （剩下 5 个经逐条核实是「函数计数被夸大、语句真实执行」的判据边界）。`webgpu` 的真实行覆盖率
+> 因此是 **23.5**（不是 40.1、更不是原先声称的 60.x）。
 
 > ⚠️ **在 worktree 里跑覆盖率必须补别名，否则读数会系统性偏低。**
 > worktree 的 `node_modules` 常是指向主工作区的 junction，包名导入会被解析到主工作区源码，
@@ -517,17 +537,32 @@ PR 合并前 rebase 到最新 master（a61f05454）时，基线再降到 **125**
 后果是这张表**只能上不能下**：一旦有人为这些文件补一个 `import` 它们的用例，读数会"跌"一大截
 （60.0 → 40.1），看着像质量退步、其实是虚高消失。
 
-**根因与最终修法**（issue #645 证据 2）：失真不在 v8 的 range 语义（`NODE_V8_COVERAGE` 原始数据准确），
-也不在 `ast-v8-to-istanbul`（其 `convert()` 准确），而在 **vitest v8 provider 的 TS / sourcemap 收集映射链**；
-触发条件是「模块被加载、但这一轮没有任何代码真正执行」。最小复现见 issue #645、机制说明见 §1.3。
-所以配置一个正则、或只改 `include` 都修不掉根因。
+**根因与最终修法**（issue #645 证据 2 + issue #667 定案）：失真不在 v8 的 range 语义
+（`NODE_V8_COVERAGE` 原始数据准确），也不在 `ast-v8-to-istanbul` 的 AST 收集（其 `convert()` 准确），
+而在 **vitest v8 provider 的 TS / sourcemap 收集映射链**的**具体一步**：**跨 worker 合并 V8 coverage 时丢函数条目**。
+`@bcoe/v8-coverage` 的 `mergeScriptCovs` 用「函数根 range」（`ranges[0]` 的 `startOffset;endOffset`）当函数身份，
+而 V8 对未执行（未编译 / 已被 flush）的函数只报 function-level coverage，其根 range 会与**别的函数**雷同
+（实测 `PointGeometry.ts` 的 `<static_initializer>` 与 `<instance_members_initializer>` 同为 `[889, 4440]`）；
+`mergeScriptCovs` 遇到「同根 range 已有 block-level 条目 + 新条目是 function-level」时**直接丢弃**后者，
+于是 `count = 0` 的函数消失，剩下的模块顶层 range（count = 模块加载次数）把整份文件算成已执行。
+触发条件是「同一模块出现在 **≥2 份** worker 覆盖率数据里」——真实项目必然如此；单跑一个测试文件时
+`mergeScriptCovs` 走单元素快路径、不触发合并，读数反而是对的（这正是 issue #645 一度误判
+「V8 原始数据准确」的原因）。**最小复现**（issue #667）：两个都 `import '../packages/feng3d/src/index'`
+的测试文件，`PointGeometry.ts` 由真实的 `1.56%`（1/64）变成虚高的 `100%`。
+
+✅ **修法（落地物）**：`vitest.config.ts` 把 `coverage.provider` 从 `'v8'` 改成 `'custom'` +
+`customProviderModule: './scripts/vitest-v8-coverage-provider.mjs'`——该 provider 继承内置
+`V8CoverageProvider`，只把 `mergeScriptCovs` 的分组 key 从「根 range」换成「**函数名 + 根 range**」，
+其余逻辑（`include` 语义、istanbul 映射、阈值）完全一致。所以配置一个正则、或只改 `include` 都修不掉根因；
+修好后 8/13 个虚高文件落回真实值，基线从 13 个 / 448 条语句收紧到 5 个 / 44 条语句。
 
 ✅ **处置：读数自检已落地成门禁**（issue #645 **方案 C**，2026-10-05）
 
 | 落地物 | 作用 |
 |---|---|
-| `scripts/check-coverage-inflation.mjs` | 扫 `coverage/coverage-final.json` 列出虚高文件；**新增即失败**、修好提示收紧 |
-| `scripts/coverage-inflation-baseline.json` | 存量基线（**13 个文件 / 448 条语句**）；只登记 `inflated`，纯 enum / 常量模块判为 `real-const` 不登记 |
+| `scripts/vitest-v8-coverage-provider.mjs`（**issue #667**） | **根因修复**：自定义 v8 provider，把跨 worker 合并的函数身份从「根 range」换成「函数名 + 根 range」；`vitest.config.ts` 用 `provider: 'custom'` 接入 |
+| `scripts/check-coverage-inflation.mjs` | 扫 `coverage/coverage-final.json` 列出虚高 / 函数计数失真文件；**新增即失败**、修好提示收紧 |
+| `scripts/coverage-inflation-baseline.json` | 存量基线（issue #667 后收紧为 **5 个文件 / 44 条语句**）；只登记 `inflated`，纯 enum / 常量模块判为 `real-const` 不登记 |
 | `vitest.config.ts` 的 `coverage.reporter` 加 `json` | 判据要逐语句 / 逐函数的命中次数（`json-summary` 只有汇总百分比）；产物 7.2 MB / 678 个文件、序列化 <1 s，见 §1.3 与配置内注释 |
 | 根 `package.json`：`"test:coverage": "vitest run --coverage && node scripts/check-coverage-inflation.mjs"` | **接入点**（见下） |
 
@@ -567,18 +602,22 @@ CI 第 12 步天然会跑到它，而且**不需要改 `.github/workflows/`**（
 方案 C 本就是"登记 + 复核"）：① 函数计数**不全等**、只有个别函数被夸大的文件（如 `WGPUTexture.ts` 的
 `map` / `_writeTextures`）不命中；② `WindowEventProxy.ts`（2 条语句、1 个箭头函数）属边缘命中。
 
-**本批没做的两条**（issue #645 的方案取舍）：
+**方案选型**（issue #667）：选 **方案 D（修映射链）**，A / B 均未选：
 
-- **方案 A（去掉 `coverage.include` 的全量语义）**：全局语句会从 56.44% 跳到 **69.62%**
-  （issue #645 实测：237 个零覆盖文件 / 6137 条语句退出分母）——一次性改变全局数字、且会让
-  "新文件没测试"不再可见（那正是当初加 `include` 要防的事），属独立决策；
+- **方案 A（去掉 `coverage.include` 的全量语义）**：**修不掉这个问题**——那 13 个文件是被其它模块
+  **间接 `import`** 的，本来就在 V8 数据里，去掉 `include` 只会让「完全没被 import 的零测试文件」退出分母
+  （全局语句会从 56.44% 跳到 **69.62%**，issue #645 实测：237 个零覆盖文件 / 6137 条语句退出分母），
+  虚高文件照样虚高；还会让"新文件没测试"不再可见（那正是当初加 `include` 要防的事）。
 - **方案 B（#594 的按包 / 按文件阈值）**：在虚高读数上设阈值 = **把虚高冻结成"不许下降"的基线**，
-  必须等读数可信问题解决后再做（本条即其先决条件）。
+  反而掩盖问题；它应当在本条（读数可信）之后独立推进。
+- **方案 D（修映射链）**：唯一治本，所以选它（落地物见上）。
 
 另：`scripts/coverage-by-package.mjs` 的"文件"列以 `lines.covered > 0` 判"文件已覆盖"，
-对虚高文件**必然为真**（实测 `webgpu` 的 `58/132` 里有 9 个是虚高文件）——本批**有意不改**该判据
-（理由与替代读法写在 `scripts/coverage-by-package.mjs` 相应位置的注释里），
-虚高现状改由上面的脚本独立守住。
+此前对虚高文件**必然为真**（实测 `webgpu` 的 `58/132` 里有 9 个是虚高文件）。**issue #667 修掉根因后
+这一列已可信**：那些文件现在按真实覆盖参与判断，`webgpu` 的文件数仍是 `58/132`，但原因是
+`WGPURenderPassColorAttachment.ts` 这类文件**确实有 3 条顶层语句被执行**，不是虚高。脚本里的
+`lines.covered > 0` 逻辑**无需改动**，只更新了注释；函数级失真（含修复后残留的 5 个
+「函数计数被夸大、语句真实」文件）仍由 `scripts/check-coverage-inflation.mjs` 独立守住。
 
 **另外修掉了探针自身的一处判据缺陷**（本批实测发现）：探针原先的 `ctxOf` 用
 `CallExpression.expression === 函数节点` 认 IIFE，而最常见的写法 `(() => { ... })()`
