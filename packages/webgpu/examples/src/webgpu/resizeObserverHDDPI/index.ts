@@ -1,5 +1,5 @@
 import { GUI } from 'dat.gui';
-import checkerWGSL from './checker.wgsl';
+import { getCheckerShaderWGSL } from '../../shaders-tsl/checker';
 
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, RenderPassDescriptor, RenderPipeline, Submit } from '@feng3d/webgpu';
@@ -10,9 +10,9 @@ const init = async (canvas: HTMLCanvasElement) =>
     const webgpu = await new WebGPU().init();
 
     const pipeline: RenderPipeline = {
-        vertex: { code: checkerWGSL },
+        vertex: { code: getCheckerShaderWGSL().vertex },
         fragment: {
-            code: checkerWGSL,
+            code: getCheckerShaderWGSL().fragment,
         },
     };
 
