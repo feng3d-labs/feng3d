@@ -99,6 +99,81 @@ check('★ 本脚本自己在被引用之列（它不许自己成为孤儿）',
     referenced.has('check-verifier-wiring.mjs'),
     referenced.has('check-verifier-wiring.mjs') ? '已接线' : '把 check-verifier-wiring.mjs 加进 gates:host');
 
+// ---------- 判据 5：**可达性**（"被引用" ≠ "真的会跑到"）----------
+//
+// 判据 1 只要求"被引用"。但**引用它的那个 script 本身可能是孤儿** ——
+// 例如某个 `check-x.mjs` 只挂在 `npm run foo` 里，而 `foo` 从来没有任何 workflow 调用。
+// 那样它一样是空转，而判据 1 会判它"已接线"。
+//
+// 所以这里从每个 workflow 的 `run:` 出发递归展开（npm script → `pre` 钩子 → 子 script），
+// 得到"**CI 上真的会跑到的脚本集合**"，再与全部检查器对照。
+//
+// ⚠️ **写这条判据时踩到的坑**（留在这里给下一个人）：第一版只处理 npm script body 的**第一段**，
+// 而 `prelint:ci` 的 body 是一整串 `&&` —— 于是它把 **24 个其实可达的**检查器
+// 误报成"不可达"。**判据自己有 bug，就会制造假结论**，而假结论比没有判据更坏：
+// 它会让人去改一份本来正确的文档。所以下面每条结论都配了空转自证。
+const packageScripts = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')).scripts;
+const reachable = new Set();
+const visitedScripts = new Set();
+
+/** 展开一条命令（**必须先按 `&&` 拆开**，再逐段处理——见上面那个坑） */
+function walkCommand(command)
+{
+    for (const piece of command.split(' && '))
+    {
+        const trimmed = piece.trim();
+
+        if (trimmed !== '') walkPiece(trimmed);
+    }
+}
+
+/** 处理一段命令 */
+function walkPiece(command)
+{
+    const npmMatched = command.match(/^npm (?:run )?([\w:.-]+)(\s|$)/);
+
+    if (npmMatched)
+    {
+        const name = npmMatched[1];
+
+        if (visitedScripts.has(name)) return;
+
+        visitedScripts.add(name);
+
+        // npm 会自动跑 `pre<name>` 钩子
+        const pre = packageScripts[`pre${name}`];
+
+        if (typeof pre === 'string') walkCommand(pre);
+
+        const body = packageScripts[name];
+
+        if (typeof body === 'string') walkCommand(body);
+        return;
+    }
+
+    for (const matched of command.matchAll(/(?:node\s+)([\w./-]+\.mjs)/g)) reachable.add(matched[1].replace(/^\.\//, ''));
+}
+
+for (const name of workflows)
+{
+    const lines = readFileSync(join(WORKFLOW_DIR, name), 'utf8').split(/\r?\n/);
+
+    for (const line of lines)
+    {
+        const matched = line.match(/^\s*run:\s*(.+)$/);
+
+        if (matched) walkCommand(matched[1].trim().replace(/^['"]|['"]$/g, ''));
+    }
+}
+
+const unreachable = checkers.filter((name) => !reachable.has(`scripts/${name}`));
+
+check('扫描器扫到了足够多的可达脚本（集合非空）', reachable.size >= 10, `${reachable.size} 个可达的 .mjs`);
+
+check('★ 每个检查器都能从某个 workflow 出发**走到**（不只是「被引用」）',
+    unreachable.length === 0,
+    unreachable.length === 0 ? `${checkers.length} 个全部可达` : `到不了：${unreachable.join(', ')}`);
+
 // ---------- 结论 ----------
 
 console.log(`\n共 ${total} 项：通过 ${total - failed}，失败 ${failed}`);
