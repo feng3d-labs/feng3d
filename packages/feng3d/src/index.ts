@@ -66,6 +66,8 @@ export * from './materials/NormalMaterial';
 export * from './materials/PointMaterial';
 export * from './materials/SegmentMaterial';
 export * from './materials/StandardMaterial';
+export { buildStandardFragment, getStandardFragmentWGSL, type StandardFragmentOptions } from './shaders/tsl/standardFragment';
+export { getStandardLightingPars, getStandardLightingParsWGSL } from './shaders/tsl/standardLightingPars';
 export * from './materials/TextureMaterial';
 export * from './Menu';
 export * from './MixinsGlobalEvents';
