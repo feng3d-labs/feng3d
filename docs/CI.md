@@ -168,6 +168,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 |---|---|---|
 | 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
 | 示例 lint（含入口可解析预检） | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（零警告）；其 `prelint:examples` 钩子先跑一次示例入口可解析检查（见下） |
+| 模块级副作用（R2，#88 / #606） | `node scripts/check-module-side-effects.mjs --strict` + `node scripts/check-tree-shaking.mjs` + `node scripts/check-toplevel-new.mjs` | 第一条拦**缓存创建**（`new Map/WeakMap/Set/WeakSet()`，泛型实参不影响判定）/ **启动型调用** / `globalThis` 写入（**新增即失败**）；第二条是产物级 tree-shaking 验收；第三条按「文件::构造器」把**其余模块级 `new`**（声明形式，含 `new Set([...])` 常量集合与库代码单例）冻结在 `scripts/toplevel-new-baseline.json`，**新增即失败**、减少只提示。第三条与第一条的重叠**有意保留**（去重比漏网好） |
 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 234 个测试文件 / 2708 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
 | 类型检查 | `npm run types:packages` | 20 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
 | 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |

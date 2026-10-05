@@ -86,7 +86,9 @@ const MIGRATED = [
  * **模块顶层 `new` 的基线**（存量冻结）。
  *
  * 哪些在册单例的定义文件里还有"顶层 `new` 自己"。`check-module-side-effects.mjs` 的规则只覆盖
- * `new Map/WeakMap/Set()`，所以这类写法一直是**没有执行者的 R2 违反项**——这张基线就是它的执行者：
+ * **缓存形态**（`new Map/WeakMap/Set/WeakSet()`）与**裸调用语句**，所以 `export const x = new X()`
+ * 这类写法此前一直**没有执行者**（根侧 `check-toplevel-new.mjs` 后来补上了全仓「文件::构造器」基线，
+ * 也扫 `packages/editor`）；**这张基线是包内第二道、判据更严**：
  * 迁移一个就从这里划掉一个；**实测集合与基线不一致即失败**（多了 = 新增违规；少了 = 该收紧基线
  * 却没收紧）。与 `imperative-construction-baseline.json` / `bundle-size-baseline.json` 同一套做法。
  */
@@ -226,10 +228,12 @@ function importedIn(files, name)
 /**
  * 找出定义文件里**模块顶层**的 `new`（如 `export const x = new Foo();`）。
  *
- * 为什么需要它：`check-module-side-effects.mjs` 的规则只覆盖 `new Map/WeakMap/Set()`，
- * 而 `new EditorCache()` / `new EditorRS()` 这类**同样是模块顶层执行代码**——
- * 它们此前没有被任何门禁拦下（#272 P5 第 2 步时实测确认）。这里用"顶格 + `new 大写字母开头`"
- * 的启发式把它们捞出来，交给基线判据管（存量冻结、新增即失败）。
+ * 为什么需要它：`check-module-side-effects.mjs` 的规则只覆盖**缓存形态**
+ * （`new Map/WeakMap/Set/WeakSet()`）与**裸调用语句**，而 `new EditorCache()` / `new EditorRS()`
+ * 这类 `export const x = new X()` 声明形式**同样是模块顶层执行代码**（#272 P5 第 2 步时实测确认）。
+ * 根侧另有 `scripts/check-toplevel-new.mjs` 做全仓「文件::构造器」存量冻结（也扫 `packages/editor`）；
+ * 这里的启发式是**包内第二道**，判据更严（要求实测集合与基线**一致**）。
+ * 捞出方式是"顶格 + `new 大写字母开头`"。
  *
  * @param {string} file 文件
  * @returns {string[]} 命中行（`行号: 内容`）
