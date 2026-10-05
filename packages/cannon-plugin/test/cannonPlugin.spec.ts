@@ -3,7 +3,7 @@
 import 'feng3d';
 import { Object3D } from 'feng3d';
 import { logic } from '@feng3d/reactivity';
-import { Box, Cylinder, Plane, Sphere } from 'cannon-es';
+import { Box, ConvexPolyhedron, Cylinder, Heightfield, Plane, Sphere, Trimesh } from 'cannon-es';
 import { describe, expect, it } from 'vitest';
 import '../src/index';
 import type { BoxCollider } from '../src/BoxCollider';
@@ -14,6 +14,9 @@ import type { PlaneCollider } from '../src/PlaneCollider';
 import type { Rigidbody, RigidbodyLogic } from '../src/Rigidbody';
 import type { ColliderLogic } from '../src/Collider';
 import type { SphereCollider } from '../src/SphereCollider';
+import type { TrimeshCollider } from '../src/TrimeshCollider';
+import type { ConvexCollider } from '../src/ConvexCollider';
+import type { HeightfieldCollider } from '../src/HeightfieldCollider';
 
 describe('cannon-plugin：碰撞体', () =>
 {
@@ -50,6 +53,35 @@ describe('cannon-plugin：碰撞体', () =>
         expect(data.radius).toBe(0.5);
         expect(shape).toBeInstanceOf(Sphere);
         expect(shape.radius).toBe(0.5);
+    });
+
+    it('TrimeshCollider 从几何体的顶点/索引生成 Trimesh', () =>
+    {
+        const data = { __type__: 'TrimeshCollider', geometry: { __type__: 'CubeGeometry' } } as TrimeshCollider;
+        const shape = (logic(data) as ColliderLogic).shape as Trimesh;
+
+        expect(shape).toBeInstanceOf(Trimesh);
+        expect(shape.vertices.length).toBeGreaterThan(0);
+        expect(shape.indices.length).toBeGreaterThan(0);
+    });
+
+    it('ConvexCollider 从几何体的顶点/三角面生成 ConvexPolyhedron', () =>
+    {
+        const data = { __type__: 'ConvexCollider', geometry: { __type__: 'CubeGeometry' } } as ConvexCollider;
+        const shape = (logic(data) as ColliderLogic).shape as ConvexPolyhedron;
+
+        expect(shape).toBeInstanceOf(ConvexPolyhedron);
+        expect(shape.vertices.length).toBeGreaterThan(0);
+        expect(shape.faces.length).toBeGreaterThan(0);
+    });
+
+    it('HeightfieldCollider 缺省 elementSize 补成 1，shape 是 Heightfield', () =>
+    {
+        const data = { __type__: 'HeightfieldCollider', heights: [[0, 0], [0, 1]] } as HeightfieldCollider;
+        const shape = (logic(data) as ColliderLogic).shape as Heightfield;
+
+        expect(data.elementSize).toBe(1);
+        expect(shape).toBeInstanceOf(Heightfield);
     });
 
     it('PlaneCollider 的 shape 是 Plane', () =>
