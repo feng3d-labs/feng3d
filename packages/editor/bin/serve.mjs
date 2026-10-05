@@ -38,6 +38,7 @@ import { PluginTree } from './host/pluginTree.mjs';
 import { ProjectBuild } from './host/projectBuild.mjs';
 import { ProjectMeta } from './host/projectMeta.mjs';
 import { ProjectNew, createProjectSkeleton } from './host/projectNew.mjs';
+import { ProjectRecent, readRecent, stateDir } from './host/projectRecent.mjs';
 import { ProjectPublish } from './host/projectPublish.mjs';
 import { ProjectWorkspace } from './host/projectWorkspace.mjs';
 import { StaticServer } from './host/staticServer.mjs';
@@ -109,6 +110,20 @@ function parseArgs()
             options.project = resolve(argv[++i]);
             options.given.add('project');
         }
+        else if (arg === '--open')
+        {
+            // `--open` 是 §5.2 三个命令里的名字，语义与 `--project` **完全一样**
+            // （打开一个已有的项目目录）。留着两个名字是因为文档里一直写的是 `open`，
+            // 而 `--project` 已经在脚本与文档里用了很久——改名的收益不抵迁移成本。
+            options.project = resolve(argv[++i]);
+            options.given.add('project');
+        }
+        else if (arg === '--recent')
+        {
+            // 列出最近打开过的项目（新的在前）——**不启动服务**，列完就退出。
+            options.recent = true;
+            options.given.add('recent');
+        }
         else if (arg === '--new')
         {
             // `--new <目录>`：**先建骨架，再当项目打开**（#274 P3）。
@@ -157,6 +172,8 @@ function printHelp()
       --plugins <文件> **用户层**插件配置（叠在产物配置之上；缺省不叠用户层）
       --project <目录> 打开项目目录：宿主只在这个目录内读写文件（缺省不打开项目）
       --new <目录>     新建一个项目骨架到该目录（**必须为空或不存在**），然后当项目打开
+      --open <目录>    与 --project 同义（§5.2 里的三个命令写作 new / open / recent）
+      --recent         列出最近打开过的项目（新的在前），然后退出
   -o, --open          启动后尝试用系统默认浏览器打开
   -v, --version       打印版本信息后退出
       --help          显示本帮助
@@ -181,6 +198,24 @@ const ctx = new Context();
 const hostInfo = new HostInfo(ctx);
 
 // `--version` 只读宿主信息，不启动任何监听
+if (options.recent)
+{
+    const list = readRecent(stateDir());
+
+    if (list.length === 0)
+    {
+        console.log('[feng3d-editor] 还没有记录过任何项目（用 --project / --open / --new 打开一个就会记下）');
+    }
+    else
+    {
+        console.log(`[feng3d-editor] 最近的 ${list.length} 个项目（新的在前）：`);
+
+        for (const [index, item] of list.entries()) console.log(`  ${index + 1}. ${item}`);
+    }
+
+    process.exit(0);
+}
+
 if (options.version)
 {
     console.log(hostInfo.describe());
@@ -241,6 +276,15 @@ let workspace;
 try
 {
     workspace = new ProjectWorkspace(ctx, { root: options.project });
+
+    // 记下"打开过它"（`--recent` 读的就是这份）。只在**确实给了目录**时记——
+    // 没给目录时 `workspace.root` 是 null，记它就等于往清单里塞垃圾。
+    // 最近项目（#274 P3）：`--recent` 与宿主方法 `host.project.recent` 读的都是这份。
+    const projectRecent = new ProjectRecent(ctx);
+
+    // 记下「打开过它」。只在**确实给了目录**时记——没给目录时 `workspace.root` 是 null，
+    // 记它就等于往清单里塞垃圾。
+    if (options.project) projectRecent.record(workspace.root);
 }
 catch (error)
 {
@@ -347,6 +391,9 @@ hostMethods.register('host.project.meta', () => projectMeta.read());
 // 新建项目骨架（#274 P3）。**只写进空目录**——往用户已有项目里糊模板是不可逆的。
 // 缺省用宿主当前打开的项目目录（`--project`），也可显式给 `dir`。
 hostMethods.register('host.project.new', ({ dir, name } = {}) => projectNew.create(dir ?? options.project, name));
+// 最近打开过的项目（#274 P3）：新的在前。它是「我上次在改哪个」的唯一入口——
+// 没有它，用户每次都要从文件系统里重新找回那个目录。
+hostMethods.register('host.project.recent', () => ({ projects: projectRecent.list() }));
 // **可取消**（#273 长任务）：长任务协议里"调用方能叫停"这一条的宿主半。
 hostMethods.register('host.build.cancel', () => projectBuild.cancel());
 
