@@ -663,6 +663,28 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 说明：terrain 的 `TerrainMaterial` 仍在使用 `standardLightingMainWGSL` / `standardFogMainWGSL` /
 > `standardLightingParsWGSL` 三个手写字符串，所以它们**保留导出**（下一步可让它也切到 TSL 单元）。
 >
+> ✅ **第十七批（#711 地形片段批，2026-10-05）**：`TerrainMaterial` 的 `terrainFragmentWGSL`（约 110 行手写字符串）
+> 迁成 `packages/terrain/src/terrainFragment.ts` 的 `getTerrainFragmentWGSL()` 并接入。
+> **feng3d 与 terrain 两侧的片元着色器至此都已 TSL 化**。
+>
+> 做法不是复制，而是**参数化**：把上一批的 `buildStandardFragment` 打开三个口子——
+> `materialStructName`（TerrainUniforms）、`extraMaterialMembers`（u_splatRepeats）、
+> `afterDiffuse`（splat 混合回调）、`withEnvMap: false`——terrain 只写自己那一段（`terrainMethod` 的三层
+> splat 混合），标准数据流完全复用。
+>
+> 三个要点：
+>
+> 1. **`afterDiffuse` 必须插在 alphatest 之前**：手写数据流是 `diffuse → terrain_frag(splat) → alphatest`。
+>    我第一版插到了 alphatest 之后（生成 `discard` 在 splat 之前），靠探针对照手写才发现——**又是"顺序"类错误**，
+>    这类错误离线断言不写就抓不到，所以 spec 里加了回归断言；
+> 2. **splat 用 `textureLod`（→ `textureSampleLevel`）**：非均匀控制流下不能 textureSample；
+> 3. **数据侧键名**：terrain 的 `bindingResources` 同样改成 `key + '_texture'` + `key`（与上一批 StandardMaterial 一致）。
+>
+> **画面验证**：`TerrainTest` **直接通过**（与入库基线一致），日志无错误。
+>
+> **注意**：`standardLightingParsWGSL` / `standardLightingMainWGSL` / `standardFogMainWGSL` 三个手写字符串
+> 现在**已经没有任何消费者**（feng3d 与 terrain 都用 TSL 单元了），下一批可以删除它们。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
