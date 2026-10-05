@@ -1,13 +1,13 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { logic, reactive, ticker, View } from 'feng3d';
-import type { Components, Object3D, Ray3, TransformLayout } from 'feng3d';
+import type { Components, Object3D, TransformLayout } from 'feng3d';
 import type { Color4 } from '@feng3d/math';
 // 副作用导入：Canvas / CanvasRenderer / Transform2D / UI 组件都是纯数据类型，行为要靠各自的
 // registerLogic 与 registerComponentType；只用作类型标注的 import 会被转译器整条擦除。
 // 同时它会注册 UI 的**独立渲染 Pass**（见 packages/ui/src/core/UIPass.ts）。
 import '@feng3d/ui';
-import { ButtonState, TextStyle, drawCanvas } from '@feng3d/ui';
-import type { Button, CanvasRenderer, Text as TextComponent } from '@feng3d/ui';
+import { ButtonState, TextStyle } from '@feng3d/ui';
+import type { Button, Text as TextComponent } from '@feng3d/ui';
 
 /**
  * 造一个 UI 元素的组件数据：布局 + 2D 变换 + 画布渲染器。
@@ -223,23 +223,40 @@ let mouseDown = false;
 let downHoldUntil = 0;
 let disabled = false;
 
-/** 命中检测：按钮的 Bg 子对象（UI 的 worldRayIntersection 用画布鼠标射线做 2D 包围盒判定） */
-const hitRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
-function hitButton(): boolean
+/**
+ * 按钮的包围矩形（画布像素坐标）。
+ *
+ * 直接读 Bg 子对象的**布局结果**：中心点用 `Object3D.worldPosition`——注意必须是**世界**坐标，
+ * `position` 是相对父级的**局部**坐标（用它会算出 `(-120,-45)` 这种相对值，与画布像素的鼠标坐标
+ * 不在同一坐标系，命中永远为 no；本页的诊断行正是这样把它暴露出来的）；
+ * 尺寸用 `TransformLayout.size`。
+ *
+ * 相比引擎的 `CanvasRenderer.worldRayIntersection`（画布鼠标射线 → 世界矩阵求逆 → 包围盒求交），
+ * 这里的矩形判定更短、更直观，诊断行还能把矩形直接显示出来。
+ */
+function buttonRect(): { x: number, y: number, w: number, h: number } | null
 {
-    // 鼠标不在画布内：按"未命中"处理
-    if (!mouseInside) return false;
-
-    // 每帧重新查 Bg 的渲染器：状态写回会替换子对象数据，不能缓存组件引用
     const entity = logic(buttonObject).entity as Object3D | null;
     const bg = entity?.children?.find((child) => child.name === 'Bg') as Object3D | undefined;
-    const renderer = bg?.components?.find((component) => component.__type__ === 'CanvasRenderer') as CanvasRenderer | undefined;
-    if (!renderer) return false;
+    if (!bg) return null;
 
-    // drawCanvas 现在只做一件事：把画布内鼠标位置换算成各 Canvas 的鼠标射线（拾取用）
-    drawCanvas(view, { x: mouseX, y: mouseY });
+    const layout = bg.components?.find((component) => component.__type__ === 'TransformLayout') as TransformLayout | undefined;
+    const center = logic(bg).worldPosition;
+    const size = layout?.size ?? { x: 1, y: 1 };
 
-    return !!logic(renderer).worldRayIntersection(hitRay);
+    return { x: center.x - size.x / 2, y: center.y - size.y / 2, w: size.x, h: size.y };
+}
+
+/** 鼠标是否落在按钮矩形内 */
+function hitButton(): boolean
+{
+    if (!mouseInside) return false;
+
+    const rect = buttonRect();
+    if (!rect) return false;
+
+    return mouseX >= rect.x && mouseX <= rect.x + rect.w
+        && mouseY >= rect.y && mouseY <= rect.y + rect.h;
 }
 
 webgpuCanvas.addEventListener('mouseenter', () => { mouseInside = true; });
@@ -295,8 +312,12 @@ ticker.onframe(() =>
     const label = disabled ? `state: ${next}（按 D 恢复）` : `state: ${next}`;
     if (stateText.text !== label) reactive(stateText).text = label;
 
-    // 诊断行：鼠标坐标是否在变、是否命中——排查"移上去没反应"时看这里
-    const diag = `hit: ${over ? 'yes' : 'no'}   inside: ${mouseInside ? 'yes' : 'no'}   mouse: (${Math.round(mouseX)}, ${Math.round(mouseY)})`;
+    // 诊断行：鼠标坐标、按钮矩形、是否命中——排查"移上去没反应"时看这里
+    const rect = buttonRect();
+    const rectText = rect
+        ? `(${Math.round(rect.x)}, ${Math.round(rect.y)}) ${Math.round(rect.w)}×${Math.round(rect.h)}`
+        : '(未找到)';
+    const diag = `hit: ${over ? 'yes' : 'no'}   inside: ${mouseInside ? 'yes' : 'no'}   mouse: (${Math.round(mouseX)}, ${Math.round(mouseY)})   rect: ${rectText}`;
     if (diagText.text !== diag) reactive(diagText).text = diag;
 
     webgpu.submit(viewLogic.submit);
