@@ -467,3 +467,31 @@ describe('裸纹理声明（#712，showTexture 的前置）', () =>
         expect(tex.toWGSL()).toBe('@binding(0) @group(0) var s_texture: texture_2d<f32>;\n@binding(1) @group(0) var s: sampler;');
     });
 });
+
+describe('位运算与逐分量比较（#712）', () =>
+{
+    it('UInt 的位运算（& | ^ >>）', () =>
+    {
+        expect(uint(0xf0).bitAnd(uint(0x0f)).toWGSL()).toBe('(240u & 15u)');
+        expect(uint(1).bitOr(2).toWGSL()).toBe('(1u | 2u)');
+        expect(uint(3).bitXor(uint(1)).toWGSL()).toBe('(3u ^ 1u)');
+        expect(uint(16).shiftRight(uint(2)).toWGSL()).toBe('(16u >> 2u)');
+    });
+
+    it('向量逐分量比较取 all（对应手写的 all(a < b)）', () =>
+    {
+        expect(vec3(1.0, 2.0, 3.0).lessThanAll(vec3(4.0, 5.0, 6.0)).toWGSL())
+            .toBe('all((vec3<f32>(1.0, 2.0, 3.0) < vec3<f32>(4.0, 5.0, 6.0)))');
+        // TSL 会把重复分量折叠（vec2<f32>(0.0) 等价于 vec2<f32>(0.0, 0.0)）
+        expect(vec2(1.0, 2.0).greaterThanAll(vec2(0.0, 0.0)).toWGSL())
+            .toBe('all((vec2<f32>(1.0, 2.0) > vec2<f32>(0.0)))');
+    });
+
+    it('Bool 的 and / or 可组合两个 all', () =>
+    {
+        const a = vec3(0.5, 0.5, 0.5).lessThanAll(vec3(1.0, 1.0, 1.0));
+        const b = vec3(0.5, 0.5, 0.5).greaterThanAll(vec3(0.0, 0.0, 0.0));
+
+        expect(a.and(b).toWGSL()).toBe('(all((vec3<f32>(0.5) < vec3<f32>(1.0)))) && (all((vec3<f32>(0.5) > vec3<f32>(0.0))))');
+    });
+});
