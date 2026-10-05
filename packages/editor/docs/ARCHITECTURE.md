@@ -906,7 +906,7 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
 
    **⚠️ 阶段 A 核查后这条要更正（2026-10-05，设计稿 [MIGRATE_ASSET_ID.md](MIGRATE_ASSET_ID.md)）**：
    id **本来就是 uuid** —— `ReadRS.ts:106` 生成、`:113` 写进 `.meta` 的 `guid`、`FileAsset.ts:314` 用它命名预览、`AssetData.ts:120/131/143` 序列化时写与读的也都是它。
-   **真正缺的是「读取时把它恢复回来」**：`FileAsset.ts:178` 调 `readMeta()`，而它（`:281-284`）只设 `this.meta`、**从不设 `assetId`** —— 于是打开已有项目时
+   **真正缺的是「读取时把它恢复回来」** —— ✅ **已修（#686 阶段 B1，2026-10-05）**：`readMeta()` 现在从 `meta.guid` 恢复 `assetId`，缺 `guid` 时生成并补写。原文说的是：`FileAsset.ts:178` 调 `readMeta()`，而它（`:281-284`）只设 `this.meta`、**从不设 `assetId`** —— 于是打开已有项目时
    每个资源的 id 都是 `undefined`，而以 id 为键的索引（`ReadRS.ts:305`）跟着塌掉。
    **所以「迁移」的量级远小于原判断**：不是重做序列化格式，而是补上恢复、让 `.meta` 跟着文件走、
    给老资源补写。阶段划分与判据形状见那份设计稿（**阶段 A 的产出**）。
