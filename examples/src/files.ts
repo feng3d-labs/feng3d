@@ -45,6 +45,7 @@ export default {
         "BoxFallTest",
         "ShapesTest",
         "PileTest",
+        "CompoundTest",
     ],
     "renderer": [
         "Basic",
