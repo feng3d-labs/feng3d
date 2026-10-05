@@ -352,6 +352,12 @@ const { chromium } = require('playwright');
   坏输入不断连接、先有调用后有页面时**积压不丢**、
   **宿主服务的事件被推给页面**（工作区文件变化 → `{type:'event', name:'workspace/changed'}`，
   载荷是**项目内相对路径**而非宿主绝对路径）；离线可跑）、
+  `node scripts/check-bridge-security.mjs`（**桥接来源校验**（#273 P2 / D9 通信安全）：
+  起真宿主，**负例为主**——跨源 `Origin` / `Origin: null`（sandbox iframe）/ 非本机 `Host`
+  （**DNS rebinding**）/ 端口不符全部 **403**；同时验正例（页面自己的同源 GET 必须能过）与**范围**
+  （校验只覆盖桥接前缀，静态资源照常返回）。**WebSocket 握手共用同一份判据**
+  （`bridge/security.mjs`，握手不受同源策略约束，所以这条尤其关键）——WS 那一路由
+  `test/bridgeSecurity.spec.ts` 的 8 条单测覆盖 + 门禁里的一条接线自证。已进 CI 的 `gates:host`）、
   `node scripts/editor-bridge-ws-page.mjs --url <dev server>`（**页面侧 WS 端到端**（#273 第三阶段）：
   打开真页面 → `/ping` 里必须出现 `transport: websocket`（**页面自己说连上不算，服务端记到才算**）→
   用 **HTTP** 发起调用，由 WS 页面执行并把结果回传（跨通道证明同一份命令层）→

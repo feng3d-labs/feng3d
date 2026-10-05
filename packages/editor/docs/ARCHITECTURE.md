@@ -839,7 +839,7 @@ P3 的接口梳理（`readImage` 签名）必须先于 P4/P5 的宿主服务。
 | 插件贡献表自洽 | 已有 `scripts/editor-plugins.mjs --check`，扩展覆盖"宿主半"贡献点 |
 | `packages/filesystem` 无测试 | 新增 `NodeFS` 必须带 spec（仓规 §13）；现状该包**零 `.spec.ts`** |
 | 发布字段改动 | 改子包 `files`/`main`/`module`/`types`/`bin` 后跑 `npm run release:dry-run -- --force`（根 §16）——**本条能直接拦下 #8** |
-| **D9 通信安全** | 负例测试：跨源 `Origin` / 缺失一次性 token 的连接被拒；`Host` 头校验（防 DNS rebinding）。**必须进 CI**——长连接一旦被连上就是持续通道 |
+| **D9 通信安全** | 🔶 **部分已做（2026-10-05）**：跨源 `Origin` / `Origin: null` / 非本机 `Host`（**DNS rebinding**）/ 端口不符的**负例已进 CI**（`scripts/check-bridge-security.mjs`，随 `gates:host`；判据本身另有 8 条纯函数单测），**HTTP 与 WebSocket 握手共用同一份判据**（`bridge/security.mjs`——握手不受同源策略约束，这一条尤其关键）。**仍缺**：一次性 token（面向非浏览器客户端，属 #279）、以及下一行那条协议版本校验。长连接一旦被连上就是持续通道，所以这一条必须一直在 CI 里 |
 | **D9 协议契约** | Web 端 `hello` 声明的编辑器 API 版本与服务端不符时必须被拒（沿用 `apiVersion.ts` 的测试风格） |
 
 ---
