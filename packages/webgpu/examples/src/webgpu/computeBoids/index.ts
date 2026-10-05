@@ -2,7 +2,7 @@ import { RenderObject, RenderPassDescriptor, Submit } from '@feng3d/webgpu';
 import { ComputeObject, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
-import spriteWGSL from './sprite.wgsl';
+import { getComputeBoidsSpriteWGSL } from '../../shaders-tsl/computeBoidsSprite';
 import updateSpritesWGSL from './updateSprites.wgsl';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
@@ -95,7 +95,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const renderObject: RenderObject = {
         pipeline: {
-            vertex: { code: spriteWGSL }, fragment: { code: spriteWGSL },
+            vertex: { code: getComputeBoidsSpriteWGSL() }, fragment: { code: getComputeBoidsSpriteWGSL() },
             primitive: {
                 cullFace: 'back',
             },
