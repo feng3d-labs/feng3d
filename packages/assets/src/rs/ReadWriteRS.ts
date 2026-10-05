@@ -130,14 +130,17 @@ export class ReadWriteRS extends ReadRS
             // 从原路径上删除资源
             await this.deleteAsset(la);
             // 计算资源新路径
-            let np = la.fileName + la.extenson;
-            let p = la.parentAsset;
-            while (p)
-            {
-                np = `${p.fileName}/${np}`;
-                p = p.parentAsset;
-            }
-            la.assetPath = np;
+            //
+            // **根那个资源要用传入的 `folder`**，不能统一用 `la.parentAsset`：
+            // `parentAsset` 是从 `assetPath` 的目录名查出来的，而 `assetPath` 要到下面才改，
+            // 于是根资源算出来还是**旧路径**（等于「删掉再写回原处」——实测就是这个行为）。
+            // 子孙资源用 `la.parentAsset` 是对的：遍历是逐层展开、父**先于**子处理，
+            // 轮到这里时父的 `assetPath` 已经是新的了。
+            //
+            // 另外：路径用 `assetPath` 拼，不用 `fileName` —— `fileName` 不含目录，
+            // 逐级拼出来会丢掉根目录（`Assets/Sub/A.json` 会变成 `Sub/A.json`）。
+            const parentPath = (la === asset) ? folder.assetPath : la.parentAsset?.assetPath;
+            la.assetPath = parentPath ? `${parentPath}/${la.fileName}${la.extenson}` : `${la.fileName}${la.extenson}`;
             // 新增映射
             this.addAsset(la);
             // 保存资源到新路径
