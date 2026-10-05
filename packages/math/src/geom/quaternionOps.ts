@@ -1,4 +1,5 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { PRECISION, equals } from '../mathUtils';
+import { DEFAULT_ROTATION_ORDER } from '../enums/RotationOrder';
 import { RotationOrder } from '../enums/RotationOrder';
 import type { Matrix4x4Like } from './matrix4x4Ops';
 import { mat4ToTRS } from './matrix4x4Ops';
@@ -94,7 +95,7 @@ export function quatRandom(out: WritableQuaternionLike = { ...DEFAULT_OUT }): Wr
         Math.PI * 2 * Math.random(),
         Math.PI * 2 * Math.random(),
         Math.PI * 2 * Math.random(),
-        mathUtil.DefaultRotationOrder,
+        DEFAULT_ROTATION_ORDER,
         out);
 }
 
@@ -258,7 +259,7 @@ export function quatFromUnitVectors(u: Vector3Like, v: Vector3Like, out: Writabl
 {
     let r = vec3Dot(u, v) + 1;
 
-    if (r < mathUtil.PRECISION)
+    if (r < PRECISION)
     {
         r = 0;
 
@@ -481,7 +482,7 @@ export function quatFromMatrix(matrix: Matrix4x4Like, out: WritableQuaternionLik
 {
     const v = mat4ToTRS(matrix)[1];
 
-    return quatFromEuler(v.x, v.y, v.z, mathUtil.DefaultRotationOrder, out);
+    return quatFromEuler(v.x, v.y, v.z, DEFAULT_ROTATION_ORDER, out);
 }
 
 /**
@@ -567,7 +568,7 @@ export function quatVmult(q: QuaternionLike, v: Vector3Like, out: WritableVector
  *
  * 逐字保留六种旋转序的分支；**未知序时不写任何分量**（与实现一致——原方法此时直接 `return this`）。
  */
-export function quatFromEuler(x: number, y: number, z: number, order: RotationOrder = mathUtil.DefaultRotationOrder, out: WritableQuaternionLike = { ...DEFAULT_OUT }): WritableQuaternionLike
+export function quatFromEuler(x: number, y: number, z: number, order: RotationOrder = DEFAULT_ROTATION_ORDER, out: WritableQuaternionLike = { ...DEFAULT_OUT }): WritableQuaternionLike
 {
     const cosX = Math.cos(x / 2);
     const coxY = Math.cos(y / 2);
@@ -627,44 +628,44 @@ export function quatFromEuler(x: number, y: number, z: number, order: RotationOr
  *
  * 内积必须整体算：只看 `x` 分量时，`x === 0` 的四元数会被误判（#489）。
  */
-export function quatEquals(a: QuaternionLike, b: QuaternionLike, precision = mathUtil.PRECISION): boolean
+export function quatEquals(a: QuaternionLike, b: QuaternionLike, precision = PRECISION): boolean
 {
     const dot = (a.x * b.x) + (a.y * b.y) + (a.z * b.z) + (a.w * b.w);
 
     if (dot >= 0)
     {
-        if (!mathUtil.equals(a.x - b.x, 0, precision))
+        if (!equals(a.x - b.x, 0, precision))
         {
             return false;
         }
-        if (!mathUtil.equals(a.y - b.y, 0, precision))
+        if (!equals(a.y - b.y, 0, precision))
         {
             return false;
         }
-        if (!mathUtil.equals(a.z - b.z, 0, precision))
+        if (!equals(a.z - b.z, 0, precision))
         {
             return false;
         }
-        if (!mathUtil.equals(a.w - b.w, 0, precision))
+        if (!equals(a.w - b.w, 0, precision))
         {
             return false;
         }
     }
     else
     {
-        if (!mathUtil.equals(a.x + b.x, 0, precision))
+        if (!equals(a.x + b.x, 0, precision))
         {
             return false;
         }
-        if (!mathUtil.equals(a.y + b.y, 0, precision))
+        if (!equals(a.y + b.y, 0, precision))
         {
             return false;
         }
-        if (!mathUtil.equals(a.z + b.z, 0, precision))
+        if (!equals(a.z + b.z, 0, precision))
         {
             return false;
         }
-        if (!mathUtil.equals(a.w + b.w, 0, precision))
+        if (!equals(a.w + b.w, 0, precision))
         {
             return false;
         }

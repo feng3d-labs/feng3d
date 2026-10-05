@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { PRECISION } from '../mathUtils';
 import type { Box3Like } from './box3Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
 import type { PlaneLike, WritablePlaneLike } from './planeOps';
@@ -162,7 +162,7 @@ export function frustumIntersectsBox(a: FrustumLike, box: Box3Like): boolean
 /**
  * `Frustum.containsPoint` 的纯函数版：点到 6 个平面的距离都不小于 -precision。
  */
-export function frustumContainsPoint(a: FrustumLike, point: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function frustumContainsPoint(a: FrustumLike, point: Vector3Like, precision = PRECISION): boolean
 {
     for (let i = 0; i < 6; i++)
     {

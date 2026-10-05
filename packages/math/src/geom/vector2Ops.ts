@@ -1,5 +1,5 @@
-import { mathUtil } from '@feng3d/polyfill';
-import { Mathf } from '../MathF';
+import { max, min, sign } from '../mathUtils';
+import { PRECISION, RAD2DEG, clamp, equals } from '../mathUtils';
 import type { Vector3Like } from './vector3Ops';
 
 /**
@@ -127,13 +127,13 @@ export function vec2ToArray(a: Vector2Like, array: number[] = [], offset = 0): n
 /**
  * `Vector2.equals` 的纯函数形式：逐分量按 `precision` 判等。
  */
-export function vec2Equals(a: Vector2Like, b: Vector2Like, precision = mathUtil.PRECISION): boolean
+export function vec2Equals(a: Vector2Like, b: Vector2Like, precision = PRECISION): boolean
 {
-    if (!mathUtil.equals(a.x - b.x, 0, precision))
+    if (!equals(a.x - b.x, 0, precision))
     {
         return false;
     }
-    if (!mathUtil.equals(a.y - b.y, 0, precision))
+    if (!equals(a.y - b.y, 0, precision))
     {
         return false;
     }
@@ -247,15 +247,15 @@ export function vec2LerpNumber(a: Vector2Like, b: Vector2Like, t: number, out: W
 }
 
 /**
- * `Vector2.Lerp` 的纯函数形式：按标量 `t` 插值，`t` 先用 `mathUtil.clamp` 夹取到 `[0, 1]`。
+ * `Vector2.Lerp` 的纯函数形式：按标量 `t` 插值，`t` 先用 `clamp` 夹取到 `[0, 1]`。
  *
- * 这里必须用 `mathUtil.clamp` 而**不是** `Mathf.Clamp01`：两者对 `NaN` 的行为不同
- * （`mathUtil.clamp(NaN, 0, 1)` 返回 `1`，`Mathf.Clamp01(NaN)` 返回 `NaN`），
- * 而 `Vector2.Lerp` 的原实现用的就是 `mathUtil.clamp`。
+ * 这里必须用 `clamp` 而**不是** `clamp01`（原 `Mathf.Clamp01`）：两者对 `NaN` 的行为不同
+ * （`clamp(NaN, 0, 1)` 返回 `1`，`clamp01(NaN)` 返回 `NaN`），
+ * 而 `Vector2.Lerp` 的原实现用的就是 `clamp`。
  */
 export function vec2LerpClamped(a: Vector2Like, b: Vector2Like, t: number, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    t = mathUtil.clamp(t, 0, 1);
+    t = clamp(t, 0, 1);
 
     out.x = a.x + ((b.x - a.x) * t);
     out.y = a.y + ((b.y - a.y) * t);
@@ -268,8 +268,8 @@ export function vec2LerpClamped(a: Vector2Like, b: Vector2Like, t: number, out: 
  */
 export function vec2Clamp(a: Vector2Like, min: Vector2Like, max: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    out.x = mathUtil.clamp(a.x, min.x, max.x);
-    out.y = mathUtil.clamp(a.y, min.y, max.y);
+    out.x = clamp(a.x, min.x, max.x);
+    out.y = clamp(a.y, min.y, max.y);
 
     return out;
 }
@@ -277,7 +277,7 @@ export function vec2Clamp(a: Vector2Like, min: Vector2Like, max: Vector2Like, ou
 /**
  * `Vector2.min` 的纯函数形式：逐分量取较小值（`Math.min` 语义）。
  *
- * **`Vector2.Min`（静态）不走这里**：它用 `Mathf.Min`（`a < b ? a : b`），
+ * **`Vector2.Min`（静态）不走这里**：它用 `min`（原 `Mathf.Min`）（`a < b ? a : b`），
  * 与 `Math.min` 的 `NaN` 语义不同（见 `Vector2.ts` 的注释）。
  */
 export function vec2Min(a: Vector2Like, b: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
@@ -291,7 +291,7 @@ export function vec2Min(a: Vector2Like, b: Vector2Like, out: WritableVector2Like
 /**
  * `Vector2.max` 的纯函数形式：逐分量取较大值（`Math.max` 语义）。
  *
- * **`Vector2.Max`（静态）不走这里**：理由同上（`Mathf.Max` 与 `Math.max` 的 `NaN` 语义不同）。
+ * **`Vector2.Max`（静态）不走这里**：理由同上（`max`（原 `Mathf.Max`） 与 `Math.max` 的 `NaN` 语义不同）。
  */
 export function vec2Max(a: Vector2Like, b: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
@@ -397,9 +397,9 @@ export function vec2Angle(from: Vector2Like, to: Vector2Like): number
         return 0;
     }
 
-    const dot = mathUtil.clamp(vec2Dot(from, to) / denominator, -1, 1);
+    const dot = clamp(vec2Dot(from, to) / denominator, -1, 1);
 
-    return Math.acos(dot) * mathUtil.RAD2DEG;
+    return Math.acos(dot) * RAD2DEG;
 }
 
 /**
@@ -408,9 +408,9 @@ export function vec2Angle(from: Vector2Like, to: Vector2Like): number
 export function vec2SignedAngle(from: Vector2Like, to: Vector2Like): number
 {
     const unsignedAngle = vec2Angle(from, to);
-    const sign = Mathf.Sign((from.x * to.y) - (from.y * to.x));
+    const signValue = sign((from.x * to.y) - (from.y * to.x));
 
-    return unsignedAngle * sign;
+    return unsignedAngle * signValue;
 }
 
 /**
@@ -453,7 +453,7 @@ export function vec2Reflect(inDirection: Vector2Like, inNormal: Vector2Like, out
  * `angle` 的单位是**弧度**（标准极坐标语义）：`x = len·cos(angle)`、`y = len·sin(angle)`。
  *
  * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：原实现（含 class 的
- * `Vector2.polar`）把 `angle` 又乘了一次 `mathUtil.RAD2DEG`——那是「弧度 → 角度」的换算，
+ * `Vector2.polar`）把 `angle` 又乘了一次 `RAD2DEG`——那是「弧度 → 角度」的换算，
  * 用在极坐标角度上**方向反了**：传弧度会被放大 57.2958 倍，传角度也不对（那种情况该乘
  * `DEG2RAD`）。修复依据：
  *
@@ -574,7 +574,7 @@ export function vec2SmoothDamp(
 ): WritableVector2Like
 {
     // Based on Game Programming Gems 4 Chapter 1.10
-    smoothTime = Mathf.Max(0.0001, smoothTime);
+    smoothTime = max(0.0001, smoothTime);
     const omega = 2 / smoothTime;
 
     const x = omega * deltaTime;
@@ -592,7 +592,7 @@ export function vec2SmoothDamp(
 
     if (sqDist > maxChangeSq)
     {
-        const mag = Mathf.Sqrt(sqDist);
+        const mag = Math.sqrt(sqDist);
 
         changeX = changeX / mag * maxChange;
         changeY = changeY / mag * maxChange;
@@ -632,27 +632,27 @@ export function vec2SmoothDamp(
 }
 
 /**
- * `Vector2.Min`（**静态**）的纯函数形式：逐分量取较小值（`Mathf.Min`，即 `a < b ? a : b`）。
+ * `Vector2.Min`（**静态**）的纯函数形式：逐分量取较小值（`min`（原 `Mathf.Min`），即 `a < b ? a : b`）。
  *
  * **与 `vec2Min` 不是同一个函数**：`vec2Min` 对应实例方法 `min()`，用的是 `Math.min`。
- * 两者的 `NaN` 语义不同（`Mathf.Min(NaN, 5) === 5`、`Math.min(NaN, 5) === NaN`）。
+ * 两者的 `NaN` 语义不同（`min(NaN, 5) === 5`、`Math.min(NaN, 5) === NaN`）。
  * 既有不一致，逐字保留（方案 §10.1 的 P8e）。
  */
 export function vec2MinMathf(lhs: Vector2Like, rhs: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    out.x = Mathf.Min(lhs.x, rhs.x);
-    out.y = Mathf.Min(lhs.y, rhs.y);
+    out.x = min(lhs.x, rhs.x);
+    out.y = min(lhs.y, rhs.y);
 
     return out;
 }
 
 /**
- * `Vector2.Max`（**静态**）的纯函数形式：逐分量取较大值（`Mathf.Max`，理由见 `vec2MinMathf`）。
+ * `Vector2.Max`（**静态**）的纯函数形式：逐分量取较大值（`max`（原 `Mathf.Max`），理由见 `vec2MinMathf`）。
  */
 export function vec2MaxMathf(lhs: Vector2Like, rhs: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    out.x = Mathf.Max(lhs.x, rhs.x);
-    out.y = Mathf.Max(lhs.y, rhs.y);
+    out.x = max(lhs.x, rhs.x);
+    out.y = max(lhs.y, rhs.y);
 
     return out;
 }

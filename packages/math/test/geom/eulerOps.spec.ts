@@ -1,5 +1,5 @@
+import { DEFAULT_ROTATION_ORDER } from '../../src/enums/RotationOrder';
 import { assert, describe, it, vi } from 'vitest';
-import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../src/enums/RotationOrder';
 import { mat4FromRotation } from '../../src/geom/matrix4x4Ops';
 import { quatEquals, quatFromEuler } from '../../src/geom/quaternionOps';
@@ -91,7 +91,7 @@ describe('eulerOps 纯函数层（#134 A2l）', () =>
     it('★ eulerSet：order 缺省时不动 out.order，缺省 out 的 order 是默认旋转序', () =>
     {
         // 缺省 out（新建）必须与欧拉角的默认值一致（方案 §10.1 P6）
-        assert.deepEqual(eulerSet(1, 2, 3), { x: 1, y: 2, z: 3, order: mathUtil.DefaultRotationOrder });
+        assert.deepEqual(eulerSet(1, 2, 3), { x: 1, y: 2, z: 3, order: DEFAULT_ROTATION_ORDER });
 
         const target = { x: 0, y: 0, z: 0, order: RotationOrder.ZYX };
 

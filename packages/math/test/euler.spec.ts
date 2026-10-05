@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { DEFAULT_ROTATION_ORDER } from '../src/enums/RotationOrder';
 import { describe, expect, it } from 'vitest';
 
 import type { Euler, WritableEulerLike } from '../src/geom/eulerOps';
@@ -40,7 +40,7 @@ import { RotationOrder } from '../src/enums/RotationOrder';
 const v = (x: number, y: number, z: number) => ({ x: x, y: y, z: z });
 
 /** 原 `new Euler(x, y, z, order)` 的字面量形态（纯函数层的 `out` 目标，不带判别字段）。 */
-function eulerLike(x = 0, y = 0, z = 0, order: RotationOrder = mathUtil.DefaultRotationOrder): WritableEulerLike
+function eulerLike(x = 0, y = 0, z = 0, order: RotationOrder = DEFAULT_ROTATION_ORDER): WritableEulerLike
 {
     return { x, y, z, order };
 }
@@ -52,7 +52,7 @@ describe('Euler（math/geom）', () =>
         it('★ 默认是 (0, 0, 0)，且带一个默认旋转顺序', () =>
         {
             // 数据声明形态（带 `readonly __type__: 'Euler'`）
-            const e: Euler = { __type__: 'Euler', x: 0, y: 0, z: 0, order: mathUtil.DefaultRotationOrder };
+            const e: Euler = { __type__: 'Euler', x: 0, y: 0, z: 0, order: DEFAULT_ROTATION_ORDER };
 
             expect(e.x).toBe(0);
             expect(e.y).toBe(0);
@@ -86,7 +86,7 @@ describe('Euler（math/geom）', () =>
             const e = eulerSet(1, 2, 3);
 
             expect(e.x).toBe(1);
-            expect(e.order).toBe(mathUtil.DefaultRotationOrder);
+            expect(e.order).toBe(DEFAULT_ROTATION_ORDER);
         });
 
         it('★ set 可以同时指定 order', () =>

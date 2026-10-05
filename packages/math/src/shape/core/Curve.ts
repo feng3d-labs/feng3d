@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { PRECISION, clamp, equals } from '../../mathUtils';
 import { mat4FromAxisRotate, mat4TransformPoint3 } from '../../geom/matrix4x4Ops';
 import type { WritableMatrix4x4Like } from '../../geom/matrix4x4Ops';
 import type { VectorLike } from '../../geom/Vector';
@@ -35,18 +35,18 @@ function pointDistance(a: VectorLike, b: VectorLike): number
     return Math.sqrt((dx * dx) + (dy * dy));
 }
 
-/** 两点是否相等：二维走 `vec2Equals`、三维走 `vec3Equals`（精度取 `mathUtil.PRECISION`）。 */
+/** 两点是否相等：二维走 `vec2Equals`、三维走 `vec3Equals`（精度取 `PRECISION`）。 */
 export function pointEquals(a: VectorLike, b: VectorLike): boolean
 {
-    if (!mathUtil.equals(a.x - b.x, 0, mathUtil.PRECISION))
+    if (!equals(a.x - b.x, 0, PRECISION))
     {
         return false;
     }
-    if (!mathUtil.equals(a.y - b.y, 0, mathUtil.PRECISION))
+    if (!equals(a.y - b.y, 0, PRECISION))
     {
         return false;
     }
-    if (isPoint3D(a) && isPoint3D(b) && !mathUtil.equals(a.z - b.z, 0, mathUtil.PRECISION))
+    if (isPoint3D(a) && isPoint3D(b) && !equals(a.z - b.z, 0, PRECISION))
     {
         return false;
     }
@@ -408,7 +408,7 @@ export class Curve<T extends VectorLike>
             {
                 vec3NormalizeThickness(vec, 1, vec);
 
-                const theta = Math.acos(mathUtil.clamp(vec3Dot(tangents[i - 1], tangents[i]), -1, 1)); // clamp for floating pt errors
+                const theta = Math.acos(clamp(vec3Dot(tangents[i - 1], tangents[i]), -1, 1)); // clamp for floating pt errors
 
                 mat4FromAxisRotate(vec, theta, mat);
                 mat4TransformPoint3(mat, normals[i], normals[i]);
@@ -421,7 +421,7 @@ export class Curve<T extends VectorLike>
 
         if (closed === true)
         {
-            let theta = Math.acos(mathUtil.clamp(vec3Dot(normals[0], normals[segments]), -1, 1));
+            let theta = Math.acos(clamp(vec3Dot(normals[0], normals[segments]), -1, 1));
 
             theta /= segments;
 

@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { PRECISION, equals } from '../mathUtils';
 import { PlaneClassification } from '../enums/PlaneClassification';
 import type { Line3Like, WritableLine3Like } from './line3Ops';
 import { line3Copy, line3GetPoint } from './line3Ops';
@@ -235,19 +235,19 @@ export function planeDistanceWithPoint(p: PlaneLike, point: Vector3Like): number
 /**
  * `Plane.prototype.onWithPoint` 的纯函数形式：点是否在平面上（距离按 `precision` 判零）。
  */
-export function planeOnWithPoint(p: PlaneLike, point: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function planeOnWithPoint(p: PlaneLike, point: Vector3Like, precision = PRECISION): boolean
 {
-    return mathUtil.equals(planeDistanceWithPoint(p, point), 0, precision);
+    return equals(planeDistanceWithPoint(p, point), 0, precision);
 }
 
 /**
  * `Plane.prototype.classifyPoint` 的纯函数形式：点相对平面的位置分类。
  */
-export function planeClassifyPoint(p: PlaneLike, point: Vector3Like, precision = mathUtil.PRECISION): PlaneClassification
+export function planeClassifyPoint(p: PlaneLike, point: Vector3Like, precision = PRECISION): PlaneClassification
 {
     const len = planeDistanceWithPoint(p, point);
 
-    if (mathUtil.equals(len, 0, precision))
+    if (equals(len, 0, precision))
     { return PlaneClassification.INTERSECT; }
     if (len < 0)
     { return PlaneClassification.BACK; }
@@ -258,9 +258,9 @@ export function planeClassifyPoint(p: PlaneLike, point: Vector3Like, precision =
 /**
  * `Plane.prototype.parallelWithLine3D` 的纯函数形式：`direction · normal` 按 `precision` 判零。
  */
-export function planeParallelWithLine3D(p: PlaneLike, line: Line3Like, precision = mathUtil.PRECISION): boolean
+export function planeParallelWithLine3D(p: PlaneLike, line: Line3Like, precision = PRECISION): boolean
 {
-    if (mathUtil.equals(vec3Dot(line.direction, planeGetNormal(p)), 0, precision))
+    if (equals(vec3Dot(line.direction, planeGetNormal(p)), 0, precision))
     { return true; }
 
     return false;
@@ -271,7 +271,7 @@ export function planeParallelWithLine3D(p: PlaneLike, line: Line3Like, precision
  *
  * 参数顺序与原实现一致（`plane3D.getNormal().isParallel(this.getNormal())`）。
  */
-export function planeParallelWithPlane3D(p: PlaneLike, plane3D: PlaneLike, precision = mathUtil.PRECISION): boolean
+export function planeParallelWithPlane3D(p: PlaneLike, plane3D: PlaneLike, precision = PRECISION): boolean
 {
     if (vec3IsParallel(planeGetNormal(plane3D), planeGetNormal(p), precision))
     { return true; }
@@ -298,7 +298,7 @@ export function planeIntersectWithLine3(p: PlaneLike, line: Line3Like): PlaneLin
     const d = line.direction;
     const dn = vec3Dot(d, n);
 
-    if (mathUtil.equals(dn, 0))
+    if (equals(dn, 0))
     {
         // 处理直线在平面内
         if (planeOnWithPoint(p, line.origin))
@@ -466,7 +466,7 @@ export function planeIntersectWithTwoPlane3D(p: PlaneLike, plane0: PlaneLike, pl
 
     let m = vec3Dot(n1xn2, n3);
 
-    if (mathUtil.equals(m, 0))
+    if (equals(m, 0))
     {
         // 不存在交点或者不存在唯一的交点
         return null;
@@ -485,15 +485,15 @@ export function planeIntersectWithTwoPlane3D(p: PlaneLike, plane0: PlaneLike, pl
 /**
  * `Plane.prototype.equals` 的纯函数形式：四个系数按 `precision` 逐一比较。
  */
-export function planeEquals(a: PlaneLike, b: PlaneLike, precision = mathUtil.PRECISION): boolean
+export function planeEquals(a: PlaneLike, b: PlaneLike, precision = PRECISION): boolean
 {
-    if (!mathUtil.equals(a.a - b.a, 0, precision))
+    if (!equals(a.a - b.a, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.b - b.b, 0, precision))
+    if (!equals(a.b - b.b, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.c - b.c, 0, precision))
+    if (!equals(a.c - b.c, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.d - b.d, 0, precision))
+    if (!equals(a.d - b.d, 0, precision))
     { return false; }
 
     return true;

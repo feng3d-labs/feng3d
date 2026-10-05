@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { equals } from '../../src/mathUtils';
 import type { Line3 } from '../../src/geom/line3Ops';
 import { line3FromPosAndDir } from '../../src/geom/line3Ops';
 import { mat3Identity, mat3Set } from '../../src/geom/matrix3x3Ops';
@@ -168,9 +168,9 @@ describe('#134 阶段 A3 跨类型委托', () =>
             const result = quatVmult(q, v, v);
 
             assert.equal(result, v, 'out 传自己即就地运算，返回 out');
-            assert.ok(mathUtil.equals(v.x, 0, 1e-12), `x 应为 0，实际 ${v.x}`);
-            assert.ok(mathUtil.equals(v.y, 1, 1e-12), `y 应为 1，实际 ${v.y}`);
-            assert.ok(mathUtil.equals(v.z, 0, 1e-12), `z 应为 0，实际 ${v.z}`);
+            assert.ok(equals(v.x, 0, 1e-12), `x 应为 0，实际 ${v.x}`);
+            assert.ok(equals(v.y, 1, 1e-12), `y 应为 1，实际 ${v.y}`);
+            assert.ok(equals(v.z, 0, 1e-12), `z 应为 0，实际 ${v.z}`);
         });
 
         it('mat4TransformPoint3 用点变换（含平移）：(1,2,3) 平移 (10,20,30) 得 (11,22,33)', () =>

@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { equals } from '../../src/mathUtils';
 import { line3Equals, line3FromPoints, line3OnWithPoint } from '../../src/geom/line3Ops';
 import {
     planeDistanceWithPoint,
@@ -47,7 +47,7 @@ describe('Plane', () =>
             planeOnWithPoint(p, origin)
         );
         assert.ok(
-            mathUtil.equals(vec3Distance(origin, VEC3_ZERO), planeDistanceWithPoint(p, VEC3_ZERO))
+            equals(vec3Distance(origin, VEC3_ZERO), planeDistanceWithPoint(p, VEC3_ZERO))
         );
     });
 

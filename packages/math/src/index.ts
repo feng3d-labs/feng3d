@@ -38,6 +38,7 @@ export * from './gradient/GradientColorKey';
 export * from './gradient/GradientMode';
 export * from './gradient/minMaxGradientOps';
 export * from './gradient/MinMaxGradientMode';
+export * from './mathUtils';
 export * from './Noise';
 export * from './shape/core/Curve';
 export * from './shape/core/CurvePath';

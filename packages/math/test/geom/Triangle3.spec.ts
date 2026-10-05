@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { equals } from '../../src/mathUtils';
 import { line3DistanceWithPoint, line3FromPoints } from '../../src/geom/line3Ops';
 import { seg3Equals, seg3FromPoints, seg3GetPoint } from '../../src/geom/segment3Ops';
 import { tri3DecomposeWithLine, tri3DecomposeWithSegment, tri3IntersectionWithLine, tri3IntersectionWithSegment } from '../../src/geom/intersectionOps';
@@ -98,11 +98,11 @@ describe('Triangle3', () =>
         const circumcenter = tri3GetCircumcenter(t);
 
         assert.ok(
-            mathUtil.equals(vec3Length(vec3Sub(circumcenter, t.p0)), vec3Length(vec3Sub(circumcenter, t.p1)))
+            equals(vec3Length(vec3Sub(circumcenter, t.p0)), vec3Length(vec3Sub(circumcenter, t.p1)))
         );
 
         assert.ok(
-            mathUtil.equals(vec3Length(vec3Sub(circumcenter, t.p0)), vec3Length(vec3Sub(circumcenter, t.p2)))
+            equals(vec3Length(vec3Sub(circumcenter, t.p0)), vec3Length(vec3Sub(circumcenter, t.p2)))
         );
     });
 
@@ -119,11 +119,11 @@ describe('Triangle3', () =>
         );
 
         assert.ok(
-            mathUtil.equals(d0, d1)
+            equals(d0, d1)
         );
 
         assert.ok(
-            mathUtil.equals(d0, d2)
+            equals(d0, d2)
         );
     });
 
@@ -133,17 +133,17 @@ describe('Triangle3', () =>
         const p = tri3GetOrthocenter(t);
 
         assert.ok(
-            mathUtil.equals(0,
+            equals(0,
                 vec3Dot(vec3Sub(t.p0, t.p1), vec3Sub(p, t.p2))
             )
         );
         assert.ok(
-            mathUtil.equals(0,
+            equals(0,
                 vec3Dot(vec3Sub(t.p2, t.p1), vec3Sub(p, t.p0))
             )
         );
         assert.ok(
-            mathUtil.equals(0,
+            equals(0,
                 vec3Dot(vec3Sub(t.p2, t.p0), vec3Sub(p, t.p1))
             )
         );
@@ -158,7 +158,7 @@ describe('Triangle3', () =>
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(tri3Area(t), ts.reduce((area, x) => area + tri3Area(x), 0), 0.001)
+            equals(tri3Area(t), ts.reduce((area, x) => area + tri3Area(x), 0), 0.001)
         );
 
         p = seg3GetPoint(tri3GetSegments(t)[0], Math.random());
@@ -166,7 +166,7 @@ describe('Triangle3', () =>
 
         assert.ok(ts.length <= 2);
         assert.ok(
-            mathUtil.equals(tri3Area(t), ts.reduce((area, x) => area + tri3Area(x), 0), 0.001)
+            equals(tri3Area(t), ts.reduce((area, x) => area + tri3Area(x), 0), 0.001)
         );
     });
 
@@ -217,7 +217,7 @@ describe('Triangle3', () =>
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
+            equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
         );
 
         s = seg3FromPoints(tri3RandomPoint(t), tri3RandomPoint(t));
@@ -225,7 +225,7 @@ describe('Triangle3', () =>
 
         assert.ok(ts.length <= 5);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
+            equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
         );
     });
 
@@ -237,7 +237,7 @@ describe('Triangle3', () =>
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
+            equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.001)
         );
 
         l = line3FromPoints(tri3RandomPoint(t), tri3RandomPoint(t));
@@ -245,7 +245,7 @@ describe('Triangle3', () =>
 
         assert.ok(ts.length <= 3);
         assert.ok(
-            mathUtil.equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.0001)
+            equals(ts.reduce((v, x) => v + tri3Area(x), 0), tri3Area(t), 0.0001)
         );
     });
 

@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { DEFAULT_ROTATION_ORDER } from '../../src/enums/RotationOrder';
 import { RotationOrder } from '../../src/enums/RotationOrder';
 import type { Euler } from '../../src/geom/eulerOps';
 import {
@@ -27,7 +27,7 @@ const { deepEqual } = assert;
  * 返回的是纯函数层的 `out` 目标形状（`WritableEulerLike`，**不带** `__type__` 判别字段）——
  * 与 `eulerRandom()` 等纯函数返回的字面量逐字段可比；带判别字段的数据声明形态见 `constructor` 用例。
  */
-function eulerLike(x = 0, y = 0, z = 0, order: RotationOrder = mathUtil.DefaultRotationOrder)
+function eulerLike(x = 0, y = 0, z = 0, order: RotationOrder = DEFAULT_ROTATION_ORDER)
 {
     return { x, y, z, order };
 }
@@ -37,13 +37,13 @@ describe('Euler', () =>
     it('constructor', () =>
     {
         // 数据声明形态：带 `readonly __type__: 'Euler'` 判别字段（方案 §5.9 的 D1 决策）
-        const euler: Euler = { __type__: 'Euler', x: 0, y: 0, z: 0, order: mathUtil.DefaultRotationOrder };
+        const euler: Euler = { __type__: 'Euler', x: 0, y: 0, z: 0, order: DEFAULT_ROTATION_ORDER };
 
         deepEqual(euler.x, 0);
         deepEqual(euler.y, 0);
         deepEqual(euler.z, 0);
 
-        deepEqual(euler.order, mathUtil.DefaultRotationOrder);
+        deepEqual(euler.order, DEFAULT_ROTATION_ORDER);
     });
 
     it('random', () =>

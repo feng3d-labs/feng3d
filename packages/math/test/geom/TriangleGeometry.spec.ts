@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { lerp } from '../../src/mathUtils';
 import { box3Equals, box3Random, box3RandomPoint, box3ToPoints } from '../../src/geom/box3Ops';
 import { vec3Random } from '../../src/geom/vector3Ops';
 import { seg3Equals, seg3FromPoints } from '../../src/geom/segment3Ops';
@@ -108,7 +108,7 @@ describe('TriangleGeometry', () =>
             assert.ok(seg3Equals(seg3FromPoints(r.points[0], r.points[1]), seg3FromPoints(box.min, box.max)));
         }
 
-        const p0 = { x: box.min.x, y: box.min.y, z: mathUtil.lerp(box.min.z, box.max.z, Math.random()) };
+        const p0 = { x: box.min.x, y: box.min.y, z: lerp(box.min.z, box.max.z, Math.random()) };
         const p1 = { x: box.min.x, y: box.min.y, z: box.max.z + 1 };
         const s = seg3FromPoints(p0, p1);
 

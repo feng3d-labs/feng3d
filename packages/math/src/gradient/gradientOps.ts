@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mapLinear } from '../mathUtils';
 import type { Color3, Color3Like, WritableColor3Like } from '../color/color3Ops';
 import { color3Copy, color3FromUnit, color3Mix } from '../color/color3Ops';
 import type { WritableColor4Like } from '../color/color4Ops';
@@ -174,7 +174,7 @@ export function gradientFromColors(colors: number[], times?: number[], out: Writ
  * `Gradient.getAlpha` 的纯函数版。
  *
  * 语义（原实现逐字保留）：单键/越界做时间钳制；恰好命中某键的时间取该键的值；
- * 区间内 `GradientMode.Fixed` 取右端键的值（不插值），其余走 `mathUtil.mapLinear` 线性插值。
+ * 区间内 `GradientMode.Fixed` 取右端键的值（不插值），其余走 `mapLinear` 线性插值。
  *
  * @param gradient 渐变数据
  * @param time 时间
@@ -200,7 +200,7 @@ export function gradientGetAlpha(gradient: GradientLike, time: number): number
         {
             if (gradient.mode === GradientMode.Fixed) return nv;
 
-            return mathUtil.mapLinear(time, t, nt, v, nv);
+            return mapLinear(time, t, nt, v, nv);
         }
     }
 

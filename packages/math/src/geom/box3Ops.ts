@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { PRECISION } from '../mathUtils';
 import { mat4TransformPoint3 } from './matrix4x4Ops';
 import type { Matrix4x4Like } from './matrix4x4Ops';
 import type { PlaneLike } from './planeOps';
@@ -342,7 +342,7 @@ export function box3Clone(a: Box3Like): WritableBox3Like
  * class 的 `equals(aabb)` 没有 `precision` 参数，这里补上缺省值只是把 `vec3Equals`
  * 的既有约定显式化，缺省路径与原行为逐字相同。
  */
-export function box3Equals(a: Box3Like, b: Box3Like, precision = mathUtil.PRECISION): boolean
+export function box3Equals(a: Box3Like, b: Box3Like, precision = PRECISION): boolean
 {
     return vec3Equals(a.min, b.min, precision) && vec3Equals(a.max, b.max, precision);
 }

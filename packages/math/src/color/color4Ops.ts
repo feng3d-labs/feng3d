@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { PRECISION, equals } from '../mathUtils';
 import { color3ToHex } from './color3Ops';
 import type { Color3Like, WritableColor3Like } from './color3Ops';
 import type { WritableVector4Like } from '../geom/vector4Ops';
@@ -190,15 +190,15 @@ export function color4MultiplyNumber(a: Color4Like, scale: number, out: Writable
 /**
  * `Color4.equals` 的纯函数版：逐分量按 `precision` 判等。
  */
-export function color4Equals(a: Color4Like, b: Color4Like, precision = mathUtil.PRECISION): boolean
+export function color4Equals(a: Color4Like, b: Color4Like, precision = PRECISION): boolean
 {
-    if (!mathUtil.equals(a.r - b.r, 0, precision))
+    if (!equals(a.r - b.r, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.g - b.g, 0, precision))
+    if (!equals(a.g - b.g, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.b - b.b, 0, precision))
+    if (!equals(a.b - b.b, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.a - b.a, 0, precision))
+    if (!equals(a.a - b.a, 0, precision))
     { return false; }
 
     return true;

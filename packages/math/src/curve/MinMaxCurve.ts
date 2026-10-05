@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { lerp } from '../mathUtils';
 import { AnimationCurve } from './AnimationCurve';
 import { MinMaxCurveMode } from './MinMaxCurveMode';
 
@@ -80,9 +80,9 @@ export class MinMaxCurve
             case MinMaxCurveMode.Curve:
                 return this.curve.getValue(time) * this.curveMultiplier;
             case MinMaxCurveMode.TwoConstants:
-                return mathUtil.lerp(this.constantMin, this.constantMax, randomBetween);
+                return lerp(this.constantMin, this.constantMax, randomBetween);
             case MinMaxCurveMode.TwoCurves:
-                return mathUtil.lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
+                return lerp(this.curveMin.getValue(time), this.curveMax.getValue(time), randomBetween) * this.curveMultiplier;
         }
 
         return this.constant;
