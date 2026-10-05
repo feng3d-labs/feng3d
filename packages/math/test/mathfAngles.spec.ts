@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { MATHF_DEG2RAD, MATHF_RAD2DEG, mathfAtan, mathfClamp01, mathfGamma, mathfLerpAngle, mathfMoveTowardsAngle, mathfTan } from '../src/mathf';
+import { MATHF_DEG2RAD, MATHF_RAD2DEG, mathfClamp01, mathfGamma, mathfLerpAngle, mathfMoveTowardsAngle } from '../src/mathf';
 
 /**
  * `MathF`（`packages/math/src/MathF.ts`，158 行）里 **`mathf.spec.ts` 尚未覆盖**的部分
- * （该文件此前行覆盖率 43.03%；三角函数、`Clamp`、`Lerp`、`MoveTowards`、`SmoothStep`、
- * `Approximately`、`Sign`、`Min`/`Max`、`Ceil`/`Floor`/`Round`、`Pow`/`Exp`/`Log`、
- * `Deg2Rad`/`Rad2Deg` 已经在那边测过）。
+ * （该文件此前行覆盖率 43.03%；`Clamp`、`Lerp`、`MoveTowards`、`SmoothStep`、
+ * `Approximately`、`Sign`、`Min`/`Max`、`Deg2Rad`/`Rad2Deg` 已经在那边测过）。
  *
- * 本文件补的是：**`Tan` / `Atan`**、**`LerpAngle` / `MoveTowardsAngle`**、**`Gamma`**。
+ * 本文件补的是：**`LerpAngle` / `MoveTowardsAngle`**、**`Gamma`**。
+ * （原先还有 **`Tan` / `Atan`** 一组——它们是 `Math.tan` / `Math.atan` 的纯转发，
+ * 已随 19 个纯转发函数一并删除，见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。）
  *
  * ★★ **这些函数的实现都用「度」还是「弧度」我没有去确认**，所以断言刻意做成
  * **与角度单位无关**的形式：
@@ -26,29 +27,6 @@ import { MATHF_DEG2RAD, MATHF_RAD2DEG, mathfAtan, mathfClamp01, mathfGamma, math
 
 describe('MathF 的角度与 gamma 函数（math）', () =>
 {
-    describe('★ Tan / Atan', () =>
-    {
-        it('★ Tan / Atan 与 Math.* 一致', () =>
-        {
-            for (const x of [0, 0.5, 1, -0.75, 2])
-            {
-                expect(mathfTan(x), `Tan(${x})`).toBeCloseTo(Math.tan(x), 12);
-                expect(mathfAtan(x), `Atan(${x})`).toBeCloseTo(Math.atan(x), 12);
-            }
-        });
-
-        it('★ Atan 的值域在 (−π/2, π/2)', () =>
-        {
-            for (const x of [-1e6, -1, 0, 1, 1e6])
-            {
-                const v = mathfAtan(x);
-
-                expect(v, `Atan(${x})`).toBeGreaterThan(-Math.PI / 2 - 1e-9);
-                expect(v, `Atan(${x})`).toBeLessThan(Math.PI / 2 + 1e-9);
-            }
-        });
-    });
-
     describe('★★ LerpAngle（与角度单位无关的断言）', () =>
     {
         it('★★ 插值到自身恒等于自身（任意 t）', () =>

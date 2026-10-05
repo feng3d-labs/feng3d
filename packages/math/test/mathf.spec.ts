@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { MATHF_DEG2RAD, MATHF_INFINITY, MATHF_NEGATIVE_INFINITY, MATHF_PI, MATHF_RAD2DEG, mathfAbs, mathfAcos, mathfApproximately, mathfAsin, mathfAtan2, mathfCeil, mathfCeilToInt, mathfClamp, mathfClamp01, mathfCos, mathfExp, mathfFloor, mathfFloorToInt, mathfLerp, mathfLerpUnclamped, mathfLog, mathfLog10, mathfMax, mathfMin, mathfMoveTowards, mathfPow, mathfRound, mathfRoundToInt, mathfSign, mathfSin, mathfSmoothStep, mathfSqrt } from '../src/mathf';
+import * as mathfModule from '../src/mathf';
+import { MATHF_DEG2RAD, MATHF_INFINITY, MATHF_NEGATIVE_INFINITY, MATHF_PI, MATHF_RAD2DEG, mathfApproximately, mathfClamp, mathfClamp01, mathfLerp, mathfLerpUnclamped, mathfMax, mathfMin, mathfMoveTowards, mathfSign, mathfSmoothStep } from '../src/mathf';
 
 /**
  * `Mathf`（`packages/math/src/MathF.ts`，158 行，此前**行覆盖率 4.43%**）。
@@ -8,39 +9,18 @@ import { MATHF_DEG2RAD, MATHF_INFINITY, MATHF_NEGATIVE_INFINITY, MATHF_PI, MATHF
  * Unity 风格的数学工具类（40+ 个 `static`）。全是纯函数，所以断言可以用**数学关系**表达。
  *
  * 实测到的几处**反直觉语义**（都如实钉在下面）：
- * - 三角函数按**弧度**（源码注释写着 "angle `f` in radians"），**不是度**；
  * - **`Lerp` 会把 `t` 钳到 `[0,1]`**，`LerpUnclamped` 不会 —— 这是两者唯一的差别；
  * - **`Sign(0) === 1`**（实现是 `f >= 0 ? 1 : -1`），不是 0；
  * - **`Min([])` / `Max([])` 返回 `0`**（空数组直接短路）。
+ *
+ * ⚠️ 原文件里「三角函数按弧度」「Ceil / Floor / Round / Pow / Exp / Log 与 `Math.*` 一致」
+ * 两组用例已随 19 个**纯转发函数**一并删除（它们只在测 `Math.*` 本身，不覆盖本包任何实现）；
+ * 同一批改动留下了文件末尾的**不回退守卫**。依据见
+ * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。
  */
 
 describe('Mathf（math）', () =>
 {
-    describe('★ 三角函数按弧度（不是度）', () =>
-    {
-        it('★ Sin(PI/2) = 1、Cos(0) = 1、Sin(0) = 0', () =>
-        {
-            expect(mathfSin(MATHF_PI / 2)).toBeCloseTo(1, 10);
-            expect(mathfCos(0)).toBeCloseTo(1, 10);
-            expect(mathfSin(0)).toBeCloseTo(0, 10);
-        });
-
-        it('★ 半圈处 Sin(PI) ≈ 0、Cos(PI) = −1', () =>
-        {
-            expect(mathfSin(MATHF_PI)).toBeCloseTo(0, 10);
-            expect(mathfCos(MATHF_PI)).toBeCloseTo(-1, 10);
-        });
-
-        it('Atan2 / Asin / Acos / Sqrt / Abs 与 Math.* 一致', () =>
-        {
-            expect(mathfAtan2(1, 1)).toBeCloseTo(Math.atan2(1, 1), 12);
-            expect(mathfAsin(1)).toBeCloseTo(Math.PI / 2, 12);
-            expect(mathfAcos(1)).toBeCloseTo(0, 12);
-            expect(mathfSqrt(9)).toBeCloseTo(3, 12);
-            expect(mathfAbs(-4.5)).toBeCloseTo(4.5, 12);
-        });
-    });
-
     describe('★ Clamp / Clamp01', () =>
     {
         it('★ 区间内的值原样返回，越界被钳到端点', () =>
@@ -214,24 +194,39 @@ describe('Mathf（math）', () =>
         });
     });
 
-    describe('与 Math.* 一致的取整族', () =>
+    describe('★★ 19 个「对 Math.* 的纯转发」已删除（不回退守卫）', () =>
     {
-        it('Ceil / Floor / Round / CeilToInt / FloorToInt / RoundToInt', () =>
+        /**
+         * 这 19 个名字原先的实现就是对 `Math.*` 的逐字转发，实测（源码层抽表达式 +
+         * 21 个边界值的一元 21 组 / 二元 441 组样本 + `Object.is` 比较）与 `Math.*` 全等，
+         * 因此删除、消费点改调 `Math.*`。**这个名字清单是删除决策的可执行记录**：
+         * 谁把它们加回来，这个用例就会红。
+         */
+        const REMOVED = [
+            'mathfSin', 'mathfCos', 'mathfTan', 'mathfAsin', 'mathfAcos', 'mathfAtan', 'mathfAtan2',
+            'mathfSqrt', 'mathfAbs', 'mathfPow', 'mathfExp', 'mathfLog', 'mathfLog10',
+            'mathfCeil', 'mathfFloor', 'mathfRound',
+            'mathfCeilToInt', 'mathfFloorToInt', 'mathfRoundToInt',
+        ];
+
+        it('模块不再导出这 19 个名字', () =>
         {
-            expect(mathfCeil(1.2)).toBe(2);
-            expect(mathfFloor(1.8)).toBe(1);
-            expect(mathfRound(1.5)).toBe(2);
-            expect(mathfCeilToInt(1.2)).toBe(2);
-            expect(mathfFloorToInt(1.8)).toBe(1);
-            expect(mathfRoundToInt(1.4)).toBe(1);
+            const exports = mathfModule as unknown as Record<string, unknown>;
+
+            for (const name of REMOVED)
+            {
+                expect(exports[name], `${name} 已被删除，不应再导出`).toBeUndefined();
+            }
         });
 
-        it('Pow / Exp / Log / Log10 与 Math.* 一致', () =>
+        it('保留下的成员仍在（防止连坐误删）', () =>
         {
-            expect(mathfPow(2, 10)).toBeCloseTo(1024, 10);
-            expect(mathfExp(0)).toBeCloseTo(1, 12);
-            expect(mathfLog(Math.E)).toBeCloseTo(1, 12);
-            expect(mathfLog10(1000)).toBeCloseTo(3, 12);
+            const exports = mathfModule as unknown as Record<string, unknown>;
+
+            for (const name of ['mathfMin', 'mathfMax', 'mathfSign', 'mathfClamp', 'mathfClamp01', 'mathfLerp', 'mathfLerpUnclamped'])
+            {
+                expect(typeof exports[name], name).toBe('function');
+            }
         });
     });
 });
