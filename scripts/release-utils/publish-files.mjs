@@ -84,18 +84,30 @@ export function findRuntimeRepoPaths(packageRoot)
     for (const file of [...collect(src, '.ts'), ...collect(src, '.vue')])
     {
         const code = readFileSync(file, 'utf8');
-        // 目标既可能是普通字符串，也可能是**模板字符串**——实现里用的正是反引号，
-        // 只匹配引号会一个都扫不到（第一版就这么空转了）
-        const pattern = new RegExp('window\\.open\\(\\s*[`\'"]([^`\'"]+)[`\'"]', 'g');
+        // 两种写法都要扫（少一种，"空转自证"就会抓出来 —— 它已经抓过一次）：
+        //
+        // 1. `window.open(<字面量>)` —— 字面量可能是普通字符串或**模板字符串**
+        //    （实现里用的正是反引号，只匹配引号会一个都扫不到，第一版就这么空转了）；
+        // 2. `getAbsolutePath(<字面量>)` —— `HttpFS` 需要拼出完整 URL 时就是这么写的
+        //    （`window.open(rs.fs.getAbsolutePath('run.html'))`）。
+        //
+        // 两者在"运行时才取的仓库内路径"这件事上**完全等价**。
+        const patterns = [
+            new RegExp('window\\.open\\(\\s*[`\'"]([^`\'"]+)[`\'"]', 'g'),
+            new RegExp('getAbsolutePath\\(\\s*[`\'"]([^`\'"]+)[`\'"]', 'g'),
+        ];
 
-        for (const match of code.matchAll(pattern))
+        for (const pattern of patterns)
         {
-            const target = match[1].split('?')[0];
+            for (const match of code.matchAll(pattern))
+            {
+                const target = match[1].split('?')[0];
 
-            // 只关心"仓库内的相对路径"：外链、锚点、绝对 URL 都不算
-            if (/^[a-z]+:/i.test(target) || target.startsWith('//') || target.startsWith('#')) continue;
+                // 只关心"仓库内的相对路径"：外链、锚点、绝对 URL 都不算
+                if (/^[a-z]+:/i.test(target) || target.startsWith('//') || target.startsWith('#')) continue;
 
-            paths.set(target.replace(/^\.?\//, ''), file);
+                paths.set(target.replace(/^\.?\//, ''), file);
+            }
         }
     }
 
