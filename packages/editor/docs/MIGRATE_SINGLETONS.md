@@ -20,7 +20,7 @@ P5 原话是"`EditorData` / `editorui` / `editorRS` / `editorcache` 逐个迁为
 | 单例 | 外部引用 | 它**其实**是什么 | 目标应该是什么 |
 |---|---|---|---|
 | `editorData` | **76 处 / 24 文件** | **已经是 Pinia 的过渡层**——`@deprecated 请直接使用 useEditorStore()`，内部 getter 转发给 Pinia store | → **Pinia**（继续清消费方）。**不是** cordis |
-| `editorRS` | 54 处 / 10 文件 | 页面侧资源系统实例（`extends ReadWriteRS`），并在**模块顶层**把自己挂给引擎（`ReadRS.rs = editorRS`） | → 服务（**页面侧**容器）＋ 那条顶层赋值改成**显式注入** |
+| `editorRS` | 45 处 / 10 文件 | 页面侧资源系统实例（`extends ReadWriteRS`），并在**模块顶层**把自己挂给引擎（`ReadRS.rs = editorRS`） | → 服务（**页面侧**容器）＋ 那条顶层赋值改成**显式注入** |
 | `editorcache` | 19 处 / 5 文件 | 偏好持久化（localStorage + `beforeunload`） | ✅ **已 lazy**（#272 P5 第 2 步）：入口变成 `getEditorCache()`，模块顶层不再构造。见 §3 第 2 步 |
 | `editorui` | ~~11 处 / 4 文件~~ → **19 处 / 6 文件** | **兼容空壳**：只有 `assetview.invalidateAssettree` 有实现，其余 5 个字段（`stage` / `mainview` / `tooltipLayer` / `popupLayer` / `messageLayer`）靠 `<any>` 断言"假装存在" | ✅ **已删**（#272 P5 第 1 步）——实测细节见 §3 第 1 步 |
 
@@ -273,7 +273,21 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
   原来它经 `EditorData` 过渡层（语义等价），但这让"引擎适配目录依赖 UI 层"更显式；
   若将来要划这条分界，这里就是入口。
 
-### 第 4 步：`editorRS` 迁服务（43 处 / 7 文件，最难）
+### 第 4 步：`editorRS` 迁服务（45 处 / 10 文件，最难）
+
+> **阶段 4a 已完成（2026-10-05）**：模块顶层那两行**写全局**的语句
+> （`FS.fs = new ReadWriteFS()` 与 `ReadRS.rs = editorRS`）已移进**显式装配**
+> `installEditorResourceSystem()`，由入口 `vue-app/main.ts` 调用（在 `pickBaseFS()` **之前**）。
+> 执行者：`editor-singleton-survey.mjs` 新增判据"**`editorRS` 不许在模块顶层被使用**"（0 行才算过）
+> ——它把这一条从"启发式指路"升级成了**判据**；`check-toplevel-new` 的基线同步收紧一处
+> （`EditorRS.ts::ReadWriteFS`）。另补 `test/editorRS.spec.ts`（4 条：装配显式 / 幂等 /
+> 装完槽位真的指向它 / 模块顶层不再写全局）。
+>
+> **为什么"引用面归零"不能在同一步做完**：`ReadRS.rs` 是**引擎侧**的静态槽位
+> （`packages/assets/src/rs/ReadRS.ts:18` 就有 `static rs = new ReadRS()` **默认实例**），
+> 引擎内部多处直接读它（`AssetData.ts:20`、`FileAsset.ts:202`、`ReadRS.ts:221`）。
+> 要归零必须先改**引擎**——那是跨包改造，不是 editor 一个包的事。所以本步只做到
+> "**页面侧不再隐式写全局**"，并把剩下的边界与理由写在这里。
 
 它有两个性质让这一步最麻烦：
 
