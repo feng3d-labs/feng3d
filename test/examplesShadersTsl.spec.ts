@@ -28,6 +28,8 @@ import { getReversedZFragmentTextureQuadWGSL } from '../packages/webgpu/examples
 import { getReversedZFragmentPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentPrecisionErrorPass';
 import { getCheckerShaderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/checker';
 import { getSolidColorLitWGSL } from '../packages/webgpu/examples/src/shaders-tsl/solidColorLit';
+import { getCubemapSampleCubemapWGSL } from '../packages/webgpu/examples/src/shaders-tsl/cubemapSampleCubemap';
+import { getFractalCubeSampleSelfWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fractalCubeSampleSelf';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -521,5 +523,33 @@ describe('solidColorLit 着色器', () =>
         expect(shader.vertex).toContain('worldMatrix: mat4x4<f32>');
         expect(shader.vertex).toContain('color: vec4<f32>');
         expect(shader.vertex).toContain('@group(0) @binding(0) var<uniform> uni: Uniforms;');
+    });
+});
+
+/**
+ * cubemap / fractalCube 的片元着色器（TSL 版）离线验收。
+ *
+ * 这两个示例的顶点着色器（basic.vert）早已迁过，本批是"接入 + 补 frag"。
+ */
+describe('cubemap / fractalCube 的片元着色器', () =>
+{
+    it('cubemap：立方体纹理采样，采样器展开顺序与手写相反', () =>
+    {
+        const wgsl = getCubemapSampleCubemapWGSL();
+        expect(wgsl).toContain('var myTexture_texture: texture_cube<f32>;');
+        expect(wgsl).toContain('var myTexture: sampler;');
+        expect(wgsl).toContain('let cubemapVec = input.fragPosition.xyz - vec3<f32>(0.5);');
+        expect(wgsl).toContain('return textureSample(myTexture_texture, myTexture, cubemapVec);');
+    });
+
+    it('fractalCube：自采样 + 阈值 select', () =>
+    {
+        const wgsl = getFractalCubeSampleSelfWGSL();
+        expect(wgsl).toContain('@location(0) fragUV: vec2<f32>');
+        expect(wgsl).toContain('@location(1) fragPosition: vec4<f32>');
+        expect(wgsl).toContain('let uv = input.fragUV * vec2<f32>(0.8) + vec2<f32>(0.1);');
+        // 与手写逐字相同：select(1.0, 0.0, length(...) < 0.01)
+        expect(wgsl).toContain('let f = select(1.0, 0.0, length(texColor.xyz - vec3<f32>(0.5)) < 0.01);');
+        expect(wgsl).toContain('return (1.0 - f) * input.fragPosition + f * texColor;');
     });
 });

@@ -4,8 +4,8 @@ import { WebGPU } from '@feng3d/webgpu';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
-import basicVertWGSL from '../../shaders/basic.vert.wgsl';
-import sampleCubemapWGSL from './sampleCubemap.frag.wgsl';
+import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
+import { getCubemapSampleCubemapWGSL } from '../../shaders-tsl/cubemapSampleCubemap';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {
@@ -131,7 +131,7 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const renderObject: RenderObject = {
         pipeline: {
-            vertex: { code: basicVertWGSL }, fragment: { code: sampleCubemapWGSL },
+            vertex: { code: getBasicVertWGSL() }, fragment: { code: getCubemapSampleCubemapWGSL() },
             primitive: {
                 cullFace: 'none',
             },
