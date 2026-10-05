@@ -1,4 +1,4 @@
-import { RotateLogic } from './runtime';
+import { rotateLogic } from './runtime';
 import { ROTATE_API_VERSION, ROTATE_PLUGIN_ID, ROTATE_TYPE } from './shared';
 import type { EditorPluginManifest, PanelViewLoader } from 'feng3d-editor/client';
 
@@ -43,7 +43,7 @@ export const ROTATE_PLUGIN: EditorPluginManifest = {
         // **同一个 `__type__` 在两端各注册一次**（#276 验收③"两端都有行为"）：
         // 这一份给编辑器（它读清单），`./runtime` 那一份给游戏端（构建期打入产物）。
         // 编辑格式 = 运行格式——场景里存下来的 `{ __type__: 'Rotate' }` 两边都能跑。
-        logics: [{ name: ROTATE_TYPE, logic: RotateLogic.create }],
+        logics: [{ name: ROTATE_TYPE, logic: rotateLogic }],
         // **插件自带 AI 工具**（#281 路径 A）：`bridgeMethods` 说"这个方法存在"，
         // `aiTools` 说"AI 眼里它长什么样"。装上这个插件，AI 的工具表里就多一个 `rotate_info`。
         //

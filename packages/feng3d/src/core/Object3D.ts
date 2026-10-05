@@ -13,14 +13,15 @@ import {
     Vector3,
     Vector3Like,
 } from '@feng3d/math';
-import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, createLogicProto, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Components } from '../component/Component';
 import type { Scene } from '../scene/Scene';
 import { BoundingBox } from './BoundingBox';
 import { applyPrefab } from './Prefab';
 import { resolveRefs } from './Ref';
-import { Container, ContainerLogic, setParent } from './Container';
+import { containerLogicProto, Container, ContainerLogic, setupContainerLogicState, setParent, type ContainerLogicState } from './Container';
+import { initComponents } from './Entity';
 
 /**
  * 游戏对象，场景唯一存在的对象类型
@@ -136,79 +137,448 @@ declare module '@feng3d/webgpu'
 }
 
 /**
- * Object3D 逻辑类。
+ * Object3D 逻辑接口（行为契约，issue #674）。
  *
  * 继承 {@link ContainerLogic}（进而继承 EntityLogic），复用全部 Entity + Container 行为：
  * entity / components / children / parent（只读 getter）/ getComponent / getComponents。
  *
- * 本类仅实现 Object3D 特有行为（变换矩阵、scene、激活状态、包围盒、beforeRender/lookAt/dispose）。
+ * 本接口仅声明 Object3D 特有行为（变换矩阵、scene、激活状态、包围盒、beforeRender/lookAt/dispose）。
  *
- * 通过 `logic(object3D)` 获取实例（registerLogic 注册了 Object3DLogic）。
+ * 通过 `logic(object3D)` 获取实例（registerLogic 注册了 {@link object3DLogic}）。
  * raw 数据保持干净（缺失字段不被写入，序列化不含默认值）。
  */
-export class Object3DLogic extends ContainerLogic
+export interface Object3DLogic extends ContainerLogic
 {
+    /** 子对象列表（收窄为 Object3D[]；运行时复用 containerLogicProto 的 getter） */
+    readonly children: Object3D[];
+
+    /** 父级容器（只读 getter，收窄为 Object3D | null） */
+    readonly parent: Object3D | null;
+
+    /** 名称（缺失时返回默认 'Object3D'） */
+    readonly name: string;
+
+    /** 是否支持鼠标拾取（缺失时返回默认 true） */
+    readonly mouseEnabled: boolean;
+
+    /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
+    readonly scene: Scene | null;
+
+    /** 自身激活状态（缺失时返回默认 true） */
+    readonly activeSelf: boolean;
+
+    /** 自身+祖先 activeSelf AND */
+    readonly activeInHierarchy: boolean;
+
+    /** 轴对齐包围盒（含子对象） */
+    readonly boundingBox: BoundingBox;
+
+    /** 本地位移（缺失时返回默认 {0,0,0}） */
+    readonly position: { x: number; y: number; z: number };
+
+    /** 本地旋转（弧度，缺失时返回默认 {0,0,0}） */
+    readonly rotation: { x: number; y: number; z: number };
+
+    /** 本地缩放（缺失时返回默认 {1,1,1}） */
+    readonly scale: { x: number; y: number; z: number };
+
+    /** 本地变换矩阵（由 position/rotation/scale 计算） */
+    readonly matrix: Matrix4x4;
+
+    /** 本地转世界矩阵（含 parent 链） */
+    readonly local2world: Matrix4x4;
+
+    /** 本地转世界逆转置矩阵 */
+    readonly ITlocal2world: Matrix4x4;
+
+    /** 世界转本地矩阵 */
+    readonly world2local: Matrix4x4;
+
+    /** 本地转世界旋转矩阵（含 parent 链） */
+    readonly local2worldRotation: Matrix4x4;
+
+    /** 世界转本地旋转矩阵 */
+    readonly world2localRotation: Matrix4x4;
+
+    /** 世界坐标 */
+    readonly worldPosition: Vector3;
+
+    /** 自身+子孙是否加载完成 */
+    readonly isLoaded: boolean;
+
+    /**
+     * transform uniform 的稳定 binding 实例（模型矩阵 + 逆转置矩阵）。
+     *
+     * 整个 Logic 生命周期同一引用，供主 Pass / 阴影 Pass 的
+     * renderObject.bindingResources.transform 共享（每对象一个 transform GPUBuffer）。
+     */
+    readonly transformUniforms: BufferBinding<TransformUniforms>;
+
+    /** 渲染前写入 transform uniform */
+    beforeRender(renderObject: RenderObject): void;
+
+    /**
+     * 让物体看向目标点（仅修改 rotation 数据）
+     *
+     * @param target 目标位置（任意提供 `x/y/z` 的对象，可直接传字面量）
+     * @param upAxis 向上朝向（同上；缺省为 Y 轴）
+     */
+    lookAt(target: Vector3Like, upAxis?: Vector3Like): void;
+
+    /** 释放：从父级移除、递归 dispose 子对象与组件 */
+    dispose(): void;
+}
+
+/** Object3D 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入） */
+export interface Object3DLogicState extends ContainerLogicState
+{
+    /** 名称（默认值回退用） */
+    _name: Computed<string>;
+
+    /** mouseEnabled（默认值回退用） */
+    _mouseEnabled: Computed<boolean>;
+
+    /** activeSelf（默认值回退用） */
+    _activeSelf: Computed<boolean>;
+
+    /** position（默认值回退用） */
+    _position: Computed<{ x: number; y: number; z: number }>;
+
+    /** rotation（默认值回退用） */
+    _rotation: Computed<{ x: number; y: number; z: number }>;
+
+    /** scale（默认值回退用） */
+    _scale: Computed<{ x: number; y: number; z: number }>;
+
+    /** 所属场景（自身组件或 parent 链派生） */
+    _scene: Computed<Scene | null>;
+
+    /** 自身+祖先 activeSelf AND */
+    _activeInHierarchy: Computed<boolean>;
+
+    /** 轴对齐包围盒（含子对象） */
+    _boundingBox: Computed<BoundingBox>;
+
+    /** 本地变换矩阵 */
+    _matrix: Computed<Matrix4x4>;
+
+    /** 本地旋转矩阵 */
+    _rotationMatrix: Computed<Matrix4x4>;
+
+    /** 本地转世界矩阵 */
+    _local2world: Computed<Matrix4x4>;
+
+    /** 本地转世界逆转置矩阵 */
+    _ITlocal2world: Computed<Matrix4x4>;
+
+    /** 世界转本地矩阵 */
+    _world2local: Computed<Matrix4x4>;
+
+    /** 本地转世界旋转矩阵 */
+    _local2worldRotation: Computed<Matrix4x4>;
+
+    /** 世界转本地旋转矩阵 */
+    _world2localRotation: Computed<Matrix4x4>;
+
+    /** 世界坐标 */
+    _worldPosition: Computed<Vector3>;
+
+    /** 自身是否加载完成（不含子孙） */
+    _isSelfLoaded: Computed<boolean>;
+
+    /** 自身+子孙是否加载完成 */
+    _isLoaded: Computed<boolean>;
+
+    /** transform uniform 稳定 binding 实例 */
+    _transformBinding: BufferBinding<TransformUniforms>;
+}
+
+/**
+ * 父级的 logic（**取不到时为 `null`**，调用方必须显式处理——R6）。
+ *
+ * 两种"取不到"都会真实发生（issue #177 的第二处报错
+ * `Cannot read properties of undefined (reading 'elements')`，实测于反复卸载/重建场景视图）：
+ *
+ * - 父级类型未注册 → `logic()` 返回 `null`；
+ * - 父级的 logic **正在构造中** → 注册表里此刻存的是占位对象，读它的任何 getter 都是
+ *   `undefined`，于是顺着 `Matrix4x4.append(undefined)` 炸在矩阵里——堆栈完全指不到真凶。
+ *
+ * 取不到时按"没有父级"处理（用本地矩阵）。这是构造期的一瞬间，比让整条 computed 链抛异常要好。
+ *
+ * 原为 class 的私有 getter `#parentLogic`（issue #674 改为模块级函数、显式传 logic）。
+ *
+ * @param logic 已装配的 Object3D logic 实例
+ * @returns 父级 logic（取不到时为 `null`）
+ */
+function getParentLogic(logic: Object3DLogic & Object3DLogicState): Object3DLogic | null
+{
+    const r_parent = logic.parent;
+    if (!r_parent) return null;
+
+    const parentLogic = getLogic(toRaw(r_parent) as Object3D) as Object3DLogic | undefined;
+    // 真 logic 上 `local2world` 是 getter；占位对象上取不到 → 说明还在构造中
+    if (!parentLogic || typeof (parentLogic as { local2world?: unknown }).local2world === 'undefined') return null;
+
+    return parentLogic;
+}
+
+/**
+ * Object3DLogic 的共享原型（issue #674）：继承 containerLogicProto，只放覆写的 getter / 方法。
+ *
+ * 注：class 形态里的 `override get children` / `override get parent` 只是「收窄类型的断言」，
+ * 工厂范式下由 {@link Object3DLogic} 接口收窄静态类型、运行时直接继承 containerLogicProto
+ * 的同名 getter，因此不在此重复定义。
+ */
+const object3DLogicProto = createLogicProto<Object3DLogic>(containerLogicProto, {
+    /** 名称（缺失时返回默认 'Object3D'） */
+    name: {
+        get: function (this: Object3DLogic & Object3DLogicState): string
+        {
+            return this._name.value;
+        },
+    },
+    /** 是否支持鼠标拾取（缺失时返回默认 true） */
+    mouseEnabled: {
+        get: function (this: Object3DLogic & Object3DLogicState): boolean
+        {
+            return this._mouseEnabled.value;
+        },
+    },
+    /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
+    scene: {
+        get: function (this: Object3DLogic & Object3DLogicState): Scene | null
+        {
+            return this._scene.value;
+        },
+    },
+    /** 自身激活状态（缺失时返回默认 true） */
+    activeSelf: {
+        get: function (this: Object3DLogic & Object3DLogicState): boolean
+        {
+            return this._activeSelf.value;
+        },
+    },
+    /** 自身+祖先 activeSelf AND */
+    activeInHierarchy: {
+        get: function (this: Object3DLogic & Object3DLogicState): boolean
+        {
+            return this._activeInHierarchy.value;
+        },
+    },
+    /** 轴对齐包围盒（含子对象） */
+    boundingBox: {
+        get: function (this: Object3DLogic & Object3DLogicState): BoundingBox
+        {
+            return this._boundingBox.value;
+        },
+    },
+    /** 本地位移（缺失时返回默认 {0,0,0}） */
+    position: {
+        get: function (this: Object3DLogic & Object3DLogicState): { x: number; y: number; z: number }
+        {
+            return this._position.value;
+        },
+    },
+    /** 本地旋转（弧度，缺失时返回默认 {0,0,0}） */
+    rotation: {
+        get: function (this: Object3DLogic & Object3DLogicState): { x: number; y: number; z: number }
+        {
+            return this._rotation.value;
+        },
+    },
+    /** 本地缩放（缺失时返回默认 {1,1,1}） */
+    scale: {
+        get: function (this: Object3DLogic & Object3DLogicState): { x: number; y: number; z: number }
+        {
+            return this._scale.value;
+        },
+    },
+    /** 本地变换矩阵（由 position/rotation/scale 计算） */
+    matrix: {
+        get: function (this: Object3DLogic & Object3DLogicState): Matrix4x4
+        {
+            return this._matrix.value;
+        },
+    },
+    /** 本地转世界矩阵（含 parent 链） */
+    local2world: {
+        get: function (this: Object3DLogic & Object3DLogicState): Matrix4x4
+        {
+            return this._local2world.value;
+        },
+    },
+    /** 本地转世界逆转置矩阵 */
+    ITlocal2world: {
+        get: function (this: Object3DLogic & Object3DLogicState): Matrix4x4
+        {
+            return this._ITlocal2world.value;
+        },
+    },
+    /** 世界转本地矩阵 */
+    world2local: {
+        get: function (this: Object3DLogic & Object3DLogicState): Matrix4x4
+        {
+            return this._world2local.value;
+        },
+    },
+    /** 本地转世界旋转矩阵（含 parent 链） */
+    local2worldRotation: {
+        get: function (this: Object3DLogic & Object3DLogicState): Matrix4x4
+        {
+            return this._local2worldRotation.value;
+        },
+    },
+    /** 世界转本地旋转矩阵 */
+    world2localRotation: {
+        get: function (this: Object3DLogic & Object3DLogicState): Matrix4x4
+        {
+            return this._world2localRotation.value;
+        },
+    },
+    /** 世界坐标 */
+    worldPosition: {
+        get: function (this: Object3DLogic & Object3DLogicState): Vector3
+        {
+            return this._worldPosition.value;
+        },
+    },
+    /** 自身+子孙是否加载完成 */
+    isLoaded: {
+        get: function (this: Object3DLogic & Object3DLogicState): boolean
+        {
+            return this._isLoaded.value;
+        },
+    },
+    /**
+     * transform uniform 的稳定 binding 实例（模型矩阵 + 逆转置矩阵）。
+     *
+     * 整个 Logic 生命周期同一引用，供主 Pass / 阴影 Pass 的
+     * renderObject.bindingResources.transform 共享（每对象一个 transform GPUBuffer）。
+     */
+    transformUniforms: {
+        get: function (this: Object3DLogic & Object3DLogicState): BufferBinding<TransformUniforms>
+        {
+            return this._transformBinding;
+        },
+    },
+    /** 渲染前写入 transform uniform */
+    beforeRender: {
+        value: function (this: Object3DLogic & Object3DLogicState, renderObject: RenderObject): void
+        {
+            // 初始化 bindingResources（缺失时创建）
+            const r_renderObject = reactive(renderObject);
+            if (!renderObject.bindingResources) r_renderObject.bindingResources = {};
+            const bindingResources = renderObject.bindingResources!;
+            bindingResources.transform ||= this._transformBinding;
+            const r_transformUniforms = reactive(this._transformBinding.value as TransformUniforms);
+            r_transformUniforms.u_modelMatrix = this._local2world.value;
+            r_transformUniforms.u_ITModelMatrix = this._ITlocal2world.value;
+        },
+    },
+    /**
+     * 让物体看向目标点（仅修改 rotation 数据）
+     *
+     * @param target 目标位置（任意提供 `x/y/z` 的对象，可直接传字面量）
+     * @param upAxis 向上朝向（同上；缺省为 Y 轴）
+     */
+    lookAt: {
+        value: function (this: Object3DLogic & Object3DLogicState, target: Vector3Like, upAxis?: Vector3Like): void
+        {
+            // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
+            const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this._matrix.value) };
+
+            mat4LookAt(m, target, upAxis, m);
+            const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
+
+            mat4ToTRS(m, pos, rot, scl);
+            // 写入完整 rotation 对象（toTRS 返回弧度，raw.rotation 缺失时整体赋值，避免子字段修改崩溃）
+            reactive(this._data as Object3D).rotation = { x: rot.x, y: rot.y, z: rot.z };
+        },
+    },
+    /** 释放：从父级移除、递归 dispose 子对象与组件 */
+    dispose: {
+        value: function (this: Object3DLogic & Object3DLogicState): void
+        {
+            const parent = this.parent;
+            if (parent)
+            {
+                const parentChildren = reactive(parent).children as unknown as Object3D[];
+                parentChildren.splice(parentChildren.indexOf(this._data as Object3D), 1);
+            }
+            setParent(this, null);
+            const kids = this.children;
+            for (let i = kids.length - 1; i >= 0; i--)
+            {
+                getLogic(kids[i]).dispose();
+            }
+            const r_components = reactive(this._data as Object3D).components as Components[];
+            for (let i = r_components.length - 1; i >= 0; i--)
+            {
+                const component = toRaw(r_components[i]) as unknown as Components;
+                r_components.splice(i, 1);
+                getLogic(component).dispose();
+            }
+        },
+    },
+});
+
+/**
+ * 工厂函数：Object3DLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * Object3DLogic 是这条链的最派生：装配完 Container 基类状态与本类 computed 字段后，
+ * 才在此处调用 {@link initComponents}（issue #222——组件 init 需看到最终的
+ * components / children 与本类 computed）。
+ *
+ * @param data 游戏对象数据（raw）
+ */
+export function object3DLogic(data: Object3D): Object3DLogic
+{
+    // Prefab 实例化（设计 3.6）：prefabId + overrides → 深拷贝模板 + 递归合并 overrides
+    // （构造期、非响应式；模板不进运行时响应式追踪）。必须在装配基类状态前执行：
+    // 基类状态注册组件自动初始化 effect 时，需看到最终的 components/children。
+    applyPrefab(data);
+    // $ref 共享引用解析（设计 3.7）：{ $ref: 'x' } → 注册表中的同一 raw 对象
+    resolveRefs(data);
+
+    const logic = setupContainerLogicState(Object.create(object3DLogicProto) as Object3DLogic & Object3DLogicState, data);
+
     // ---- 默认值（实例私有，提供稳定引用供响应式追踪） ----
-    readonly #_defaultPosition = { x: 0, y: 0, z: 0 };
-    readonly #_defaultRotation = { x: 0, y: 0, z: 0 };
-    readonly #_defaultScale = { x: 1, y: 1, z: 1 };
+    const _defaultPosition = { x: 0, y: 0, z: 0 };
+    const _defaultRotation = { x: 0, y: 0, z: 0 };
+    const _defaultScale = { x: 1, y: 1, z: 1 };
 
     // ---- 字段 computed（默认值） ----
     // 缺省字段不写回 raw（保持序列化干净），仅在 computed 内用字面量回退默认值。
-    readonly #_name = computed(() => reactive(this._data as Object3D).name ?? 'Object3D');
-    readonly #_mouseEnabled = computed(() => reactive(this._data as Object3D).mouseEnabled ?? true);
-    readonly #_activeSelf = computed(() => reactive(this._data as Object3D).activeSelf ?? true);
-    readonly #_position = computed(() => reactive(this._data as Object3D).position ?? this.#_defaultPosition);
-    readonly #_rotation = computed(() => reactive(this._data as Object3D).rotation ?? this.#_defaultRotation);
-    readonly #_scale = computed(() => reactive(this._data as Object3D).scale ?? this.#_defaultScale);
+    logic._name = computed(() => reactive(logic._data as Object3D).name ?? 'Object3D');
+    logic._mouseEnabled = computed(() => reactive(logic._data as Object3D).mouseEnabled ?? true);
+    logic._activeSelf = computed(() => reactive(logic._data as Object3D).activeSelf ?? true);
+    logic._position = computed(() => reactive(logic._data as Object3D).position ?? _defaultPosition);
+    logic._rotation = computed(() => reactive(logic._data as Object3D).rotation ?? _defaultRotation);
+    logic._scale = computed(() => reactive(logic._data as Object3D).scale ?? _defaultScale);
 
-    /**
-     * 父级的 logic（**取不到时为 `null`**，调用方必须显式处理——R6）。
-     *
-     * 两种"取不到"都会真实发生（issue #177 的第二处报错
-     * `Cannot read properties of undefined (reading 'elements')`，实测于反复卸载/重建场景视图）：
-     *
-     * - 父级类型未注册 → `logic()` 返回 `null`；
-     * - 父级的 logic **正在构造中** → 注册表里此刻存的是占位对象，读它的任何 getter 都是
-     *   `undefined`，于是顺着 `Matrix4x4.append(undefined)` 炸在矩阵里——堆栈完全指不到真凶。
-     *
-     * 取不到时按"没有父级"处理（用本地矩阵）。这是构造期的一瞬间，比让整条 computed 链抛异常要好。
-     */
-    get #parentLogic(): Object3DLogic | null
+    logic._scene = computed<Scene | null>(() =>
     {
-        const r_parent = this.parent;
-        if (!r_parent) return null;
-
-        const parentLogic = getLogic(toRaw(r_parent) as Object3D) as Object3DLogic | undefined;
-        // 真 logic 上 `local2world` 是 getter；占位对象上取不到 → 说明还在构造中
-        if (!parentLogic || typeof (parentLogic as { local2world?: unknown }).local2world === 'undefined') return null;
-
-        return parentLogic;
-    }
-
-    readonly #_scene = computed<Scene | null>(() =>
-    {
-        const sceneComponent = this.getComponent<Scene>('Scene');
+        const sceneComponent = logic.getComponent<Scene>('Scene');
         if (sceneComponent) return sceneComponent;
 
-        return this.#parentLogic?.scene ?? null;
+        return getParentLogic(logic)?.scene ?? null;
     });
 
-    readonly #_activeInHierarchy = computed<boolean>(() =>
+    logic._activeInHierarchy = computed<boolean>(() =>
     {
-        const active = this.#_activeSelf.value;
-        const parentLogic = this.#parentLogic;
+        const active = logic._activeSelf.value;
+        const parentLogic = getParentLogic(logic);
 
         return parentLogic ? active && parentLogic.activeInHierarchy : active;
     });
 
-    readonly #_boundingBox = computed<BoundingBox>(() => new BoundingBox(this._data as Object3D));
+    logic._boundingBox = computed<BoundingBox>(() => new BoundingBox(logic._data as Object3D));
 
-    readonly #_matrix = computed<Matrix4x4>(() =>
+    logic._matrix = computed<Matrix4x4>(() =>
     {
-        const p = this.#_position.value;
-        const r = this.#_rotation.value;
-        const s = this.#_scale.value;
+        const p = logic._position.value;
+        const r = logic._rotation.value;
+        const s = logic._scale.value;
 
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，装配点显式补判别字段（方案 §11.7.7 的 D1）
         return { __type__: 'Matrix4x4', ...mat4FromTRS(
@@ -217,9 +587,9 @@ export class Object3DLogic extends ContainerLogic
             { x: s.x, y: s.y, z: s.z }) };
     });
 
-    readonly #_rotationMatrix = computed<Matrix4x4>(() =>
+    logic._rotationMatrix = computed<Matrix4x4>(() =>
     {
-        const r = this.#_rotation.value;
+        const r = logic._rotation.value;
         // 与 `new Matrix4x4().setRotation(rot)` 等价：`mat4SetRotation` 的 `a` 提供位移与缩放，
         // 原 class 形态传的是「刚 new 出来的单位矩阵」，所以这里显式给一个单位矩阵基准
         const base: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Identity() };
@@ -227,10 +597,10 @@ export class Object3DLogic extends ContainerLogic
         return { __type__: 'Matrix4x4', ...mat4SetRotation(base, { x: r.x, y: r.y, z: r.z }) };
     });
 
-    readonly #_local2world = computed<Matrix4x4>(() =>
+    logic._local2world = computed<Matrix4x4>(() =>
     {
-        const parentLogic = this.#parentLogic;
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_matrix.value) };
+        const parentLogic = getParentLogic(logic);
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic._matrix.value) };
         if (parentLogic)
         {
             mat4Append(m, parentLogic.local2world, m);
@@ -239,9 +609,9 @@ export class Object3DLogic extends ContainerLogic
         return m;
     });
 
-    readonly #_ITlocal2world = computed<Matrix4x4>(() =>
+    logic._ITlocal2world = computed<Matrix4x4>(() =>
     {
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_local2world.value) };
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic._local2world.value) };
 
         mat4Invert(m, m);
         mat4Transpose(m, m);
@@ -249,19 +619,19 @@ export class Object3DLogic extends ContainerLogic
         return m;
     });
 
-    readonly #_world2local = computed<Matrix4x4>(() =>
+    logic._world2local = computed<Matrix4x4>(() =>
     {
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_local2world.value) };
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic._local2world.value) };
 
         mat4Invert(m, m);
 
         return m;
     });
 
-    readonly #_local2worldRotation = computed<Matrix4x4>(() =>
+    logic._local2worldRotation = computed<Matrix4x4>(() =>
     {
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_rotationMatrix.value) };
-        const parentLogic = this.#parentLogic;
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic._rotationMatrix.value) };
+        const parentLogic = getParentLogic(logic);
         if (parentLogic)
         {
             mat4Append(m, parentLogic.local2worldRotation, m);
@@ -270,29 +640,29 @@ export class Object3DLogic extends ContainerLogic
         return m;
     });
 
-    readonly #_world2localRotation = computed<Matrix4x4>(() =>
+    logic._world2localRotation = computed<Matrix4x4>(() =>
     {
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_local2worldRotation.value) };
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic._local2worldRotation.value) };
 
         mat4Invert(m, m);
 
         return m;
     });
-    readonly #_worldPosition = computed<Vector3>(() =>
+    logic._worldPosition = computed<Vector3>(() =>
     {
         // 阶段 C-f：`Vector3` 的 class 已删除，装配点显式写判别字段
         const position: Vector3 = { __type__: 'Vector3', x: 0, y: 0, z: 0 };
 
-        mat4GetPosition(this.#_local2world.value, position);
+        mat4GetPosition(logic._local2world.value, position);
 
         return position;
     });
 
-    readonly #_isSelfLoaded = computed<boolean>(() =>
+    logic._isSelfLoaded = computed<boolean>(() =>
     {
         // 通用组件加载状态（ComponentLogic.isLoaded，基类恒 true）：
         // 不探测具体组件类型——含异步资源的组件自行覆盖 isLoaded
-        const comps = this.components;
+        const comps = logic.components;
         for (let i = 0; i < comps.length; i++)
         {
             if (!getLogic(comps[i]).isLoaded) return false;
@@ -301,10 +671,10 @@ export class Object3DLogic extends ContainerLogic
         return true;
     });
 
-    readonly #_isLoaded = computed<boolean>(() =>
+    logic._isLoaded = computed<boolean>(() =>
     {
-        if (!this.#_isSelfLoaded.value) return false;
-        const kids = this.children;
+        if (!logic._isSelfLoaded.value) return false;
+        const kids = logic.children;
         for (let i = 0; i < kids.length; i++)
         {
             if (!getLogic(kids[i]).isLoaded) return false;
@@ -317,216 +687,19 @@ export class Object3DLogic extends ContainerLogic
     // 整个 Logic 生命周期只创建一次 wrapper；所有消费点（主 Pass / 阴影 Pass 的
     // renderObject.bindingResources.transform）共享同一实例——WGPUBufferBinding
     // 按 [device, binding, type] 缓存，共享使每对象只占一个 transform GPUBuffer。
-    // 构造时求值一次 local2world（首帧本就需要），之后仅在 beforeRender 消费点
+    // 装配时求值一次 local2world（首帧本就需要），之后仅在 beforeRender 消费点
     // 做字段级更新（不替换 .value 对象，失效粒度最小）。
-    readonly #_transformBinding: BufferBinding<TransformUniforms> = { value: {} as TransformUniforms };
+    logic._transformBinding = { value: {} as TransformUniforms };
 
-    protected constructor(data: Object3D)
-    {
-        // Prefab 实例化（设计 3.6）：prefabId + overrides → 深拷贝模板 + 递归合并 overrides
-        // （构造期、非响应式；模板不进运行时响应式追踪）。必须在 super() 前执行：
-        // super 构造器注册组件自动初始化 effect，需看到最终的 components/children。
-        applyPrefab(data);
-        // $ref 共享引用解析（设计 3.7）：{ $ref: 'x' } → 注册表中的同一 raw 对象
-        resolveRefs(data);
+    // Object3DLogic 是最派生：此时 children 已 pre-fill、父子同步 effect 已注册、
+    // 本类的 computed 字段也已初始化，才轮到组件 init（issue #222）。
+    initComponents(logic);
 
-        super(data);
-
-        // Object3DLogic 是最派生类：此时 children 已 pre-fill、父子同步 effect 已注册、
-        // 本类的 computed 字段也已初始化，才轮到组件 init（issue #222）。
-        this.initComponents();
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Object3D): Object3DLogic
-    {
-        return new Object3DLogic(data);
-    }
-
-    /** 子对象列表（收窄为 Object3D[]） */
-    override get children(): Object3D[]
-    {
-        return super.children as Object3D[];
-    }
-
-    /** 父级容器（只读 getter，收窄为 Object3D | null） */
-    override get parent(): Object3D | null
-    {
-        return super.parent as Object3D | null;
-    }
-
-    /** 名称（缺失时返回默认 'Object3D'） */
-    get name(): string
-    {
-        return this.#_name.value;
-    }
-
-    /** 是否支持鼠标拾取（缺失时返回默认 true） */
-    get mouseEnabled(): boolean
-    {
-        return this.#_mouseEnabled.value;
-    }
-
-    /** 所属场景（派生：自身持 Scene 组件则为自身，否则由 parent 链派生） */
-    get scene(): Scene | null
-    {
-        return this.#_scene.value;
-    }
-
-    /** 自身激活状态（缺失时返回默认 true） */
-    get activeSelf(): boolean
-    {
-        return this.#_activeSelf.value;
-    }
-
-    /** 自身+祖先 activeSelf AND */
-    get activeInHierarchy(): boolean
-    {
-        return this.#_activeInHierarchy.value;
-    }
-
-    /** 轴对齐包围盒（含子对象） */
-    get boundingBox(): BoundingBox
-    {
-        return this.#_boundingBox.value;
-    }
-
-    /** 本地位移（缺失时返回默认 {0,0,0}） */
-    get position(): { x: number; y: number; z: number }
-    {
-        return this.#_position.value;
-    }
-
-    /** 本地旋转（弧度，缺失时返回默认 {0,0,0}） */
-    get rotation(): { x: number; y: number; z: number }
-    {
-        return this.#_rotation.value;
-    }
-
-    /** 本地缩放（缺失时返回默认 {1,1,1}） */
-    get scale(): { x: number; y: number; z: number }
-    {
-        return this.#_scale.value;
-    }
-
-    /** 本地变换矩阵（由 position/rotation/scale 计算） */
-    get matrix(): Matrix4x4
-    {
-        return this.#_matrix.value;
-    }
-
-    /** 本地转世界矩阵（含 parent 链） */
-    get local2world(): Matrix4x4
-    {
-        return this.#_local2world.value;
-    }
-
-    /** 本地转世界逆转置矩阵 */
-    get ITlocal2world(): Matrix4x4
-    {
-        return this.#_ITlocal2world.value;
-    }
-
-    /** 世界转本地矩阵 */
-    get world2local(): Matrix4x4
-    {
-        return this.#_world2local.value;
-    }
-
-    /** 本地转世界旋转矩阵（含 parent 链） */
-    get local2worldRotation(): Matrix4x4
-    {
-        return this.#_local2worldRotation.value;
-    }
-
-    /** 世界转本地旋转矩阵 */
-    get world2localRotation(): Matrix4x4
-    {
-        return this.#_world2localRotation.value;
-    }
-
-    /** 世界坐标 */
-    get worldPosition(): Vector3
-    {
-        return this.#_worldPosition.value;
-    }
-
-    /** 自身+子孙是否加载完成 */
-    get isLoaded(): boolean
-    {
-        return this.#_isLoaded.value;
-    }
-
-    /**
-     * transform uniform 的稳定 binding 实例（模型矩阵 + 逆转置矩阵）。
-     *
-     * 整个 Logic 生命周期同一引用，供主 Pass / 阴影 Pass 的
-     * renderObject.bindingResources.transform 共享（每对象一个 transform GPUBuffer）。
-     */
-    get transformUniforms(): BufferBinding<TransformUniforms>
-    {
-        return this.#_transformBinding;
-    }
-
-    /** 渲染前写入 transform uniform */
-    beforeRender(renderObject: RenderObject): void
-    {
-        // 初始化 bindingResources（缺失时创建）
-        const r_renderObject = reactive(renderObject);
-        if (!renderObject.bindingResources) r_renderObject.bindingResources = {};
-        const bindingResources = renderObject.bindingResources!;
-        bindingResources.transform ||= this.#_transformBinding;
-        const r_transformUniforms = reactive(this.#_transformBinding.value as TransformUniforms);
-        r_transformUniforms.u_modelMatrix = this.#_local2world.value;
-        r_transformUniforms.u_ITModelMatrix = this.#_ITlocal2world.value;
-    }
-
-    /**
-     * 让物体看向目标点（仅修改 rotation 数据）
-     *
-     * @param target 目标位置（任意提供 `x/y/z` 的对象，可直接传字面量）
-     * @param upAxis 向上朝向（同上；缺省为 Y 轴）
-     */
-    lookAt(target: Vector3Like, upAxis?: Vector3Like): void
-    {
-        // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(this.#_matrix.value) };
-
-        mat4LookAt(m, target, upAxis, m);
-        const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
-
-        mat4ToTRS(m, pos, rot, scl);
-        // 写入完整 rotation 对象（toTRS 返回弧度，raw.rotation 缺失时整体赋值，避免子字段修改崩溃）
-        reactive(this._data as Object3D).rotation = { x: rot.x, y: rot.y, z: rot.z };
-    }
-
-    /** 释放：从父级移除、递归 dispose 子对象与组件 */
-    dispose(): void
-    {
-        const parent = this.parent;
-        if (parent)
-        {
-            const parentChildren = reactive(parent).children as unknown as Object3D[];
-            parentChildren.splice(parentChildren.indexOf(this._data as Object3D), 1);
-        }
-        setParent(this, null);
-        const kids = this.children;
-        for (let i = kids.length - 1; i >= 0; i--)
-        {
-            getLogic(kids[i]).dispose();
-        }
-        const r_components = reactive(this._data as Object3D).components as Components[];
-        for (let i = r_components.length - 1; i >= 0; i--)
-        {
-            const component = toRaw(r_components[i]) as unknown as Components;
-            r_components.splice(i, 1);
-            getLogic(component).dispose();
-        }
-    }
+    return logic;
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Object3D', Object3DLogic.create);
+registerLogic('Object3D', object3DLogic);
 
 export function findObject3DChild(object3D: Object3D, name: string): Object3D | undefined
 {

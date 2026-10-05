@@ -1,7 +1,7 @@
 import { Entity } from './Entity';
-import { EntityLogic, matchType } from './Entity';
+import { entityLogicProto, initComponents, matchType, setupEntityLogicState, type EntityLogic, type EntityLogicState } from './Entity';
 import { Components } from '../component/Component';
-import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, createLogicProto, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 
 /**
  * 容器
@@ -109,164 +109,207 @@ export function parentOf(childLogic: object): Container | null
  * 2. 修改 — 仅由内部 setParent / children 同步 effect 触发（外部不可赋值）
  * 3. 传递 — 传递原始对象（非响应式对象）给其他函数
  */
-export class ContainerLogic extends EntityLogic
+export interface ContainerLogic extends EntityLogic
 {
-    /** 子对象列表（建立对 raw.children 的响应式依赖） */
-    readonly #_children = computed(() => reactive(this._data as Container).children as Container[]);
-
-    /** parent 内部状态（原始对象，getter 内用 reactive 建立依赖） */
-    readonly #parentState: { parent: Container | null } = { parent: null };
-
-    protected constructor(data: Container)
-    {
-        super(data);
-
-        // ---- pre-fill：children 必须存在数组（push/splice 写入路径依赖） ----
-        if ((data as Container).children === undefined)
-        {
-            (data as { children: Container[] }).children = [];
-        }
-
-        // state 注册到本实例，setParent 通过 logic(child) 拿到的对象能查到 state
-        getParentStates().set(this, this.#parentState);
-
-        // @边界 effect：children 增删 → 维护父子关系不变式（写 parentState）
-        // ---- 监听 children 变化，自动同步 parent ----
-        // 新 child push 进来时自动设置其 parent = container。
-        effect(() =>
-        {
-            const r_children = this.#_children.value;
-            for (const r_child of r_children)
-            {
-                // 防御：children 中可能出现 undefined/空洞（例如上层反序列化失败后
-                // 仍把结果 push 进来）。此处跳过而不是让 logic(undefined) 抛 TypeError，
-                // 否则该 effect 崩溃会中断整条响应式批次，表现为场景不渲染。
-                if (r_child === undefined || r_child === null) continue;
-
-                const child = toRaw(r_child) as Container;
-                const childLogic = getLogic(child) as unknown as ContainerLogic | null;
-                if (!childLogic) continue;
-
-                // ⚠️ 幂等判断一定要读**原始 parent 状态**（`parentOf`），不能写 `childLogic.parent`：
-                // 后者经响应式代理读，会把本 effect 挂到该 child 的 parentState 上，
-                // 而紧接着的 `setParent` 正是写这个 state —— effect 依赖了自己要写的状态。
-                // 平时看不出来（重跑时条件已不成立），但在批量刷新里会与外层 computed
-                // 互相递归、直接爆栈（issue #177）。幂等判断只需要"当前值是多少"。
-                if (parentOf(childLogic) !== data)
-                {
-                    setParent(childLogic, data);
-                }
-            }
-        });
-
-        // 最派生类判断（issue #222）：若还有子类（`Object3DLogic`），由它在自身字段初始化后
-        // 再执行组件 init —— 组件的 init() 可能读宿主 logic 的 computed（位置/世界矩阵等），
-        // 而那些字段在 super() 之后才初始化。
-        if (new.target === ContainerLogic)
-        {
-            this.initComponents();
-        }
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口，供子类使用） */
-    static create(data: Container): ContainerLogic
-    {
-        return new ContainerLogic(data);
-    }
-
     /** 子对象列表（响应式 computed） */
-    get children(): Container[]
-    {
-        return this.#_children.value;
-    }
+    readonly children: Container[];
 
     /** 父级容器（只读 getter，缺失时为 null） */
-    get parent(): Container | null
-    {
-        return reactive(this.#parentState).parent;
-    }
+    readonly parent: Container | null;
 
     /** 在自身及子孙中查找指定类型的第一个组件 */
-    getComponentInChildren<T extends Components>(typeName: string, includeInactive = false): T
-    {
-        const self = this.getComponent<T>(typeName);
-        if (self) return self;
-
-        for (const r_child of this.#_children.value)
-        {
-            const child = toRaw(r_child) as Container;
-            if (!includeInactive && !getLogic(child).parent) continue;
-            const childLogic = getLogic(child) as unknown as ContainerLogic;
-            if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
-            const found = childLogic.getComponentInChildren<T>(typeName, includeInactive);
-            if (found) return found;
-        }
-
-        return null as unknown as T;
-    }
+    getComponentInChildren<T extends Components>(typeName: string, includeInactive?: boolean): T;
 
     /** 在自身及子孙中查找所有匹配类型的组件 */
-    getComponentsInChildren<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
-    {
-        this.getComponents<T>(typeName, results);
-
-        for (const r_child of this.#_children.value)
-        {
-            const child = toRaw(r_child) as Container;
-            const childLogic = getLogic(child) as unknown as ContainerLogic;
-            if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
-            childLogic.getComponentsInChildren<T>(typeName, includeInactive, results);
-        }
-
-        return results;
-    }
+    getComponentsInChildren<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
 
     /** 在自身及父级中查找指定类型的第一个组件 */
-    getComponentInParent<T extends Components>(typeName: string, includeInactive = false): T
-    {
-        const selfComp = this.getComponent<T>(typeName);
-        if (selfComp) return selfComp;
-
-        let r_parent = reactive(this.#parentState).parent as Container | null;
-        while (r_parent)
-        {
-            const parent = toRaw(r_parent) as Container;
-            const parentLogic = getLogic(parent) as unknown as ContainerLogic;
-            if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
-            {
-                const c = parent.components?.find(c => matchType(c, typeName)) as T;
-                if (c) return c;
-            }
-            r_parent = parentLogic.parent as Container | null;
-        }
-
-        return null as unknown as T;
-    }
+    getComponentInParent<T extends Components>(typeName: string, includeInactive?: boolean): T;
 
     /** 在自身及父级中查找所有匹配类型的组件 */
-    getComponentsInParent<T extends Components>(typeName: string, includeInactive = false, results: T[] = []): T[]
-    {
-        this.getComponents<T>(typeName, results);
+    getComponentsInParent<T extends Components>(typeName: string, includeInactive?: boolean, results?: T[]): T[];
+}
 
-        let r_parent = reactive(this.#parentState).parent as Container | null;
-        while (r_parent)
+/** Container 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入） */
+export interface ContainerLogicState extends EntityLogicState
+{
+    /** 子对象列表（建立对 raw.children 的响应式依赖） */
+    _children: Computed<Container[]>;
+
+    /** parent 内部状态（原始对象，getter 内用 reactive 建立依赖） */
+    _parentState: { parent: Container | null };
+}
+
+/** ContainerLogic 的共享原型（issue #674）：继承 entityLogicProto，子类再继承本 proto */
+export const containerLogicProto = createLogicProto<ContainerLogic>(entityLogicProto, {
+    /** 子对象列表（响应式 computed） */
+    children: {
+        get: function (this: ContainerLogic & ContainerLogicState): Container[] { return this._children.value; },
+    },
+    /** 父级容器（只读 getter，缺失时为 null） */
+    parent: {
+        get: function (this: ContainerLogic & ContainerLogicState): Container | null
         {
-            const parent = toRaw(r_parent) as Container;
-            const parentLogic = getLogic(parent) as unknown as ContainerLogic;
-            if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
-            {
-                for (const c of parent.components ?? [])
-                {
-                    if (!typeName || matchType(c, typeName)) results.push(c as T);
-                }
-            }
-            r_parent = parentLogic.parent as Container | null;
-        }
+            return reactive(this._parentState).parent;
+        },
+    },
+    /** 在自身及子孙中查找指定类型的第一个组件 */
+    getComponentInChildren: {
+        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false): T
+        {
+            const self = this.getComponent<T>(typeName);
+            if (self) return self;
 
-        return results;
+            for (const r_child of this._children.value)
+            {
+                const child = toRaw(r_child) as Container;
+                if (!includeInactive && !getLogic(child).parent) continue;
+                const childLogic = getLogic(child) as unknown as ContainerLogic;
+                if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
+                const found = childLogic.getComponentInChildren<T>(typeName, includeInactive);
+                if (found) return found;
+            }
+
+            return null as unknown as T;
+        },
+    },
+    /** 在自身及子孙中查找所有匹配类型的组件 */
+    getComponentsInChildren: {
+        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false, results: T[] = []): T[]
+        {
+            this.getComponents<T>(typeName, results);
+
+            for (const r_child of this._children.value)
+            {
+                const child = toRaw(r_child) as Container;
+                const childLogic = getLogic(child) as unknown as ContainerLogic;
+                if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
+                childLogic.getComponentsInChildren<T>(typeName, includeInactive, results);
+            }
+
+            return results;
+        },
+    },
+    /** 在自身及父级中查找指定类型的第一个组件 */
+    getComponentInParent: {
+        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false): T
+        {
+            const selfComp = this.getComponent<T>(typeName);
+            if (selfComp) return selfComp;
+
+            let r_parent = reactive(this._parentState).parent as Container | null;
+            while (r_parent)
+            {
+                const parent = toRaw(r_parent) as Container;
+                const parentLogic = getLogic(parent) as unknown as ContainerLogic;
+                if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
+                {
+                    const c = parent.components?.find(c => matchType(c, typeName)) as T;
+                    if (c) return c;
+                }
+                r_parent = parentLogic.parent as Container | null;
+            }
+
+            return null as unknown as T;
+        },
+    },
+    /** 在自身及父级中查找所有匹配类型的组件 */
+    getComponentsInParent: {
+        value: function <T extends Components>(this: ContainerLogic & ContainerLogicState, typeName: string, includeInactive = false, results: T[] = []): T[]
+        {
+            this.getComponents<T>(typeName, results);
+
+            let r_parent = reactive(this._parentState).parent as Container | null;
+            while (r_parent)
+            {
+                const parent = toRaw(r_parent) as Container;
+                const parentLogic = getLogic(parent) as unknown as ContainerLogic;
+                if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
+                {
+                    for (const c of parent.components ?? [])
+                    {
+                        if (!typeName || matchType(c, typeName)) results.push(c as T);
+                    }
+                }
+                r_parent = parentLogic.parent as Container | null;
+            }
+
+            return results;
+        },
+    },
+});
+
+/**
+ * 装配 Container 系 Logic 的**基类状态**（子类工厂组合调用，issue #674）。
+ *
+ * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
+ * @param data 容器数据（raw）
+ * @returns 同一实例（便于链式装配）
+ */
+export function setupContainerLogicState<T extends ContainerLogic & ContainerLogicState>(logic: T, data: Container): T
+{
+    setupEntityLogicState(logic, data);
+
+    logic._parentState = { parent: null };
+
+    // ---- pre-fill：children 必须存在数组（push/splice 写入路径依赖） ----
+    if ((data as Container).children === undefined)
+    {
+        (data as { children: Container[] }).children = [];
     }
+
+    // state 注册到本实例，setParent 通过 logic(child) 拿到的对象能查到 state
+    getParentStates().set(logic, logic._parentState);
+
+    logic._children = computed(() => reactive(logic._data as Container).children as Container[]);
+
+    // @边界 effect：children 增删 → 维护父子关系不变式（写 parentState）
+    // ---- 监听 children 变化，自动同步 parent ----
+    // 新 child push 进来时自动设置其 parent = container。
+    effect(() =>
+    {
+        const r_children = logic._children.value;
+        for (const r_child of r_children)
+        {
+            // 防御：children 中可能出现 undefined/空洞（例如上层反序列化失败后
+            // 仍把结果 push 进来）。此处跳过而不是让 logic(undefined) 抛 TypeError，
+            // 否则该 effect 崩溃会中断整条响应式批次，表现为场景不渲染。
+            if (r_child === undefined || r_child === null) continue;
+
+            const child = toRaw(r_child) as Container;
+            const childLogic = getLogic(child) as unknown as ContainerLogic | null;
+            if (!childLogic) continue;
+
+            // ⚠️ 幂等判断一定要读**原始 parent 状态**（`parentOf`），不能写 `childLogic.parent`：
+            // 后者经响应式代理读，会把本 effect 挂到该 child 的 parentState 上，
+            // 而紧接着的 `setParent` 正是写这个 state —— effect 依赖了自己要写的状态。
+            // 平时看不出来（重跑时条件已不成立），但在批量刷新里会与外层 computed
+            // 互相递归、直接爆栈（issue #177）。幂等判断只需要"当前值是多少"。
+            if (parentOf(childLogic) !== data)
+            {
+                setParent(childLogic, data);
+            }
+        }
+    });
+
+    return logic;
+}
+
+/**
+ * 工厂函数：ContainerLogic 的唯一创建入口。
+ *
+ * 在当前组合下 ContainerLogic 是这条链的最派生（Object3DLogic 走
+ * `setupContainerLogicState` 组合、由自己的工厂在字段装完后初始化组件），
+ * 因此装配完直接初始化组件。
+ */
+export function containerLogic(data: Container): ContainerLogic
+{
+    const logic = setupContainerLogicState(Object.create(containerLogicProto) as ContainerLogic & ContainerLogicState, data);
+    initComponents(logic);
+
+    return logic;
 }
 
 // 注册到统一 logic 分发表（Container 为抽象基类，通常不直接实例化；
 // 若被独立使用，创建 ContainerLogic 实例）
-registerLogic('Container', ContainerLogic.create);
+registerLogic('Container', containerLogic);

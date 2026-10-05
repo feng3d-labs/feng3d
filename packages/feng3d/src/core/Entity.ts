@@ -1,5 +1,5 @@
 import { Components, ComponentLogic, getComponentTypeInfo } from '../component/Component';
-import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, createLogicProto, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 
 /**
@@ -156,97 +156,131 @@ function initComponent(component: Components, owner: Object3D): void
  * raw 数据保持干净：缺失的 components 字段被 pre-fill 为空数组（push/splice
  * 写入路径依赖），其它字段不写入。
  */
-export class EntityLogic
+export interface EntityLogic
 {
-    /** 纯数据引用（子类读取自身具体数据字段用） */
-    protected readonly _data: Entity;
-
-    /** 组件列表（建立对 raw.components 的响应式依赖） */
-    readonly #_components = computed(() => reactive(this._data).components as Components[]);
-
-    /** 组件初始化 effect 是否已安装（幂等） */
-    #componentsEffectInstalled = false;
-
-    protected constructor(data: Entity)
-    {
-        this._data = data;
-
-        // ---- pre-fill：components 必须存在数组（push/splice 写入路径依赖） ----
-        if (data.components === undefined)
-        {
-            (data as { components: Components[] }).components = [];
-        }
-
-        // 组件初始化**推迟到最派生类构造完成之后**（issue #222）：
-        // 子类（ContainerLogic / Object3DLogic）在 super() 之后还要 pre-fill children、
-        // 注册父子同步 effect、初始化自身的 computed 字段；而组件的 init() 里可能就往宿主
-        // children 里写（编辑器图标组件就是这样）。若在这里同步 init，组件会拿到
-        // `children === undefined`，表现为 `Cannot read properties of undefined (reading 'push')`。
-        if (new.target === EntityLogic)
-        {
-            this.initComponents();
-        }
-    }
-
-    /**
-     * 安装「组件自动初始化」effect（幂等）。
-     *
-     * 由**最派生**的 Logic 在构造末尾调用（直接实例化 `EntityLogic` 时构造函数自己会调）。
-     * `new.target` 判断保证层层继承下实际只调用一次，这里的标记是二道保险。
-     */
-    protected initComponents(): void
-    {
-        if (this.#componentsEffectInstalled) return;
-        this.#componentsEffectInstalled = true;
-
-        // @边界 effect：结构变更 → logic.init 命令式分发（init 是外部副作用，无法 pull 化）
-        // ---- 自动初始化 effect：监听 components 变化 ----
-        effect(() =>
-        {
-            const r_components = this.#_components.value;
-            for (const r_component of r_components)
-            {
-                initComponent(toRaw(r_component), this._data as Object3D);
-            }
-        });
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口，供子类使用） */
-    static create(data: Entity): EntityLogic
-    {
-        return new EntityLogic(data);
-    }
-
     /** 关联的 Entity 数据（raw） */
-    get entity(): Entity
-    {
-        return this._data;
-    }
+    readonly entity: Entity;
 
     /** 组件列表（响应式 computed） */
-    get components(): Components[]
-    {
-        return this.#_components.value;
-    }
+    readonly components: Components[];
 
     /** 获取指定类型的第一个组件 */
-    getComponent<T extends Components>(typeName: string): T
-    {
-        return this.#_components.value.find(c => matchType(c, typeName)) as T;
-    }
+    getComponent<T extends Components>(typeName: string): T;
 
     /** 获取所有匹配类型的组件 */
-    getComponents<T extends Components>(typeName: string, results: T[] = []): T[]
-    {
-        for (const c of this.#_components.value)
-        {
-            if (!typeName || matchType(c, typeName)) results.push(c as T);
-        }
+    getComponents<T extends Components>(typeName: string, results?: T[]): T[];
+}
 
-        return results;
+/** Entity 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入） */
+export interface EntityLogicState
+{
+    /** 纯数据引用（子类读取自身具体数据字段用） */
+    _data: Entity;
+
+    /** 组件列表（建立对 raw.components 的响应式依赖） */
+    _components: Computed<Components[]>;
+
+    /** 组件初始化 effect 是否已安装（幂等） */
+    _componentsEffectInstalled: boolean;
+}
+
+/** EntityLogic 的共享原型（issue #674）：子类 proto 用 Object.create(entityLogicProto) 继承 */
+export const entityLogicProto = createLogicProto<EntityLogic>(null, {
+    /** 关联的 Entity 数据（raw） */
+    entity: {
+        get: function (this: EntityLogic & EntityLogicState): Entity { return this._data; },
+    },
+    /** 组件列表（响应式 computed） */
+    components: {
+        get: function (this: EntityLogic & EntityLogicState): Components[] { return this._components.value; },
+    },
+    /** 获取指定类型的第一个组件 */
+    getComponent: {
+        value: function <T extends Components>(this: EntityLogic & EntityLogicState, typeName: string): T
+        {
+            return this._components.value.find(c => matchType(c, typeName)) as T;
+        },
+    },
+    /** 获取所有匹配类型的组件 */
+    getComponents: {
+        value: function <T extends Components>(this: EntityLogic & EntityLogicState, typeName: string, results: T[] = []): T[]
+        {
+            for (const c of this._components.value)
+            {
+                if (!typeName || matchType(c, typeName)) results.push(c as T);
+            }
+
+            return results;
+        },
+    },
+});
+
+/**
+ * 装配 Entity 系 Logic 的**基类状态**（子类工厂组合调用，issue #674）。
+ *
+ * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
+ * @param data 实体数据（raw）
+ * @returns 同一实例（便于链式装配）
+ */
+export function setupEntityLogicState<T extends EntityLogic & EntityLogicState>(logic: T, data: Entity): T
+{
+    logic._data = data;
+    logic._componentsEffectInstalled = false;
+
+    // ---- pre-fill：components 必须存在数组（push/splice 写入路径依赖） ----
+    if (data.components === undefined)
+    {
+        (data as { components: Components[] }).components = [];
     }
+
+    // 组件列表：computed 建立对 raw.components 的响应式依赖
+    logic._components = computed(() => reactive(logic._data).components as Components[]);
+
+    return logic;
+}
+
+/**
+ * 安装「组件自动初始化」effect（幂等）。
+ *
+ * 由**最派生**的 Logic 工厂在装配末尾调用（issue #222）：组件的 init() 可能在宿主
+ * children / computed 上读写，而那些字段要到最派生工厂才装完，所以必须推迟。
+ * 工厂版本下不再有 `new.target`——由各工厂显式选择是否调用本函数：
+ * `entityLogic` / `containerLogic` 各自是所在链的最派生，直接调用；
+ * `object3DLogic` 则走 `setupContainerLogicState`、在自己的字段装完后调用。
+ *
+ * @param logic 已装配好的实例
+ */
+export function initComponents(logic: EntityLogic & EntityLogicState): void
+{
+    if (logic._componentsEffectInstalled) return;
+    logic._componentsEffectInstalled = true;
+
+    // @边界 effect：结构变更 → logic.init 命令式分发（init 是外部副作用，无法 pull 化）
+    // ---- 自动初始化 effect：监听 components 变化 ----
+    effect(() =>
+    {
+        const r_components = logic._components.value;
+        for (const r_component of r_components)
+        {
+            initComponent(toRaw(r_component), logic._data as Object3D);
+        }
+    });
+}
+
+/**
+ * 工厂函数：EntityLogic 的唯一创建入口。
+ *
+ * EntityLogic 是这条链的最派生（子类工厂走 `setupEntityLogicState` 组合），
+ * 因此装配完直接初始化组件。
+ */
+export function entityLogic(data: Entity): EntityLogic
+{
+    const logic = setupEntityLogicState(Object.create(entityLogicProto) as EntityLogic & EntityLogicState, data);
+    initComponents(logic);
+
+    return logic;
 }
 
 // 注册到统一 logic 分发表（Entity 为抽象基类，通常不直接实例化；
 // 若被独立使用，创建 EntityLogic 实例）
-registerLogic('Entity', EntityLogic.create);
+registerLogic('Entity', entityLogic);
