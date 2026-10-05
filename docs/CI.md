@@ -247,9 +247,10 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 多行声明（`const x =\n  new Map();`）、以及模块级块 / 对象字面量 / 回调里的缩进行。
 本次探针在 `packages/` 下实测：按 AST 判定「import 时真的会执行」的 `new` 共 158 处，两条行级脚本能看见 97 处，
 **漏掉 61 处**（换算成「文件::构造器」是 44 个基线键），其中 12 处是**空参缓存**
-（本该按第 4 步「新增即失败」拦下）。仓库里已有 AST 判据的先例（`scripts/check-editor-module-effects.mjs` 按
-TypeScript AST 只看模块顶层语句），但收紧本条会让基线一次性新增 40 余个键、需要先与它们逐个定性——
-建议**单开 issue**，不要顺手夹带在本节的门禁接线里。
+（本该按第 4 步「新增即失败」拦下）——**复现：`node scripts/probe-r2-blindspots.mjs`**（只读探针，
+`--all` 打印全部条目；它**不是门禁**，不进 CI）。仓库里已有 AST 判据的先例
+（`scripts/check-editor-module-effects.mjs` 按 TypeScript AST 只看模块顶层语句），
+但收紧本条会让基线一次性新增 40 余个键、需要先与它们逐个定性——建议**单开 issue**，不要顺手夹带在本节的门禁接线里。
 （顺带一条：自研规则 `feng3d/no-module-side-effect` 虽然是 AST 判据，但**跳过类字段初始化器与 IIFE 体**、
 候选名单里也**没有 `WeakSet`**——所以第 1 步与第 4/16 步的覆盖并不重合，别拿任一条当作全覆盖。）
 
