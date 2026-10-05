@@ -32,6 +32,7 @@ const ROOT = process.cwd();
 const TEMPLATE_DIR = resolve(ROOT, 'packages/editor/resource/template');
 const EDITOR_RS = resolve(ROOT, 'packages/editor/src/assets/EditorRS.ts');
 const PROJECT_META_SERVICE = resolve(ROOT, 'packages/editor/bin/host/projectMeta.mjs');
+const SERVE = resolve(ROOT, 'packages/editor/bin/serve.mjs');
 const TEMPLATE_TSCONFIG = resolve(TEMPLATE_DIR, 'tsconfig.json');
 
 /** 必须是编辑器元数据的两个文件（决策 16：不合并） */
@@ -293,6 +294,37 @@ for (const problem of metaProblems) console.log(`        ${problem}`);
 if (metaProblems.length > 0)
 {
     console.error('\n❌ 项目元数据的校验不够"指名"——坏清单被静默当空项目是最难查的一类。');
+    process.exit(1);
+}
+
+// ---------- 判据 6：`--new` 这条命令**接线没断**（#274 P3） ----------
+//
+// 服务级（"新建 → 元数据读通"）由 `check-editor-workspace.mjs` 验；但"CLI 真的会调它"是
+// **另一段**——函数写在服务里、而 `--new` 忘了接，那几条判据照样全绿。所以这里判接线。
+const serveSource = readFileSync(SERVE, 'utf8');
+const cliProblems = [];
+
+const CLI_CHECKS = [
+    { title: '`--new` 参数分支在', test: /arg === '--new'/ },
+    { title: '`--new` 真的调了 createProjectSkeleton', test: /createProjectSkeleton\(options\.new\)/ },
+    { title: '用法文本里有 `--new`（用户看得见）', test: /--new <目录>/ },
+    { title: '`--new` 与 `--project` 同时给会被拦下', test: /options\.new && options\.project/ },
+];
+
+for (const item of CLI_CHECKS)
+{
+    if (!item.test.test(serveSource)) cliProblems.push(item.title);
+}
+
+console.log('');
+console.log('--- 判据（CLI 接线） ---');
+console.log(`  ${cliProblems.length === 0 ? 'PASS' : 'FAIL'}  \`--new\` 接线完好（参数分支 + 真调函数 + 用法文本 + 互斥拦下）`);
+
+for (const problem of cliProblems) console.log(`        ${problem}`);
+
+if (cliProblems.length > 0)
+{
+    console.error('\n❌ `--new` 的接线断了：服务写好了但 CLI 没接上，等于这个能力用户够不到。');
     process.exit(1);
 }
 
