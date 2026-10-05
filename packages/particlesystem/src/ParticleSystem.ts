@@ -21,7 +21,7 @@ import { particleEmissionBurstCalculateProbability } from './others/ParticleEmis
 import { ParticleSystemSimulationSpace } from './enums/ParticleSystemSimulationSpace';
 import { particleColorBySpeedModuleDefault, particleColorBySpeedModuleInitParticleState, particleColorBySpeedModuleUpdateParticleState, type ParticleColorBySpeedModule } from './modules/ParticleColorBySpeedModule';
 import { particleColorOverLifetimeModuleDefault, particleColorOverLifetimeModuleInitParticleState, particleColorOverLifetimeModuleUpdateParticleState, type ParticleColorOverLifetimeModule } from './modules/ParticleColorOverLifetimeModule';
-import { ParticleEmissionModule } from './modules/ParticleEmissionModule';
+import { particleEmissionModuleDefault, type ParticleEmissionModule } from './modules/ParticleEmissionModule';
 import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModuleInitParticleState, particleForceOverLifetimeModuleUpdateParticleState, type ParticleForceOverLifetimeModule } from './modules/ParticleForceOverLifetimeModule';
 import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from './modules/ParticleInheritVelocityModule';
 import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from './modules/ParticleLimitVelocityOverLifetimeModule';
@@ -35,7 +35,7 @@ import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticle
 import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from './modules/ParticleSizeOverLifetimeModule';
 import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from './modules/ParticleSubEmittersModule';
 import { ParticleTextureSheetAnimationModule } from './modules/ParticleTextureSheetAnimationModule';
-import { ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
+import { particleVelocityOverLifetimeModuleDefault, particleVelocityOverLifetimeModuleInitParticleState, particleVelocityOverLifetimeModuleUpdateParticleState, type ParticleVelocityOverLifetimeModule } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
 import { isParticleBillboard } from './isParticleBillboard';
 
@@ -170,8 +170,8 @@ export class ParticleSystem implements Renderable
     get emission() { return this._emission; }
     set emission(v)
     {
-        ArrayUtils.replace(this._modules, this._emission, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历（发射由 _emit 直接读字段）
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._emission = v;
     }
     private _emission: ParticleEmissionModule;
@@ -192,8 +192,8 @@ export class ParticleSystem implements Renderable
     get velocityOverLifetime() { return this._velocityOverLifetime; }
     set velocityOverLifetime(v)
     {
-        ArrayUtils.replace(this._modules, this._velocityOverLifetime, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._velocityOverLifetime = v;
     }
     private _velocityOverLifetime: ParticleVelocityOverLifetimeModule;
@@ -375,9 +375,9 @@ export class ParticleSystem implements Renderable
         
 
         this.main = new ParticleMainModule();
-        this.emission = new ParticleEmissionModule();
+        this.emission = { __type__: 'ParticleEmissionModule', ...particleEmissionModuleDefault() };
         this.shape = new ParticleShapeModule();
-        this.velocityOverLifetime = new ParticleVelocityOverLifetimeModule();
+        this.velocityOverLifetime = { __type__: 'ParticleVelocityOverLifetimeModule', ...particleVelocityOverLifetimeModuleDefault() };
         this.inheritVelocity = { __type__: 'ParticleInheritVelocityModule', ...particleInheritVelocityModuleDefault() };
         this.forceOverLifetime = { __type__: 'ParticleForceOverLifetimeModule', ...particleForceOverLifetimeModuleDefault() };
         this.limitVelocityOverLifetime = { __type__: 'ParticleLimitVelocityOverLifetimeModule', ...particleLimitVelocityOverLifetimeModuleDefault() };
@@ -392,7 +392,7 @@ export class ParticleSystem implements Renderable
         this.textureSheetAnimation = new ParticleTextureSheetAnimationModule();
 
         this.main.enabled = true;
-        this.emission.enabled = true;
+        (this.emission as WritableParticleModuleLike).enabled = true;
         this.shape.enabled = true;
     }
 
@@ -1006,6 +1006,7 @@ export class ParticleSystem implements Renderable
         particleSizeBySpeedModuleInitParticleState(this._sizeBySpeed, particle);
         particleRotationOverLifetimeModuleInitParticleState(this._rotationOverLifetime, particle);
         particleRotationBySpeedModuleInitParticleState(this._rotationBySpeed, particle);
+        particleVelocityOverLifetimeModuleInitParticleState(this._velocityOverLifetime, particle);
     }
 
     /**
@@ -1023,6 +1024,7 @@ export class ParticleSystem implements Renderable
         particleInheritVelocityModuleUpdateParticleState(this._inheritVelocity, particle);
         particleForceOverLifetimeModuleUpdateParticleState(this._forceOverLifetime, particle);
         particleLimitVelocityOverLifetimeModuleUpdateParticleState(this._limitVelocityOverLifetime, particle);
+        particleVelocityOverLifetimeModuleUpdateParticleState(this._velocityOverLifetime, particle);
         particleSubEmittersModuleUpdateParticleState(this._subEmitters, particle);
         particleRotationBySpeedModuleUpdateParticleState(this._rotationBySpeed, particle);
         particleRotationOverLifetimeModuleUpdateParticleState(this._rotationOverLifetime, particle);

@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 101 个类型 / 536 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 103 个类型 / 545 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -416,6 +416,13 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'probability', type: 'number', control: 'number', readonly: true },
         { name: 'isProbability', type: 'boolean', control: 'Boolean', readonly: true },
     ],
+    'ParticleEmissionModule': [
+        { name: 'rateOverTime', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'rateOverDistance', type: 'MinMaxCurve', control: 'Object', readonly: true, typeNames: ['MinMaxCurve'] },
+        { name: 'bursts', type: 'readonly ParticleEmissionBurst[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
     'ParticleForceOverLifetimeModule': [
         { name: 'force', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
         { name: 'space', type: 'ParticleSystemSimulationSpace', control: 'Enum', readonly: true, values: ['Local', 'World'], numericValues: { Local: 0, World: 1 } },
@@ -500,6 +507,12 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'sortMode', type: 'ParticleSystemSortMode', control: 'Enum', optional: true, readonly: true, values: ['None', 'Distance', 'OldestInFront', 'YoungestInFront'], numericValues: { None: 0, Distance: 1, OldestInFront: 2, YoungestInFront: 3 } },
         { name: 'trailMaterial', type: 'Material', control: 'Object', optional: true, readonly: true },
         { name: 'velocityScale', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
+        { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
+    ],
+    'ParticleVelocityOverLifetimeModule': [
+        { name: 'velocity', type: 'MinMaxCurveVector3', control: 'Object', readonly: true, typeNames: ['MinMaxCurveVector3'] },
+        { name: 'space', type: 'ParticleSystemSimulationSpace', control: 'Enum', readonly: true, values: ['Local', 'World'], numericValues: { Local: 0, World: 1 } },
         { name: 'enabled', type: 'boolean', control: 'Boolean', readonly: true },
         { name: 'particleSystem', type: 'ParticleSystem', control: 'Object', optional: true, readonly: true, typeNames: ['ParticleSystem'] },
     ],
