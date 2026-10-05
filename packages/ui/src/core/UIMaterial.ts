@@ -1,5 +1,6 @@
 import { Color4, defaultTexture, Material, TextureField } from 'feng3d';
 import { Vector4 } from '@feng3d/math';
+import type { RenderObject } from '@feng3d/webgpu';
 
 declare global
 {
@@ -51,6 +52,26 @@ export function createUIUniforms(): UIUniforms
         s_texture: defaultTexture,
         u_uvRect: { __type__: 'Vector4', x: 0, y: 0, z: 1, w: 1 },
     };
+}
+
+/**
+ * 取渲染对象上的 UI uniform 容器（缺失时就地创建）。
+ *
+ * `RenderObject` 本身没有 `uniforms` 字段（它的绑定数据在 `bindingResources` 上）；
+ * UI 组件在 WebGPU 迁移过渡期仍按旧 WebGL 路径，把 uniform 写在渲染对象的这个动态字段上。
+ *
+ * 为什么每个 UI 组件都要经本函数取容器：渲染链按宿主的 `components` 顺序分发 `beforeRender`，
+ * 若只在 `CanvasRenderer` 里创建容器，排在它前面的 `Transform2D` 就会往 `undefined` 上写
+ * （`Cannot set properties of undefined`）；谁先写谁创建，后写的拿到同一个容器。
+ *
+ * @param renderObject 渲染对象
+ * @returns 该渲染对象的 UI uniform 容器（同一渲染对象上始终是同一个对象）
+ */
+export function uiUniforms(renderObject: RenderObject): Record<string, unknown>
+{
+    const ro = renderObject as RenderObject & { uniforms?: Record<string, unknown> };
+
+    return ro.uniforms ||= {};
 }
 
 /**
