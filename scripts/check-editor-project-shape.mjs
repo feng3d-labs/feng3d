@@ -26,10 +26,12 @@
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const ROOT = process.cwd();
 const TEMPLATE_DIR = resolve(ROOT, 'packages/editor/resource/template');
 const EDITOR_RS = resolve(ROOT, 'packages/editor/src/assets/EditorRS.ts');
+const PROJECT_META_SERVICE = resolve(ROOT, 'packages/editor/bin/host/projectMeta.mjs');
 const TEMPLATE_TSCONFIG = resolve(TEMPLATE_DIR, 'tsconfig.json');
 
 /** 必须是编辑器元数据的两个文件（决策 16：不合并） */
@@ -239,6 +241,58 @@ if (failed > 0)
 {
     console.error('\n❌ 新建项目骨架还不是"标准 npm 工程"（#274 P3 / D12 / 决策 13 / 16）。');
     console.error(`   目标布局见 packages/editor/docs/ARCHITECTURE.md §5.2；模板目录：${TEMPLATE_DIR}`);
+    process.exit(1);
+}
+
+// ---------- 判据 5：**坏清单必须指名报错**（#274 P3） ----------
+//
+// 这是"目录即项目"的地基：读不出元数据时必须**说清是哪一条坏了**，
+// 不能静默当空项目——"打不开却看着像打开了"是最难查的一类（与 #271 的"假成功编译"同一个病）。
+// 判据直接喂**纯函数**（`validateProjectMeta`），所以离线可跑、不起宿主。
+const { validateProjectMeta, ProjectMeta } = await import(pathToFileURL(PROJECT_META_SERVICE).href);
+
+const TEMPLATE_META = JSON.parse(readFileSync(resolve(TEMPLATE_DIR, 'feng3d.project.json'), 'utf8'));
+const metaProblems = [];
+
+// 正例：模板那份必须过（否则「新建的项目」自己就不合法）
+if (validateProjectMeta(TEMPLATE_META).length > 0)
+{
+    metaProblems.push('模板 feng3d.project.json 自己不合法：' + validateProjectMeta(TEMPLATE_META).join('；'));
+}
+
+// 反例三条，每条都要**指名**（只看"有没有抛错"是不够的——"格式不对"这种话没用）
+const BAD_META_CASES = [
+    { title: '缺 name', value: { entryScene: 'default.scene.json' }, expect: 'name' },
+    { title: '缺 entryScene', value: { name: 'x' }, expect: 'entryScene' },
+    { title: 'plugins 不是字符串数组', value: { name: 'x', entryScene: 'a.json', plugins: [1] }, expect: 'plugins' },
+    { title: '顶层不是对象', value: [], expect: '对象' },
+];
+
+for (const item of BAD_META_CASES)
+{
+    const said = validateProjectMeta(item.value).join('；');
+
+    if (!said.includes(item.expect))
+    {
+        metaProblems.push(`${item.title}：报错里没有指名 \`${item.expect}\`（实际：${said || '（没报）'}）`);
+    }
+}
+
+// 方法自证：服务真的会**抛**（而不只是纯函数返回问题清单）
+if (typeof ProjectMeta !== 'function')
+{
+    metaProblems.push('`ProjectMeta` 不是一个类——服务没导出来');
+}
+
+console.log('');
+console.log('--- 判据（项目元数据） ---');
+console.log(`  ${metaProblems.length === 0 ? 'PASS' : 'FAIL'}  坏清单**指名报错**（模板自身合法 + 4 条反例各自指名）`);
+
+for (const problem of metaProblems) console.log(`        ${problem}`);
+
+if (metaProblems.length > 0)
+{
+    console.error('\n❌ 项目元数据的校验不够"指名"——坏清单被静默当空项目是最难查的一类。');
     process.exit(1);
 }
 
