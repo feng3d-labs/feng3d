@@ -63,6 +63,7 @@ export * from './materials/ColorMaterial';
 export * from './materials/DebugShadowMapMaterial';
 export * from './materials/Material';
 export * from './materials/NormalMaterial';
+export * from './materials/ParticleMaterial';
 export * from './materials/PointMaterial';
 export * from './materials/SegmentMaterial';
 export * from './materials/StandardMaterial';
