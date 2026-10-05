@@ -24,11 +24,42 @@ interface ParamInfo
 /**
  * func() 返回的可调用对象：调用时返回 ShaderValue，并携带其 ShaderFunc 定义。
  */
-interface ShaderFuncCallable
+/** 取函数定义文本的能力（`func()` 的返回对象上都带） */
+export interface FuncDefinitionSource
+{
+    /**
+     * 生成该函数的 WGSL 定义（`fn name(...) -> T {...}`）。
+     *
+     * @returns 函数定义的 WGSL 文本
+     */
+    toWGSL(): string;
+    /**
+     * 生成该函数的 GLSL 定义。
+     *
+     * @returns 函数定义的 GLSL 文本
+     */
+    toGLSL(): string;
+}
+
+export interface ShaderFuncCallable extends FuncDefinitionSource
 {
     (...args: ShaderValue[]): ShaderValue;
     /** 关联的 ShaderFunc 实例（用于生成函数定义） */
     _shaderFunc: ShaderFunc<ShaderValue[], ShaderValue>;
+    /**
+     * 生成该函数的 WGSL 定义（`fn name(...) -> T {...}`）。
+     *
+     * 用于「把函数定义单独拼进手写着色器」的场景（如蒙皮模块）。
+     *
+     * @returns 函数定义的 WGSL 文本
+     */
+    toWGSL(): string;
+    /**
+     * 生成该函数的 GLSL 定义。
+     *
+     * @returns 函数定义的 GLSL 文本
+     */
+    toGLSL(): string;
 }
 
 /**
@@ -431,7 +462,7 @@ export function func<
     paramDefs: [[N1, T1], [N2, T2]],
     returnType: TypeCtor<TReturn>,
     body: (p1: ReturnType<T1>, p2: ReturnType<T2>) => void,
-): (p1: ReturnType<T1>, p2: ReturnType<T2>) => TReturn;
+): ((p1: ReturnType<T1>, p2: ReturnType<T2>) => TReturn) & FuncDefinitionSource;
 
 // 重载：带名称的参数定义（3个参数）
 export function func<
@@ -444,7 +475,7 @@ export function func<
     paramDefs: [[N1, T1], [N2, T2], [N3, T3]],
     returnType: TypeCtor<TReturn>,
     body: (p1: ReturnType<T1>, p2: ReturnType<T2>, p3: ReturnType<T3>) => void,
-): (p1: ReturnType<T1>, p2: ReturnType<T2>, p3: ReturnType<T3>) => TReturn;
+): ((p1: ReturnType<T1>, p2: ReturnType<T2>, p3: ReturnType<T3>) => TReturn) & FuncDefinitionSource;
 
 // 重载：带名称的参数定义（4个参数）
 export function func<
@@ -458,7 +489,7 @@ export function func<
     paramDefs: [[N1, T1], [N2, T2], [N3, T3], [N4, T4]],
     returnType: TypeCtor<TReturn>,
     body: (p1: ReturnType<T1>, p2: ReturnType<T2>, p3: ReturnType<T3>, p4: ReturnType<T4>) => void,
-): (p1: ReturnType<T1>, p2: ReturnType<T2>, p3: ReturnType<T3>, p4: ReturnType<T4>) => TReturn;
+): ((p1: ReturnType<T1>, p2: ReturnType<T2>, p3: ReturnType<T3>, p4: ReturnType<T4>) => TReturn) & FuncDefinitionSource;
 
 // 重载：不带名称的参数定义（通用）
 export function func<
@@ -469,7 +500,7 @@ export function func<
     paramDefs: [...TParamDefs],
     returnType: TypeCtor<TReturn>,
     body: (...params: ParamTypesFromDefs<TParamDefs>) => void,
-): (...args: CallParamsFromDefs<TParamDefs>) => TReturn;
+): ((...args: CallParamsFromDefs<TParamDefs>) => TReturn) & FuncDefinitionSource;
 
 // 实现
 export function func(
@@ -491,6 +522,8 @@ export function func(
 
     // 附加 ShaderFunc 实例以便获取函数定义
     callable._shaderFunc = shaderFunc;
+    callable.toWGSL = () => shaderFunc.toWGSL();
+    callable.toGLSL = () => shaderFunc.toGLSL();
 
     return callable;
 }

@@ -1,6 +1,7 @@
 import { ShaderValue } from '../core/IElement';
 import { getBuildParam } from '../core/buildShader';
 import { getCurrentFunc } from '../core/currentFunc';
+import { getCurrentForStatement } from '../core/forStack';
 import { getCurrentIfStatement } from '../core/ifStack';
 import { Builtin } from '../glsl/builtin/builtin';
 import { IStatement } from '../core/Statement';
@@ -23,16 +24,20 @@ export class Assign implements IStatement
         const currentFunc = getCurrentFunc();
         if (currentFunc)
         {
-            // 检查当前是否在if语句体中
+            // 挂到当前最近的语句容器：for 体 > if 体 > 函数体
+            const currentForStatement = getCurrentForStatement();
             const currentIfStatement = getCurrentIfStatement();
-            if (currentIfStatement)
+            if (currentForStatement)
             {
-                // 如果当前在if语句体中，使用 addStatement 自动判断添加到 if 体还是 else 体
+                currentForStatement.addStatement(this);
+            }
+            else if (currentIfStatement)
+            {
+                // 在 if 体中时用 addStatement 自动判断添加到 if 体还是 else 体
                 currentIfStatement.addStatement(this);
             }
             else
             {
-                // 否则将语句添加到当前函数的statements中
                 currentFunc.statements.push(this);
             }
             // 收集依赖（包括 target 和 value）
