@@ -13,7 +13,7 @@ import { ParticleMainModule } from '../src/modules/ParticleMainModule';
 import { ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
 import { ParticleSizeBySpeedModule } from '../src/modules/ParticleSizeBySpeedModule';
 import { ParticleSizeOverLifetimeModule } from '../src/modules/ParticleSizeOverLifetimeModule';
-import { ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
+import { particleSubEmittersModuleDefault, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
 import { ParticleSystemRenderer } from '../src/modules/ParticleSystemRenderer';
 import { ParticleVelocityOverLifetimeModule } from '../src/modules/ParticleVelocityOverLifetimeModule';
 
@@ -175,9 +175,10 @@ const MODULES: ModuleEntry[] = [
     },
     {
         name: 'ParticleSubEmittersModule',
-        create: () => new ParticleSubEmittersModule(),
-        initParticleState: (m, p) => (m as ParticleSubEmittersModule).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleSubEmittersModule).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() }),
+        // 该模块没有 initParticleState（原 class 只覆写 updateParticleState），空实现保持探针口径一致
+        initParticleState: () => undefined,
+        updateParticleState: (m, p) => particleSubEmittersModuleUpdateParticleState(m as ParticleSubEmittersModule, p),
     },
     {
         name: 'ParticleSystemRenderer',
