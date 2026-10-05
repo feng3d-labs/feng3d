@@ -1,6 +1,6 @@
-import { ComponentLogicBase } from 'feng3d';
+import { componentLogicProto, setupComponentLogicState, type Component3DLogic, type ComponentLogicState } from 'feng3d';
 import type { Color4, Component3D, CustomGeometry, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
+import { createLogicProto, effect, reactive, UnReadonly } from '@feng3d/reactivity';
 
 // ---------------------------------------------------------------------------
 // 移动工具模型（MToolModel）—— 纯数据接口 + Logic
@@ -82,78 +82,122 @@ export interface GizmoPart<T>
 }
 
 /** MToolModelLogic 逻辑类：在宿主对象下构建并持有 gizmo 部件。 */
-export class MToolModelLogic extends ComponentLogicBase
+export interface MToolModelLogic extends Component3DLogic
 {
-    #data: MToolModel;
+    /** X 轴部件（未初始化时为 null） */
+    readonly xAxis: CoordinateAxis | null;
+    /** Y 轴部件（未初始化时为 null） */
+    readonly yAxis: CoordinateAxis | null;
+    /** Z 轴部件（未初始化时为 null） */
+    readonly zAxis: CoordinateAxis | null;
+    /** YZ 平面部件（未初始化时为 null） */
+    readonly yzPlane: CoordinatePlane | null;
+    /** XZ 平面部件（未初始化时为 null） */
+    readonly xzPlane: CoordinatePlane | null;
+    /** XY 平面部件（未初始化时为 null） */
+    readonly xyPlane: CoordinatePlane | null;
+    /** 中心立方体部件（未初始化时为 null） */
+    readonly oCube: CoordinateCube | null;
+}
 
-    #xAxis: CoordinateAxis | null = null;
-    #yAxis: CoordinateAxis | null = null;
-    #zAxis: CoordinateAxis | null = null;
-    #yzPlane: CoordinatePlane | null = null;
-    #xzPlane: CoordinatePlane | null = null;
-    #xyPlane: CoordinatePlane | null = null;
-    #oCube: CoordinateCube | null = null;
+/** MToolModelLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface MToolModelLogicState extends ComponentLogicState
+{
+    _data: MToolModel;
+    _xAxis: CoordinateAxis | null;
+    _yAxis: CoordinateAxis | null;
+    _zAxis: CoordinateAxis | null;
+    _yzPlane: CoordinatePlane | null;
+    _xzPlane: CoordinatePlane | null;
+    _xyPlane: CoordinatePlane | null;
+    _oCube: CoordinateCube | null;
+}
 
-    protected constructor(data: MToolModel)
-    {
-        super(data);
-        this.#data = data;
-    }
+/** MToolModelLogic 的共享原型：继承 Component 基类实现，覆写 init 并暴露部件 getter */
+const mtoolModelLogicProto = createLogicProto<MToolModelLogic>(componentLogicProto, {
+    xAxis: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinateAxis | null { return this._xAxis; },
+    },
+    yAxis: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinateAxis | null { return this._yAxis; },
+    },
+    zAxis: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinateAxis | null { return this._zAxis; },
+    },
+    yzPlane: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinatePlane | null { return this._yzPlane; },
+    },
+    xzPlane: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinatePlane | null { return this._xzPlane; },
+    },
+    xyPlane: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinatePlane | null { return this._xyPlane; },
+    },
+    oCube: {
+        get: function (this: MToolModelLogic & MToolModelLogicState): CoordinateCube | null { return this._oCube; },
+    },
+    init: {
+        value: function (this: MToolModelLogic & MToolModelLogicState, entity?: Object3D): void
+        {
+            componentLogicProto.init.call(this, entity);
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: MToolModel): MToolModelLogic
-    {
-        return new MToolModelLogic(data);
-    }
+            const host = entity ?? (this.entity as Object3D | null);
+            if (!host) return;
 
-    get xAxis(): CoordinateAxis | null { return this.#xAxis; }
-    get yAxis(): CoordinateAxis | null { return this.#yAxis; }
-    get zAxis(): CoordinateAxis | null { return this.#zAxis; }
-    get yzPlane(): CoordinatePlane | null { return this.#yzPlane; }
-    get xzPlane(): CoordinatePlane | null { return this.#xzPlane; }
-    get xyPlane(): CoordinatePlane | null { return this.#xyPlane; }
-    get oCube(): CoordinateCube | null { return this.#oCube; }
+            // 轴：默认沿 +Y，X 轴绕 Z 转 -90°、Z 轴绕 X 转 +90°（旧实现 rotation 用角度）
+            const xAxis = createAxis('xAxis', color4(1, 0, 0, 1), { x: 0, y: 0, z: -90 * DEG2RAD });
+            const yAxis = createAxis('yAxis', color4(0, 1, 0, 1));
+            const zAxis = createAxis('zAxis', color4(0, 0, 1, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
 
-    override init(entity?: Object3D): void
-    {
-        super.init(entity);
+            // 平面：几何体为水平面（XZ），xzPlane 无需旋转，其余绕轴旋转得到 XY / YZ 平面
+            const yzPlane = createPlane('yzPlane', color4(1, 0, 0, 1), { x: 0, y: 0, z: 90 * DEG2RAD });
+            const xzPlane = createPlane('xzPlane', color4(0, 1, 0, 1));
+            const xyPlane = createPlane('xyPlane', color4(0, 0, 1, 1), { x: -90 * DEG2RAD, y: 0, z: 0 });
 
-        const host = entity ?? (this.entity as Object3D | null);
-        if (!host) return;
+            const oCube = createCube('oCube');
 
-        // 轴：默认沿 +Y，X 轴绕 Z 转 -90°、Z 轴绕 X 转 +90°（旧实现 rotation 用角度）
-        const xAxis = createAxis('xAxis', color4(1, 0, 0, 1), { x: 0, y: 0, z: -90 * DEG2RAD });
-        const yAxis = createAxis('yAxis', color4(0, 1, 0, 1));
-        const zAxis = createAxis('zAxis', color4(0, 0, 1, 1), { x: 90 * DEG2RAD, y: 0, z: 0 });
+            this._xAxis = xAxis.data;
+            this._yAxis = yAxis.data;
+            this._zAxis = zAxis.data;
+            this._yzPlane = yzPlane.data;
+            this._xzPlane = xzPlane.data;
+            this._xyPlane = xyPlane.data;
+            this._oCube = oCube.data;
 
-        // 平面：几何体为水平面（XZ），xzPlane 无需旋转，其余绕轴旋转得到 XY / YZ 平面
-        const yzPlane = createPlane('yzPlane', color4(1, 0, 0, 1), { x: 0, y: 0, z: 90 * DEG2RAD });
-        const xzPlane = createPlane('xzPlane', color4(0, 1, 0, 1));
-        const xyPlane = createPlane('xyPlane', color4(0, 0, 1, 1), { x: -90 * DEG2RAD, y: 0, z: 0 });
+            // 挂到宿主对象下（父子关系由 ContainerLogic 的 effect 维护）
+            const r_host = reactive(host);
+            if (!r_host.children) (host as { children: Object3D[] }).children = [];
+            // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
+            const children = r_host.children!;
+            children.push(
+                xAxis.object3D, yAxis.object3D, zAxis.object3D,
+                yzPlane.object3D, xzPlane.object3D, xyPlane.object3D,
+                oCube.object3D,
+            );
 
-        const oCube = createCube('oCube');
+            void this._data;
+        },
+    },
+});
 
-        this.#xAxis = xAxis.data;
-        this.#yAxis = yAxis.data;
-        this.#zAxis = zAxis.data;
-        this.#yzPlane = yzPlane.data;
-        this.#xzPlane = xzPlane.data;
-        this.#xyPlane = xyPlane.data;
-        this.#oCube = oCube.data;
+/**
+ * 工厂函数：MToolModelLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function mtoolModelLogic(data: MToolModel): MToolModelLogic
+{
+    const logic = setupComponentLogicState(Object.create(mtoolModelLogicProto) as MToolModelLogic & MToolModelLogicState, data);
+    logic._data = data;
+    logic._xAxis = null;
+    logic._yAxis = null;
+    logic._zAxis = null;
+    logic._yzPlane = null;
+    logic._xzPlane = null;
+    logic._xyPlane = null;
+    logic._oCube = null;
 
-        // 挂到宿主对象下（父子关系由 ContainerLogic 的 effect 维护）
-        const r_host = reactive(host);
-        if (!r_host.children) (host as { children: Object3D[] }).children = [];
-        // 补齐写在 raw 上、TS 无法据此收窄代理读取，取一次到局部变量（读代理仍建立依赖）
-        const children = r_host.children!;
-        children.push(
-            xAxis.object3D, yAxis.object3D, zAxis.object3D,
-            yzPlane.object3D, xzPlane.object3D, xyPlane.object3D,
-            oCube.object3D,
-        );
-
-        void this.#data;
-    }
+    return logic;
 }
 
 /** 构建坐标轴：线段（原点→长度）+ 端点圆锥箭头 + 不可见圆柱热区 */
@@ -321,59 +365,70 @@ export interface CoordinateAxis extends Component3D
 }
 
 /** CoordinateAxisLogic 逻辑类：把 `selected` / 颜色映射到线段与箭头材质。 */
-export class CoordinateAxisLogic extends ComponentLogicBase
+export interface CoordinateAxisLogic extends Component3DLogic
 {
-    #data: CoordinateAxis;
+}
 
-    protected constructor(data: CoordinateAxis)
-    {
-        // 默认值填充（须在 super 之前完成）
-        const writable = data as UnReadonly<CoordinateAxis>;
-        if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
-        if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
-        if (data.length === undefined) writable.length = AXIS_LENGTH;
-        if (data.selected === undefined) writable.selected = false;
+/** CoordinateAxisLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface CoordinateAxisLogicState extends ComponentLogicState
+{
+    _data: CoordinateAxis;
+}
 
-        super(data);
-        this.#data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: CoordinateAxis): CoordinateAxisLogic
-    {
-        return new CoordinateAxisLogic(data);
-    }
-
-    override init(entity?: Object3D): void
-    {
-        super.init(entity);
-
-        const host = entity ?? (this.entity as Object3D | null);
-        if (!host) return;
-
-        // @过渡 effect：材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
-        // 依据子对象材质类型写 uniform：线段走 u_segmentColor、箭头/热区走 u_diffuseInput
-        effect(() =>
+/** CoordinateAxisLogic 的共享原型：继承 Component 基类实现，覆写 init */
+const coordinateAxisLogicProto = createLogicProto<CoordinateAxisLogic>(componentLogicProto, {
+    init: {
+        value: function (this: CoordinateAxisLogic & CoordinateAxisLogicState, entity?: Object3D): void
         {
-            // 经响应式代理读取（外部改 color / selectedColor 时同样触发重算）
-            const r_data = reactive(this.#data);
-            const selected = r_data.selected;
-            const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
-            const target = color4(color.r!, color.g!, color.b!, color.a!);
-            const children = reactive(host).children ?? [];
+            componentLogicProto.init.call(this, entity);
 
-            for (const child of children)
+            const host = entity ?? (this.entity as Object3D | null);
+            if (!host) return;
+
+            // @过渡 effect：材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
+            // 依据子对象材质类型写 uniform：线段走 u_segmentColor、箭头/热区走 u_diffuseInput
+            effect(() =>
             {
-                const material = (child.components?.[0] as MeshRenderer | undefined)?.material as
-                    { __type__?: string; uniforms?: { u_segmentColor?: Color4; u_diffuseInput?: Color4 } } | undefined;
-                if (!material?.uniforms) continue;
+                // 经响应式代理读取（外部改 color / selectedColor 时同样触发重算）
+                const r_data = reactive(this._data);
+                const selected = r_data.selected;
+                const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
+                const target = color4(color.r!, color.g!, color.b!, color.a!);
+                const children = reactive(host).children ?? [];
 
-                const r_uniforms = reactive(material.uniforms);
-                if (material.__type__ === 'SegmentMaterial') r_uniforms.u_segmentColor = target;
-                else r_uniforms.u_diffuseInput = target;
-            }
-        });
-    }
+                for (const child of children)
+                {
+                    const material = (child.components?.[0] as MeshRenderer | undefined)?.material as
+                        { __type__?: string; uniforms?: { u_segmentColor?: Color4; u_diffuseInput?: Color4 } } | undefined;
+                    if (!material?.uniforms) continue;
+
+                    const r_uniforms = reactive(material.uniforms);
+                    if (material.__type__ === 'SegmentMaterial') r_uniforms.u_segmentColor = target;
+                    else r_uniforms.u_diffuseInput = target;
+                }
+            });
+        },
+    },
+});
+
+/**
+ * 工厂函数：CoordinateAxisLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function coordinateAxisLogic(data: CoordinateAxis): CoordinateAxisLogic
+{
+    // 默认值填充（与旧的「须在 super 之前完成」等价：先补齐 raw 数据再装配）
+    const writable = data as UnReadonly<CoordinateAxis>;
+    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+    if (data.length === undefined) writable.length = AXIS_LENGTH;
+    if (data.selected === undefined) writable.selected = false;
+
+    const logic = setupComponentLogicState(Object.create(coordinateAxisLogicProto) as CoordinateAxisLogic & CoordinateAxisLogicState, data);
+    logic._data = data;
+
+    return logic;
 }
 
 // ---------------------------------------------------------------------------
@@ -402,58 +457,69 @@ export interface CoordinateCube extends Component3D
 }
 
 /** CoordinateCubeLogic 逻辑类：把 `selected` / 颜色映射到方块材质。 */
-export class CoordinateCubeLogic extends ComponentLogicBase
+export interface CoordinateCubeLogic extends Component3DLogic
 {
-    #data: CoordinateCube;
+}
 
-    protected constructor(data: CoordinateCube)
-    {
-        // 默认值填充（须在 super 之前完成）
-        const writable = data as UnReadonly<CoordinateCube>;
-        if (data.color === undefined) writable.color = color4(1, 1, 1, 1);
-        if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
-        if (data.selected === undefined) writable.selected = false;
+/** CoordinateCubeLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface CoordinateCubeLogicState extends ComponentLogicState
+{
+    _data: CoordinateCube;
+}
 
-        super(data);
-        this.#data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: CoordinateCube): CoordinateCubeLogic
-    {
-        return new CoordinateCubeLogic(data);
-    }
-
-    override init(entity?: Object3D): void
-    {
-        super.init(entity);
-
-        const host = entity ?? (this.entity as Object3D | null);
-        if (!host) return;
-
-        // @过渡 effect：材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
-        // 渲染器与组件同对象；若挂在子对象上（旧结构）则回落查找子对象
-        effect(() =>
+/** CoordinateCubeLogic 的共享原型：继承 Component 基类实现，覆写 init */
+const coordinateCubeLogicProto = createLogicProto<CoordinateCubeLogic>(componentLogicProto, {
+    init: {
+        value: function (this: CoordinateCubeLogic & CoordinateCubeLogicState, entity?: Object3D): void
         {
-            const r_data = reactive(this.#data);
-            const selected = r_data.selected;
-            const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
-            let renderer = (host.components ?? []).find((c) => c.__type__ === 'MeshRenderer') as MeshRenderer | undefined;
-            if (!renderer)
-            {
-                for (const child of reactive(host).children ?? [])
-                {
-                    renderer = (child.components ?? []).find((c) => c.__type__ === 'MeshRenderer') as MeshRenderer | undefined;
-                    if (renderer) break;
-                }
-            }
-            const material = renderer?.material as { uniforms?: { u_diffuseInput?: Color4 } } | undefined;
-            const uniforms = material?.uniforms;
-            if (!uniforms) return;
+            componentLogicProto.init.call(this, entity);
 
-            reactive(uniforms).u_diffuseInput = color4(color.r!, color.g!, color.b!, color.a!);
-        });
-    }
+            const host = entity ?? (this.entity as Object3D | null);
+            if (!host) return;
+
+            // @过渡 effect：材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
+            // 渲染器与组件同对象；若挂在子对象上（旧结构）则回落查找子对象
+            effect(() =>
+            {
+                const r_data = reactive(this._data);
+                const selected = r_data.selected;
+                const color = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
+                let renderer = (host.components ?? []).find((c) => c.__type__ === 'MeshRenderer') as MeshRenderer | undefined;
+                if (!renderer)
+                {
+                    for (const child of reactive(host).children ?? [])
+                    {
+                        renderer = (child.components ?? []).find((c) => c.__type__ === 'MeshRenderer') as MeshRenderer | undefined;
+                        if (renderer) break;
+                    }
+                }
+                const material = renderer?.material as { uniforms?: { u_diffuseInput?: Color4 } } | undefined;
+                const uniforms = material?.uniforms;
+                if (!uniforms) return;
+
+                reactive(uniforms).u_diffuseInput = color4(color.r!, color.g!, color.b!, color.a!);
+            });
+        },
+    },
+});
+
+/**
+ * 工厂函数：CoordinateCubeLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function coordinateCubeLogic(data: CoordinateCube): CoordinateCubeLogic
+{
+    // 默认值填充（与旧的「须在 super 之前完成」等价：先补齐 raw 数据再装配）
+    const writable = data as UnReadonly<CoordinateCube>;
+    if (data.color === undefined) writable.color = color4(1, 1, 1, 1);
+    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+    if (data.selected === undefined) writable.selected = false;
+
+    const logic = setupComponentLogicState(Object.create(coordinateCubeLogicProto) as CoordinateCubeLogic & CoordinateCubeLogicState, data);
+    logic._data = data;
+
+    return logic;
 }
 
 // ---------------------------------------------------------------------------
@@ -486,91 +552,102 @@ export interface CoordinatePlane extends Component3D
 }
 
 /** CoordinatePlaneLogic 逻辑类：写平面顶点色（含 alpha）并重建四条边框线段。 */
-export class CoordinatePlaneLogic extends ComponentLogicBase
+export interface CoordinatePlaneLogic extends Component3DLogic
 {
-    #data: CoordinatePlane;
+}
 
-    protected constructor(data: CoordinatePlane)
-    {
-        // 默认值填充（须在 super 之前完成）
-        const writable = data as UnReadonly<CoordinatePlane>;
-        if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
-        if (data.borderColor === undefined) writable.borderColor = color4(1, 0, 0, 1);
-        if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
-        if (data.selectedborderColor === undefined) writable.selectedborderColor = SELECTED_COLOR;
-        if (data.width === undefined) writable.width = PLANE_WIDTH;
-        if (data.selected === undefined) writable.selected = false;
+/** CoordinatePlaneLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface CoordinatePlaneLogicState extends ComponentLogicState
+{
+    _data: CoordinatePlane;
+}
 
-        super(data);
-        this.#data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: CoordinatePlane): CoordinatePlaneLogic
-    {
-        return new CoordinatePlaneLogic(data);
-    }
-
-    override init(entity?: Object3D): void
-    {
-        super.init(entity);
-
-        const host = entity ?? (this.entity as Object3D | null);
-        if (!host) return;
-
-        // @过渡 effect：平面材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
-        effect(() =>
+/** CoordinatePlaneLogic 的共享原型：继承 Component 基类实现，覆写 init */
+const coordinatePlaneLogicProto = createLogicProto<CoordinatePlaneLogic>(componentLogicProto, {
+    init: {
+        value: function (this: CoordinatePlaneLogic & CoordinatePlaneLogicState, entity?: Object3D): void
         {
-            const r_data = reactive(this.#data);
-            const selected = r_data.selected;
-            const fill = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
-            const border = (selected ? r_data.selectedborderColor : r_data.borderColor) ?? SELECTED_COLOR;
-            const alpha = selected ? PLANE_SELECTED_ALPHA : PLANE_ALPHA;
-            const w = r_data.width ?? PLANE_WIDTH;
-            const children = reactive(host).children ?? [];
+            componentLogicProto.init.call(this, entity);
 
-            for (const child of children)
+            const host = entity ?? (this.entity as Object3D | null);
+            if (!host) return;
+
+            // @过渡 effect：平面材质 uniform 可由 computed 派生（随 mrsTool 状态派生重构迁移）
+            effect(() =>
             {
-                const material = (child.components?.[0] as MeshRenderer | undefined)?.material as
-                    { __type__?: string; uniforms?: { u_diffuseInput?: Color4; u_segmentColor?: Color4 } } | undefined;
-                if (!material?.uniforms) continue;
+                const r_data = reactive(this._data);
+                const selected = r_data.selected;
+                const fill = (selected ? r_data.selectedColor : r_data.color) ?? SELECTED_COLOR;
+                const border = (selected ? r_data.selectedborderColor : r_data.borderColor) ?? SELECTED_COLOR;
+                const alpha = selected ? PLANE_SELECTED_ALPHA : PLANE_ALPHA;
+                const w = r_data.width ?? PLANE_WIDTH;
+                const children = reactive(host).children ?? [];
 
-                const r_uniforms = reactive(material.uniforms);
-                if (material.__type__ === 'ColorMaterial')
+                for (const child of children)
                 {
-                    // 填充色 rgb 走 uniform；透明度的最终来源是顶点色 alpha，需同步改顶点色
-                    r_uniforms.u_diffuseInput = color4(fill.r!, fill.g!, fill.b!, fill.a!);
-                    const renderer = child.components?.[0] as MeshRenderer | undefined;
-                    const geometry = renderer?.geometry as UnReadonly<CustomGeometry> | undefined;
-                    if (geometry)
+                    const material = (child.components?.[0] as MeshRenderer | undefined)?.material as
+                        { __type__?: string; uniforms?: { u_diffuseInput?: Color4; u_segmentColor?: Color4 } } | undefined;
+                    if (!material?.uniforms) continue;
+
+                    const r_uniforms = reactive(material.uniforms);
+                    if (material.__type__ === 'ColorMaterial')
                     {
-                        reactive(geometry).colors = [
-                            1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha,
-                        ];
+                        // 填充色 rgb 走 uniform；透明度的最终来源是顶点色 alpha，需同步改顶点色
+                        r_uniforms.u_diffuseInput = color4(fill.r!, fill.g!, fill.b!, fill.a!);
+                        const renderer = child.components?.[0] as MeshRenderer | undefined;
+                        const geometry = renderer?.geometry as UnReadonly<CustomGeometry> | undefined;
+                        if (geometry)
+                        {
+                            reactive(geometry).colors = [
+                                1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha, 1, 1, 1, alpha,
+                            ];
+                        }
+                    }
+                    else
+                    {
+                        r_uniforms.u_segmentColor = color4(border.r!, border.g!, border.b!, border.a!);
+                        // 边框：闭合正方形四边（线段顶点色为白，颜色由材质 uniform 决定）
+                        const renderer = child.components?.[0] as MeshRenderer | undefined;
+                        const geometry = renderer?.geometry as UnReadonly<SegmentGeometryShape> | undefined;
+                        if (geometry)
+                        {
+                            const segment = (x0: number, z0: number, x1: number, z1: number): Segment => ({
+                                start: { x: x0, y: 0, z: z0 },
+                                end: { x: x1, y: 0, z: z1 },
+                                startColor: WHITE,
+                                endColor: WHITE,
+                            });
+                            reactive(geometry).segments = [
+                                segment(0, 0, w, 0), segment(w, 0, w, w), segment(w, w, 0, w), segment(0, w, 0, 0),
+                            ];
+                        }
                     }
                 }
-                else
-                {
-                    r_uniforms.u_segmentColor = color4(border.r!, border.g!, border.b!, border.a!);
-                    // 边框：闭合正方形四边（线段顶点色为白，颜色由材质 uniform 决定）
-                    const renderer = child.components?.[0] as MeshRenderer | undefined;
-                    const geometry = renderer?.geometry as UnReadonly<SegmentGeometryShape> | undefined;
-                    if (geometry)
-                    {
-                        const segment = (x0: number, z0: number, x1: number, z1: number): Segment => ({
-                            start: { x: x0, y: 0, z: z0 },
-                            end: { x: x1, y: 0, z: z1 },
-                            startColor: WHITE,
-                            endColor: WHITE,
-                        });
-                        reactive(geometry).segments = [
-                            segment(0, 0, w, 0), segment(w, 0, w, w), segment(w, w, 0, w), segment(0, w, 0, 0),
-                        ];
-                    }
-                }
-            }
-        });
-    }
+            });
+        },
+    },
+});
+
+/**
+ * 工厂函数：CoordinatePlaneLogic 的唯一创建入口。
+ *
+ * @param data 组件数据（raw）
+ */
+export function coordinatePlaneLogic(data: CoordinatePlane): CoordinatePlaneLogic
+{
+    // 默认值填充（与旧的「须在 super 之前完成」等价：先补齐 raw 数据再装配）
+    const writable = data as UnReadonly<CoordinatePlane>;
+    if (data.color === undefined) writable.color = color4(1, 0, 0, 1);
+    if (data.borderColor === undefined) writable.borderColor = color4(1, 0, 0, 1);
+    if (data.selectedColor === undefined) writable.selectedColor = SELECTED_COLOR;
+    if (data.selectedborderColor === undefined) writable.selectedborderColor = SELECTED_COLOR;
+    if (data.width === undefined) writable.width = PLANE_WIDTH;
+    if (data.selected === undefined) writable.selected = false;
+
+    const logic = setupComponentLogicState(Object.create(coordinatePlaneLogicProto) as CoordinatePlaneLogic & CoordinatePlaneLogicState, data);
+    logic._data = data;
+
+    return logic;
 }
 
 /** 边框几何体的可写形态（`segments` 整体替换） */

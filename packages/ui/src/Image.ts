@@ -1,5 +1,5 @@
-import { Component3D, ComponentLogicBase, defaultTexture, Object3D, registerComponentType, resolveTexture, TextureField } from 'feng3d';
-import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, componentLogicProto, defaultTexture, Object3D, registerComponentType, resolveTexture, setupComponentLogicState, TextureField, type ComponentLogicState } from 'feng3d';
+import { createLogicProto, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
 import type { RenderObject } from '@feng3d/webgpu';
 import { uiUniforms } from './core/UIMaterial';
@@ -39,7 +39,7 @@ export interface Image extends Component3D
     /**
      * The source texture of the Image element.
      *
-     * 图像元素的源纹理（缺失时按 `defaultTexture` 处理，见 {@link ImageLogic} 构造）。
+     * 图像元素的源纹理（缺失时按 `defaultTexture` 处理，见 {@link imageLogic} 工厂）。
      *
      * 迁移前字段类型是已删除的 `Texture2D`、初始值 `Texture2D.default`（1×1 白色），
      * 现按主仓纹理新模型改用 `TextureField`（`Texture | TextureResource | undefined`），
@@ -56,38 +56,16 @@ export interface Image extends Component3D
 }
 
 /**
- * Image 逻辑类。
+ * Image 逻辑接口。
  *
  * 迁移前 `Image` 是 `Component` 子类：字段初始值 + `beforeRender` 写 uniform + `setNativeSize()` 方法。
- * 纯数据接口不能挂方法，`setNativeSize()` 按 §11.2 收进本类，字段默认值按 §11.5 在构造里补齐。
+ * 纯数据接口不能挂方法，`setNativeSize()` 按 §11.2 收进本接口，字段默认值按 §11.5 在工厂里补齐。
  *
  * ⚠️ `setNativeSize()` 从组件方法变成 Logic 方法，调用方（编辑器属性面板按钮等）需改为
  * `logic(image).setNativeSize()`。
  */
-export class ImageLogic extends ComponentLogicBase
+export interface ImageLogic extends Component3DLogic
 {
-    /** 纯数据引用（对外只读） */
-    readonly #data: Image;
-
-    protected constructor(data: Image)
-    {
-        // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上，放 super() 之前）。
-        // 迁移前的初始值：`image = Texture2D.default`（1×1 白色）→ `defaultTexture`；
-        // `color = new Color4()`（旧 class 默认值是白色 r=g=b=a=1，不是黑色）。
-        const writable = data as UnReadonly<Image>;
-        if (writable.image === undefined) writable.image = defaultTexture;
-        if (writable.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
-
-        super(data);
-        this.#data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Image): ImageLogic
-    {
-        return new ImageLogic(data);
-    }
-
     /**
      * 使图片显示实际尺寸。
      *
@@ -95,30 +73,66 @@ export class ImageLogic extends ComponentLogicBase
      * 后逐分量写 `this.transform2D.size.x` / `.y`；现改为读纹理 `descriptor.size`
      * （`TextureSize = readonly [width, height, depth?]`）并整体写 2D 变换的尺寸。
      */
-    setNativeSize(): void
-    {
-        const entity = this.entity as Object3D | null;
-        const transform2D = entity ? getTransform2D(entity) : null;
-        if (!transform2D) return;
+    setNativeSize(): void;
+}
 
-        const size = resolveTexture(this.#data.image).descriptor.size;
-        reactive(transform2D).size = { x: size[0], y: size[1] };
-    }
+/** ImageLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface ImageLogicState extends ComponentLogicState
+{
+    _data: Image;
+}
 
-    override beforeRender(renderObject: RenderObject): void
-    {
-        super.beforeRender(renderObject);
+/** ImageLogic 的共享原型：继承 Component 基类实现，覆写 beforeRender，新增 setNativeSize */
+const imageLogicProto = createLogicProto<ImageLogic>(componentLogicProto, {
+    setNativeSize: {
+        value: function (this: ImageLogic & ImageLogicState): void
+        {
+            const entity = this.entity as Object3D | null;
+            const transform2D = entity ? getTransform2D(entity) : null;
+            if (!transform2D) return;
 
-        // 迁移前直接写 Texture2D 实例；现按主仓纹理模型在消费点解析
-        // （`TextureResource` 走响应式缓存，`undefined` 回退占位纹理）
-        const uniforms = uiUniforms(renderObject);
-        uniforms.s_texture = resolveTexture(this.#data.image);
-        uniforms.u_color = this.#data.color;
-    }
+            const size = resolveTexture(this._data.image).descriptor.size;
+            reactive(transform2D).size = { x: size[0], y: size[1] };
+        },
+    },
+    beforeRender: {
+        value: function (this: ImageLogic & ImageLogicState, renderObject: RenderObject): void
+        {
+            componentLogicProto.beforeRender.call(this, renderObject);
+
+            // 迁移前直接写 Texture2D 实例；现按主仓纹理模型在消费点解析
+            // （`TextureResource` 走响应式缓存，`undefined` 回退占位纹理）
+            const uniforms = uiUniforms(renderObject);
+            uniforms.s_texture = resolveTexture(this._data.image);
+            uniforms.u_color = this._data.color;
+        },
+    },
+});
+
+/**
+ * 工厂函数：ImageLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：`image` / `color` 字段默认值由工厂补（写在 raw 数据上）。
+ *
+ * @param data 图片组件数据（raw）
+ */
+export function imageLogic(data: Image): ImageLogic
+{
+    // §11.5：构造参数字段可选，默认值由 Logic 工厂补（写在 raw 数据上）。
+    // 迁移前的初始值：`image = Texture2D.default`（1×1 白色）→ `defaultTexture`；
+    // `color = new Color4()`（旧 class 默认值是白色 r=g=b=a=1，不是黑色）。
+    const writable = data as UnReadonly<Image>;
+    if (writable.image === undefined) writable.image = defaultTexture;
+    if (writable.color === undefined) writable.color = { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 };
+
+    const logic = setupComponentLogicState(Object.create(imageLogicProto) as ImageLogic & ImageLogicState, data);
+    logic._data = data;
+
+    return logic;
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Image', ImageLogic.create);
+registerLogic('Image', imageLogic);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Image 是 Component3D（进而 Component）的子类型。
 registerComponentType('Image', { baseTypes: ['Component3D'] });

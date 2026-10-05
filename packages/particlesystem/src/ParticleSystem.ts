@@ -1,8 +1,8 @@
 // registerLogic/logic 直接从 @feng3d/reactivity 导入（不经 feng3d barrel）：
 // feng3d barrel 在 particlesystem 之后才 re-export reactivity，node/vitest 下
 // barrel 模块求值顺序会取到未初始化的绑定（浏览器/vite 不受影响）
-import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, RunEnvironment, StandardMaterial } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
+import { AddComponentMenu, Object3D, QuadGeometry, Renderable, RenderableLogic, renderableLogicProto, RunEnvironment, setupRenderableLogicState, StandardMaterial, type RenderableLogicState } from 'feng3d';
+import { createLogicProto, registerLogic } from '@feng3d/reactivity';
 import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
 import { logic } from '@feng3d/reactivity';
 import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
@@ -1223,24 +1223,25 @@ export interface ParticleSystemEmitInfo
 }
 
 
-// 注册：继承 RenderableLogic，覆写 beforeRender 为 ParticleSystem 自身逻辑
-class ParticleSystemLogic extends RenderableLogic
+/** ParticleSystem Logic 接口：复用 RenderableLogic，覆写 beforeRender 为 ParticleSystem 自身逻辑 */
+interface ParticleSystemLogic extends RenderableLogic
 {
-    protected constructor(data: ParticleSystem)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: ParticleSystem): ParticleSystemLogic
-    {
-        return new ParticleSystemLogic(data);
-    }
-
-    override beforeRender(ro: RenderObject): void
-    {
-        (this.component as ParticleSystem).beforeRender(ro);
-    }
 }
-registerLogic('ParticleSystem', ParticleSystemLogic.create);
+
+/** ParticleSystemLogic 的共享原型（issue #674） */
+const particleSystemLogicProto = createLogicProto<ParticleSystemLogic>(renderableLogicProto, {
+    beforeRender: {
+        value: function (this: ParticleSystemLogic & RenderableLogicState, ro: RenderObject): void
+        {
+            (this.component as ParticleSystem).beforeRender(ro);
+        },
+    },
+});
+
+/** 工厂函数：ParticleSystem Logic 的唯一创建入口 */
+export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
+{
+    return setupRenderableLogicState(Object.create(particleSystemLogicProto) as ParticleSystemLogic & RenderableLogicState, data);
+}
+registerLogic('ParticleSystem', particleSystemLogic);
 

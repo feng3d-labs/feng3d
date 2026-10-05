@@ -1,6 +1,7 @@
 import type { Entity } from '../core/Entity';
 import type { Object3D } from '../core/Object3D';
 import type { RenderObject } from '@feng3d/webgpu';
+import { createLogicProto } from '@feng3d/reactivity';
 
 // ---- 组件数据接口 ----
 
@@ -204,64 +205,76 @@ export interface Component3DLogic extends ComponentLogic
 }
 
 /**
- * ComponentLogic 基类（AGENTS 第 3 章 class 模板的基石）。
- *
- * 组合链最底层：子类工厂通过 `const base = componentLogic(data)` 组合复用
- * component/entity/init/beforeRender/dispose 行为（Object.assign /
- * defineProperties 在实例上叠加成员，与 class 实例兼容）。
- * 方法在原型上共享（千级组件场景避免每实例闭包）。
+ * ComponentLogic 系 Logic 实例的内部状态（不进公开接口，工厂装配时写入）。
  */
-export class ComponentLogicBase implements ComponentLogic
+export interface ComponentLogicState
 {
-    protected readonly _component: Components | undefined;
-    protected _entity: Entity | null = null;
-
-    protected constructor(component?: Components)
-    {
-        this._component = component;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口，供同文件工厂使用） */
-    static create(component?: Components): ComponentLogicBase
-    {
-        return new ComponentLogicBase(component);
-    }
-
     /** 关联的组件数据（raw） */
-    get component(): Components | undefined
-    {
-        return this._component;
-    }
+    _component: Components | undefined;
 
-    /** 所属实体（由 init 注入，只读） */
-    get entity(): Entity | null
-    {
-        return this._entity;
-    }
-
-    /** 初始化：注入 entity */
-    init(entity?: Entity): void
-    {
-        if (entity) this._entity = entity;
-    }
-
-    /** 渲染前回调（默认空） */
-    beforeRender(_renderObject: RenderObject): void { /* 默认空 */ }
-
-    /** 是否加载完成（基类恒 true，含异步资源的组件覆盖） */
-    get isLoaded(): boolean
-    {
-        return true;
-    }
-
-    /** 释放（默认空） */
-    dispose(): void { /* 默认空 */ }
+    /** 所属实体（由 init 注入） */
+    _entity: Entity | null;
 }
 
 /**
- * 创建 ComponentLogic 实例（组合链最底层，返回 class 基类实例）。
+ * ComponentLogic 基接口的共享原型（issue #674）。
+ *
+ * 组合链最底层：子类 proto 用 `Object.create(componentLogicProto)` 继承，子类工厂用
+ * `setupComponentLogicState(...)` 装配 `_component` / `_entity`（不再有 `extends`）；
+ * 方法在原型上共享（千级组件场景避免每实例闭包）。
+ */
+export const componentLogicProto = createLogicProto<ComponentLogic>(null, {
+    /** 关联的组件数据（raw） */
+    component: {
+        get: function (this: ComponentLogicState): Components | undefined { return this._component; },
+    },
+    /** 所属实体（由 init 注入，只读） */
+    entity: {
+        get: function (this: ComponentLogicState): Entity | null { return this._entity; },
+    },
+    /** 初始化：注入 entity */
+    init: {
+        value: function (this: ComponentLogicState, entity?: Entity): void
+        {
+            if (entity) this._entity = entity;
+        },
+    },
+    /** 渲染前回调（默认空） */
+    beforeRender: {
+        value: function (_renderObject: RenderObject): void { /* 默认空 */ },
+    },
+    /** 是否加载完成（基类恒 true，含异步资源的组件覆盖） */
+    isLoaded: {
+        get: function (): boolean { return true; },
+    },
+    /** 释放（默认空） */
+    dispose: {
+        value: function (): void { /* 默认空 */ },
+    },
+});
+
+/**
+ * 装配 Component 系 Logic 的**基类状态**（供子类工厂组合调用）。
+ *
+ * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
+ * 子类先 `Object.create(xxxLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
+ *
+ * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
+ * @param component 关联的组件数据（raw）
+ * @returns 同一实例（便于链式装配）
+ */
+export function setupComponentLogicState<T extends ComponentLogicState>(logic: T, component?: Components): T
+{
+    logic._component = component;
+    logic._entity = null;
+
+    return logic;
+}
+
+/**
+ * 工厂函数：ComponentLogic 的唯一创建入口（组合链最底层）。
  */
 export function componentLogic(component?: Components): ComponentLogic
 {
-    return ComponentLogicBase.create(component);
+    return setupComponentLogicState(Object.create(componentLogicProto) as ComponentLogic & ComponentLogicState, component);
 }

@@ -1,6 +1,6 @@
 import { mat4Copy, mat4Identity, mat4Prepend, Matrix4x4 } from '@feng3d/math';
-import { logic, registerLogic } from '@feng3d/reactivity';
-import { Component3D, ComponentLogicBase } from '../../component/Component';
+import { createLogicProto, logic, registerLogic } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, componentLogicProto, setupComponentLogicState, type ComponentLogicState } from '../../component/Component';
 import type { Object3D } from '../../core/Object3D';
 
 declare module '../../component/Component'
@@ -58,76 +58,80 @@ function findBoneByName(root: Object3D, name: string): Object3D | null
 }
 
 /**
- * Skeleton 逻辑类。
+ * Skeleton 逻辑处理接口。
  *
  * 提供 globalMatrices：当前骨骼姿势的全局矩阵列表（由外部 SkinnedMeshRenderer 读取）。
  */
-export class SkeletonLogic extends ComponentLogicBase
+export interface SkeletonLogic extends Component3DLogic
 {
-    /** 当前骨骼姿势的全局矩阵列表（内部可变，外部通过 getter 只读访问） */
-    readonly #globalMatrices: Matrix4x4[] = [];
-
-    protected constructor(data: Skeleton)
-    {
-        super(data);
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Skeleton): SkeletonLogic
-    {
-        return new SkeletonLogic(data);
-    }
-
     /**
      * 当前骨骼姿势的全局矩阵列表。
      *
      * 语义：`globalMatrices[i] = 骨骼 i 的世界矩阵 × boneInverses[i]`——就是蒙皮公式里
-     * `jointMatrix × inverseBindMatrix` 的形式，与迁移前的旧实现
-     * （`src/core/animators/skeleton/SkeletonComponent.ts` 的 `copy(localToWorldMatrix).prepend(boneInverses[i])`）
-     * 完全一致。
-     *
-     * **一个反直觉的地方（踩过）**：本仓库的 `Matrix4x4.prepend(rhs)` 实际是**右乘**——它的实现是
-     * `copy(rhs).append(原值)`，而 `X.append(Y)` 得到的是 `Y × X`。所以 `A.prepend(B)` 得到 `A × B`，
-     * 与「prepend=左乘」的直觉相反。这里要保持与旧实现相同的语义，所以照原样写 `prepend`。
-     *
-     * **每次访问都重算**：骨骼姿势逐帧变化，而唯一的消费方 `SkinnedMeshRendererLogic.beforeRender`
-     * 本来就是每帧调用一次。矩阵对象按索引复用，避免每帧新建。
+     * `jointMatrix × inverseBindMatrix` 的形式。
      */
-    get globalMatrices(): Matrix4x4[]
-    {
-        const data = this.component as Skeleton | undefined;
-        const boneNames = data?.boneNames ?? [];
-        const boneInverses = data?.boneInverses ?? [];
-        const root = this.entity as Object3D | null;
+    readonly globalMatrices: Matrix4x4[];
+}
 
-        // 没有实体（尚未 init）时不做无意义的重算
-        if (!root) return this.#globalMatrices;
+/** SkeletonLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface SkeletonLogicState extends ComponentLogicState
+{
+    /** 当前骨骼姿势的全局矩阵列表（内部可变，外部通过 getter 只读访问） */
+    _globalMatrices: Matrix4x4[];
+}
 
-        // 以 boneNames 为权威长度对齐结果数组（着色器侧对长度有预期，见 SkinnedMeshRenderer 的 default）
-        if (this.#globalMatrices.length !== boneNames.length) this.#globalMatrices.length = boneNames.length;
-
-        for (let i = 0; i < boneNames.length; i++)
+/** SkeletonLogic 的共享原型：继承 Component 基类实现，新增 globalMatrices getter */
+const skeletonLogicProto = createLogicProto<SkeletonLogic>(componentLogicProto, {
+    globalMatrices: {
+        get: function (this: SkeletonLogic & SkeletonLogicState): Matrix4x4[]
         {
-            // 阶段 C-e：`Matrix4x4` 的 class 已删除，新建即「单位矩阵字面量 + 判别字段」
-            const matrix = this.#globalMatrices[i] ?? (this.#globalMatrices[i] = { __type__: 'Matrix4x4', ...mat4Identity() });
-            const bone = findBoneByName(root, boneNames[i]);
-            const boneInverse = boneInverses[i];
+            const data = this.component as Skeleton | undefined;
+            const boneNames = data?.boneNames ?? [];
+            const boneInverses = data?.boneInverses ?? [];
+            const root = this.entity as Object3D | null;
 
-            // 骨骼或逆矩阵缺失时保持单位矩阵：宁可"这一根骨骼不动"，也不要像旧实现那样抛
-            // `Cannot read properties of undefined (reading 'transform')`
-            if (!bone || !boneInverse)
+            // 没有实体（尚未 init）时不做无意义的重算
+            if (!root) return this._globalMatrices;
+
+            // 以 boneNames 为权威长度对齐结果数组（着色器侧对长度有预期，见 SkinnedMeshRenderer 的 default）
+            if (this._globalMatrices.length !== boneNames.length) this._globalMatrices.length = boneNames.length;
+
+            for (let i = 0; i < boneNames.length; i++)
             {
-                mat4Identity(matrix);
-                continue;
+                // 阶段 C-e：`Matrix4x4` 的 class 已删除，新建即「单位矩阵字面量 + 判别字段」
+                const matrix = this._globalMatrices[i] ?? (this._globalMatrices[i] = { __type__: 'Matrix4x4', ...mat4Identity() });
+                const bone = findBoneByName(root, boneNames[i]);
+                const boneInverse = boneInverses[i];
+
+                // 骨骼或逆矩阵缺失时保持单位矩阵：宁可"这一根骨骼不动"，也不要像旧实现那样抛
+                // `Cannot read properties of undefined (reading 'transform')`
+                if (!bone || !boneInverse)
+                {
+                    mat4Identity(matrix);
+                    continue;
+                }
+
+                mat4Copy(logic(bone).local2world, matrix);
+                mat4Prepend(matrix, boneInverse, matrix);
             }
 
-            mat4Copy(logic(bone).local2world, matrix);
-            mat4Prepend(matrix, boneInverse, matrix);
-        }
+            return this._globalMatrices;
+        },
+    },
+});
 
-        return this.#globalMatrices;
-    }
+/**
+ * 工厂函数：SkeletonLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 组件数据（raw）
+ */
+export function skeletonLogic(data: Skeleton): SkeletonLogic
+{
+    const logic = setupComponentLogicState(Object.create(skeletonLogicProto) as SkeletonLogic & SkeletonLogicState, data);
+    logic._globalMatrices = [];
+
+    return logic;
 }
 
 // 注册到 logic 分发表
-registerLogic('Skeleton', SkeletonLogic.create);
+registerLogic('Skeleton', skeletonLogic);

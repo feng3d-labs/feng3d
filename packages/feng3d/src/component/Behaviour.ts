@@ -1,8 +1,8 @@
 import { RunEnvironment } from '../core/RunEnvironment';
 import type { Component3D, Components } from './Component';
-import { ComponentLogicBase } from './Component';
+import { componentLogicProto, setupComponentLogicState, type Component3DLogic, type ComponentLogicState } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic, computed, Computed, reactive } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, computed, reactive, createLogicProto, type Computed } from '@feng3d/reactivity';
 
 /**
  * 行为（纯数据接口）。
@@ -28,7 +28,7 @@ declare module '@feng3d/reactivity'
 }
 
 /**
- * Behaviour 逻辑类（AGENTS 第 3 章 class 模板）。
+ * Behaviour 逻辑接口（issue #674 工厂函数范式）。
  *
  * Behaviour 是可开关的组件基类。其 logic 提供：
  * - isVisibleAndEnabled: Computed<boolean>（enabled && object3D.activeSelf）
@@ -36,76 +36,112 @@ declare module '@feng3d/reactivity'
  * - dispose: 写入 enabled=false（触发依赖 enabled 的子 logic 清理）
  *
  * 子类 logic（Animation/FPSController 等）经 {@link behaviourLogic} 组合函数
- * 获取实例后 Object.assign 叠加自身行为（与 class 实例兼容）。
+ * 获取实例后叠加自身行为。
  */
-export class BehaviourLogic extends ComponentLogicBase
+export interface BehaviourLogic extends Component3DLogic
 {
-    #data: Behaviour;
-    #isVisibleAndEnabled: Computed<boolean>;
-    #entity: Object3D | null = null;
-    #inited = false;
-
-    protected constructor(data: Behaviour)
-    {
-        // Behaviour 是抽象基接口，不在 Components 联合里；strictNullChecks 下需显式断言
-        super(data as Components);
-        this.#data = data;
-
-        const r_behaviour = reactive(data);
-        this.#isVisibleAndEnabled = computed<boolean>(() =>
-        {
-            if (!this.#entity) return false;
-
-            const enabled = r_behaviour.enabled ?? true;
-
-            return enabled !== false && logic(this.#entity).activeSelf;
-        });
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口，供组合函数与子类使用） */
-    // 与基类 ComponentLogicBase.create(component?: Components) 的参数类型保持兼容：
-    // Behaviour 是抽象基接口、不在 Components 联合里，参数写窄了会触发静态侧不兼容（TS2417）
-    static create(data: Behaviour | undefined): BehaviourLogic
-    {
-        return new BehaviourLogic(data as Behaviour);
-    }
-
-    get entity(): Object3D | null
-    {
-        return this.#entity;
-    }
-
     /** 是否可见且启用 */
-    get isVisibleAndEnabled(): Computed<boolean>
-    {
-        return this.#isVisibleAndEnabled;
-    }
+    readonly isVisibleAndEnabled: Computed<boolean>;
 
-    init(object3D?: Object3D): void
-    {
-        if (this.#inited) return;
-        this.#inited = true;
-        if (object3D) this.#entity = object3D;
-    }
+    /** 初始化：注入所属 Object3D（幂等） */
+    init(object3D?: Object3D): void;
 
-    beforeRender(_renderObject: never): void { /* 默认空 */ }
+    /** 每帧更新（空默认实现，子类覆盖） */
+    update(interval: number): void;
+}
 
-    update(_interval: number): void { /* 默认空，子类覆盖 */ }
+/** BehaviourLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+export interface BehaviourLogicState extends ComponentLogicState
+{
+    /** 关联的行为数据（raw） */
+    _data: Behaviour;
 
-    dispose(): void
-    {
-        reactive(this.#data).enabled = false;
-        this.#entity = null;
-    }
+    /** 是否可见且启用（enabled && object3D.activeSelf） */
+    _isVisibleAndEnabled: Computed<boolean>;
+
+    /** 所属 Object3D（由 init 注入；覆写基类状态的 Entity 类型） */
+    _entity: Object3D | null;
+
+    /** 是否已 init（幂等保护） */
+    _inited: boolean;
 }
 
 /**
- * 组合函数：创建 BehaviourLogic 实例（子类工厂的组合入口）。
+ * BehaviourLogic 的共享原型：继承 Component 基类实现，覆写 entity / init / beforeRender /
+ * update / dispose。
+ */
+export const behaviourLogicProto = createLogicProto<BehaviourLogic>(componentLogicProto, {
+    /** 所属 Object3D（覆写基类 getter，把 entity 收窄为 Object3D） */
+    entity: {
+        get: function (this: BehaviourLogic & BehaviourLogicState): Object3D | null { return this._entity; },
+    },
+    /** 是否可见且启用 */
+    isVisibleAndEnabled: {
+        get: function (this: BehaviourLogic & BehaviourLogicState): Computed<boolean> { return this._isVisibleAndEnabled; },
+    },
+    /** 初始化：注入所属 Object3D（幂等） */
+    init: {
+        value: function (this: BehaviourLogic & BehaviourLogicState, object3D?: Object3D): void
+        {
+            if (this._inited) return;
+            this._inited = true;
+            if (object3D) this._entity = object3D;
+        },
+    },
+    beforeRender: {
+        value: function (this: BehaviourLogic & BehaviourLogicState, _renderObject: never): void { /* 默认空 */ },
+    },
+    update: {
+        value: function (this: BehaviourLogic & BehaviourLogicState, _interval: number): void { /* 默认空，子类覆盖 */ },
+    },
+    dispose: {
+        value: function (this: BehaviourLogic & BehaviourLogicState): void
+        {
+            reactive(this._data).enabled = false;
+            this._entity = null;
+        },
+    },
+});
+
+/**
+ * 装配 Behaviour 系 Logic 的**基类状态**（供子类工厂组合调用）。
+ *
+ * 工厂版本（issue #674）下子类工厂不再 `extends`，而是「接口继承 + 组合调用基类工厂」：
+ * 子类先 `Object.create(xxxLogicProto)`，再用本函数装配基类状态，最后装配自身状态。
+ *
+ * @param logic 已 `Object.create` 出、原型已是目标 proto 的实例
+ * @param data 行为数据（raw）
+ * @returns 同一实例（便于链式装配）
+ */
+export function setupBehaviourLogicState<T extends BehaviourLogic & BehaviourLogicState>(logic: T, data: Behaviour): T
+{
+    // Behaviour 是抽象基接口，不在 Components 联合里；strictNullChecks 下需显式断言
+    setupComponentLogicState(logic, data as Components);
+    logic._data = data;
+    logic._inited = false;
+
+    const r_behaviour = reactive(data);
+    logic._isVisibleAndEnabled = computed<boolean>(() =>
+    {
+        if (!logic._entity) return false;
+
+        const enabled = r_behaviour.enabled ?? true;
+
+        return enabled !== false && getLogic(logic._entity).activeSelf;
+    });
+
+    return logic;
+}
+
+/**
+ * 工厂函数：BehaviourLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * @param data 行为数据（raw）
  */
 export function behaviourLogic(data: Behaviour): BehaviourLogic
 {
-    return BehaviourLogic.create(data);
+    return setupBehaviourLogicState(Object.create(behaviourLogicProto) as BehaviourLogic & BehaviourLogicState, data);
 }
 
 // 注册到 logic 分发表（Behaviour 自身也可作为组件使用）
-registerLogic('Behaviour', BehaviourLogic.create);
+registerLogic('Behaviour', behaviourLogic);

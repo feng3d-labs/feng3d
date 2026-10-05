@@ -1,5 +1,5 @@
 import { Renderable } from './Renderable';
-import { RenderableLogic } from './Renderable';
+import { renderableLogic, RenderableLogic } from './Renderable';
 import { registerLogic } from '@feng3d/reactivity';
 
 declare module '../component/Component'
@@ -29,4 +29,4 @@ declare module '@feng3d/reactivity'
 }
 // MeshRenderer 复用 RenderableLogic：enabled / runEnvironment / castShadows / receiveShadows
 // 默认值由基类组合链处理
-registerLogic('MeshRenderer', RenderableLogic.create);
+registerLogic('MeshRenderer', renderableLogic);

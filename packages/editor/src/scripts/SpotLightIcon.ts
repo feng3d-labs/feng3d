@@ -1,7 +1,9 @@
 import { effect, logic as getLogic, reactive, shortcut, ticker, Vector3, Vector3Like, MATHF_DEG2RAD } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, SpotLight, TextureMaterial } from 'feng3d';
+import { createLogicProto } from '@feng3d/reactivity';
 import { useEditorStore } from '../vue-app/stores/editorStore';
-import { EditorScript, EditorScriptLogic } from './EditorScript';
+import { editorScriptLogicProto, setupEditorScriptLogicState } from './EditorScript';
+import type { EditorScript, EditorScriptLogic, EditorScriptLogicState } from './EditorScript';
 import { ALPHA_BLEND, appendChildren, setWorldMatrix } from './iconUtils';
 
 declare module 'feng3d'
@@ -37,254 +39,278 @@ export interface SpotLightIcon extends EditorScript
 }
 
 /**
- * SpotLightIcon 逻辑类。
+ * SpotLightIcon 逻辑接口。
  */
-export class SpotLightIconLogic extends EditorScriptLogic
+export interface SpotLightIconLogic extends EditorScriptLogic
 {
-    /** 组件数据（raw） */
-    #data: SpotLightIcon;
-
-    /** 图标根对象（懒创建） */
-    #lightIcon: Object3D | null = null;
-    /** 锥体线段对象（懒创建） */
-    #lightLines: Object3D | null = null;
-    /** 锥底轴向点对象（懒创建） */
-    #lightpoints: Object3D | null = null;
-    /** 图标贴图材质（用于按灯光颜色更新 u_color） */
-    #textureMaterial: TextureMaterial | null = null;
-    /** 线段几何体（update 中重算 segments） */
-    #segmentGeometry: SegmentGeometry | null = null;
-    /** 点几何体（update 中重算 points） */
-    #pointGeometry: PointGeometry | null = null;
-
-    protected constructor(data: SpotLightIcon)
-    {
-        super(data);
-        this.#data = data;
-    }
-
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: SpotLightIcon): SpotLightIconLogic
-    {
-        return new SpotLightIconLogic(data);
-    }
-
-    override init(object3D?: Object3D): void
-    {
-        super.init(object3D);
-
-        effect(() =>
-        {
-            reactive(this.#data).editorCamera; // 建立依赖
-
-            if (this.#data.editorCamera) this.#initIcon();
-        });
-
-        effect(() =>
-        {
-            const r_data = reactive(this.#data);
-            r_data.light; // 建立依赖
-
-            const light = this.#data.light;
-            if (!light) return;
-
-            const lightObject3D = getLogic(light).entity;
-            const host = this.entity;
-            if (!lightObject3D || !host) return;
-
-            setWorldMatrix(host, getLogic(lightObject3D).local2world);
-        });
-    }
-
-    override update(): void
-    {
-        const light = this.#data.light;
-        if (!light) return;
-
-        const lines = this.#lightLines;
-        const points = this.#lightpoints;
-        if (!lines || !points) return;
-
-        const material = this.#textureMaterial;
-        if (material)
-        {
-            const color = light.color!;
-            reactive(material.uniforms).u_color = {
-                __type__: 'Color4',
-                r: color.r ?? 1, g: color.g ?? 1, b: color.b ?? 1, a: 1,
-            };
-        }
-
-        const lightObject3D = getLogic(light).entity;
-        if (!lightObject3D || useEditorStore().selectedObject3Ds.indexOf(lightObject3D) === -1)
-        {
-            reactive(lines).activeSelf = false;
-            reactive(points).activeSelf = false;
-
-            return;
-        }
-
-        // 锥体：range 处的圆环（半径由半角与 range 决定）+ 4 条母线
-        const yellow: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 };
-        const segments: Segment[] = [];
-        const pointInfos: PointInfo[] = [];
-        const num = 36;
-        const radius = light.range * Math.tan(light.angle * MATHF_DEG2RAD * 0.5);
-        const distance = light.range;
-        for (let i = 0; i < num; i++)
-        {
-            const angle = i * Math.PI * 2 / num;
-            const x = Math.sin(angle);
-            const y = Math.cos(angle);
-            const angle1 = (i + 1) * Math.PI * 2 / num;
-            const x1 = Math.sin(angle1);
-            const y1 = Math.cos(angle1);
-            segments.push({
-                start: { x: x * radius, y: y * radius, z: distance }, end: { x: x1 * radius, y: y1 * radius, z: distance },
-                startColor: yellow, endColor: yellow,
-            });
-        }
-
-        // 锥底四个轴向点与从原点到它们的母线
-        const origin = { x: 0, y: 0, z: 0 };
-        const axisPoints: Vector3Like[] = [
-            { x: 0, y: -radius, z: distance },
-            { x: -radius, y: 0, z: distance },
-            { x: 0, y: radius, z: distance },
-            { x: radius, y: 0, z: distance },
-        ];
-        for (const axisPoint of axisPoints)
-        {
-            pointInfos.push({ position: axisPoint, color: yellow });
-            segments.push({ start: origin, end: axisPoint, startColor: yellow, endColor: yellow });
-        }
-        // 锥尖
-        pointInfos.unshift({ position: { x: 0, y: 0, z: distance }, color: yellow });
-
-        if (this.#pointGeometry) reactive(this.#pointGeometry).points = pointInfos;
-        if (this.#segmentGeometry) reactive(this.#segmentGeometry).segments = segments;
-
-        reactive(lines).activeSelf = true;
-        reactive(points).activeSelf = true;
-    }
-
     /**
      * 选中被跟随的灯光对象。
      *
      * 旧写法在 `init()` 中注册 `this.on('mousedown', ...)`；主仓已移除纯数据
      * Object3D 的字符串事件，本方法保留为点击选择入口待接线（TODO）。
      */
-    selectLight(): void
-    {
-        const light = this.#data.light;
-        if (!light) return;
+    selectLight(): void;
+}
 
-        const lightObject3D = getLogic(light).entity;
-        if (!lightObject3D) return;
+/** SpotLightIconLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface SpotLightIconLogicState extends EditorScriptLogicState
+{
+    /** 组件数据（raw） */
+    _data: SpotLightIcon;
 
-        useEditorStore().selectObject(lightObject3D);
-        // 防止再次调用鼠标拾取
-        shortcut.activityState('selectInvalid');
-        ticker.once(100, () =>
+    /** 图标根对象（懒创建） */
+    _lightIcon: Object3D | null;
+    /** 锥体线段对象（懒创建） */
+    _lightLines: Object3D | null;
+    /** 锥底轴向点对象（懒创建） */
+    _lightpoints: Object3D | null;
+    /** 图标贴图材质（用于按灯光颜色更新 u_color） */
+    _textureMaterial: TextureMaterial | null;
+    /** 线段几何体（update 中重算 segments） */
+    _segmentGeometry: SegmentGeometry | null;
+    /** 点几何体（update 中重算 points） */
+    _pointGeometry: PointGeometry | null;
+}
+
+/** SpotLightIconLogic 的共享原型：继承 EditorScript 基类实现，覆写 init / update / dispose */
+const spotLightIconLogicProto = createLogicProto<SpotLightIconLogic>(editorScriptLogicProto, {
+    init: {
+        value: function (this: SpotLightIconLogic & SpotLightIconLogicState, object3D?: Object3D): void
         {
-            shortcut.deactivityState('selectInvalid');
-        });
-    }
+            editorScriptLogicProto.init.call(this, object3D);
 
-    override dispose(): void
-    {
-        const icon = this.#lightIcon;
-        const lines = this.#lightLines;
-        const points = this.#lightpoints;
-        this.#lightIcon = null;
-        this.#lightLines = null;
-        this.#lightpoints = null;
-        this.#textureMaterial = null;
-        this.#segmentGeometry = null;
-        this.#pointGeometry = null;
+            effect(() =>
+            {
+                reactive(this._data).editorCamera; // 建立依赖
 
-        if (icon) getLogic(icon).dispose();
-        if (lines) getLogic(lines).dispose();
-        if (points) getLogic(points).dispose();
+                if (this._data.editorCamera) initIcon(this);
+            });
 
-        super.dispose();
-    }
+            effect(() =>
+            {
+                const r_data = reactive(this._data);
+                r_data.light; // 建立依赖
 
-    /**
-     * 构建图标子对象（幂等）。
-     *
-     * `hideFlags = HideFlags.Hide` 无替代（主仓 Object3D 无该字段）。
-     */
-    #initIcon(): void
-    {
-        if (this.#lightIcon) return;
+                const light = this._data.light;
+                if (!light) return;
 
-        const host = this.entity;
-        const editorCamera = this.#data.editorCamera;
-        if (!host || !editorCamera) return;
+                const lightObject3D = getLogic(light).entity;
+                const host = this.entity;
+                if (!lightObject3D || !host) return;
 
-        const textureMaterial: TextureMaterial = {
-            __type__: 'TextureMaterial',
-            uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
-            s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/spot.png') },
-            blend: ALPHA_BLEND,
-        };
-        const iconObject3D: Object3D = {
-            __type__: 'Object3D',
-            name: 'SpotLightIcon',
-            components: [
-                { __type__: 'Billboard' },
-                {
-                    __type__: 'MeshRenderer',
-                    material: textureMaterial,
-                    geometry: { __type__: 'PlaneGeometry', width: 1, height: 1, segmentsW: 1, segmentsH: 1, yUp: false },
+                setWorldMatrix(host, getLogic(lightObject3D).local2world);
+            });
+        },
+    },
+    update: {
+        value: function (this: SpotLightIconLogic & SpotLightIconLogicState): void
+        {
+            const light = this._data.light;
+            if (!light) return;
+
+            const lines = this._lightLines;
+            const points = this._lightpoints;
+            if (!lines || !points) return;
+
+            const material = this._textureMaterial;
+            if (material)
+            {
+                const color = light.color!;
+                reactive(material.uniforms).u_color = {
+                    __type__: 'Color4',
+                    r: color.r ?? 1, g: color.g ?? 1, b: color.b ?? 1, a: 1,
+                };
+            }
+
+            const lightObject3D = getLogic(light).entity;
+            if (!lightObject3D || useEditorStore().selectedObject3Ds.indexOf(lightObject3D) === -1)
+            {
+                reactive(lines).activeSelf = false;
+                reactive(points).activeSelf = false;
+
+                return;
+            }
+
+            // 锥体：range 处的圆环（半径由半角与 range 决定）+ 4 条母线
+            const yellow: Color4 = { __type__: 'Color4', r: 1, g: 1, b: 0, a: 1 };
+            const segments: Segment[] = [];
+            const pointInfos: PointInfo[] = [];
+            const num = 36;
+            const radius = light.range * Math.tan(light.angle * MATHF_DEG2RAD * 0.5);
+            const distance = light.range;
+            for (let i = 0; i < num; i++)
+            {
+                const angle = i * Math.PI * 2 / num;
+                const x = Math.sin(angle);
+                const y = Math.cos(angle);
+                const angle1 = (i + 1) * Math.PI * 2 / num;
+                const x1 = Math.sin(angle1);
+                const y1 = Math.cos(angle1);
+                segments.push({
+                    start: { x: x * radius, y: y * radius, z: distance }, end: { x: x1 * radius, y: y1 * radius, z: distance },
+                    startColor: yellow, endColor: yellow,
+                });
+            }
+
+            // 锥底四个轴向点与从原点到它们的母线
+            const origin = { x: 0, y: 0, z: 0 };
+            const axisPoints: Vector3Like[] = [
+                { x: 0, y: -radius, z: distance },
+                { x: -radius, y: 0, z: distance },
+                { x: 0, y: radius, z: distance },
+                { x: radius, y: 0, z: distance },
+            ];
+            for (const axisPoint of axisPoints)
+            {
+                pointInfos.push({ position: axisPoint, color: yellow });
+                segments.push({ start: origin, end: axisPoint, startColor: yellow, endColor: yellow });
+            }
+            // 锥尖
+            pointInfos.unshift({ position: { x: 0, y: 0, z: distance }, color: yellow });
+
+            if (this._pointGeometry) reactive(this._pointGeometry).points = pointInfos;
+            if (this._segmentGeometry) reactive(this._segmentGeometry).segments = segments;
+
+            reactive(lines).activeSelf = true;
+            reactive(points).activeSelf = true;
+        },
+    },
+    selectLight: {
+        value: function (this: SpotLightIconLogic & SpotLightIconLogicState): void
+        {
+            const light = this._data.light;
+            if (!light) return;
+
+            const lightObject3D = getLogic(light).entity;
+            if (!lightObject3D) return;
+
+            useEditorStore().selectObject(lightObject3D);
+            // 防止再次调用鼠标拾取
+            shortcut.activityState('selectInvalid');
+            ticker.once(100, () =>
+            {
+                shortcut.deactivityState('selectInvalid');
+            });
+        },
+    },
+    dispose: {
+        value: function (this: SpotLightIconLogic & SpotLightIconLogicState): void
+        {
+            const icon = this._lightIcon;
+            const lines = this._lightLines;
+            const points = this._lightpoints;
+            this._lightIcon = null;
+            this._lightLines = null;
+            this._lightpoints = null;
+            this._textureMaterial = null;
+            this._segmentGeometry = null;
+            this._pointGeometry = null;
+
+            if (icon) getLogic(icon).dispose();
+            if (lines) getLogic(lines).dispose();
+            if (points) getLogic(points).dispose();
+
+            editorScriptLogicProto.dispose.call(this);
+        },
+    },
+});
+
+/**
+ * 工厂函数：SpotLightIconLogic 的唯一创建入口。
+ *
+ * @param data 聚光灯图标数据（raw）
+ */
+export function spotLightIconLogic(data: SpotLightIcon): SpotLightIconLogic
+{
+    const logic = setupEditorScriptLogicState(Object.create(spotLightIconLogicProto) as SpotLightIconLogic & SpotLightIconLogicState, data);
+
+    // 原构造体内的字段初始化
+    logic._lightIcon = null;
+    logic._lightLines = null;
+    logic._lightpoints = null;
+    logic._textureMaterial = null;
+    logic._segmentGeometry = null;
+    logic._pointGeometry = null;
+
+    return logic;
+}
+
+/**
+ * 构建图标子对象（幂等）。
+ *
+ * `hideFlags = HideFlags.Hide` 无替代（主仓 Object3D 无该字段）。
+ *
+ * 原 `SpotLightIconLogic.#initIcon`：工厂范式下改为模块级函数并显式接收实例。
+ */
+function initIcon(logic: SpotLightIconLogic & SpotLightIconLogicState): void
+{
+    if (logic._lightIcon) return;
+
+    const host = logic.entity;
+    const editorCamera = logic._data.editorCamera;
+    if (!host || !editorCamera) return;
+
+    const textureMaterial: TextureMaterial = {
+        __type__: 'TextureMaterial',
+        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
+        s_texture: { __type__: 'Texture', url: useEditorStore().getEditorAssetPath('assets/3d/icons/spot.png') },
+        blend: ALPHA_BLEND,
+    };
+    const iconObject3D: Object3D = {
+        __type__: 'Object3D',
+        name: 'SpotLightIcon',
+        components: [
+            { __type__: 'Billboard' },
+            {
+                __type__: 'MeshRenderer',
+                material: textureMaterial,
+                geometry: { __type__: 'PlaneGeometry', width: 1, height: 1, segmentsW: 1, segmentsH: 1, yUp: false },
+            },
+        ],
+    };
+
+    const segmentGeometry: SegmentGeometry = { __type__: 'SegmentGeometry', segments: [] };
+    const linesObject3D: Object3D = {
+        __type__: 'Object3D',
+        name: 'Lines',
+        mouseEnabled: false,
+        components: [
+            {
+                __type__: 'MeshRenderer',
+                geometry: segmentGeometry,
+                material: {
+                    __type__: 'SegmentMaterial',
+                    uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.5 } },
                 },
-            ],
-        };
+            },
+        ],
+    };
 
-        const segmentGeometry: SegmentGeometry = { __type__: 'SegmentGeometry', segments: [] };
-        const linesObject3D: Object3D = {
-            __type__: 'Object3D',
-            name: 'Lines',
-            mouseEnabled: false,
-            components: [
-                {
-                    __type__: 'MeshRenderer',
-                    geometry: segmentGeometry,
-                    material: {
-                        __type__: 'SegmentMaterial',
-                        uniforms: { u_segmentColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 0.5 } },
-                    },
+    const pointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
+    const pointsObject3D: Object3D = {
+        __type__: 'Object3D',
+        name: 'points',
+        mouseEnabled: false,
+        components: [
+            {
+                __type__: 'MeshRenderer',
+                geometry: pointGeometry,
+                material: {
+                    __type__: 'PointMaterial',
+                    uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 1 },
                 },
-            ],
-        };
+            },
+        ],
+    };
 
-        const pointGeometry: PointGeometry = { __type__: 'PointGeometry', points: [] };
-        const pointsObject3D: Object3D = {
-            __type__: 'Object3D',
-            name: 'points',
-            mouseEnabled: false,
-            components: [
-                {
-                    __type__: 'MeshRenderer',
-                    geometry: pointGeometry,
-                    material: {
-                        __type__: 'PointMaterial',
-                        uniforms: { u_color: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 }, u_PointSize: 1 },
-                    },
-                },
-            ],
-        };
+    // 用 `appendChildren`：本方法在组件 init 内同步执行，此时宿主 children 可能尚未
+    // 被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
+    appendChildren(host, iconObject3D, linesObject3D, pointsObject3D);
 
-        // 用 `appendChildren`：本方法在组件 init 内同步执行，此时宿主 children 可能尚未
-        // 被 ContainerLogic pre-fill（详见 iconUtils.appendChildren 注释）。
-        appendChildren(host, iconObject3D, linesObject3D, pointsObject3D);
-
-        this.#lightIcon = iconObject3D;
-        this.#lightLines = linesObject3D;
-        this.#lightpoints = pointsObject3D;
-        this.#textureMaterial = textureMaterial;
-        this.#segmentGeometry = segmentGeometry;
-        this.#pointGeometry = pointGeometry;
-    }
+    logic._lightIcon = iconObject3D;
+    logic._lightLines = linesObject3D;
+    logic._lightpoints = pointsObject3D;
+    logic._textureMaterial = textureMaterial;
+    logic._segmentGeometry = segmentGeometry;
+    logic._pointGeometry = pointGeometry;
 }

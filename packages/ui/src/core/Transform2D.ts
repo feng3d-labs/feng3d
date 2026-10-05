@@ -1,6 +1,6 @@
-import { Component3D, ComponentLogicBase, Object3D, registerComponentType, TransformLayout } from 'feng3d';
-import { computed, effect, logic as getLogic, reactive, ref, registerLogic } from '@feng3d/reactivity';
-import type { Reactive } from '@feng3d/reactivity';
+import { Component3D, Component3DLogic, componentLogicProto, Object3D, registerComponentType, setupComponentLogicState, TransformLayout, type ComponentLogicState } from 'feng3d';
+import { computed, createLogicProto, effect, logic as getLogic, reactive, ref, registerLogic } from '@feng3d/reactivity';
+import type { Computed, Reactive, Ref } from '@feng3d/reactivity';
 import { Vector2Like, Vector4, Vector4Like } from '@feng3d/math';
 import type { RenderObject } from '@feng3d/webgpu';
 import { uiUniforms } from './UIMaterial';
@@ -88,16 +88,23 @@ export interface Transform2D extends Component3D
 }
 
 /**
- * Transform2D 逻辑类。
+ * Transform2D 逻辑接口。
  *
- * 与 {@link TransformLayoutLogic} 的分工：本类只负责 2D 字段的语义与镜像，
+ * 与 {@link TransformLayoutLogic} 的分工：本逻辑只负责 2D 字段的语义与镜像，
  * 「锚点 → 宿主对象 position」的布局计算仍由 TransformLayoutLogic 承担。
  */
-export class Transform2DLogic extends ComponentLogicBase
+export interface Transform2DLogic extends Component3DLogic
 {
-    /** 响应式代理（字段镜像用；不对外暴露，字段只读——规范 §8.1 / §8.5） */
-    readonly #r_data: Reactive<Transform2D>;
+    /** 布局组件（与 Transform2D 字段互相镜像；未 init 时为 null） */
+    readonly transformLayout: TransformLayout | null;
 
+    /** 2D 描述区域（`x` = left、`y` = top、`z` = width、`w` = height） */
+    readonly rect: Vector4;
+}
+
+/** Transform2DLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface Transform2DLogicState extends ComponentLogicState
+{
     /**
      * 依赖组件：布局（init 时解析，缺失则创建）。
      *
@@ -105,19 +112,10 @@ export class Transform2DLogic extends ComponentLogicBase
      * 普通字段的变化不会让 computed 失效——若在 init 之前读过 `rect`，
      * 缓存里就会留下「没有布局组件」的结果（init 之后也不会重算）。
      */
-    readonly #layoutRef = ref<TransformLayout | null>(null);
+    _layoutRef: Ref<TransformLayout | null>;
 
     /** init 去重标志 */
-    #inited = false;
-
-    /**
-     * 各字段「上次已同步的值」（JSON 文本）。
-     *
-     * 复刻迁移前 `watcher.bind` 的**变化驱动**语义：只在某一侧字段**真的变化**时才写另一侧，
-     * 首次读到字段只登记不写。这样两侧各自的初始值不会被对方覆盖，
-     * 也不会出现「A 写 B、B 写 A」的自激循环（写入使两侧相等后即自止）。
-     */
-    readonly #synced = new Map<string, string>();
+    _inited: boolean;
 
     /**
      * 2D 描述区域：`x` = left、`y` = top、`z` = width、`w` = height。
@@ -125,9 +123,99 @@ export class Transform2DLogic extends ComponentLogicBase
      * 由布局组件的 `pivot` / `size` 派生（迁移前同样是实时读布局组件算出来的，
      * 区别只是不再复用可变实例，改为 computed 缓存）。
      */
-    readonly #rect = computed<Vector4>(() =>
+    _rect: Computed<Vector4>;
+
+    /** 安装 Transform2D ↔ TransformLayout 的字段镜像（原私有方法，工厂内闭包，经状态字段供 proto 的 init 调用） */
+    _installLayoutMirror: () => void;
+
+    /** 安装 Transform2D ↔ 宿主 Object3D 变换的镜像（原私有方法，工厂内闭包，经状态字段供 proto 的 init 调用） */
+    _installTransformMirror: () => void;
+}
+
+/** Transform2DLogic 的共享原型：继承 Component 基类实现，覆写 init / beforeRender，新增 transformLayout / rect */
+const transform2DLogicProto = createLogicProto<Transform2DLogic>(componentLogicProto, {
+    transformLayout: {
+        get: function (this: Transform2DLogic & Transform2DLogicState): TransformLayout | null
+        {
+            return this._layoutRef.value;
+        },
+    },
+    /** 2D 描述区域（`x` = left、`y` = top、`z` = width、`w` = height） */
+    rect: {
+        get: function (this: Transform2DLogic & Transform2DLogicState): Vector4
+        {
+            return this._rect.value;
+        },
+    },
+    init: {
+        value: function (this: Transform2DLogic & Transform2DLogicState, object3D?: Object3D): void
+        {
+            componentLogicProto.init.call(this, object3D);
+            if (this._inited) return;
+            this._inited = true;
+
+            const entity = this.entity;
+            if (!entity) return;
+
+            // 处理依赖组件：布局组件（缺失时就地创建并挂到宿主对象上，与原实现一致）。
+            //
+            // ⚠️ 这里**直接查数据**而不是 `logic(entity).getComponent(...)`：本方法由宿主 logic
+            // 的组件初始化 effect 调用，此刻宿主 Object3DLogic 仍在构造中，`logic(entity)` 拿到的是
+            // 「构造中」占位对象（没有 getComponent）。数据层查找与 `TransformLayoutLogic` 内部一致。
+            const r_entity = reactive(entity);
+            // strictNullChecks：`Object3D.components` 是可选的。先把缺失的列表建立并**挂回宿主**
+            // （原先只写了 `?? []` 到局部变量，随后却 push 到 `r_entity.components` —— 一旦真的缺失，
+            // 局部数组会挂不上、`push` 还会以 TypeError 炸开）。EntityLogic 构造已 pre-fill，
+            // 这里兜住「未经 logic 构造就被 init」的路径。
+            if (!r_entity.components) r_entity.components = [];
+            const components = r_entity.components;
+            let transformLayout = components.find(
+                (component) => (component as { __type__?: string }).__type__ === 'TransformLayout',
+            ) as TransformLayout | undefined;
+            if (!transformLayout)
+            {
+                transformLayout = {
+                    __type__: 'TransformLayout',
+                    position: { x: 0, y: 0, z: 0 },
+                    size: { x: 1, y: 1, z: 1 },
+                    leftTop: { x: 0, y: 0, z: 0 },
+                    rightBottom: { x: 0, y: 0, z: 0 },
+                    anchorMin: { x: 0.5, y: 0.5, z: 0.5 },
+                    anchorMax: { x: 0.5, y: 0.5, z: 0.5 },
+                    pivot: { x: 0.5, y: 0.5, z: 0.5 },
+                };
+                components.push(transformLayout);
+            }
+            this._layoutRef.value = transformLayout;
+
+            this._installLayoutMirror();
+            this._installTransformMirror();
+        },
+    },
+    beforeRender: {
+        value: function (this: Transform2DLogic & Transform2DLogicState, renderObject: RenderObject): void
+        {
+            uiUniforms(renderObject).u_rect = this.rect;
+        },
+    },
+});
+
+/**
+ * 工厂函数：Transform2DLogic 的唯一创建入口（registerLogic 注册它）。
+ *
+ * 原构造函数体：装配布局 ref / rect computed / 两个镜像 effect。
+ *
+ * @param data 2D 变换组件数据（raw）
+ */
+export function transform2DLogic(data: Transform2D): Transform2DLogic
+{
+    const logic = setupComponentLogicState(Object.create(transform2DLogicProto) as Transform2DLogic & Transform2DLogicState, data);
+    logic._inited = false;
+    logic._layoutRef = ref<TransformLayout | null>(null);
+
+    logic._rect = computed<Vector4>(() =>
     {
-        const layout = this.#layoutRef.value;
+        const layout = logic._layoutRef.value;
         const size = layout?.size ?? { x: 1, y: 1, z: 1 };
         const pivot = layout?.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
         // 读各分量建立响应式依赖（布局组件字段变化时本 computed 失效重算）
@@ -139,85 +227,17 @@ export class Transform2DLogic extends ComponentLogicBase
         return { __type__: 'Vector4', x, y, z: width, w: height };
     });
 
-    protected constructor(data: Transform2D)
-    {
-        super(data);
-        this.#r_data = reactive(data);
-    }
+    /** 响应式代理（字段镜像用；不对外暴露，字段只读——规范 §8.1 / §8.5） */
+    const r_data: Reactive<Transform2D> = reactive(data);
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: Transform2D): Transform2DLogic
-    {
-        return new Transform2DLogic(data);
-    }
-
-    /** 所属 Object3D（由 init 注入，只读） */
-    get entity(): Object3D | null
-    {
-        return this._entity as Object3D | null;
-    }
-
-    /** 布局组件（与 Transform2D 字段互相镜像；未 init 时为 null） */
-    get transformLayout(): TransformLayout | null
-    {
-        return this.#layoutRef.value;
-    }
-
-    /** 2D 描述区域（`x` = left、`y` = top、`z` = width、`w` = height） */
-    get rect(): Vector4
-    {
-        return this.#rect.value;
-    }
-
-    override init(object3D?: Object3D): void
-    {
-        super.init(object3D);
-        if (this.#inited) return;
-        this.#inited = true;
-
-        const entity = this.entity;
-        if (!entity) return;
-
-        // 处理依赖组件：布局组件（缺失时就地创建并挂到宿主对象上，与原实现一致）。
-        //
-        // ⚠️ 这里**直接查数据**而不是 `logic(entity).getComponent(...)`：本方法由宿主 logic
-        // 的组件初始化 effect 调用，此刻宿主 Object3DLogic 仍在构造中，`logic(entity)` 拿到的是
-        // 「构造中」占位对象（没有 getComponent）。数据层查找与 `TransformLayoutLogic` 内部一致。
-        const r_entity = reactive(entity);
-        // strictNullChecks：`Object3D.components` 是可选的。先把缺失的列表建立并**挂回宿主**
-        // （原先只写了 `?? []` 到局部变量，随后却 push 到 `r_entity.components` —— 一旦真的缺失，
-        // 局部数组会挂不上、`push` 还会以 TypeError 炸开）。EntityLogic 构造已 pre-fill，
-        // 这里兜住「未经 logic 构造就被 init」的路径。
-        if (!r_entity.components) r_entity.components = [];
-        const components = r_entity.components;
-        let transformLayout = components.find(
-            (component) => (component as { __type__?: string }).__type__ === 'TransformLayout',
-        ) as TransformLayout | undefined;
-        if (!transformLayout)
-        {
-            transformLayout = {
-                __type__: 'TransformLayout',
-                position: { x: 0, y: 0, z: 0 },
-                size: { x: 1, y: 1, z: 1 },
-                leftTop: { x: 0, y: 0, z: 0 },
-                rightBottom: { x: 0, y: 0, z: 0 },
-                anchorMin: { x: 0.5, y: 0.5, z: 0.5 },
-                anchorMax: { x: 0.5, y: 0.5, z: 0.5 },
-                pivot: { x: 0.5, y: 0.5, z: 0.5 },
-            };
-            components.push(transformLayout);
-        }
-        this.#layoutRef.value = transformLayout;
-
-        this.#installLayoutMirror();
-        this.#installTransformMirror();
-    }
-
-    override beforeRender(renderObject: RenderObject): void
-    {
-        // uniform 容器由 UI 组件各自按需创建（见 uiUniforms），不依赖宿主组件的排列顺序
-        uiUniforms(renderObject).u_rect = this.rect;
-    }
+    /**
+     * 各字段「上次已同步的值」（JSON 文本）。
+     *
+     * 复刻迁移前 `watcher.bind` 的**变化驱动**语义：只在某一侧字段**真的变化**时才写另一侧，
+     * 首次读到字段只登记不写。这样两侧各自的初始值不会被对方覆盖，
+     * 也不会出现「A 写 B、B 写 A」的自激循环（写入使两侧相等后即自止）。
+     */
+    const synced = new Map<string, string>();
 
     /**
      * 安装 Transform2D ↔ TransformLayout 的字段镜像。
@@ -225,19 +245,17 @@ export class Transform2DLogic extends ComponentLogicBase
      * 两个 effect 各管一个方向，都遵循「变化驱动」（见 {@link #takeChange}）：
      * 数据侧没变时不覆盖布局侧，反之亦然。
      */
-    #installLayoutMirror(): void
+    function installLayoutMirror(): void
     {
-        const r_data = this.#r_data;
-
         // @过渡 effect：数据 → 数据同步（与 Entity/Container 的同类 effect 同批处理，可 computed 化）
         effect(() =>
         {
-            const layout = this.#layoutRef.value;
+            const layout = logic._layoutRef.value;
             if (!layout) return;
             const r_layout = reactive(layout);
 
             const position = r_data.position;
-            const positionChanged = this.#takeChange('data.position', position ? [position.x, position.y] : null);
+            const positionChanged = takeChange('data.position', position ? [position.x, position.y] : null);
             if (position && positionChanged)
             {
                 const target = r_layout.position ?? { x: 0, y: 0, z: 0 };
@@ -248,7 +266,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const size = r_data.size;
-            const sizeChanged = this.#takeChange('data.size', size ? [size.x, size.y] : null);
+            const sizeChanged = takeChange('data.size', size ? [size.x, size.y] : null);
             if (size && sizeChanged)
             {
                 const target = r_layout.size ?? { x: 1, y: 1, z: 1 };
@@ -259,7 +277,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const anchorMin = r_data.anchorMin;
-            const anchorMinChanged = this.#takeChange('data.anchorMin', anchorMin ? [anchorMin.x, anchorMin.y] : null);
+            const anchorMinChanged = takeChange('data.anchorMin', anchorMin ? [anchorMin.x, anchorMin.y] : null);
             if (anchorMin && anchorMinChanged)
             {
                 const target = r_layout.anchorMin ?? { x: 0.5, y: 0.5, z: 0.5 };
@@ -270,7 +288,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const anchorMax = r_data.anchorMax;
-            const anchorMaxChanged = this.#takeChange('data.anchorMax', anchorMax ? [anchorMax.x, anchorMax.y] : null);
+            const anchorMaxChanged = takeChange('data.anchorMax', anchorMax ? [anchorMax.x, anchorMax.y] : null);
             if (anchorMax && anchorMaxChanged)
             {
                 const target = r_layout.anchorMax ?? { x: 0.5, y: 0.5, z: 0.5 };
@@ -281,7 +299,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const pivot = r_data.pivot;
-            const pivotChanged = this.#takeChange('data.pivot', pivot ? [pivot.x, pivot.y] : null);
+            const pivotChanged = takeChange('data.pivot', pivot ? [pivot.x, pivot.y] : null);
             if (pivot && pivotChanged)
             {
                 const target = r_layout.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
@@ -294,7 +312,7 @@ export class Transform2DLogic extends ComponentLogicBase
             // 边距四元组 ↔ leftTop.x / rightBottom.x / leftTop.y / rightBottom.y
             // （与迁移前的四条绑定逐一对应，不要重排顺序）
             const layoutValue = r_data.layout;
-            const layoutChanged = this.#takeChange(
+            const layoutChanged = takeChange(
                 'data.layout',
                 layoutValue ? [layoutValue.x, layoutValue.y, layoutValue.z, layoutValue.w] : null,
             );
@@ -314,12 +332,12 @@ export class Transform2DLogic extends ComponentLogicBase
         // @过渡 effect：数据 → 数据同步（方向与上一个 effect 相反，见 #takeChange 的防自激说明）
         effect(() =>
         {
-            const layout = this.#layoutRef.value;
+            const layout = logic._layoutRef.value;
             if (!layout) return;
             const r_layout = reactive(layout);
 
             const position = r_layout.position;
-            const positionChanged = this.#takeChange('layout.position', position ? [position.x, position.y] : null);
+            const positionChanged = takeChange('layout.position', position ? [position.x, position.y] : null);
             if (position && positionChanged)
             {
                 const target = r_data.position ?? { x: 0, y: 0 };
@@ -330,7 +348,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const size = r_layout.size;
-            const sizeChanged = this.#takeChange('layout.size', size ? [size.x, size.y] : null);
+            const sizeChanged = takeChange('layout.size', size ? [size.x, size.y] : null);
             if (size && sizeChanged)
             {
                 const target = r_data.size ?? { x: 1, y: 1 };
@@ -341,7 +359,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const anchorMin = r_layout.anchorMin;
-            const anchorMinChanged = this.#takeChange('layout.anchorMin', anchorMin ? [anchorMin.x, anchorMin.y] : null);
+            const anchorMinChanged = takeChange('layout.anchorMin', anchorMin ? [anchorMin.x, anchorMin.y] : null);
             if (anchorMin && anchorMinChanged)
             {
                 const target = r_data.anchorMin ?? { x: 0.5, y: 0.5 };
@@ -352,7 +370,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const anchorMax = r_layout.anchorMax;
-            const anchorMaxChanged = this.#takeChange('layout.anchorMax', anchorMax ? [anchorMax.x, anchorMax.y] : null);
+            const anchorMaxChanged = takeChange('layout.anchorMax', anchorMax ? [anchorMax.x, anchorMax.y] : null);
             if (anchorMax && anchorMaxChanged)
             {
                 const target = r_data.anchorMax ?? { x: 0.5, y: 0.5 };
@@ -363,7 +381,7 @@ export class Transform2DLogic extends ComponentLogicBase
             }
 
             const pivot = r_layout.pivot;
-            const pivotChanged = this.#takeChange('layout.pivot', pivot ? [pivot.x, pivot.y] : null);
+            const pivotChanged = takeChange('layout.pivot', pivot ? [pivot.x, pivot.y] : null);
             if (pivot && pivotChanged)
             {
                 const target = r_data.pivot ?? { x: 0.5, y: 0.5 };
@@ -375,7 +393,7 @@ export class Transform2DLogic extends ComponentLogicBase
 
             const leftTop = r_layout.leftTop;
             const rightBottom = r_layout.rightBottom;
-            const layoutChanged = this.#takeChange(
+            const layoutChanged = takeChange(
                 'layout.layout',
                 leftTop && rightBottom ? [leftTop.x, rightBottom.x, leftTop.y, rightBottom.y] : null,
             );
@@ -397,16 +415,14 @@ export class Transform2DLogic extends ComponentLogicBase
      * 迁移前绑的是 `Transform` 组件的 `rotation.z` 与 `scale.x` / `scale.y`
      * （主仓已无独立 Transform 对象，这些数据直接挂在 Object3D 上）。
      */
-    #installTransformMirror(): void
+    function installTransformMirror(): void
     {
-        const r_data = this.#r_data;
-
         // @过渡 effect：数据 → 数据同步（Transform 组件已并入 Object3D，语义不变）
         effect(() =>
         {
-            const entity = this.entity;
+            const entity = logic.entity;
             const rotation = r_data.rotation;
-            const rotationChanged = this.#takeChange('data.rotation', rotation ?? null);
+            const rotationChanged = takeChange('data.rotation', rotation ?? null);
             if (!entity || rotation === undefined || !rotationChanged) return;
 
             // 直接读写宿主对象的数据（与 Object3DLogic.rotation 同一数据源）：
@@ -422,11 +438,11 @@ export class Transform2DLogic extends ComponentLogicBase
         // @过渡 effect：数据 → 数据同步（方向相反）
         effect(() =>
         {
-            const entity = this.entity;
+            const entity = logic.entity;
             if (!entity) return;
 
             const transformRotation = reactive(entity).rotation ?? { x: 0, y: 0, z: 0 };
-            if (!this.#takeChange('entity.rotation', transformRotation.z)) return;
+            if (!takeChange('entity.rotation', transformRotation.z)) return;
 
             if ((r_data.rotation ?? 0) !== transformRotation.z)
             {
@@ -437,9 +453,9 @@ export class Transform2DLogic extends ComponentLogicBase
         // @过渡 effect：数据 → 数据同步（只镜像 x / y，z 保持宿主对象原值，与迁移前一致）
         effect(() =>
         {
-            const entity = this.entity;
+            const entity = logic.entity;
             const scale = r_data.scale;
-            const scaleChanged = this.#takeChange('data.scale', scale ? [scale.x, scale.y] : null);
+            const scaleChanged = takeChange('data.scale', scale ? [scale.x, scale.y] : null);
             if (!entity || !scale || !scaleChanged) return;
 
             const r_entity = reactive(entity);
@@ -453,11 +469,11 @@ export class Transform2DLogic extends ComponentLogicBase
         // @过渡 effect：数据 → 数据同步（方向相反）
         effect(() =>
         {
-            const entity = this.entity;
+            const entity = logic.entity;
             if (!entity) return;
 
             const transformScale = reactive(entity).scale ?? { x: 1, y: 1, z: 1 };
-            if (!this.#takeChange('entity.scale', [transformScale.x, transformScale.y])) return;
+            if (!takeChange('entity.scale', [transformScale.x, transformScale.y])) return;
 
             const scale = r_data.scale ?? { x: 1, y: 1 };
             if (scale.x !== transformScale.x || scale.y !== transformScale.y)
@@ -474,18 +490,23 @@ export class Transform2DLogic extends ComponentLogicBase
      * @param value 当前值（数值或数值数组，可 JSON 序列化）
      * @returns 相对上次记录**发生变化**时为 `true`；首次见到该 key 时只登记并返回 `false`
      */
-    #takeChange(key: string, value: unknown): boolean
+    function takeChange(key: string, value: unknown): boolean
     {
         const text = JSON.stringify(value);
-        const previous = this.#synced.get(key);
-        this.#synced.set(key, text);
+        const previous = synced.get(key);
+        synced.set(key, text);
 
         return previous !== undefined && previous !== text;
     }
+
+    logic._installLayoutMirror = installLayoutMirror;
+    logic._installTransformMirror = installTransformMirror;
+
+    return logic;
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Transform2D', Transform2DLogic.create);
+registerLogic('Transform2D', transform2DLogic);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Transform2D 是 Component3D（进而 Component）的子类型。
 registerComponentType('Transform2D', { baseTypes: ['Component3D'] });

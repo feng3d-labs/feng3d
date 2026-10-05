@@ -1,6 +1,6 @@
-import { ComponentLogicBase } from 'feng3d';
-import type { Color4, Component3D, MeshRenderer, Object3D, Segment } from 'feng3d';
-import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
+import { componentLogicProto, setupComponentLogicState } from 'feng3d';
+import type { Color4, Component3D, Component3DLogic, ComponentLogicState, MeshRenderer, Object3D, Segment } from 'feng3d';
+import { createLogicProto, effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';
 
 // ---------------------------------------------------------------------------
@@ -64,45 +64,58 @@ declare module '@feng3d/reactivity'
 }
 
 /** SectorObject3DLogic 逻辑类：按起止角重建三角扇与两条边框线段。 */
-export class SectorObject3DLogic extends ComponentLogicBase
+export interface SectorObject3DLogic extends Component3DLogic
 {
-    #data: SectorObject3D;
+}
 
-    protected constructor(data: SectorObject3D)
-    {
-        // 默认值填充（须在 super 之前完成）
-        const writable = data as UnReadonly<SectorObject3D>;
-        if (data.radius === undefined) writable.radius = SECTOR_RADIUS;
-        if (data.borderColor === undefined) writable.borderColor = SECTOR_BORDER;
-        if (data.startAngle === undefined) writable.startAngle = 0;
-        if (data.endAngle === undefined) writable.endAngle = 0;
+/** SectorObject3DLogic 实例的内部状态（不进公开接口，工厂装配时写入） */
+interface SectorObject3DLogicState extends ComponentLogicState
+{
+    /** 关联的组件数据（raw） */
+    _data: SectorObject3D;
 
-        super(data);
-        this.#data = data;
-    }
+    /** 重建三角扇顶点/索引与边框线段（init 的 effect 调用） */
+    _rebuild: (host: Object3D) => void;
+}
 
-    /** 内部创建入口（protected constructor 的唯一出口） */
-    static create(data: SectorObject3D): SectorObject3DLogic
-    {
-        return new SectorObject3DLogic(data);
-    }
+/** SectorObject3DLogic 的共享原型：继承 Component 基类实现，覆写 init */
+const sectorObject3DLogicProto = createLogicProto<SectorObject3DLogic>(componentLogicProto, {
+    init: {
+        value: function (this: SectorObject3DLogic & SectorObject3DLogicState, entity?: Object3D): void
+        {
+            componentLogicProto.init.call(this, entity);
 
-    override init(entity?: Object3D): void
-    {
-        super.init(entity);
+            const host = entity ?? (this.entity as Object3D | null);
+            if (!host) return;
 
-        const host = entity ?? (this.entity as Object3D | null);
-        if (!host) return;
+            // @过渡 effect：几何体顶点可由 computed 派生（随 mrsTool 状态派生重构迁移）
+            // 起止角 / 半径 / 边框色任一变化都重建几何体
+            effect(() => this._rebuild(host));
+        },
+    },
+});
 
-        // @过渡 effect：几何体顶点可由 computed 派生（随 mrsTool 状态派生重构迁移）
-        // 起止角 / 半径 / 边框色任一变化都重建几何体
-        effect(() => this.#rebuild(host));
-    }
+/**
+ * 工厂函数：SectorObject3DLogic 的唯一创建入口。
+ *
+ * @param data 扇形对象数据（raw）
+ */
+export function sectorObject3DLogic(data: SectorObject3D): SectorObject3DLogic
+{
+    // 默认值填充
+    const writable = data as UnReadonly<SectorObject3D>;
+    if (data.radius === undefined) writable.radius = SECTOR_RADIUS;
+    if (data.borderColor === undefined) writable.borderColor = SECTOR_BORDER;
+    if (data.startAngle === undefined) writable.startAngle = 0;
+    if (data.endAngle === undefined) writable.endAngle = 0;
+
+    const logic = setupComponentLogicState(Object.create(sectorObject3DLogicProto) as SectorObject3DLogic & SectorObject3DLogicState, data);
+    logic._data = data;
 
     /** 重建三角扇顶点/索引与边框线段 */
-    #rebuild(host: Object3D): void
+    function rebuild(host: Object3D): void
     {
-        const r_data = reactive(this.#data);
+        const r_data = reactive(data);
         const radius = r_data.radius ?? SECTOR_RADIUS;
         const borderColor = r_data.borderColor ?? SECTOR_BORDER;
         const start = r_data.startAngle ?? 0;
@@ -167,6 +180,9 @@ export class SectorObject3DLogic extends ComponentLogicBase
             ];
         }
     }
+    logic._rebuild = rebuild;
+
+    return logic;
 }
 
 /**
