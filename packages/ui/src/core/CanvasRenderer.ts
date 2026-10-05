@@ -1,4 +1,4 @@
-import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, View } from 'feng3d';
+import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, registerComponentType, View } from 'feng3d';
 import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import {
     mat4TransformRay,
@@ -127,6 +127,13 @@ export class CanvasRendererLogic extends RenderableLogic
 
 // 注册到统一 logic 分发表
 registerLogic('CanvasRenderer', CanvasRendererLogic as unknown as new (data: CanvasRenderer) => CanvasRendererLogic);
+
+// 登记组件类型：让引擎的类型表认识这个**上层包**的类型（feng3d 不硬编码 ui 的类型名）。
+// 不做这一步的后果（收尾批任务 1 实测）：`matchType` / `isRenderable` / `isRayCastable`
+// 都认不出 'CanvasRenderer'，于是 `Scene.models`、`getComponentsInChildren('Renderable')`、
+// `Scene.mouseCheckObjects`、`Raycaster.pick` 全部扫不到 UI 渲染器——UI 渲染不出来、拾取不到。
+// `renderable` / `rayCastable` 由 baseTypes（含 Renderable）派生，无需显式写。
+registerComponentType('CanvasRenderer', { baseTypes: ['Renderable'] });
 
 /**
  * 绘制视图中的 UI（迁移前是 `CanvasRenderer.draw(view)` 静态方法）。

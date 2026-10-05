@@ -1,4 +1,4 @@
-import { Component3D, ComponentLogicBase, Object3D, TransformLayout } from 'feng3d';
+import { Component3D, ComponentLogicBase, Object3D, registerComponentType, TransformLayout } from 'feng3d';
 import { computed, effect, logic as getLogic, reactive, ref, registerLogic } from '@feng3d/reactivity';
 import type { Reactive } from '@feng3d/reactivity';
 import { Vector2Like, Vector4, Vector4Like } from '@feng3d/math';
@@ -184,7 +184,12 @@ export class Transform2DLogic extends ComponentLogicBase
         // 的组件初始化 effect 调用，此刻宿主 Object3DLogic 仍在构造中，`logic(entity)` 拿到的是
         // 「构造中」占位对象（没有 getComponent）。数据层查找与 `TransformLayoutLogic` 内部一致。
         const r_entity = reactive(entity);
-        const components = r_entity.components ?? [];
+        // strictNullChecks：`Object3D.components` 是可选的。先把缺失的列表建立并**挂回宿主**
+        // （原先只写了 `?? []` 到局部变量，随后却 push 到 `r_entity.components` —— 一旦真的缺失，
+        // 局部数组会挂不上、`push` 还会以 TypeError 炸开）。EntityLogic 构造已 pre-fill，
+        // 这里兜住「未经 logic 构造就被 init」的路径。
+        if (!r_entity.components) r_entity.components = [];
+        const components = r_entity.components;
         let transformLayout = components.find(
             (component) => (component as { __type__?: string }).__type__ === 'TransformLayout',
         ) as TransformLayout | undefined;
@@ -200,7 +205,7 @@ export class Transform2DLogic extends ComponentLogicBase
                 anchorMax: { x: 0.5, y: 0.5, z: 0.5 },
                 pivot: { x: 0.5, y: 0.5, z: 0.5 },
             };
-            r_entity.components.push(transformLayout);
+            components.push(transformLayout);
         }
         this.#layoutRef.value = transformLayout;
 
@@ -481,6 +486,9 @@ export class Transform2DLogic extends ComponentLogicBase
 
 // 注册到统一 logic 分发表
 registerLogic('Transform2D', Transform2DLogic as unknown as new (data: Transform2D) => Transform2DLogic);
+
+// 登记组件类型（理由见 core/CanvasRenderer.ts）：Transform2D 是 Component3D（进而 Component）的子类型。
+registerComponentType('Transform2D', { baseTypes: ['Component3D'] });
 
 /**
  * 取对象（或其所属 Object3D）上的 Transform2D 组件数据。

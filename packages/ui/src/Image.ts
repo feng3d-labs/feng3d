@@ -1,4 +1,4 @@
-import { Component3D, ComponentLogicBase, defaultTexture, Object3D, resolveTexture, TextureField } from 'feng3d';
+import { Component3D, ComponentLogicBase, defaultTexture, Object3D, registerComponentType, resolveTexture, TextureField } from 'feng3d';
 import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
 import type { RenderObject } from '@feng3d/webgpu';
@@ -119,6 +119,9 @@ export class ImageLogic extends ComponentLogicBase
 
 // 注册到统一 logic 分发表
 registerLogic('Image', ImageLogic as unknown as new (data: Image) => ImageLogic);
+
+// 登记组件类型（理由见 core/CanvasRenderer.ts）：Image 是 Component3D（进而 Component）的子类型。
+registerComponentType('Image', { baseTypes: ['Component3D'] });
 
 /**
  * 创建图片对象（带 2D 变换、画布渲染器与图片组件的 Object3D 字面量）。
