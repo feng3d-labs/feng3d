@@ -69,6 +69,11 @@ export default {
         "ParticleBasicTest",
         "ParticleAdditiveTest",
         "ParticleShapesTest",
+        "ParticleFireTest",
+        "ParticleSmokeTest",
+        "ParticleExplosionTest",
+        "ParticleSnowTest",
+        "ParticlePortalTest",
     ],
     "animator": [
         "SceneLoadTest",

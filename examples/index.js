@@ -45,6 +45,11 @@ const files = {
         'ParticleBasicTest',
         'ParticleAdditiveTest',
         'ParticleShapesTest',
+        'ParticleFireTest',
+        'ParticleSmokeTest',
+        'ParticleExplosionTest',
+        'ParticleSnowTest',
+        'ParticlePortalTest',
     ],
 };
 
