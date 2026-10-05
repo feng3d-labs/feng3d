@@ -411,6 +411,18 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 > 这是**修正**（手写版把「没有 mipmap 却设了 mipmapFilter」的错误配置带进了 GPU），不是渲染回归；
 > 若某处需要严格像素一致，可在数据侧按手写格式补一个 `s_textureSampler_texture` 键。
 >
+> ✅ **第四批（#711 阴影批，2026-10-05）**：**文件级** WGSL 迁移的第一次——`shaders/shadow.vertex.wgsl.ts`
+> 改为 TSL 生成（`shaders/tsl/shadow.ts`，`ShadowRenderer` 取 `getShadowVertexShaderWGSL()`），并**删除两个 `.wgsl.ts`**：
+> 被取代的 `shadow.vertex.wgsl.ts` 与**从未被引用**的 `shadow.fragment.wgsl.ts`（ShadowRenderer 用 vertex-only
+> pipeline、没有 fragment；全仓 grep 只有它自己引用自己）。
+>
+> 仓内手写 `.wgsl.ts` 文件 **4 → 2**（余 `common.wgsl.ts` 与 `modules/skeleton.wgsl.ts`）。
+>
+> 验证：`webgl_shadowmap` 示例的 actual 截图与 master **SHA256 完全相同**（零容差）；`webgl_shadowmap_pointlight`
+> 的 master 连跑两次也不同——该示例在 `e2e/examples.config.ts` 里本就放宽到 0.05，属噪声、不可归因。
+> 另注：`away3d/DebugShadowMap` 在 e2e 里是 `fixme`（已知引擎 bug「全屏调试平面采样的阴影深度图恒为空」），
+> 与本批无关。
+>
 **风险**：TSL 的 API 可能因主仓一年多演进已不兼容；若差异属"缺失级"过多，
 退路是**只收回 TSL 的类型系统与代码生成核心**，先服务新增材质。
 
