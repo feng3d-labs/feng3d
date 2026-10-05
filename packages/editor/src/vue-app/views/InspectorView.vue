@@ -30,7 +30,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { globalEmitter, objectview, FileAsset, ReadRS } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import type { IEvent } from 'feng3d';
-import { editorRS } from '../../assets/EditorRS';
+import { useEditorRS } from '../composables/useEditorRS';
 import { editorAsset } from '../../ui/assets/EditorAsset';
 import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';
@@ -186,7 +186,7 @@ async function saveShowData() {
   if (viewData.value.assetId) {
     const feng3dAsset = ReadRS.rs.getAssetById(viewData.value.assetId);
     if (feng3dAsset) {
-      await editorRS.writeAsset(feng3dAsset);
+      await useEditorRS().writeAsset(feng3dAsset);
     }
   } else if (viewData.value instanceof AssetNode) {
     editorAsset.saveAsset(viewData.value);
