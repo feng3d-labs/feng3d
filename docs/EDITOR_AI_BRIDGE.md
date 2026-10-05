@@ -64,7 +64,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 结果回传**仍走 HTTP** `POST /result`（那条路径与通道无关、永远可用）。
 
 **页面也能直接调宿主方法**：页面与宿主**同源**，所以它自己就能 `fetch('/__editor-bridge/call', …)`
-调 `host.*`（不必让调用方替它转一手）。这是"宿主面板"（项目文件树 / 构建按钮 / 构建输出）的地基——
+调 `host.*`（不必让调用方替它转一手）。这是"宿主面板"（项目文件树 / 构建按钮 / 发布按钮 / 构建输出）的地基——
 面板里每一个动作都走这条路。自检：`node scripts/editor-page-host-call.mjs --build`。
 
 **三条硬约束**（都有机器判据）：
@@ -373,7 +373,7 @@ CLI 侧用 `--target <name>` 或环境变量 `BRIDGE_TARGET`。
 |---|---|---|
 | `build_run` | `host.build.run` | 在项目目录里跑项目自己的 npm script（默认 `build`）；**失败如实**：返回 `{ script, code, ok, output }`，非 0 退出码原样回，不会"跑挂了还说成功" |
 | `build_status` | `host.build.status` | 当前是否正在构建（同一项目同时只允许一个构建） |
-| `publish_run` | `host.publish.run` | 按**启用状态**把插件 runtime 端打进产物 `dist/runtime.js`（未启用的插件连入口都不给它进） |
+| `publish_run` | `host.publish.run` | **先跑项目自己的构建**（`npm run build`），再按**启用状态**把插件 runtime 端打进产物 `dist/runtime.js`（未启用的插件连入口都不给它进）。构建失败**即中止**并如实回报（`{ ok: false, stage: 'build', build: { code, output } }`），不产出"半个产物" |
 
 其余宿主方法（`host.workspace.*` 的读写 / 建删目录 / 二进制等）**有意不暴露**给 AI：它们是给
 **页面**当文件系统用的（`HostFS`），逐条暴露只会让工具表膨胀。要手动调时用 CLI
