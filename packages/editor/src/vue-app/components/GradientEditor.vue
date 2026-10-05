@@ -91,7 +91,8 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { Gradient, GradientMode, ImageUtil, rect2ContainsPoint, rect2Inflate, watcher, windowEventProxy } from 'feng3d';
+import { GradientMode, gradientGetAlpha, gradientGetColor, ImageUtil, rect2ContainsPoint, rect2Inflate, watcher, windowEventProxy } from 'feng3d';
+import type { Gradient, WritableGradientLike } from 'feng3d';
 import type { Color3, Color4 } from 'feng3d';
 import { colorRgb, colorToCssRgb, type ColorLike, type WritableColorLike } from '../../utils/colorUtils';
 import ComboBox from './ComboBox.vue';
@@ -135,8 +136,9 @@ const selectedMode = computed(() => {
  *
  * `Gradient.colorKeys` / `alphaKeys` 的元素来自 `@feng3d/math` 的 `GradientColorKey` /
  * `GradientAlphaKey`——阶段 C-b 起 `GradientColorKey.color` 也是**带 `__type__` 的纯数据**
- * （math 的 `Color3` class 已删除），新建的临时键同样是字面量。这里用结构类型容纳两者：
- * 颜色按 `ColorLike`（只读 r/g/b/a）兼容，不在编辑器里引入 math 的形状依赖。
+ * （math 的 `Color3` class 已删除），issue #134 第二批起 `Gradient` 本身也变成纯数据接口
+ * （`gradientGetColor` 纯函数产出的颜色**不带**判别字段，由本文件在装配点补）。
+ * 这里用结构类型容纳两者：颜色按 `ColorLike`（只读 r/g/b/a）兼容，不在编辑器里引入 math 的形状依赖。
  */
 interface SelectedGradientKey
 {
@@ -328,7 +330,7 @@ function onAlphaLineMouseDown(event: MouseEvent) {
     if (onClickIndex !== -1) {
         selectedKey.value = alphaKeys[onClickIndex];
     } else if (alphaKeys.length < 8) {
-        const newKey = { time, alpha: props.gradient.getAlpha(time) };
+        const newKey = { time, alpha: gradientGetAlpha(props.gradient, time) };
         selectedKey.value = newKey;
         alphaKeys.push(newKey);
         alphaKeys.sort((a, b) => a.time - b.time);
@@ -364,7 +366,9 @@ function onColorLineMouseDown(event: MouseEvent) {
     if (onClickIndex !== -1) {
         selectedKey.value = colorKeys[onClickIndex];
     } else if (colorKeys.length < 8) {
-        const newKey = { time, color: props.gradient.getColor(time) };
+        // 装配点显式补 `__type__`：`gradientGetColor` 是纯函数，按约定不产判别字段（方案 §11.9.1），
+        // 而 `colorKeys` 的元素类型 `GradientColorKey.color` 要求带标记的 `Color3`
+        const newKey = { time, color: { __type__: 'Color3' as const, ...gradientGetColor(props.gradient, time) } };
         selectedKey.value = newKey;
         colorKeys.push(newKey);
         colorKeys.sort((a, b) => a.time - b.time);
@@ -457,7 +461,10 @@ function onAlphaColorMouseUp() {
 // 模式变化
 function onModeChange(item: { label: string; value: GradientMode } | null) {
     if (item) {
-        props.gradient.mode = item.value;
+        // issue #134 第二批起 `Gradient` 是纯数据接口（字段类型上 readonly）：
+        // 写入经响应式代理（根规范 §8.5 / §11.3），代理不外泄、不读代理再写回（§8.2 / §8.4）
+        const r_gradient = reactive(props.gradient) as WritableGradientLike;
+        r_gradient.mode = item.value;
         updateView();
         emit('change', props.gradient);
     }

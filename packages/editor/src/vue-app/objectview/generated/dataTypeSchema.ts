@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 82 个类型 / 421 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 84 个类型 / 431 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -182,6 +182,11 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'Frustum': [
         { name: 'planes', type: 'readonly PlaneLike[]', control: 'Array', readonly: true, itemControl: 'Object' },
     ],
+    'Gradient': [
+        { name: 'mode', type: 'GradientMode', control: 'Enum', readonly: true, values: ['Blend', 'Fixed'], numericValues: { Blend: 0, Fixed: 1 } },
+        { name: 'alphaKeys', type: 'GradientAlphaKey[]', control: 'Array', readonly: true, itemControl: 'Object' },
+        { name: 'colorKeys', type: 'GradientColorKey[]', control: 'Array', readonly: true, itemControl: 'Object' },
+    ],
     'Graphics': [
     ],
     'HoldSize': [
@@ -293,6 +298,15 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
+    ],
+    'MinMaxGradient': [
+        { name: 'mode', type: 'MinMaxGradientMode', control: 'Enum', readonly: true, values: ['Color', 'Gradient', 'TwoColors', 'TwoGradients', 'RandomColor'], numericValues: { Color: 0, Gradient: 1, TwoColors: 2, TwoGradients: 3, RandomColor: 4 } },
+        { name: 'color', type: 'Color4', control: 'Color4', readonly: true },
+        { name: 'colorMin', type: 'Color4', control: 'Color4', readonly: true },
+        { name: 'colorMax', type: 'Color4', control: 'Color4', readonly: true },
+        { name: 'gradient', type: 'Gradient', control: 'Object', readonly: true, typeNames: ['Gradient'] },
+        { name: 'gradientMin', type: 'Gradient', control: 'Object', readonly: true, typeNames: ['Gradient'] },
+        { name: 'gradientMax', type: 'Gradient', control: 'Object', readonly: true, typeNames: ['Gradient'] },
     ],
     'NormalMaterial': [
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },

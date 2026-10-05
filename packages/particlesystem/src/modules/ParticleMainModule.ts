@@ -1,4 +1,5 @@
-import { color4Copy, MinMaxCurve, MinMaxCurveVector3, MinMaxGradient, vec3Copy, vec3From, vec3ScaleNumber } from '@feng3d/math';
+import { color4Copy, minMaxGradientDefault, minMaxGradientGetValue, MinMaxCurve, MinMaxCurveVector3, vec3Copy, vec3From, vec3ScaleNumber } from '@feng3d/math';
+import type { MinMaxGradient } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
 import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialization, serialize } from '@feng3d/serialization';
@@ -431,11 +432,15 @@ export class ParticleMainModule extends ParticleModule
      * The initial color of particles when emitted.
      *
      * 粒子发射时的初始颜色。
+     *
+     * issue #134 第二批起 `MinMaxGradient` 是纯数据接口（class 已删除）：装配点显式写
+     * `__type__`（面板按它选 `OAVMinMaxGradient` 控件、序列化也靠它识别），默认值由
+     * `minMaxGradientDefault()` 补。
      */
     @serialize
     // @oav({ tooltip: "The initial color of particles when emitted." })
     @oav({ tooltip: '粒子发射时的初始颜色。' })
-    startColor = new MinMaxGradient();
+    startColor: MinMaxGradient = { __type__: 'MinMaxGradient', ...minMaxGradientDefault() };
 
     /**
      * Scale applied to the gravity.
@@ -538,7 +543,8 @@ export class ParticleMainModule extends ParticleModule
         vec3From(0, 0, 0, particle.angularVelocity);
         //
         // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `vec3Copy(..., particle.startColor)` → `color4Copy(src, out)`
-        color4Copy(this.startColor.getValue(birthRateAtDuration), particle.startColor);
+        // issue #134 第二批：原 `this.startColor.getValue(...)` → `minMaxGradientGetValue(this.startColor, ...)`
+        color4Copy(minMaxGradientGetValue(this.startColor, birthRateAtDuration), particle.startColor);
     }
 
     /**

@@ -12,8 +12,9 @@
  * `TypeError: Right-hand side of 'instanceof' is not callable`）。
  *
  * **issue #134 阶段 C-b 起 math 侧也没有 class 了**：`@feng3d/math` 的 `Color3` / `Color4`
- * 也变成纯数据接口（分量**必填**、带 `readonly __type__`），`Gradient` / `MinMaxGradient`
- * 这些 math class 的颜色字段同样是带 `__type__` 的纯数据。两套体系（core 的分量可选、
+ * 也变成纯数据接口（分量**必填**、带 `readonly __type__`）；**第二批（渐变族）起
+ * `Gradient` / `MinMaxGradient` 同样是纯数据接口**（各自的 `*Ops.ts` 提供纯函数，
+ * `MinMaxGradient` 的颜色字段因此也是带 `__type__` 的纯数据）。两套体系（core 的分量可选、
  * math 的分量必填）本批有意不合流，靠 `ColorLike` 这种「只要求可读 r/g/b(/a)」的最小形状过渡。
  *
  * 详见 `packages/editor/docs/API_MIGRATION.md` §9。
@@ -36,9 +37,9 @@ export type Color = Color3 | Color4;
  *
  * 编辑器里同时存在两种颜色形态，读取型工具必须都能接受：
  * - **core 的纯数据接口** `Color3` / `Color4`（编辑器与主仓场景数据，带 `__type__`、分量可选）；
- * - **math 的颜色数据**（`Gradient` / `MinMaxGradient` 等 math class 的颜色字段，
- *   阶段 C-b 起也是带 `__type__` 的纯数据，但**分量必填**——例如
- *   `MinMaxGradientView` 里的 `minMaxGradient.getValue(0)`）。
+ * - **math 的颜色数据**（`Gradient` / `MinMaxGradient` 的颜色字段——issue #134 第二批起这两个
+ *   类型本身也是带 `__type__` 的纯数据接口（class 已删除），颜色字段**分量必填**——例如
+ *   `MinMaxGradientView` 里的 `minMaxGradientGetValue(minMaxGradient, 0)`）。
  */
 export interface ColorLike
 {
