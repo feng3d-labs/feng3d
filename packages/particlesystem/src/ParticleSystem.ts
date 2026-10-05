@@ -27,7 +27,7 @@ import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInit
 import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from './modules/ParticleLimitVelocityOverLifetimeModule';
 import { particleMainModuleDefault, particleMainModuleInitParticleState, particleMainModuleUpdateParticleState, type ParticleMainModule } from './modules/ParticleMainModule';
 import { ParticleModule, type WritableParticleModuleLike } from './modules/ParticleModule';
-import { ParticleNoiseModule } from './modules/ParticleNoiseModule';
+import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdate, particleNoiseModuleUpdateParticleState, type ParticleNoiseModule } from './modules/ParticleNoiseModule';
 import { particleRotationBySpeedModuleDefault, particleRotationBySpeedModuleInitParticleState, particleRotationBySpeedModuleUpdateParticleState, type ParticleRotationBySpeedModule } from './modules/ParticleRotationBySpeedModule';
 import { particleRotationOverLifetimeModuleDefault, particleRotationOverLifetimeModuleInitParticleState, particleRotationOverLifetimeModuleUpdateParticleState, type ParticleRotationOverLifetimeModule } from './modules/ParticleRotationOverLifetimeModule';
 import { ParticleShapeModule } from './modules/ParticleShapeModule';
@@ -320,8 +320,8 @@ export class ParticleSystem implements Renderable
     get noise() { return this._noise; }
     set noise(v)
     {
-        ArrayUtils.replace(this._modules, this._noise, v);
-        v.particleSystem = this;
+        // 已纯数据化：不再进 _modules 统一遍历，由 _initParticleState / _updateParticleState / update 显式调用
+        (v as WritableParticleModuleLike).particleSystem = this;
         this._noise = v;
     }
     private _noise: ParticleNoiseModule;
@@ -387,7 +387,7 @@ export class ParticleSystem implements Renderable
         this.sizeBySpeed = { __type__: 'ParticleSizeBySpeedModule', ...particleSizeBySpeedModuleDefault() };
         this.rotationOverLifetime = { __type__: 'ParticleRotationOverLifetimeModule', ...particleRotationOverLifetimeModuleDefault() };
         this.rotationBySpeed = { __type__: 'ParticleRotationBySpeedModule', ...particleRotationBySpeedModuleDefault() };
-        this.noise = new ParticleNoiseModule();
+        this.noise = { __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() };
         this.subEmitters = { __type__: 'ParticleSubEmittersModule', ...particleSubEmittersModuleDefault() };
         this.textureSheetAnimation = { __type__: 'ParticleTextureSheetAnimationModule', ...particleTextureSheetAnimationModuleDefault() };
 
@@ -431,6 +431,8 @@ export class ParticleSystem implements Renderable
         {
             m.update(deltaTime);
         });
+
+        particleNoiseModuleUpdate(this._noise, deltaTime);
 
         this._updateActiveParticlesState(deltaTime);
 
@@ -1010,6 +1012,7 @@ export class ParticleSystem implements Renderable
         particleRotationBySpeedModuleInitParticleState(this._rotationBySpeed, particle);
         particleVelocityOverLifetimeModuleInitParticleState(this._velocityOverLifetime, particle);
         particleTextureSheetAnimationModuleInitParticleState(this._textureSheetAnimation, particle);
+        particleNoiseModuleInitParticleState(this._noise, particle);
     }
 
     /**
@@ -1031,6 +1034,7 @@ export class ParticleSystem implements Renderable
         particleLimitVelocityOverLifetimeModuleUpdateParticleState(this._limitVelocityOverLifetime, particle);
         particleVelocityOverLifetimeModuleUpdateParticleState(this._velocityOverLifetime, particle);
         particleTextureSheetAnimationModuleUpdateParticleState(this._textureSheetAnimation, particle);
+        particleNoiseModuleUpdateParticleState(this._noise, particle);
         particleSubEmittersModuleUpdateParticleState(this._subEmitters, particle);
         particleRotationBySpeedModuleUpdateParticleState(this._rotationBySpeed, particle);
         particleRotationOverLifetimeModuleUpdateParticleState(this._rotationOverLifetime, particle);

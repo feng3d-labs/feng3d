@@ -10,7 +10,7 @@ import { particleForceOverLifetimeModuleDefault, particleForceOverLifetimeModule
 import { particleInheritVelocityModuleDefault, particleInheritVelocityModuleInitParticleState, particleInheritVelocityModuleUpdateParticleState, type ParticleInheritVelocityModule } from '../src/modules/ParticleInheritVelocityModule';
 import { particleLimitVelocityOverLifetimeModuleDefault, particleLimitVelocityOverLifetimeModuleInitParticleState, particleLimitVelocityOverLifetimeModuleUpdateParticleState, type ParticleLimitVelocityOverLifetimeModule } from '../src/modules/ParticleLimitVelocityOverLifetimeModule';
 import { particleMainModuleDefault, particleMainModuleInitParticleState, particleMainModuleUpdateParticleState, type ParticleMainModule } from '../src/modules/ParticleMainModule';
-import { ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
+import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdateParticleState, type ParticleNoiseModule } from '../src/modules/ParticleNoiseModule';
 import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule } from '../src/modules/ParticleSizeBySpeedModule';
 import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule } from '../src/modules/ParticleSizeOverLifetimeModule';
 import { particleSubEmittersModuleDefault, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule } from '../src/modules/ParticleSubEmittersModule';
@@ -158,9 +158,9 @@ const MODULES: ModuleEntry[] = [
     },
     {
         name: 'ParticleNoiseModule',
-        create: () => new ParticleNoiseModule(),
-        initParticleState: (m, p) => (m as ParticleNoiseModule).initParticleState(p),
-        updateParticleState: (m, p) => (m as ParticleNoiseModule).updateParticleState(p),
+        create: () => ({ __type__: 'ParticleNoiseModule', ...particleNoiseModuleDefault() }),
+        initParticleState: (m, p) => particleNoiseModuleInitParticleState(m as ParticleNoiseModule, p),
+        updateParticleState: (m, p) => particleNoiseModuleUpdateParticleState(m as ParticleNoiseModule, p),
     },
     {
         name: 'ParticleSizeBySpeedModule',
