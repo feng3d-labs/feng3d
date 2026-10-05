@@ -3,16 +3,16 @@
     "tolerance": 0.02,
     "tiers": {
         "minimal": {
-            "raw": 31868,
-            "gzip": 9133
+            "raw": 517,
+            "gzip": 205
         },
         "core": {
-            "raw": 611454,
-            "gzip": 152948
+            "raw": 346212,
+            "gzip": 93671
         },
         "full": {
-            "raw": 718672,
-            "gzip": 187572
+            "raw": 500536,
+            "gzip": 141902
         }
     }
 }
