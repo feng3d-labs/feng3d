@@ -2,8 +2,8 @@ import { reactive } from '@feng3d/reactivity';
 import { RenderObject, RenderPassDescriptor, Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
 
-import redFragWGSL from '../../shaders/red.frag.wgsl';
-import triangleVertWGSL from '../../shaders/triangle.vert.wgsl';
+import { getRedFragWGSL } from '../../shaders-tsl/redFrag';
+import { getTriangleVertWGSL } from '../../shaders-tsl/triangleVert';
 
 import styles from './animatedCanvasSize.module.css';
 
@@ -21,7 +21,7 @@ const init = async (canvas: HTMLCanvasElement) =>
 
     const renderObject: RenderObject = {
         pipeline: {
-            vertex: { code: triangleVertWGSL }, fragment: { code: redFragWGSL },
+            vertex: { code: getTriangleVertWGSL() }, fragment: { code: getRedFragWGSL() },
         },
         draw: { __type__: 'DrawVertex', vertexCount: 3 },
     };
