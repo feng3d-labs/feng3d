@@ -34,6 +34,33 @@ import { Service } from '@deepseek-ai/cordis';
  *
  * 一条条目坏掉只丢那一条（并记进 `problems`），其余照常装——与"坏 patch 不拖垮编辑器"同一纪律。
  */
+/**
+ * 读项目的**启用集**（`feng3d.project.json` 的 `plugins`，字符串数组）。
+ *
+ * 读不到 / 坏掉 / 形状不对一律返回 `null`（= **不约束**）—— 与"项目里一份坏清单
+ * 不该让宿主起不来"同一纪律；而**明确的空数组**要如实返回 `[]`（那是"一个都不要"）。
+ *
+ * @param {string} [path] 项目元数据文件路径
+ * @returns {readonly string[] | null} 启用集；`null` 表示不约束
+ */
+function readProjectPlugins(path)
+{
+    if (!path || !existsSync(path)) return null;
+
+    try
+    {
+        const parsed = JSON.parse(readFileSync(path, 'utf8'));
+
+        if (!Array.isArray(parsed?.plugins)) return null;
+
+        return parsed.plugins.filter((id) => typeof id === 'string' && id.length > 0);
+    }
+    catch
+    {
+        return null;
+    }
+}
+
 export class PluginPackages extends Service
 {
     /** 插件配置文件的绝对路径（`plugin` 层的显式那份；不存在即"只有目录约定"） */
@@ -59,7 +86,7 @@ export class PluginPackages extends Service
 
     /**
      * @param {import('@deepseek-ai/cordis').Context} ctx 所属 context
-     * @param {{ configPath: string, pluginsDir?: string, builtinPath?: string, userConfigPath?: string, hostDescription?: string }} config 配置
+     * @param {{ configPath: string, pluginsDir?: string, builtinPath?: string, userConfigPath?: string, projectMetaPath?: string, hostDescription?: string }} config 配置
      */
     constructor(ctx, config)
     {
@@ -69,6 +96,16 @@ export class PluginPackages extends Service
         this.pluginsDir = config.pluginsDir ?? join(dirname(config.configPath), 'plugins');
         this.builtinPath = config.builtinPath;
         this.userConfigPath = config.userConfigPath;
+
+        /**
+         * 项目声明的**启用集**（`feng3d.project.json` 的 `plugins`，只有 id）。
+         *
+         * 三种取值，**必须区分开**：
+         * - `null` —— 没给路径 / 读不到 / 坏掉了 → **不约束**（老项目照常全启用）；
+         * - `[]` —— 明确写了空数组 → **一个都不要**；
+         * - `[id, …]` —— 只启用列出的那些。
+         */
+        this.projectPlugins = readProjectPlugins(config.projectMetaPath);
         this.hostDescription = config.hostDescription ?? 'feng3d-editor host';
     }
 
@@ -158,7 +195,12 @@ export class PluginPackages extends Service
                 // 没给就按包名解析（`import '<id>'`，需要它真的是个能解析的包）
                 runtimeModule: winner.item.runtimeModule,
                 // 启用状态（#277）：显式 `false` 才是不启用——缺省视为启用
-                enabled: winner.item.enabled !== false,
+                //
+                // 再叠一层**项目级启用集**（#274 / §5.2）：`feng3d.project.json` 的 `plugins`
+                // 是这个项目"要用哪些"。它**表达成 `enabled: false` 而不是从图里删掉** ——
+                // 页面仍看得到"有这么个插件、但项目没启用"，用户也能在设置里临时打开；
+                // 删掉就等于它在这个项目里根本不存在。
+                enabled: winner.item.enabled !== false && !this.isDisabledByProject(id, winner.layer),
                 // **层身份**：页面按它登记清单，于是跨层同名贡献点是"上层赢 + 留痕"
                 // 而不是同层冲突。它由来源方判定，页面只消费
                 layer: winner.layer,
@@ -168,6 +210,25 @@ export class PluginPackages extends Service
         }
 
         return { entries: this.entries.length, problems: this.problems };
+    }
+
+    /**
+     * 项目级启用集是否排除了它（#274 / §5.2）。
+     *
+     * @param {string} id 插件 id
+     * @param {string} layer 它来自哪一层
+     * @returns {boolean} 是否被项目排除
+     */
+    isDisabledByProject(id, layer)
+    {
+        // 只约束 `plugin` 层（"这个产物/项目装了哪些"）。
+        // `builtin` 是编辑器自带的能力、`user` 是 `--plugins` 给的临时覆盖 —— 都不受它管。
+        if (layer !== 'plugin') return false;
+
+        // `null` = 项目没声明 → 不约束（与"声明了空数组"必须区分开）
+        if (this.projectPlugins === null) return false;
+
+        return !this.projectPlugins.includes(id);
     }
 
     /**
