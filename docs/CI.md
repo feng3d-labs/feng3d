@@ -21,7 +21,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | `packages/*/test/**/*.spec.ts` | 其余 19 个子包的测试 |
 | `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs`、R2 判据层 `r2ModuleScope.spec.ts` 等） |
 
-**当前基线：258 个测试文件 / 2936 个测试用例全部通过**（本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
+**当前基线：303 个测试文件 / 3392 个测试用例全部通过**（本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
 本行原先记的是「234 / 2709」、§2.1 第 12 步记的是「252 / 2843」——**两处长期互不一致**（每次都只同步一处），
 issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）按实测把两处一起对齐。
 
@@ -181,7 +181,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > **2026-10-05（蒙皮第二批 #337）本机实测**：已 rebase 到最新 master（含 #674 批 1 的 Geometry 工厂化、
 > #652 的门禁脚本退出码回归用例），新增测试文件
 > `packages/feng3d/src/animators/skeleton/skinningVertexLayout.spec.ts`（顶点缓冲布局离线验收），
-> 全量 **258 个测试文件 / 2936 个用例**。`webgpu` 行 **40.1 → 42.5**：新用例首次打通
+> 全量 **303 个测试文件 / 3392 个用例**。`webgpu` 行 **40.1 → 42.5**：新用例首次打通
 > `WGPUVertexBufferLayout` 的顶点布局路径（此前该路径只在真 GPU 渲染时走到，单测覆盖不到）；
 > `feng3d` 行 **67.2 → 68.0**（#674 批 1 工厂化后由本批新用例托回）。全局四项
 > **56.47 / 45.73 / 53.97 / 56.55**，阈值 `54/44/51/54` **未变**（余量 2.47 / 1.73 / 2.97 / 2.55）。
@@ -358,7 +358,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
 | 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
 | 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
-| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **258 个测试文件 / 2936 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
+| 12 | 单元测试 + 覆盖率门禁 + **覆盖率虚高自检** | `npm run test:coverage` | R10 | 全量 **303 个测试文件 / 3392 个测试用例**（与 §1 同步，issue #652 按实测对齐），校验四项覆盖率不低于阈值（见 §1.3），**随后**跑 `scripts/check-coverage-inflation.mjs` 拦「被间接 `import` 却从未执行、却被整份算成 100%」的文件（issue #645，新增即失败，见下） |
 | 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
 | 14 | 类型检查 | `npm run types:packages` | R6 | **22 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
 | 15 | 构建校验 | `npm run build:packages` | —— | **23 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |

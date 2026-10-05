@@ -79,6 +79,48 @@ for (const workflow of WORKFLOWS)
     }
 }
 
+// ---------- 第二组：§2.1 步骤表的每条命令真的在 CI 里 ----------
+//
+// `docs/CI.md` §2.1 断言"第 N 步跑某命令"。若某条命令其实**已移出 CI**，读者会以为它守着规范——
+// 而这正是 §15 元规则要防的"门禁空转"。
+//
+// **判据必须认 `prelint:ci` 链路**：第 22 步（`check-register-logic-factory.mjs`）在 `ci.yml` 里
+// 搜不到，但它经由 `npm run lint:ci` → `prelint:ci` 真的在 CI 里跑（表里也写明了这一点）。
+// 不认这条链路就会误报一条**本来正确**的文档。
+const packageJson = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8'));
+const prelint = packageJson.scripts['prelint:ci'] ?? '';
+const ciYml = readFileSync(resolve(ROOT, '.github/workflows/ci.yml'), 'utf8');
+const ciMd = readFileSync(resolve(ROOT, 'docs/CI.md'), 'utf8').split(/\r?\n/);
+
+const tableStart = ciMd.findIndex((line) => /^###\s*2\.1\s/.test(line));
+const tableEnd = ciMd.findIndex((line, index) => index > tableStart && /^###\s/.test(line));
+let stepCount = 0;
+
+for (let index = tableStart; index < tableEnd; index += 1)
+{
+    const matched = ciMd[index].match(/^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s*\|/);
+
+    if (!matched) continue;
+
+    stepCount += 1;
+
+    const command = matched[3].trim();
+    // 去掉参数尾部（`--force --no-build` 在 yml 里可能顺序不同）
+    const probe = command.split(/\s+--/)[0];
+
+    if (!ciYml.includes(probe) && !prelint.includes(probe))
+    {
+        problems.push(`docs/CI.md:${index + 1} 第 ${matched[1]} 步的命令 \`${command}\` 在 ci.yml 与 prelint:ci 里都找不到`);
+    }
+}
+
+if (stepCount < 15)
+{
+    problems.push(`§2.1 只解析出 ${stepCount} 步（预期 ≥ 15）——表格格式变了或正则写错，判据会平凡通过`);
+}
+
+notes.push(`§2.1 步骤表：${stepCount} 步，命令都在 ci.yml 或 prelint:ci 链路上`);
+
 // ---------- 空转自证 ----------
 if (total < 10)
 {
