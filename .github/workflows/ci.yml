@@ -304,6 +304,40 @@ jobs:
         # （单测只能到"状态 → 重投插槽"），所以必须在真页面上跑。
         run: node scripts/editor-slots.mjs --open
 
+      - name: 运行时装载插件（#276 验收②的真页面路径）
+        # 与上一步的区别：上一步验"清单变了界面跟着变"（开关一个**已有**插件），
+        # 这一步验"**装一个插件包**"——从真插件包导入 client 半 → 核三件事（清单 id 一致 /
+        # apiVersion 兼容 / 条目确有 client 端）→ 登记清单 → 重投插槽 → 界面标签真的多一个，
+        # 卸载后回来。全程**不重新构建编辑器**。纯函数测试覆盖不到它：浏览器原生 ESM 不解析
+        # 裸包名（阶段 4 实测踩到），说明符得由模块表给出可解析形式。
+        run: node scripts/editor-plugin-load.mjs --open
+
+      - name: 宿主装载插件端到端（#276 任务 4 的完整链路）
+        # 前后两个脚本分别守在两端（`check-editor-boot.mjs` 验宿主产出的入口图对不对、
+        # `pluginBoot.spec.ts` 验页面读入口图的逻辑对不对，二者都在 `gates:host` 里），
+        # 这一步把它们连起来走一遍：真构建产物 + esbuild 打的真插件包 → 宿主注入入口图 →
+        # 界面出现该插件贡献的面板、内置面板一个不少、零 pageerror。
+        run: node scripts/editor-plugin-host-load.mjs
+
+      - name: 运行形态（run.html：纯数据场景读得出来、渲染循环真的在提交帧）
+        # #271 P0 的第三条链路。它此前**整段被注释**（`initProject()` 从不出场景）而没有任何
+        # 东西会因此变红——最隐蔽的一条。无 GPU 的 runner 上按"环境限制"记，但要求 WebGPU
+        # 失败**被如实报出**（不许静默成功）；另验页面**不再请求废掉的 `project.js`**。
+        run: node scripts/editor-run-preview.mjs --url http://localhost:3000
+
+      - name: 页面侧 WebSocket 通道（#273 第三阶段）
+        # 服务端协议由 `check-bridge-socket.mjs` 守（已进 quality job 的 `gates:host`）；
+        # 这一步守**页面侧真的用上了它**：`/ping` 里能看到 `transport: websocket`（判据在
+        # **服务端记录**上，不是"页面自己说连上了"）、用 HTTP 发起的调用由 WS 页面执行并回传
+        # （跨通道证明两条通道共用同一份命令层）、退路（`?bridgeSocket=0`）照旧可用。
+        run: node scripts/editor-bridge-ws-page.mjs --url http://localhost:3000
+
+      - name: 页面直接调宿主方法（#272 的"宿主面板"地基）
+        # 页面与宿主**同源**，所以宿主面板里每个动作都建立在"页面能直接 `fetch` 调 `host.*`"之上。
+        # 判据：页面里能调 `host.workspace.info` / `list`（拿到的是**项目内相对路径**）、
+        # 宿主方法抛的错在页面里也**如实**、界面上真的多了「宿主」面板且它显示的是宿主打开的项目。
+        run: node scripts/editor-page-host-call.mjs
+
       - name: 选中同步（重挂载后面板要自己恢复，issue #173）
         # 读选中的面板都是**异步加载**的组件，而"选中变化"是一次性事件：
         # 在组件挂载之前发生的选中它永远收不到（现象是「点了层级树、检查器一直空」，
