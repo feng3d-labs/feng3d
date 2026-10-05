@@ -20,7 +20,7 @@ export interface Viewport
     /**
      * 是否为Y轴朝上。
      *
-     * 默认为 ture。
+     * 默认为 true。
      */
     isYup?: boolean;
 
