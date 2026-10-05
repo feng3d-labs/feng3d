@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, builtin, compute, ivec2, return_, storageTexture2D, textureStore, uint, uniform, uvec3, vec4, while_, saturate, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, sampler2D, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, int, ivec2, let_, max, return_, saturate, sampler2D, samplerComparison, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -576,5 +576,40 @@ describe('存储纹理与 textureStore（#712，compute 输出）', () =>
         const w = c.toWGSL();
 
         expect(w).toMatch(/if \([^\n]*\) \{\n\s+textureStore\(/);
+    });
+});
+
+describe('switch_ 语句（#712，skinnedMesh 的 render_mode 分支）', () =>
+{
+    it('生成 switch (x) { case n: { ... } default: { ... } }（WGSL 不贯穿，无需 break）', () =>
+    {
+        const f = fragment('main', () =>
+        {
+            const mode = uniform('mode', 0, 0);
+            switch_(uint(mode), (sw) =>
+            {
+                sw.case_(1, () =>
+                {
+                    return_(vec4(1.0, 0.0, 0.0, 1.0));
+                });
+                sw.case_(2, () =>
+                {
+                    return_(vec4(0.0, 1.0, 0.0, 1.0));
+                });
+                sw.default_(() =>
+                {
+                    return_(vec4(0.0, 0.0, 1.0, 1.0));
+                });
+            });
+        });
+        const w = f.toWGSL();
+
+        expect(w).toContain('switch (mode) {');
+        expect(w).toContain('case 1: {');
+        expect(w).toContain('case 2: {');
+        expect(w).toContain('default: {');
+        // 分支体要有 return，且不能出现 break
+        expect(w).toMatch(/case 1: \{\n\s+return vec4<f32>/);
+        expect(w).not.toContain('break;');
     });
 });
