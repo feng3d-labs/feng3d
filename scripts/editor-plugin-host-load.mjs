@@ -25,8 +25,9 @@
  * 退出码：0 通过；1 失败；2 缺少前置（未构建产物）。
  */
 import { spawn } from 'node:child_process';
-import { existsSync, rmSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import { chromium } from 'playwright';
 import * as esbuild from 'esbuild';
 
@@ -37,6 +38,17 @@ const PLUGIN_CLIENT = resolve(ROOT, 'packages', 'editor-plugin-rotate', 'src', '
 const BUNDLED_PLUGIN = resolve(PUBLIC_DIR, 'plugins', 'rotate.js');
 const PLUGIN_CONFIG = resolve(PUBLIC_DIR, 'editor.plugins.json');
 const PLUGIN_ID = '@feng3d/editor-plugin-rotate';
+
+/**
+ * 宿主这次要打开的项目目录（**每次唯一**的空目录）。
+ *
+ * 决策 ① 之后**宿主必须有个项目**：编辑器不再有"页面内副本"可退，文件系统初值是 `HostFS`
+ * —— 宿主不给项目时页面会自己报「项目未打开」（本脚本上一次跑就是 5/6，唯一失败的那条）。
+ *
+ * 用 `mkdtempSync` 而不是固定路径：`--new` 只写进**空目录**（那是有意的，
+ * 见 `bin/host/projectNew.mjs`），固定路径第二次跑就会因"目录非空"而失败。
+ */
+const PROJECT_DIR = mkdtempSync(join(tmpdir(), 'feng3d-host-load-'));
 
 const doBuild = process.argv.includes('--build');
 
@@ -118,7 +130,7 @@ writeFileSync(PLUGIN_CONFIG, JSON.stringify({
 }, null, 4), 'utf8');
 
 // ---------- ④ 起宿主并打开它的页面 ----------
-const child = spawn(process.execPath, [SERVE, '--port', '0', '--root', PUBLIC_DIR], { stdio: ['ignore', 'pipe', 'pipe'] });
+const child = spawn(process.execPath, [SERVE, '--port', '0', '--root', PUBLIC_DIR, '--new', PROJECT_DIR], { stdio: ['ignore', 'pipe', 'pipe'] });
 let stdout = '';
 
 child.stdout.on('data', (chunk) => { stdout += chunk; });

@@ -315,13 +315,21 @@ jobs:
         # （单测只能到"状态 → 重投插槽"），所以必须在真页面上跑。
         run: node scripts/editor-slots.mjs --open
 
-      - name: 运行时装载插件（#276 验收②的真页面路径）
+      - name: 宿主装载插件端到端（#276 验收②，产物形态）
         # 与上一步的区别：上一步验"清单变了界面跟着变"（开关一个**已有**插件），
         # 这一步验"**装一个插件包**"——从真插件包导入 client 半 → 核三件事（清单 id 一致 /
         # apiVersion 兼容 / 条目确有 client 端）→ 登记清单 → 重投插槽 → 界面标签真的多一个，
-        # 卸载后回来。全程**不重新构建编辑器**。纯函数测试覆盖不到它：浏览器原生 ESM 不解析
-        # 裸包名（阶段 4 实测踩到），说明符得由模块表给出可解析形式。
-        run: node scripts/editor-plugin-load.mjs --open
+        # 卸载后回来。纯函数测试覆盖不到它：浏览器原生 ESM 不解析裸包名（阶段 4 实测踩到），
+        # 说明符得由模块表给出可解析形式。
+        #
+        # **2026-10-05（决策 ①）换的脚本**：原先跑 `editor-plugin-load.mjs`，它
+        # `import('/src/plugins/loader/index.ts')` —— **要 vite dev server 才能拿到 `.ts` 源模块**
+        # （脚本自己的注释里就写着"在 vite dev server 下"）。而本 job 现在起的是**宿主**
+        # （静态服务器，没有 `/src/*.ts`）。同一验收在**产物形态**下有更贴合的脚本，
+        # 而且它更接近真实交付：起宿主 + 真构建产物 + esbuild 打的真插件包。
+        # dev 形态那条脚本**保留**（本地 `npm run dev` 时仍可跑），只是 CI 不再依赖 dev server。
+        # 本 job 上一步已构建过产物，所以不用 `--build`。
+        run: node scripts/editor-plugin-host-load.mjs
 
       - name: 插件自带 AI 工具端到端（#281 路径 A 的最后一截）
         # 前几条分别守在**离线**两侧：`editor-mcp-check.mjs`（quality job）验"声明与接线"、

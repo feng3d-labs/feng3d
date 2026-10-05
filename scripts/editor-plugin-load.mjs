@@ -8,6 +8,11 @@
  * 装载器是编辑器自己的模块，在 vite dev server 下用 `import('/src/plugins/loader/index.ts')`
  * 取（与宿主将来"注入入口图"走的是同一段代码，只是入口不同）。
  *
+ * **注意：CI 不跑本脚本**（2026-10-05，决策 ①）。本脚本依赖 `vite dev server` 提供 `.ts`
+ * 源模块，而 CI 的 editor-e2e job 现在起的是**宿主**（静态服务器，拿不到 `/src/*.ts`）。
+ * 同一条验收（#276 验收②）在 CI 里由 `editor-plugin-host-load.mjs` 承担 —— 它跑的是**产物形态**
+ * （起宿主 + 真构建产物 + 真插件包），更接近真实交付。本脚本保留，供本地 `npm run dev` 时用。
+ *
  * 用法：
  *   node scripts/editor-plugin-load.mjs --open                 # 自己开页面（CI 用这个）
  *   node scripts/editor-plugin-load.mjs --url http://localhost:3010
