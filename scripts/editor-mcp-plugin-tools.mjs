@@ -124,33 +124,17 @@ console.log('[插件 AI 工具端到端] #281：装一个插件，AI 的工具�
 const opened = await openBridgePage(base, 'mcp-plugin-tools', { locale: 'zh-CN' });
 const { page } = opened;
 
+import { createPluginLoaderCaller } from './editor-utils/pluginLoaderCall.mjs';
+
 /**
- * 在页面里装载/卸载样板插件（与 `editor-plugin-load.mjs` 走同一条路）。
+ * 在页面里装载/卸载样板插件（与 `editor-plugin-load.mjs` 走**同一份**实现）。
  *
- * @param {'loadPluginPackage' | 'unloadPluginPackage'} action 动作
- * @returns {Promise<object>} 结果
+ * 原先这里自己写了一份 `page.evaluate(async () => { await loader.loadPluginPackage(...) })`——
+ * 那既复制了逻辑（#669 里两处一起踩坑的根源），又把长 pending 的 promise 交给了 evaluate
+ * （会被 V8 GC，Playwright 报 `Resulting promise was garbage collected`）。共用实现里已经
+ * 换成"页面侧启动 + Node 侧轮询"，这里只管用。
  */
-async function callLoader(action)
-{
-    return page.evaluate(async ({ pluginId, method }) =>
-    {
-        const loader = await import('/src/plugins/loader/index.ts');
-
-        if (method === 'loadPluginPackage')
-        {
-            const outcome = await loader.loadPluginPackage({
-                id: pluginId,
-                halves: ['host', 'client', 'runtime'],
-                // 浏览器原生 ESM 不解析裸包名：dev 下要写成 vite 的 `/@id/<裸说明符>`
-                clientSpecifier: `/@id/${pluginId}/client`,
-            });
-
-            return { loaded: outcome.loaded, problems: [...outcome.problems] };
-        }
-
-        return { unloaded: loader.unloadPluginPackage(pluginId) };
-    }, { pluginId: PLUGIN_ID, method: action });
-}
+const { call: callLoader } = createPluginLoaderCaller({ page, pluginId: PLUGIN_ID });
 
 const mcp = startMcp();
 
