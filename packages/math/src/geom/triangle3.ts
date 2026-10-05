@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilEquals } from '../mathutil';
 import { planeClosestPointWithPoint, planeFromPoints } from './plane';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 import {
@@ -425,12 +425,12 @@ export function tri3GetBarycentricCoordinates(a: Triangle3Like, p: Vector3Like, 
  * 两个判据与原实现一致：① 点是否在三角形所在平面上；② 重心坐标系分量是否都不小于
  * `-precision`（原实现把 `precision` 取负后复用同一个变量，这里用局部变量避免改写入参式写法）。
  */
-export function tri3OnWithPoint(a: Triangle3Like, p: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function tri3OnWithPoint(a: Triangle3Like, p: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
     // 判断点是否在平面上（对应原实现 `p0.subTo(p1).cross(p1.subTo(p2)).dot(p.subTo(p0))`）
     const dot = vec3Dot(vec3Cross(vec3Sub(a.p0, a.p1), vec3Sub(a.p1, a.p2)), vec3Sub(p, a.p0));
 
-    if (!mathUtil.equals(dot, 0, precision))
+    if (!mathUtilEquals(dot, 0, precision))
     { return false; }
 
     // 求点的重心坐标系坐标
@@ -658,7 +658,7 @@ export function tri3RasterizeCustom(a: Triangle3Like, voxelSize: Vector3Like = {
  * 与 `tri3FromPoints` 同款——**引用装配**（顶点就是传入的三个对象），所以它只读不写。
  */
 export function tri3ContainsPoint(
-    p0: Vector3Like, p1: Vector3Like, p2: Vector3Like, p: Vector3Like, precision = mathUtil.PRECISION,
+    p0: Vector3Like, p1: Vector3Like, p2: Vector3Like, p: Vector3Like, precision = MATHUTIL_PRECISION,
 ): boolean
 {
     return tri3OnWithPoint({ p0, p1, p2 }, p, precision);

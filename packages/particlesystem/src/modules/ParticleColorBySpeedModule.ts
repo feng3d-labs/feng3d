@@ -1,7 +1,8 @@
+import { mathUtilClamp } from '@feng3d/math';
 import { color4Multiply, minMaxGradientDefault, minMaxGradientGetValue, vec3Length } from '@feng3d/math';
 import type { MinMaxGradient } from '@feng3d/math';
 import { oav } from '@feng3d/objectview';
-import { decoratorRegisterClass, mathUtil } from '@feng3d/polyfill';
+import { decoratorRegisterClass } from '@feng3d/polyfill';
 import { serialize } from '@feng3d/serialization';
 import { Particle } from '../Particle';
 import { ParticleModule } from './ParticleModule';
@@ -54,7 +55,7 @@ export class ParticleColorBySpeedModule extends ParticleModule
         if (!this.enabled) return;
 
         const velocity = vec3Length(particle.velocity);
-        const rate = mathUtil.clamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
+        const rate = mathUtilClamp((velocity - this.range.x) / (this.range.y - this.range.x), 0, 1);
         // issue #134 第二批：原 `this.color.getValue(...)` → `minMaxGradientGetValue(this.color, ...)`
         const color = minMaxGradientGetValue(this.color, rate, particle[ColorBySpeedRate]);
         // 阶段 C-b 起 math 的 `Color4` class 已删除：原 `vec3Multiply(particle.color, color, particle.color)` → `color4Multiply(a, c, out)`

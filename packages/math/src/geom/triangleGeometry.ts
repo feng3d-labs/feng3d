@@ -1,4 +1,3 @@
-import { ArrayUtils } from '@feng3d/polyfill';
 import type { Box3Like, WritableBox3Like } from './box3';
 import { box3FromPoints, box3ToTriangles } from './box3';
 import { tri3IntersectionWithLine } from './intersection';
@@ -111,14 +110,14 @@ export function triGeomFromBox(box: Box3Like, out: WritableTriangleGeometryLike 
 /**
  * `TriangleGeometry.getPoints` 的纯函数版：所有顶点**去重**后的列表。
  *
- * 去重用 `ArrayUtils.unique(ps, (a, b) => vec3Equals(a, b))`（原实现是 `a.equals(b)`，同一实现与默认精度），
+ * 去重用 `uniqueInPlace(ps, (a, b) => vec3Equals(a, b))`（原实现是 `a.equals(b)`，同一实现与默认精度），
  * 与原实现一样**就地**修改传入的那个数组。
  */
 export function triGeomGetPoints(a: TriangleGeometryLike): Vector3Like[]
 {
     const ps = a.triangles.reduce((v: Vector3Like[], t) => v.concat(tri3GetPoints(t)), [] as Vector3Like[]);
 
-    ArrayUtils.unique(ps, (a0, b0) => vec3Equals(a0, b0));
+    uniqueInPlace(ps, (a0, b0) => vec3Equals(a0, b0));
 
     return ps;
 }
@@ -288,11 +287,11 @@ export function triGeomIntersectionWithLine(a: TriangleGeometryLike, line3d: Lin
     }
 
     // 清除相同的线段
-    ArrayUtils.unique(ss, (a0, b0) => seg3Equals(a0, b0));
+    uniqueInPlace(ss, (a0, b0) => seg3Equals(a0, b0));
     // 删除在相交线段上的交点
     ps = ps.filter((p) => ss.every((s) => !seg3OnWithPoint(s, p)));
     // 清除相同点
-    ArrayUtils.unique(ps, (a0, b0) => vec3Equals(a0, b0));
+    uniqueInPlace(ps, (a0, b0) => vec3Equals(a0, b0));
     if (ss.length + ps.length === 0)
     { return null; }
 
@@ -358,4 +357,36 @@ export function triGeomCopy(a: TriangleGeometryLike, out: WritableTriangleGeomet
     out.triangles = a.triangles.map((t) => tri3Copy(t));
 
     return out;
+}
+
+/**
+ * 就地去掉「按 `compare` 相等」的重复元素，保留首次出现的那个（O(n²)）。
+ *
+ * 为什么 `math` 包内自带这一支（而不是 `import { ArrayUtils } from '@feng3d/polyfill'`）：
+ * `@feng3d/math` 是分层里的 **Layer 0 地基包**，`@feng3d/polyfill` 在它之上；
+ * 原先 `math` 对 `polyfill` 的依赖只剩 `MathUtil`（本批已迁入并纯函数化）与本文件这一处，
+ * 而这里要的只是「就地去重」这一条语义（`ArrayUtils.unique` 的其余方法是给上层包用的通用工具）。
+ * 内联这一支后 `math → polyfill` 依赖整体解开，见 `packages/math/package.json` 与
+ * `scripts/check-layer-deps.mjs` 的白名单。修改时请与 `packages/polyfill/src/ArrayUtils.ts` 的
+ * `unique` 保持语义一致（`compare` 默认 `a === b`、就地修改、返回同一个数组引用）。
+ */
+function uniqueInPlace<T>(array: T[], compare: (a: T, b: T) => boolean = (a, b) => a === b): T[]
+{
+    const deleteMap: boolean[] = [];
+
+    for (let i = 0; i < array.length; i++)
+    {
+        if (deleteMap[i]) continue;
+        for (let j = i + 1; j < array.length; j++)
+        {
+            if (compare(array[i], array[j])) deleteMap[j] = true;
+        }
+    }
+
+    for (let i = array.length - 1; i >= 0; i--)
+    {
+        if (deleteMap[i]) array.splice(i, 1);
+    }
+
+    return array;
 }

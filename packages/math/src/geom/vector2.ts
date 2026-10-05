@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHF_RAD2DEG, MATHUTIL_PRECISION, mathUtilClamp, mathUtilEquals } from '../mathutil';
 import { mathfMax, mathfMin, mathfSign, mathfSqrt } from '../mathf';
 import type { Vector3Like } from './vector3';
 
@@ -127,13 +127,13 @@ export function vec2ToArray(a: Vector2Like, array: number[] = [], offset = 0): n
 /**
  * `Vector2.equals` 的纯函数形式：逐分量按 `precision` 判等。
  */
-export function vec2Equals(a: Vector2Like, b: Vector2Like, precision = mathUtil.PRECISION): boolean
+export function vec2Equals(a: Vector2Like, b: Vector2Like, precision = MATHUTIL_PRECISION): boolean
 {
-    if (!mathUtil.equals(a.x - b.x, 0, precision))
+    if (!mathUtilEquals(a.x - b.x, 0, precision))
     {
         return false;
     }
-    if (!mathUtil.equals(a.y - b.y, 0, precision))
+    if (!mathUtilEquals(a.y - b.y, 0, precision))
     {
         return false;
     }
@@ -247,15 +247,15 @@ export function vec2LerpNumber(a: Vector2Like, b: Vector2Like, t: number, out: W
 }
 
 /**
- * `Vector2.Lerp` 的纯函数形式：按标量 `t` 插值，`t` 先用 `mathUtil.clamp` 夹取到 `[0, 1]`。
+ * `Vector2.Lerp` 的纯函数形式：按标量 `t` 插值，`t` 先用 `mathUtilClamp` 夹取到 `[0, 1]`。
  *
- * 这里必须用 `mathUtil.clamp` 而**不是** `mathfClamp01`：两者对 `NaN` 的行为不同
- * （`mathUtil.clamp(NaN, 0, 1)` 返回 `1`，`mathfClamp01(NaN)` 返回 `NaN`），
- * 而 `Vector2.Lerp` 的原实现用的就是 `mathUtil.clamp`。
+ * 这里必须用 `mathUtilClamp` 而**不是** `mathfClamp01`：两者对 `NaN` 的行为不同
+ * （`mathUtilClamp(NaN, 0, 1)` 返回 `1`，`mathfClamp01(NaN)` 返回 `NaN`），
+ * 而 `Vector2.Lerp` 的原实现用的就是 `mathUtilClamp`。
  */
 export function vec2LerpClamped(a: Vector2Like, b: Vector2Like, t: number, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    t = mathUtil.clamp(t, 0, 1);
+    t = mathUtilClamp(t, 0, 1);
 
     out.x = a.x + ((b.x - a.x) * t);
     out.y = a.y + ((b.y - a.y) * t);
@@ -268,8 +268,8 @@ export function vec2LerpClamped(a: Vector2Like, b: Vector2Like, t: number, out: 
  */
 export function vec2Clamp(a: Vector2Like, min: Vector2Like, max: Vector2Like, out: WritableVector2Like = { x: 0, y: 0 }): WritableVector2Like
 {
-    out.x = mathUtil.clamp(a.x, min.x, max.x);
-    out.y = mathUtil.clamp(a.y, min.y, max.y);
+    out.x = mathUtilClamp(a.x, min.x, max.x);
+    out.y = mathUtilClamp(a.y, min.y, max.y);
 
     return out;
 }
@@ -397,9 +397,9 @@ export function vec2Angle(from: Vector2Like, to: Vector2Like): number
         return 0;
     }
 
-    const dot = mathUtil.clamp(vec2Dot(from, to) / denominator, -1, 1);
+    const dot = mathUtilClamp(vec2Dot(from, to) / denominator, -1, 1);
 
-    return Math.acos(dot) * mathUtil.RAD2DEG;
+    return Math.acos(dot) * MATHF_RAD2DEG;
 }
 
 /**
@@ -453,7 +453,7 @@ export function vec2Reflect(inDirection: Vector2Like, inNormal: Vector2Like, out
  * `angle` 的单位是**弧度**（标准极坐标语义）：`x = len·cos(angle)`、`y = len·sin(angle)`。
  *
  * ★ **行为修复（#134 后续清理批，原为「逐字保留」的既有缺陷）**：原实现（含 class 的
- * `Vector2.polar`）把 `angle` 又乘了一次 `mathUtil.RAD2DEG`——那是「弧度 → 角度」的换算，
+ * `Vector2.polar`）把 `angle` 又乘了一次 `MATHF_RAD2DEG`——那是「弧度 → 角度」的换算，
  * 用在极坐标角度上**方向反了**：传弧度会被放大 57.2958 倍，传角度也不对（那种情况该乘
  * `DEG2RAD`）。修复依据：
  *

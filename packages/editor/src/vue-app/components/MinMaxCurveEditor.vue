@@ -150,7 +150,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
-import { AnimationCurve, ImageUtil, mathUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, watcher, WrapMode } from 'feng3d';
+import { AnimationCurve, ImageUtil, MinMaxCurve, MinMaxCurveMode, rect2GetBottom, rect2GetLeft, rect2GetRight, rect2GetTop, type RectangleLike, serialization, watcher, WrapMode, mathUtilClamp, mathUtilMapLinear } from 'feng3d';
 import type { WritableVector2Like } from 'feng3d';
 import type { AnimationCurveKeyframe, Color4, gPartial } from 'feng3d';
 import {
@@ -296,16 +296,16 @@ function setSampleCanvasRef(el: any, index: number) {
 // 曲线坐标转换为 UI 坐标
 function curveToUIPos(time: number, value: number): WritableVector2Like {
     if (!curveRect.value) return { x: 0, y: 0 };
-    const x = mathUtil.mapLinear(time, 0, 1, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value));
-    const y = mathUtil.mapLinear(value, range.value[0], range.value[1], rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value));
+    const x = mathUtilMapLinear(time, 0, 1, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value));
+    const y = mathUtilMapLinear(value, range.value[0], range.value[1], rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value));
     return { x: x, y: y };
 }
 
 // UI 坐标转换为曲线坐标
 function uiToCurvePos(x: number, y: number): { time: number; value: number } {
     if (!curveRect.value) return { time: 0, value: 0 };
-    const time = mathUtil.mapLinear(x, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value), 0, 1);
-    const value = mathUtil.mapLinear(y, rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value), range.value[0], range.value[1]);
+    const time = mathUtilMapLinear(x, rect2GetLeft(curveRect.value), rect2GetRight(curveRect.value), 0, 1);
+    const value = mathUtilMapLinear(y, rect2GetTop(curveRect.value), rect2GetBottom(curveRect.value), range.value[0], range.value[1]);
     return { time, value };
 }
 
@@ -629,8 +629,8 @@ function onMouseMove(event: MouseEvent) {
     const curvePos = uiToCurvePos(x, y);
     
     if (editKey.value && selectTimeline.value) {
-        curvePos.time = mathUtil.clamp(curvePos.time, 0, 1);
-        curvePos.value = mathUtil.clamp(curvePos.value, range.value[1], range.value[0]);
+        curvePos.time = mathUtilClamp(curvePos.time, 0, 1);
+        curvePos.value = mathUtilClamp(curvePos.value, range.value[1], range.value[0]);
         
         editKey.value.time = curvePos.time;
         editKey.value.value = curvePos.value;
@@ -815,7 +815,7 @@ function onPostWrapModeClick() {
 // 关键点时间变化
 function onKeyTimeChange(value: number | undefined) {
     if (value !== undefined && selectedKey.value && selectTimeline.value) {
-        selectedKey.value.time = mathUtil.clamp(value, 0, 1);
+        selectedKey.value.time = mathUtilClamp(value, 0, 1);
         selectTimeline.value.sort();
         updateView();
         emit('change');
@@ -825,7 +825,7 @@ function onKeyTimeChange(value: number | undefined) {
 // 关键点值变化
 function onKeyValueChange(value: number | undefined) {
     if (value !== undefined && selectedKey.value) {
-        selectedKey.value.value = mathUtil.clamp(value, range.value[1], range.value[0]);
+        selectedKey.value.value = mathUtilClamp(value, range.value[1], range.value[0]);
         updateView();
         emit('change');
     }

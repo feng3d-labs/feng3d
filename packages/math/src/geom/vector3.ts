@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilClamp, mathUtilEquals } from '../mathutil';
 import { MATHF_EPSILON, MATHF_RAD2DEG, mathfClamp, mathfClamp01, mathfMax, mathfMin, mathfSign } from '../mathf';
 import type { Vector2Like, WritableVector2Like } from './vector2';
 import type { WritableVector4Like } from './vector4';
@@ -216,17 +216,17 @@ export function vec3Copy(a: Vector3Like, out: WritableVector3Like = { x: 0, y: 0
 /**
  * `Vector3.equals` 的纯函数形式：逐分量按 `precision` 判等。
  */
-export function vec3Equals(a: Vector3Like, b: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function vec3Equals(a: Vector3Like, b: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
-    if (!mathUtil.equals(a.x - b.x, 0, precision))
+    if (!mathUtilEquals(a.x - b.x, 0, precision))
     {
         return false;
     }
-    if (!mathUtil.equals(a.y - b.y, 0, precision))
+    if (!mathUtilEquals(a.y - b.y, 0, precision))
     {
         return false;
     }
-    if (!mathUtil.equals(a.z - b.z, 0, precision))
+    if (!mathUtilEquals(a.z - b.z, 0, precision))
     {
         return false;
     }
@@ -245,7 +245,7 @@ export function vec3IsZero(a: Vector3Like): boolean
 /**
  * `Vector3.almostZero` 的纯函数形式：三个分量的绝对值是否都不超过 `precision`。
  */
-export function vec3AlmostZero(a: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function vec3AlmostZero(a: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
     if (Math.abs(a.x) > precision
         || Math.abs(a.y) > precision
@@ -570,9 +570,9 @@ export function vec3LerpClamped(a: Vector3Like, b: Vector3Like, t: number, out: 
  */
 export function vec3Clamp(a: Vector3Like, min: Vector3Like, max: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
-    out.x = mathUtil.clamp(a.x, min.x, max.x);
-    out.y = mathUtil.clamp(a.y, min.y, max.y);
-    out.z = mathUtil.clamp(a.z, min.z, max.z);
+    out.x = mathUtilClamp(a.x, min.x, max.x);
+    out.y = mathUtilClamp(a.y, min.y, max.y);
+    out.z = mathUtilClamp(a.z, min.z, max.z);
 
     return out;
 }
@@ -682,15 +682,15 @@ export function vec3GreaterEqual(a: Vector3Like, b: Vector3Like): boolean
 /**
  * `Vector3.isParallel` 的纯函数形式：两向量是否平行（叉乘长度按 `precision` 判零）。
  */
-export function vec3IsParallel(a: Vector3Like, b: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function vec3IsParallel(a: Vector3Like, b: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
-    return mathUtil.equals(vec3LengthSquared(vec3Cross(a, b)), 0, precision);
+    return mathUtilEquals(vec3LengthSquared(vec3Cross(a, b)), 0, precision);
 }
 
 /**
  * `Vector3.isAntiparallelTo` 的纯函数形式：`a` 取负后是否与 `b` 相等（按 `precision`）。
  */
-export function vec3IsAntiparallel(a: Vector3Like, b: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function vec3IsAntiparallel(a: Vector3Like, b: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
     return vec3Equals(vec3Negate(a), b, precision);
 }

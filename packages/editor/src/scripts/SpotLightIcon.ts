@@ -1,4 +1,4 @@
-import { effect, logic as getLogic, mathUtil, reactive, shortcut, ticker, Vector3, Vector3Like } from 'feng3d';
+import { effect, logic as getLogic, reactive, shortcut, ticker, Vector3, Vector3Like, MATHF_DEG2RAD } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, SpotLight, TextureMaterial } from 'feng3d';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { EditorScript, EditorScriptLogic } from './EditorScript';
@@ -129,7 +129,7 @@ export class SpotLightIconLogic extends EditorScriptLogic
         const segments: Segment[] = [];
         const pointInfos: PointInfo[] = [];
         const num = 36;
-        const radius = light.range * Math.tan(light.angle * mathUtil.DEG2RAD * 0.5);
+        const radius = light.range * Math.tan(light.angle * MATHF_DEG2RAD * 0.5);
         const distance = light.range;
         for (let i = 0; i < num; i++)
         {

@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { mathUtilEquals } from '../../src/mathutil';
 import { RotationOrder } from '../../src/enums/RotationOrder';
 import {
     mat4Append,
@@ -544,7 +544,7 @@ describe('Matrix4x4', () =>
         const p01t2 = vec3Multiply(p01, s);
         const length2 = vec3Length(p01t2);
 
-        assert.ok(mathUtil.equals(length0, length1) && mathUtil.equals(length0, length2));
+        assert.ok(mathUtilEquals(length0, length1) && mathUtilEquals(length0, length2));
     });
 
     it('★★ 纯入参接受字面量，结果与 Vector3 实例一致（#134 B3 / C-e）', () =>

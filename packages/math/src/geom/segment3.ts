@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilClamp, mathUtilEquals } from '../mathutil';
 import type { WritableLine3Like } from './line3';
 import { line3ClosestPointWithPoint, line3FromPoints } from './line3';
 import type { Vector3Like, WritableVector3Like } from './vector3';
@@ -212,9 +212,9 @@ export function seg3GetPointDistance(a: Segment3Like, point: Vector3Like): numbe
 /**
  * `Segment3.onWithPoint` 的纯函数版：点到线段距离是否按 `precision` 判零。
  */
-export function seg3OnWithPoint(a: Segment3Like, point: Vector3Like, precision = mathUtil.PRECISION): boolean
+export function seg3OnWithPoint(a: Segment3Like, point: Vector3Like, precision = MATHUTIL_PRECISION): boolean
 {
-    return mathUtil.equals(seg3GetPointDistance(a, point), 0, precision);
+    return mathUtilEquals(seg3GetPointDistance(a, point), 0, precision);
 }
 
 /**
@@ -237,13 +237,13 @@ export function seg3GetNormalWithPoint(a: Segment3Like, point: Vector3Like, out:
  */
 export function seg3ClampPoint(a: Segment3Like, point: Vector3Like, out: WritableVector3Like = { x: 0, y: 0, z: 0 }): WritableVector3Like
 {
-    return seg3GetPoint(a, mathUtil.clamp(seg3GetPositionByPoint(a, point), 0, 1), out);
+    return seg3GetPoint(a, mathUtilClamp(seg3GetPositionByPoint(a, point), 0, 1), out);
 }
 
 /**
  * `Segment3.equals` 的纯函数版：两个端点按 `precision` 双向比较（方向无关）。
  */
-export function seg3Equals(a: Segment3Like, b: Segment3Like, precision = mathUtil.PRECISION): boolean
+export function seg3Equals(a: Segment3Like, b: Segment3Like, precision = MATHUTIL_PRECISION): boolean
 {
     return (vec3Equals(a.p0, b.p0, precision) && vec3Equals(a.p1, b.p1, precision))
         || (vec3Equals(a.p0, b.p1, precision) && vec3Equals(a.p1, b.p0, precision));

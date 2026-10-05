@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHF_DEG2RAD } from '@feng3d/math';
 import { reactive } from '@feng3d/reactivity';
 import { mat4TransformPoint3, vec3Copy } from '@feng3d/math';
 import { Object3D } from "../core/Object3D";
@@ -272,9 +272,9 @@ export class HoverController extends LookAtController
         }
         // 整体写回 raw.position（缺失字段时整体赋值，避免子字段修改崩溃）
         reactive(this._targetObject).position = {
-            x: this._pos.x + this._distance * Math.sin(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD),
-            y: this._pos.y + this._distance * Math.sin(this._currentTiltAngle * mathUtil.DEG2RAD) * this._yFactor,
-            z: this._pos.z + this._distance * Math.cos(this._currentPanAngle * mathUtil.DEG2RAD) * Math.cos(this._currentTiltAngle * mathUtil.DEG2RAD),
+            x: this._pos.x + this._distance * Math.sin(this._currentPanAngle * MATHF_DEG2RAD) * Math.cos(this._currentTiltAngle * MATHF_DEG2RAD),
+            y: this._pos.y + this._distance * Math.sin(this._currentTiltAngle * MATHF_DEG2RAD) * this._yFactor,
+            z: this._pos.z + this._distance * Math.cos(this._currentPanAngle * MATHF_DEG2RAD) * Math.cos(this._currentTiltAngle * MATHF_DEG2RAD),
         };
         super.update();
     }

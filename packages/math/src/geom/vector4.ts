@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { MATHUTIL_PRECISION, mathUtilEquals } from '../mathutil';
 import { mathfClamp01, mathfMax, mathfMin } from '../mathf';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 
@@ -353,15 +353,15 @@ export function vec4MoveTowards(current: Vector4Like, target: Vector4Like, maxDi
 /**
  * `Vector4.equals` 的纯函数形式：逐分量按 `precision` 判等。
  */
-export function vec4Equals(a: Vector4Like, b: Vector4Like, precision = mathUtil.PRECISION): boolean
+export function vec4Equals(a: Vector4Like, b: Vector4Like, precision = MATHUTIL_PRECISION): boolean
 {
-    if (!mathUtil.equals(a.x - b.x, 0, precision))
+    if (!mathUtilEquals(a.x - b.x, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.y - b.y, 0, precision))
+    if (!mathUtilEquals(a.y - b.y, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.z - b.z, 0, precision))
+    if (!mathUtilEquals(a.z - b.z, 0, precision))
     { return false; }
-    if (!mathUtil.equals(a.w - b.w, 0, precision))
+    if (!mathUtilEquals(a.w - b.w, 0, precision))
     { return false; }
 
     return true;

@@ -1,4 +1,4 @@
-import { mathUtil } from '@feng3d/polyfill';
+import { DEFAULT_ROTATION_ORDER } from '../../src/enums/RotationOrder';
 import { RotationOrder } from '../../src/enums/RotationOrder';
 
 import { assert, describe, it } from 'vitest';
@@ -16,6 +16,6 @@ describe('RotationOrder', () =>
         deepEqual(RotationOrder.XZY, 5);
 
         //
-        deepEqual(mathUtil.DefaultRotationOrder, RotationOrder.XYZ);
+        deepEqual(DEFAULT_ROTATION_ORDER, RotationOrder.XYZ);
     });
 });
