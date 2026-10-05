@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Gradient } from '../src/gradient/gradientOps';
-import { gradientFromColors, gradientGetValue } from '../src/gradient/gradientOps';
-import type { MinMaxGradient } from '../src/gradient/minMaxGradientOps';
-import { minMaxGradientDefault, minMaxGradientGetValue } from '../src/gradient/minMaxGradientOps';
+import type { Gradient } from '../src/gradient/gradient';
+import { gradientFromColors, gradientGetValue } from '../src/gradient/gradient';
+import type { MinMaxGradient } from '../src/gradient/minMaxGradient';
+import { minMaxGradientDefault, minMaxGradientGetValue } from '../src/gradient/minMaxGradient';
 import { MinMaxGradientMode } from '../src/gradient/MinMaxGradientMode';
 
 /**
  * `MinMaxGradient` 的纯函数层（issue #134 第二批「渐变族」）：原 class 已删除，
  * 形状 `MinMaxGradientLike` / `WritableMinMaxGradientLike` / `MinMaxGradient` 与纯函数都在
- * `packages/math/src/gradient/minMaxGradientOps.ts`。
+ * `packages/math/src/gradient/minMaxGradient.ts`。
  *
  * 按 `mode` 求色的"最小-最大渐变"容器。字段（都有默认值，且**默认 `Gradient` 是"纯白不透明"**）：
  *
@@ -38,7 +38,7 @@ import { MinMaxGradientMode } from '../src/gradient/MinMaxGradientMode';
  * **本身**，现在一律复制进 `out`（纯函数不改入参、不把内部对象递出去）。
  */
 
-describe('minMaxGradientOps（math/gradient）', () =>
+describe('minMaxGradient（math/gradient）', () =>
 {
     describe('★ 默认状态', () =>
     {

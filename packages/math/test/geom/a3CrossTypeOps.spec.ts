@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { Line3 } from '../../src/geom/line3Ops';
-import { line3FromPosAndDir } from '../../src/geom/line3Ops';
-import { mat3Identity, mat3Set } from '../../src/geom/matrix3x3Ops';
+import type { Line3 } from '../../src/geom/line3';
+import { line3FromPosAndDir } from '../../src/geom/line3';
+import { mat3Identity, mat3Set } from '../../src/geom/matrix3x3';
 import {
     mat4FromPosition,
     mat4FromScale,
@@ -9,10 +9,10 @@ import {
     mat4TransformRay,
     mat4TransformVector3,
     mat4TransformVector4,
-} from '../../src/geom/matrix4x4Ops';
-import type { Plane } from '../../src/geom/planeOps';
-import { planeFromPoints } from '../../src/geom/planeOps';
-import { quatSet, quatVmult } from '../../src/geom/quaternionOps';
+} from '../../src/geom/matrix4x4';
+import type { Plane } from '../../src/geom/plane';
+import { planeFromPoints } from '../../src/geom/plane';
+import { quatSet, quatVmult } from '../../src/geom/quaternion';
 import {
     tri3ClosestPointWithPoint,
     tri3ContainsPoint,
@@ -20,10 +20,10 @@ import {
     tri3DistanceWithPoint,
     tri3FromPoints,
     tri3OnWithPoint,
-} from '../../src/geom/triangle3Ops';
-import type { Vector3Like } from '../../src/geom/vector3Ops';
-import type { Vector4Like } from '../../src/geom/vector4Ops';
-import { vec2ToVec3, vec3Distance, vec3DistanceSquared, vec3ToVec2, vec3ToVec4 } from '../../src/geom/vector3Ops';
+} from '../../src/geom/triangle3';
+import type { Vector3Like } from '../../src/geom/vector3';
+import type { Vector4Like } from '../../src/geom/vector4';
+import { vec2ToVec3, vec3Distance, vec3DistanceSquared, vec3ToVec2, vec3ToVec4 } from '../../src/geom/vector3';
 
 import { assert, describe, it } from 'vitest';
 

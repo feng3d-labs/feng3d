@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest';
 
 
 
-import type { Vector4Like } from '../../src/geom/vector4Ops';
+import type { Vector4Like } from '../../src/geom/vector4';
 import {
     VEC4_EPSILON,
     VEC4_NEGATIVE_INFINITY,
@@ -39,7 +39,7 @@ import {
     vec4ToArray,
     vec4ToString,
     vec4ToVector3,
-} from '../../src/geom/vector4Ops';
+} from '../../src/geom/vector4';
 
 /**
  * 只取 xyzw 四个分量。
@@ -54,7 +54,7 @@ function xyzw(v: Vector4Like): { x: number; y: number; z: number; w: number }
 }
 
 /**
- * `vector4Ops` 纯函数层的**契约测试**（issue #134 阶段 A2f）。
+ * `vector4` 纯函数层的**契约测试**（issue #134 阶段 A2f）。
  *
  * ## 为什么期望值一律硬编码
  *
@@ -65,7 +65,7 @@ function xyzw(v: Vector4Like): { x: number; y: number; z: number; w: number }
  * - **接线类**：单独一条，只对比 class 与纯函数的返回值，用来发现委托时的参数顺序 / `out` 传错
  *   （它对实现错误不敏感，这是刻意的分工）。
  */
-describe('vector4Ops 纯函数层（#134 阶段 A2f）', () =>
+describe('vector4 纯函数层（#134 阶段 A2f）', () =>
 {
     it('运算不修改入参，结果只写 out', () =>
     {

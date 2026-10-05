@@ -1,4 +1,4 @@
-import type { Vector2Like, WritableVector2Like } from './geom/vector2Ops';
+import type { Vector2Like, WritableVector2Like } from './geom/vector2';
 import { Time } from './Time';
 
 export class Mathf

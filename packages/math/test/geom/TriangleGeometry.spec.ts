@@ -1,8 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { box3Equals, box3Random, box3RandomPoint, box3ToPoints } from '../../src/geom/box3Ops';
-import { vec3Random } from '../../src/geom/vector3Ops';
-import { seg3Equals, seg3FromPoints } from '../../src/geom/segment3Ops';
-import type { TriangleGeometry, WritableTriangleGeometryLike } from '../../src/geom/triangleGeometryOps';
+import { box3Equals, box3Random, box3RandomPoint, box3ToPoints } from '../../src/geom/box3';
+import { vec3Random } from '../../src/geom/vector3';
+import { seg3Equals, seg3FromPoints } from '../../src/geom/segment3';
+import type { TriangleGeometry, WritableTriangleGeometryLike } from '../../src/geom/triangleGeometry';
 import {
     triGeomClassifyPoint,
     triGeomClassifySegment,
@@ -15,14 +15,14 @@ import {
     triGeomGetPoints,
     triGeomIntersectionWithSegment,
     triGeomIsClosed,
-} from '../../src/geom/triangleGeometryOps';
+} from '../../src/geom/triangleGeometry';
 
-import { vec3Add } from '../../src/geom/vector3Ops';
+import { vec3Add } from '../../src/geom/vector3';
 
 import { assert, describe, expect, it } from 'vitest';
 
 /**
- * `TriangleGeometry` 纯数据形态 + `triGeom*` 纯函数层（`packages/math/src/geom/triangleGeometryOps.ts`）。
+ * `TriangleGeometry` 纯数据形态 + `triGeom*` 纯函数层（`packages/math/src/geom/triangleGeometry.ts`）。
  *
  * **阶段 C-a 起 `TriangleGeometry` class 已删除**，本文件由「class 行为用例」改写为「纯函数用例」，
  * 断言逐条保留（`new TriangleGeometry().fromBox(box)` → `triGeomFromBox(box)`；

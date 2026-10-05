@@ -12,9 +12,9 @@ import type { Color4Like, Vector2Like, Vector3Like, Vector4Like, WritableVector3
 /**
  * 包入口契约（issue #134 阶段 B 的前置）。
  *
- * 阶段 A 只把纯函数写进 `src/**\/*Ops.ts`，`index.ts` 并未导出它们——B 阶段的外部消费方
+ * 阶段 A 只把纯函数写进 `src/{color,geom,gradient}/*.ts`，`index.ts` 并未导出它们——B 阶段的外部消费方
  * 因此**拿不到**纯函数（`import { vec3Add } from '@feng3d/math'` 报 TS2305，
- * 运行期则是 `xxx is not a function`）。B1 补上 17 个 Ops 模块的 `export *` 后，
+ * 运行期则是 `xxx is not a function`）。B1 补上 17 个纯函数模块的 `export *` 后，
  * 这里守住「入口可达」这条契约：值函数能导入并算对、形状类型能导入并直接吃字面量。
  */
 describe('@feng3d/math 包入口的纯函数层', () =>

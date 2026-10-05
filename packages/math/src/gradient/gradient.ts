@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { Color3, Color3Like, WritableColor3Like } from '../color/color3Ops';
-import { color3Copy, color3FromUnit, color3Mix } from '../color/color3Ops';
-import type { WritableColor4Like } from '../color/color4Ops';
+import type { Color3, Color3Like, WritableColor3Like } from '../color/color3';
+import { color3Copy, color3FromUnit, color3Mix } from '../color/color3';
+import type { WritableColor4Like } from '../color/color4';
 import type { GradientAlphaKey } from './GradientAlphaKey';
 import type { GradientColorKey } from './GradientColorKey';
 import { GradientMode } from './GradientMode';
@@ -12,9 +12,9 @@ import { GradientMode } from './GradientMode';
  *
  * ## 这一层是什么
  *
- * 与本方案第一批（`geom/*Ops.ts` / `color/*Ops.ts`）完全同构：形状（`GradientLike` /
+ * 与本方案第一批（`geom/*.ts` / `color/*.ts`）完全同构：形状（`GradientLike` /
  * `WritableGradientLike` / `Gradient`）+ 纯函数。**原 `packages/math/src/gradient/Gradient.ts`
- * 的 class 已删除**，`index.ts` 的 `export * from './gradient/gradientOps'` 让
+ * 的 class 已删除**，`index.ts` 的 `export * from './gradient/gradient'` 让
  * `import { Gradient } from '@feng3d/math'` 这个名字保持不变。
  *
  * 与原 class 的逐条对应：
@@ -85,7 +85,7 @@ export interface WritableGradientLike
  * 纯数据渐变（issue #134 第二批）：**取代原 `Gradient` class**。
  *
  * `GradientLike` 是纯函数层的最小只读形状（**不带**判别字段），纯数据形态在它之上加一个
- * `__type__` 字面量——两级形状的分工与理由见 `../color/color3Ops.ts` 里 `Color3` 的注释
+ * `__type__` 字面量——两级形状的分工与理由见 `../color/color3.ts` 里 `Color3` 的注释
  * （同一决策，不重复）。
  */
 export interface Gradient extends GradientLike

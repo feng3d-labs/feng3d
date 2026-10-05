@@ -81,7 +81,7 @@ export interface MD5FrameJoint
      *
      * 类型为 {@link QuaternionLike}（issue #134）：任何提供 `x/y/z/w` 的纯数据对象都算。
      * **阶段 C-e 起解析器写入的就是普通字面量**（`Quaternion` 的 class 已删除，
-     * 实例方法换成了 `quaternionOps` 的纯函数），不再是 `Quaternion` 实例。
+     * 实例方法换成了 `quaternion` 的纯函数），不再是 `Quaternion` 实例。
      */
     readonly orientation: QuaternionLike;
 

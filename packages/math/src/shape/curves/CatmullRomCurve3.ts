@@ -1,5 +1,5 @@
-import type { Vector3Like, WritableVector3Like } from '../../geom/vector3Ops';
-import { vec3Add, vec3DistanceSquared, vec3From, vec3Sub } from '../../geom/vector3Ops';
+import type { Vector3Like, WritableVector3Like } from '../../geom/vector3';
+import { vec3Add, vec3DistanceSquared, vec3From, vec3Sub } from '../../geom/vector3';
 import { Curve } from '../core/Curve';
 
 /**

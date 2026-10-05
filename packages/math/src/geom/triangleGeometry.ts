@@ -1,15 +1,15 @@
 import { ArrayUtils } from '@feng3d/polyfill';
-import type { Box3Like, WritableBox3Like } from './box3Ops';
-import { box3FromPoints, box3ToTriangles } from './box3Ops';
-import { tri3IntersectionWithLine } from './intersectionOps';
-import type { Line3Like } from './line3Ops';
-import { line3FromPoints } from './line3Ops';
-import type { Segment3Like, WritableSegment3Like } from './segment3Ops';
-import { seg3ClampPoint, seg3Equals, seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
-import type { Triangle3Like, WritableTriangle3Like } from './triangle3Ops';
-import { tri3ClosestPointWithPoint, tri3Copy, tri3GetNormal, tri3GetPoints, tri3GetSegments, tri3OnWithPoint } from './triangle3Ops';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
-import { vec3Copy, vec3DistanceSquared, vec3Dot, vec3Equals, vec3Sub } from './vector3Ops';
+import type { Box3Like, WritableBox3Like } from './box3';
+import { box3FromPoints, box3ToTriangles } from './box3';
+import { tri3IntersectionWithLine } from './intersection';
+import type { Line3Like } from './line3';
+import { line3FromPoints } from './line3';
+import type { Segment3Like, WritableSegment3Like } from './segment3';
+import { seg3ClampPoint, seg3Equals, seg3FromPoints, seg3OnWithPoint } from './segment3';
+import type { Triangle3Like, WritableTriangle3Like } from './triangle3';
+import { tri3ClosestPointWithPoint, tri3Copy, tri3GetNormal, tri3GetPoints, tri3GetSegments, tri3OnWithPoint } from './triangle3';
+import type { Vector3Like, WritableVector3Like } from './vector3';
+import { vec3Copy, vec3DistanceSquared, vec3Dot, vec3Equals, vec3Sub } from './vector3';
 
 /**
  * `TriangleGeometry` 运算的**纯函数**形式（issue #134 阶段 C-a，
@@ -20,12 +20,12 @@ import { vec3Copy, vec3DistanceSquared, vec3Dot, vec3Equals, vec3Sub } from './v
  * `TriangleGeometry` **不是数值类型**，而是「三角形列表 + 一批几何算法」的容器（方案 §11.7.7 的原话），
  * 所以纯数据形态是 `{ triangles }` + 本文件的函数，而不是坐标式的 `*Like`。
  *
- * ## 与 `triangle3Ops` / `segment3Ops` 的分工
+ * ## 与 `triangle3` / `segment3` 的分工
  *
- * 逐三角形、逐线段的运算**不在这里**——它们早在 A 阶段就落在 `triangle3Ops` / `segment3Ops` /
- * `line3Ops` 里；本文件只做「遍历 + 汇总 + 分类」这一层（原 class 的每个方法逐一对应一个函数）。
+ * 逐三角形、逐线段的运算**不在这里**——它们早在 A 阶段就落在 `triangle3` / `segment3` /
+ * `line3` 里；本文件只做「遍历 + 汇总 + 分类」这一层（原 class 的每个方法逐一对应一个函数）。
  * 唯一跨批的依赖是相交族：`Triangle3.intersectionWithLine` 曾是 class 内 `instanceof` 分支的成员
- * （方案 §11.7.7 的 P5），阶段 C-a 已把它纯函数化到 `intersectionOps.ts`，本文件直接用它。
+ * （方案 §11.7.7 的 P5），阶段 C-a 已把它纯函数化到 `intersection.ts`，本文件直接用它。
  *
  * ## 与原 class 的逐条对应
  *
@@ -264,7 +264,7 @@ export function triGeomClassifyTriangle(_a: TriangleGeometryLike, _triangle: Tri
 /**
  * `TriangleGeometry.intersectionWithLine` 的纯函数版：与直线相交。
  *
- * 原实现遍历三角形调用 `Triangle3.intersectionWithLine`（阶段 C-a 已纯函数化到 `intersectionOps`），
+ * 原实现遍历三角形调用 `Triangle3.intersectionWithLine`（阶段 C-a 已纯函数化到 `intersection`），
  * 按 `instanceof Segment3` 分成「相交线段」与「交点」两组，两组各自去重、并**剔除落在相交线段上的交点**。
  */
 export function triGeomIntersectionWithLine(a: TriangleGeometryLike, line3d: Line3Like): TriGeomIntersection | null

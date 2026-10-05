@@ -1,8 +1,8 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { PlaneClassification } from '../enums/PlaneClassification';
-import type { Line3Like, WritableLine3Like } from './line3Ops';
-import { line3Copy, line3GetPoint } from './line3Ops';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+import type { Line3Like, WritableLine3Like } from './line3';
+import { line3Copy, line3GetPoint } from './line3';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 import {
     vec3Add,
     vec3Cross,
@@ -13,7 +13,7 @@ import {
     vec3Random,
     vec3ScaleNumber,
     vec3Sub,
-} from './vector3Ops';
+} from './vector3';
 
 /**
  * `Plane` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -43,8 +43,8 @@ import {
 /**
  * 纯函数可接受的平面形状（`ax+by+cz+d=0`）：class 实例与纯数据字面量都满足。
  *
- * 原先这份定义在 `matrix4x4Ops.ts`（`mat4TransformPlane` 先用到），A2j 把归属收回到本文件，
- * 那边改为 type-only 重导出，既有 `import { PlaneLike } from './matrix4x4Ops'` 不受影响。
+ * 原先这份定义在 `matrix4x4.ts`（`mat4TransformPlane` 先用到），A2j 把归属收回到本文件，
+ * 那边改为 type-only 重导出，既有 `import { PlaneLike } from './matrix4x4'` 不受影响。
  */
 export interface PlaneLike
 {
@@ -209,11 +209,11 @@ export function planeFromNormalAndPoint(normal: Vector3Like, point: Vector3Like,
  * 法线取 `Vector3.random().cross(direction)`、再过 `origin`——
  * 逐字对应 `planeFromNormalAndPoint(vec3Cross(vec3Random(), line.direction), line.origin, out)`。
  *
- * ## 为什么归属 `planeOps` 而不是 `line3Ops`
+ * ## 为什么归属 `plane` 而不是 `line3`
  *
  * 它**产出的是平面**，与 `planeFromPoints` / `planeFromNormalAndPoint` 同一族；
- * 而 `planeOps` 本来就 `import` `line3Ops`（`planeIntersectWithLine3` 要用 `line3Copy` / `line3GetPoint`），
- * 放进 `line3Ops.ts` 会造出 ops 层的**模块环**（方案 §3.1 要求 ops 层无环）。
+ * 而 `plane` 本来就 `import` `line3`（`planeIntersectWithLine3` 要用 `line3Copy` / `line3GetPoint`），
+ * 放进 `line3.ts` 会造出 ops 层的**模块环**（方案 §3.1 要求 ops 层无环）。
  * `Line3.intersectWithLine3D` 内部那次「过 `a` 作平面」也改为调用本函数，
  * 所以 `Math.random()` 的消费次数与顺序与改造前逐字一致（方案 §10.1 的 P5）。
  */

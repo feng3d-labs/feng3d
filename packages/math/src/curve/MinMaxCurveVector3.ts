@@ -1,5 +1,5 @@
-import type { WritableVector3Like } from '../geom/vector3Ops';
-import { vec3From } from '../geom/vector3Ops';
+import type { WritableVector3Like } from '../geom/vector3';
+import { vec3From } from '../geom/vector3';
 import { MinMaxCurve } from './MinMaxCurve';
 
 export class MinMaxCurveVector3

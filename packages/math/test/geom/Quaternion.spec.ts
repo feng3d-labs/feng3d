@@ -1,6 +1,6 @@
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { eulerRandom } from '../../src/geom/eulerOps';
-import { mat4FromQuaternion, mat4FromRotation, mat4Identity, mat4TransformPoint3 } from '../../src/geom/matrix4x4Ops';
+import { eulerRandom } from '../../src/geom/euler';
+import { mat4FromQuaternion, mat4FromRotation, mat4Identity, mat4TransformPoint3 } from '../../src/geom/matrix4x4';
 import {
     quatCopy,
     quatEquals,
@@ -27,8 +27,8 @@ import {
     quatVmult,
     type QuaternionLike,
     type WritableQuaternionLike,
-} from '../../src/geom/quaternionOps';
-import { vec3Copy, vec3Equals, vec3Negate, vec3Normalized, vec3Random } from '../../src/geom/vector3Ops';
+} from '../../src/geom/quaternion';
+import { vec3Copy, vec3Equals, vec3Negate, vec3Normalized, vec3Random } from '../../src/geom/vector3';
 
 import { assert, describe, expect, it } from 'vitest';
 const { equal, deepEqual } = assert;
@@ -45,7 +45,7 @@ const { equal, deepEqual } = assert;
  * - `q.slerpTo(qb, t, out)` 在 class 里有一条 `qb === out` 时先 clone 的保护，纯函数层没有，
  *   所以断言里显式写 `quatSlerp(qa, quatCopy(shared), t, shared)`；
  * - `q.toAxisAngle()` 在 class 里会**先 `this.normalize()`**（副作用），纯函数层刻意不含它
- *   （见 `quaternionOps.quatToAxisAngle` 的说明），用例里显式补一次 `quatNormalize`。
+ *   （见 `quaternion.quatToAxisAngle` 的说明），用例里显式补一次 `quatNormalize`。
  */
 
 /** 纯数据四元数字面量（原 `new Quaternion(x, y, z, w)`，缺省 `w = 1`） */

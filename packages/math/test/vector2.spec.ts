@@ -28,10 +28,10 @@ import {
     vec2SignedAngle,
     vec2Sub,
     vec2ToString,
-} from '../src/geom/vector2Ops';
+} from '../src/geom/vector2';
 
 /**
- * `Vector2`（`packages/math/src/geom/vector2Ops.ts`）。
+ * `Vector2`（`packages/math/src/geom/vector2.ts`）。
  *
  * ★ **阶段 C-f**：`Vector2` 的 class 已删除，本文件从「class 规格」改写为**同义纯函数用例**
  * （与 C-e 对 `Box3` / `Quaternion` / `Matrix4x4` 的处理一致）：
@@ -40,7 +40,7 @@ import {
  * 断言都选**数学必然成立**的部分（数值与关系逐条保留）。
  *
  * ⚠️ **不测 `SmoothDamp*`** —— 纯函数层要求显式传 `deltaTime`，本文件不引入随机/时序依赖；
- *      其行为由 `vec2SmoothDamp` 的 JSDoc 与 `vector3Ops` 的同构实现对齐。
+ *      其行为由 `vec2SmoothDamp` 的 JSDoc 与 `vector3` 的同构实现对齐。
  */
 
 const v = (x: number, y: number) => ({ x: x, y: y });

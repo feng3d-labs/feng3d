@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Color4 } from '../src/color/color4Ops';
+import type { Color4 } from '../src/color/color4';
 import {
     color4Copy,
     color4Equals,
@@ -18,10 +18,10 @@ import {
     color4ToRGBA,
     color4ToString,
     color4ToVector4,
-} from '../src/color/color4Ops';
+} from '../src/color/color4';
 
 /**
- * `Color4` 的**纯数据形态 + 纯函数层**（`packages/math/src/color/color4Ops.ts`）。
+ * `Color4` 的**纯数据形态 + 纯函数层**（`packages/math/src/color/color4.ts`）。
  *
  * **阶段 C-b 起 `packages/math/src/Color4.ts` 的 class 已删除**，本文件由「class 行为用例」
  * 改写为「纯函数用例」，断言逐条保留（`new Color4(r,g,b,a)` → `{ r, g, b, a }` 字面量、

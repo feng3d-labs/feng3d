@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import { vec2Cross, vec2Dot, vec2Random } from '../../src/geom/vector2Ops';
+import { vec2Cross, vec2Dot, vec2Random } from '../../src/geom/vector2';
 
 const { equal } = assert;
 

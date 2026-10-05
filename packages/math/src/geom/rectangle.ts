@@ -1,5 +1,5 @@
-import { vec2Clamp } from './vector2Ops';
-import type { Vector2Like, WritableVector2Like } from './vector2Ops';
+import { vec2Clamp } from './vector2';
+import type { Vector2Like, WritableVector2Like } from './vector2';
 
 /**
  * `Rectangle` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2m）。
@@ -9,10 +9,10 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  * - **不修改入参**：结果写进 `out`（缺省时新建普通字面量）；
  * - `out` 传自己就是「就地运算」，所以原 class 上的 `xxx`（就地改 `this`）与 `xxxTo`（写 `vout`）
  *   通常是**同一个函数**，只是 `out` 实参不同；
- * - 依赖只有 `./vector2Ops` 的 `vec2*` 纯函数（`vector2Ops.ts` 已就绪），
+ * - 依赖只有 `./vector2` 的 `vec2*` 纯函数（`vector2.ts` 已就绪），
  *   跨类型的 `Vector2Like` 用 **type-only import**（编译后完全擦除），
- *   所以运行时依赖只有 `vector2Ops.ts` 一个方向，不会形成模块环
- *   （阶段 C-a 之前还有一条 `Rectangle.ts → rectangleOps.ts`，class 已删除）。
+ *   所以运行时依赖只有 `vector2.ts` 一个方向，不会形成模块环
+ *   （阶段 C-a 之前还有一条 `Rectangle.ts → rectangle.ts`，class 已删除）。
  *
  * ## 命名：`rect2` 前缀 + PascalCase 动作
  *
@@ -40,7 +40,7 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  *
  * 两种命名各有出处，且**已在别处落地**，为避免二选一造成「同一仓库两种风格」而同时导出：
  *
- * - `rect2SetRight` / `rect2GetRight` 是**仓库既有惯例**——`matrix4x4Ops.ts` 里
+ * - `rect2SetRight` / `rect2GetRight` 是**仓库既有惯例**——`matrix4x4.ts` 里
  *   `mat4GetPosition` / `mat4SetPosition`、`mat4GetAxisX` / `mat4SetAxisX`、`mat4GetScale` / `mat4SetScale`
  *   就是「getter / setter 成对」的写法，本文件与本批任务（阶段 A2m）都按它命名；
  * - `rect2Right` / `rect2Bottom` 是 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §3.2 的**紧凑前缀**风格
@@ -71,7 +71,7 @@ import type { Vector2Like, WritableVector2Like } from './vector2Ops';
  *
  * ## 文件命名（踩坑记录 P1）
  *
- * 与 `color3Ops.ts` / `vector2Ops.ts` / `line3Ops.ts` 同构：Like 类型 + 纯函数同文件。
+ * 与 `color3.ts` / `vector2.ts` / `line3.ts` 同构：Like 类型 + 纯函数同文件。
  * 阶段 C-a 删掉 class 后，数据定义（`Rectangle` / `IRectangle`）就落在本文件里。
  * **不要再新建 `rectangle.ts`**：P1 当年正是把数据定义写进了 `rectangle.ts`，
  * 而在 Windows / macOS 这类**大小写不敏感**的文件系统上它与 class 文件 `Rectangle.ts`

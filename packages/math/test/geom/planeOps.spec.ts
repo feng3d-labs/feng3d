@@ -1,9 +1,9 @@
 import { assert, describe, it, vi } from 'vitest';
 import { PlaneClassification } from '../../src/enums/PlaneClassification';
-import type { Line3 } from '../../src/geom/line3Ops';
-import { line3FromPosAndDir } from '../../src/geom/line3Ops';
+import type { Line3 } from '../../src/geom/line3';
+import { line3FromPosAndDir } from '../../src/geom/line3';
 
-import { vec3Add, vec3Dot } from '../../src/geom/vector3Ops';
+import { vec3Add, vec3Dot } from '../../src/geom/vector3';
 import {
     planeClassifyPoint,
     planeClosestPointWithPoint,
@@ -28,7 +28,7 @@ import {
     planeRandomPoint,
     planeSet,
     planeToString,
-} from '../../src/geom/planeOps';
+} from '../../src/geom/plane';
 
 const near = (a: number, b: number, msg?: string) => assert.ok(Math.abs(a - b) < 1e-12, `${msg ?? ''} 期望 ${b} 实际 ${a}`);
 const abcd = (p: { a: number; b: number; c: number; d: number }) => ({ a: p.a, b: p.b, c: p.c, d: p.d });
@@ -51,7 +51,7 @@ const nearAbcd = (p: { a: number; b: number; c: number; d: number }, e: { a: num
 const Y2 = { a: 0, b: 1, c: 0, d: -2 };
 
 /**
- * `planeOps` 纯函数层的**契约测试**（issue #134 阶段 A2j）。
+ * `plane` 纯函数层的**契约测试**（issue #134 阶段 A2j）。
  *
  * 期望值全部**手算硬编码**（方案 §10.1 P3）：拿 class 当基准的话，class 已委托给同一个纯函数，
  * 把实现改坏用例照样通过。class 与纯函数的一致性由**接线用例**单独负责。
@@ -61,7 +61,7 @@ const Y2 = { a: 0, b: 1, c: 0, d: -2 };
  *   `new Plane()` 的默认值 `(0,1,0,0)`，不能是全零（方案 §10.1 P6）；
  * - `planeFromPoints` / `planeGetNormal` 等跨分量运算在 `out` 与入参别名时不得自污染（方案 §10.1 P2）。
  */
-describe('planeOps 纯函数层（#134 A2j）', () =>
+describe('plane 纯函数层（#134 A2j）', () =>
 {
     it('运算不修改入参', () =>
     {

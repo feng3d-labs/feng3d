@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import type { Segment3 } from '../../src/geom/segment3Ops';
+import type { Segment3 } from '../../src/geom/segment3';
 import {
     seg3ClampPoint,
     seg3ClosestPointWithPoint,
@@ -10,19 +10,19 @@ import {
     seg3GetNormalWithPoint,
     seg3GetPoint,
     seg3GetPositionByPoint,
-} from '../../src/geom/segment3Ops';
+} from '../../src/geom/segment3';
 
 const near = (a: number, b: number, msg?: string) => assert.ok(Math.abs(a - b) < 1e-12, `${msg ?? ''} 期望 ${b} 实际 ${a}`);
 const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.z });
 
 /**
- * `segment3Ops` 纯函数层的**契约测试**（issue #134 阶段 A2g）。
+ * `segment3` 纯函数层的**契约测试**（issue #134 阶段 A2g）。
  *
  * 几何类型是**嵌套结构**（持有 p0/p1 两个 Vector3），所以这里也顺带锁住两处易错点：
  * `seg3FromPoints` 有意的值语义收紧、以及 `getNormalWithPoint` 必须对应 `normalize()`
  * （长度平方判定）而**不是** `Normalize()`（kEpsilon 判定）。
  */
-describe('segment3Ops 纯函数层（#134 A2g）', () =>
+describe('segment3 纯函数层（#134 A2g）', () =>
 {
     it('运算不修改入参', () =>
     {

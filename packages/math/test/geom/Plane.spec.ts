@@ -1,5 +1,5 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { line3Equals, line3FromPoints, line3OnWithPoint } from '../../src/geom/line3Ops';
+import { line3Equals, line3FromPoints, line3OnWithPoint } from '../../src/geom/line3';
 import {
     planeDistanceWithPoint,
     planeFromNormalAndPoint,
@@ -11,8 +11,8 @@ import {
     planeOnWithPoint,
     planeRandom,
     planeRandomPoint,
-} from '../../src/geom/planeOps';
-import { VEC3_ZERO, vec3Add, vec3Distance, vec3Normalized, vec3Random, vec3ScaleNumber } from '../../src/geom/vector3Ops';
+} from '../../src/geom/plane';
+import { VEC3_ZERO, vec3Add, vec3Distance, vec3Normalized, vec3Random, vec3ScaleNumber } from '../../src/geom/vector3';
 
 import { assert, describe, it } from 'vitest';
 

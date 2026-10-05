@@ -1,16 +1,16 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
-import type { Matrix4x4Like } from './matrix4x4Ops';
-import { mat4FromQuaternion } from './matrix4x4Ops';
-import type { QuaternionLike } from './quaternionOps';
-import { quatFromEuler } from './quaternionOps';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
-import { vec3From } from './vector3Ops';
+import type { Matrix4x4Like } from './matrix4x4';
+import { mat4FromQuaternion } from './matrix4x4';
+import type { QuaternionLike } from './quaternion';
+import { quatFromEuler } from './quaternion';
+import type { Vector3Like, WritableVector3Like } from './vector3';
+import { vec3From } from './vector3';
 
 /**
  * `Euler` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2l）。
  *
- * 与 `vector3Ops.ts` / `quaternionOps.ts` / `line3Ops.ts` 同构：入参用最小形状 `EulerLike`（只读），
+ * 与 `vector3.ts` / `quaternion.ts` / `line3.ts` 同构：入参用最小形状 `EulerLike`（只读），
  * 结果写 `out`（`out` 传自己即就地运算）；原 class 的同名方法曾转发到这里（class 已在阶段 C-a 删除）。
  *
  * ## 三个必须留意的点
@@ -25,9 +25,9 @@ import { vec3From } from './vector3Ops';
  *    角度也会被归一到 `[-π, π]` 附近的等价表示，这不是本函数引入的变化，见 `test/geom/Euler.spec.ts` 的实测记录。
  *
  * 依赖：`@feng3d/polyfill` 的 `mathUtil`（默认旋转序）、`../enums/RotationOrder`、
- * `./matrix4x4Ops`（`mat4FromQuaternion`）、`./quaternionOps`（`quatFromEuler`）、`./vector3Ops`（`vec3From`）。
- * 运行时依赖方向是 `eulerOps.ts → {matrix4x4,quaternion,vector3}Ops.ts`，对方类型全部 type-only 引入，不成环。
- * （阶段 C-a 之前还有一条 `Euler.ts → eulerOps.ts`，class 已删除，见下面的 `Euler` 接口。）
+ * `./matrix4x4`（`mat4FromQuaternion`）、`./quaternion`（`quatFromEuler`）、`./vector3`（`vec3From`）。
+ * 运行时依赖方向是 `euler.ts → {matrix4x4,quaternion,vector3}.ts`，对方类型全部 type-only 引入，不成环。
+ * （阶段 C-a 之前还有一条 `Euler.ts → euler.ts`，class 已删除，见下面的 `Euler` 接口。）
  */
 
 /** 纯函数可接受的最小欧拉角形状：class 实例与纯数据字面量都满足。 */

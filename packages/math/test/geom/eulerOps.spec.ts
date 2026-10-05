@@ -1,8 +1,8 @@
 import { assert, describe, it, vi } from 'vitest';
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../../src/enums/RotationOrder';
-import { mat4FromRotation } from '../../src/geom/matrix4x4Ops';
-import { quatEquals, quatFromEuler } from '../../src/geom/quaternionOps';
+import { mat4FromRotation } from '../../src/geom/matrix4x4';
+import { quatEquals, quatFromEuler } from '../../src/geom/quaternion';
 import {
     eulerCopy,
     eulerEquals,
@@ -15,7 +15,7 @@ import {
     eulerSet,
     eulerToArray,
     eulerToVector3,
-} from '../../src/geom/eulerOps';
+} from '../../src/geom/euler';
 
 /** 只取四字段的字面量（`Euler` 数据可能带 `__type__` 判别字段，直接展开会把判别字段也算进去） */
 function xyzo(e: { x: number; y: number; z: number; order: RotationOrder })
@@ -48,14 +48,14 @@ const ROT_Z_90 = { elements: [0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1] }
 const ROT_Y_90 = { elements: [0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1] };
 
 /**
- * `eulerOps` 纯函数层的**契约测试**（issue #134 阶段 A2l）。
+ * `euler` 纯函数层的**契约测试**（issue #134 阶段 A2l）。
  *
  * 数值类期望值手算硬编码；`fromRotationMatrix` 的六个旋转序另用 `mat4FromRotation`
  * （独立实现）做**交叉验证**——长公式抄写只能靠这种交叉验证兜住（方案 §10.1 P7）。
  * 阶段 C-a 删掉 `Euler` class 后，原来的「class 委托接线」用例一并删除：
  * 委托方已不存在，纯函数层自身的手算用例就是唯一的等价网（方案 §5.8）。
  */
-describe('eulerOps 纯函数层（#134 A2l）', () =>
+describe('euler 纯函数层（#134 A2l）', () =>
 {
     it('运算不修改入参', () =>
     {

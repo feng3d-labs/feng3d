@@ -1,11 +1,11 @@
 import { mathUtil } from '@feng3d/polyfill';
 import { RotationOrder } from '../enums/RotationOrder';
-import type { Line3Like, WritableLine3Like } from './line3Ops';
-import type { WritableMatrix3x3Like } from './matrix3x3Ops';
-import type { PlaneLike, WritablePlaneLike } from './planeOps';
-import type { QuaternionLike } from './quaternionOps';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
-import type { Vector4Like, WritableVector4Like } from './vector4Ops';
+import type { Line3Like, WritableLine3Like } from './line3';
+import type { WritableMatrix3x3Like } from './matrix3x3';
+import type { PlaneLike, WritablePlaneLike } from './plane';
+import type { QuaternionLike } from './quaternion';
+import type { Vector3Like, WritableVector3Like } from './vector3';
+import type { Vector4Like, WritableVector4Like } from './vector4';
 import {
     VEC3_Y_AXIS,
     vec3Add,
@@ -13,12 +13,12 @@ import {
     vec3Normalized,
     vec3Random,
     vec3ScaleNumber,
-} from './vector3Ops';
+} from './vector3';
 
 /**
  * `Matrix4x4` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2d）。
  *
- * 与 `vector3Ops.ts` / `quaternionOps.ts` / `color4Ops.ts` 同构：数据形状 + 纯函数同文件，
+ * 与 `vector3.ts` / `quaternion.ts` / `color4.ts` 同构：数据形状 + 纯函数同文件，
  * 入参只读、结果写 `out`（`out` 传自己即就地运算），class 的同名方法转发到这里。
  *
  * ## 本批（A2d）一并覆盖的跨类型函数
@@ -29,8 +29,8 @@ import {
  * `mat4GetAxisX|Y|Z` / `mat4FromTRS` / `mat4ToTRS` / `mat4FromQuaternion` /
  * `mat4FromAxisRotate` / `mat4FromRotation` / `mat4AppendRotation` / `mat4MoveRight|Up|Forward` …
  * 跨类型参数一律用**结构类型**（`Vector3Like` / `WritableVector3Like` / `QuaternionLike` 等），
- * 运行时只 import `./vector3Ops` 里的值函数；对方类型全部 **type-only import**（编译后擦除），
- * 所以运行时依赖方向是 `Matrix4x4.ts → matrix4x4Ops.ts → vector3Ops.ts`，不成环。
+ * 运行时只 import `./vector3` 里的值函数；对方类型全部 **type-only import**（编译后擦除），
+ * 所以运行时依赖方向是 `Matrix4x4.ts → matrix4x4.ts → vector3.ts`，不成环。
  *
  * ## 四个必须留意的点
  *
@@ -85,41 +85,41 @@ export interface Matrix4x4 extends Matrix4x4Like
 /**
  * 可读出的四维向量形状（`Vector4` 实例与纯数据字面量都满足）。
  *
- * 归属是 `vector4Ops.ts`（issue #134 B1 收口）：与 `PlaneLike` / `Matrix3x3Like` 同构处理——
- * 这里只保留 **type-only 重导出**，既有 `import { Vector4Like } from './matrix4x4Ops'`
+ * 归属是 `vector4.ts`（issue #134 B1 收口）：与 `PlaneLike` / `Matrix3x3Like` 同构处理——
+ * 这里只保留 **type-only 重导出**，既有 `import { Vector4Like } from './matrix4x4'`
  * 的调用方不受影响。B1 之前本文件另有一份**同形但不同符号**的本地定义，导致
- * `index.ts` 同时 `export *` 两个 Ops 模块时报 TS2308（同名导出歧义）。
+ * `index.ts` 同时 `export *` 两个纯函数模块时报 TS2308（同名导出歧义）。
  */
-export type { Vector4Like, WritableVector4Like } from './vector4Ops';
+export type { Vector4Like, WritableVector4Like } from './vector4';
 
 /**
  * 可读出的平面形状（`ax+by+cz+d=0`）。
  *
- * 归属是 `planeOps.ts`（issue #134 A2j）：`mat4TransformPlane` 只是读它的字段，
- * 这里保留 type-only 重导出，既有 `import { PlaneLike } from './matrix4x4Ops'` 不受影响。
+ * 归属是 `plane.ts`（issue #134 A2j）：`mat4TransformPlane` 只是读它的字段，
+ * 这里保留 type-only 重导出，既有 `import { PlaneLike } from './matrix4x4'` 不受影响。
  */
-export type { PlaneLike, WritablePlaneLike } from './planeOps';
+export type { PlaneLike, WritablePlaneLike } from './plane';
 
 /**
  * 可读出的 3x3 矩阵形状。
  *
- * 归属是 `matrix3x3Ops.ts`（issue #134 A2c 定义、A3 收回）：`mat4ToMatrix3x3` 只是写它的 `elements`，
+ * 归属是 `matrix3x3.ts`（issue #134 A2c 定义、A3 收回）：`mat4ToMatrix3x3` 只是写它的 `elements`，
  * 与 `PlaneLike` 同构处理——这里保留 **type-only 重导出**，既有
- * `import { Matrix3x3Like } from './matrix4x4Ops'` 的调用方不受影响。
+ * `import { Matrix3x3Like } from './matrix4x4'` 的调用方不受影响。
  */
-export type { Matrix3x3Like, WritableMatrix3x3Like } from './matrix3x3Ops';
+export type { Matrix3x3Like, WritableMatrix3x3Like } from './matrix3x3';
 
 /**
  * 可读出的射线形状（`Ray3` 是 `Line3` 的**类型别名**，含原点与方向）。
  *
  * 阶段 C-d 起不再重复定义：本文件原先自己声明了一份与 `Line3Like` **逐字段同形**的
  * `Ray3Like` / `WritableRay3Like`（都是 `{ origin, direction }`）。现在保留名字、
- * 改为 `line3Ops` 对应形状的**类型别名**，既有
- * `import { Ray3Like } from './matrix4x4Ops'` 的调用方不受影响（方案 §11.7.7 的 `Ray3` 行）。
+ * 改为 `line3` 对应形状的**类型别名**，既有
+ * `import { Ray3Like } from './matrix4x4'` 的调用方不受影响（方案 §11.7.7 的 `Ray3` 行）。
  */
 export type Ray3Like = Line3Like;
 
-/** 可写出的射线目标（`line3Ops.WritableLine3Like` 的别名）。 */
+/** 可写出的射线目标（`line3.WritableLine3Like` 的别名）。 */
 export type WritableRay3Like = WritableLine3Like;
 
 /** 单位矩阵的 16 个元素：与 `new Matrix4x4()` 的默认值一致（见文件头第 1 条）。 */

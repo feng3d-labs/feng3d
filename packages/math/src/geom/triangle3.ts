@@ -1,6 +1,6 @@
 import { mathUtil } from '@feng3d/polyfill';
-import { planeClosestPointWithPoint, planeFromPoints } from './planeOps';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+import { planeClosestPointWithPoint, planeFromPoints } from './plane';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 import {
     vec3Add,
     vec3Copy,
@@ -21,9 +21,9 @@ import {
     vec3Round,
     vec3Scale,
     vec3Sub,
-} from './vector3Ops';
-import type { WritableSegment3Like } from './segment3Ops';
-import { seg3ClosestPointWithPoint, seg3FromPoints, seg3OnWithPoint } from './segment3Ops';
+} from './vector3';
+import type { WritableSegment3Like } from './segment3';
+import { seg3ClosestPointWithPoint, seg3FromPoints, seg3OnWithPoint } from './segment3';
 
 /**
  * `Triangle3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2k）。
@@ -57,7 +57,7 @@ import { seg3ClosestPointWithPoint, seg3FromPoints, seg3OnWithPoint } from './se
  *
  * ## 本文件不做的部分（阶段 C-c 收口后）
  *
- * 相交族与切割族的「联合类型」成员落在 [intersectionOps.ts](./intersectionOps.ts)
+ * 相交族与切割族的「联合类型」成员落在 [intersection.ts](./intersection.ts)
  * （跨类型，且本文件已反向被它引用，放在这里会造出模块环）：
  * `tri3IntersectionWithSegment` / `tri3DecomposeWithSegment` / `tri3DecomposeWithLine`。
  *
@@ -81,7 +81,7 @@ export interface Triangle3Like
 /**
  * `Triangle3` 纯数据接口（**带判别字段**，方案 §5.9 的 D1 决策）。
  *
- * `Triangle3Like` / `WritableTriangle3Like` **刻意不带** `__type__`（理由见 `segment3Ops.ts` 同名字段的注释）。
+ * `Triangle3Like` / `WritableTriangle3Like` **刻意不带** `__type__`（理由见 `segment3.ts` 同名字段的注释）。
  */
 export interface Triangle3 extends Triangle3Like
 {

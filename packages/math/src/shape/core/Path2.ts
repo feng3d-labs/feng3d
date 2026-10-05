@@ -1,5 +1,5 @@
-import type { Vector2Like, WritableVector2Like } from '../../geom/vector2Ops';
-import { vec2Copy, vec2Equals, vec2From } from '../../geom/vector2Ops';
+import type { Vector2Like, WritableVector2Like } from '../../geom/vector2';
+import { vec2Copy, vec2Equals, vec2From } from '../../geom/vector2';
 import { CubicBezierCurve2 } from '../curves/CubicBezierCurve2';
 import { EllipseCurve2 } from '../curves/EllipseCurve2';
 import { LineCurve2 } from '../curves/LineCurve2';

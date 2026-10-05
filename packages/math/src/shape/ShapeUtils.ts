@@ -1,5 +1,5 @@
-import type { Vector2Like } from '../geom/vector2Ops';
-import { vec2Equals } from '../geom/vector2Ops';
+import type { Vector2Like } from '../geom/vector2';
+import { vec2Equals } from '../geom/vector2';
 import earcut from 'earcut';
 
 export class ShapeUtils

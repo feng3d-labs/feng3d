@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Vector2 } from '../src/geom/vector2Ops';
+import { Vector2 } from '../src/geom/vector2';
 import { CurvePath } from '../src/shape/core/CurvePath';
 import { LineCurve2 } from '../src/shape/curves/LineCurve2';
 

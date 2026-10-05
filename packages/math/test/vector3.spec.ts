@@ -31,11 +31,11 @@ import {
     vec3SubNumber,
     vec3ToVec2,
     vec3Unit,
-} from '../src/geom/vector3Ops';
-import { VEC3_ZERO } from '../src/geom/vector3Ops';
+} from '../src/geom/vector3';
+import { VEC3_ZERO } from '../src/geom/vector3';
 
 /**
- * `Vector3`（`packages/math/src/geom/vector3Ops.ts`）——全仓被引用最广的数值类型。
+ * `Vector3`（`packages/math/src/geom/vector3.ts`）——全仓被引用最广的数值类型。
  *
  * ★ **阶段 C-f**：`Vector3` 的 class 已删除，本文件从「class 规格」改写为**同义纯函数用例**
  * （与 C-e 对 `Box3` / `Quaternion` / `Matrix4x4` 的处理一致）：

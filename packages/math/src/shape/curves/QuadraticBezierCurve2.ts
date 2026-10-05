@@ -1,5 +1,5 @@
-import type { Vector2Like, WritableVector2Like } from '../../geom/vector2Ops';
-import { vec2From } from '../../geom/vector2Ops';
+import type { Vector2Like, WritableVector2Like } from '../../geom/vector2';
+import { vec2From } from '../../geom/vector2';
 import { Curve } from '../core/Curve';
 import { Interpolations } from '../core/Interpolations';
 

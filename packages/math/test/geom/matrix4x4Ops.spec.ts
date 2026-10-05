@@ -44,9 +44,9 @@ import {
     mat4TransformVector3,
     mat4TransformVector4,
     mat4Transpose,
-} from '../../src/geom/matrix4x4Ops';
-import { quatFromAxisAngle } from '../../src/geom/quaternionOps';
-import { VEC3_Z_AXIS } from '../../src/geom/vector3Ops';
+} from '../../src/geom/matrix4x4';
+import { quatFromAxisAngle } from '../../src/geom/quaternion';
+import { VEC3_Z_AXIS } from '../../src/geom/vector3';
 
 /** 只取 16 个元素的普通数组（`elements` 可能是元组或 `Float32Array`，直接 deepEqual 不通用） */
 function e16(m: { elements: ArrayLike<number> }): number[]
@@ -71,12 +71,12 @@ function assertClose(actual: number, expected: number, message?: string)
 }
 
 /**
- * `matrix4x4Ops` 纯函数层的**契约测试**（issue #134 阶段 A2d）。
+ * `matrix4x4` 纯函数层的**契约测试**（issue #134 阶段 A2d）。
  *
  * 规矩（方案 §10.1 P3）：数值期望值**手算硬编码**，不拿 class 当基准——
  * class 已委托给同一批函数，两边会一起错。另设**一条**「class 结果 == 纯函数结果」的接线用例。
  */
-describe('matrix4x4Ops 纯函数层（#134 A2d）', () =>
+describe('matrix4x4 纯函数层（#134 A2d）', () =>
 {
     it('缺省 out 与 new Matrix4x4() 的默认值一致（单位矩阵，不是全零）', () =>
     {

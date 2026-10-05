@@ -1,5 +1,5 @@
 import { assert, describe, it } from 'vitest';
-import type { Sphere } from '../../src/geom/sphereOps';
+import type { Sphere } from '../../src/geom/sphere';
 import {
     sphereClampPoint,
     sphereContainsPoint,
@@ -11,7 +11,7 @@ import {
     sphereIntersectsPlane,
     sphereIntersectsSphere,
     sphereIsEmpty,
-} from '../../src/geom/sphereOps';
+} from '../../src/geom/sphere';
 
 const near = (a: number, b: number, msg?: string) => assert.ok(Math.abs(a - b) < 1e-12, `${msg ?? ''} 期望 ${b} 实际 ${a}`);
 const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.z });
@@ -19,9 +19,9 @@ const xyz = (v: { x: number; y: number; z: number }) => ({ x: v.x, y: v.y, z: v.
 const S = { center: { x: 0, y: 0, z: 0 }, radius: 1 };
 
 /**
- * `sphereOps` 纯函数层的**契约测试**（issue #134 阶段 A2n）。
+ * `sphere` 纯函数层的**契约测试**（issue #134 阶段 A2n）。
  */
-describe('sphereOps 纯函数层（#134 A2n）', () =>
+describe('sphere 纯函数层（#134 A2n）', () =>
 {
     it('运算不修改入参', () =>
     {

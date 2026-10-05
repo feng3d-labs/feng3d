@@ -38,8 +38,8 @@ import {
     rect2Top,
     rect2TopLeft,
     rect2Union,
-} from '../../src/geom/rectangleOps';
-import type { RectangleLike } from '../../src/geom/rectangleOps';
+} from '../../src/geom/rectangle';
+import type { RectangleLike } from '../../src/geom/rectangle';
 
 /**
  * 只取 x / y 两个分量（不依赖 Vector2 的自有属性）。
@@ -58,7 +58,7 @@ function xywh(r: RectangleLike): { x: number; y: number; width: number; height: 
 }
 
 /**
- * `rectangleOps` 纯函数层的**契约测试**（issue #134 阶段 A2m）。
+ * `rectangle` 纯函数层的**契约测试**（issue #134 阶段 A2m）。
  *
  * ## 为什么期望值一律手算硬编码
  *
@@ -67,7 +67,7 @@ function xywh(r: RectangleLike): { x: number; y: number; width: number; height: 
  * **阶段 C-a 删掉 `Rectangle` class 后，原先那条「class 委托的接线」用例一并删除**——
  * 委托方已不存在，手算用例就是唯一的等价网（方案 §5.8）。
  *
- * ## getter / setter 是本文件与 `vector2Ops` 最大的不同
+ * ## getter / setter 是本文件与 `vector2` 最大的不同
  *
  * `right` / `bottom` / `left` / `top` / `topLeft` / `bottomRight` / `center` 这些成员**不是**简单字段读写：
  *
@@ -83,7 +83,7 @@ function xywh(r: RectangleLike): { x: number; y: number; width: number; height: 
  * `contains` 用 `<=` / `>=`（**闭区间**，边上的点算包含），`containsPoint` 用 `<` / `>`
  * （**开区间**，边上的点算不包含）。这条差异被下面两条用例分别钉住。
  */
-describe('rectangleOps 纯函数层（#134 阶段 A2m）', () =>
+describe('rectangle 纯函数层（#134 阶段 A2m）', () =>
 {
     it('运算不修改入参，结果只写 out', () =>
     {

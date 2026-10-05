@@ -1,7 +1,7 @@
 import { mathUtil } from '@feng3d/polyfill';
-import type { WritableLine3Like } from './line3Ops';
-import { line3ClosestPointWithPoint, line3FromPoints } from './line3Ops';
-import type { Vector3Like, WritableVector3Like } from './vector3Ops';
+import type { WritableLine3Like } from './line3';
+import { line3ClosestPointWithPoint, line3FromPoints } from './line3';
+import type { Vector3Like, WritableVector3Like } from './vector3';
 import {
     vec3Copy,
     vec3Cross,
@@ -10,7 +10,7 @@ import {
     vec3NormalizeThickness,
     vec3Random,
     vec3Sub,
-} from './vector3Ops';
+} from './vector3';
 
 /**
  * `Segment3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
@@ -40,7 +40,7 @@ import {
  *   纯数据形态下 `line3FromPoints` 的字面量与实例同形，这条理由随之消失（方案 §11.7.7 P5）；
  * - `intersectionWithLine` / `intersectionWithSegment`——返回值是联合类型，判别改用**结构化字段**
  *   （`'p0' in r` = 线段、否则是点）替代 `instanceof`，落在
- *   [intersectionOps.ts](./intersectionOps.ts)（跨类型 + `planeOps` 依赖，放进本文件会造出模块环）。
+ *   [intersection.ts](./intersection.ts)（跨类型 + `plane` 依赖，放进本文件会造出模块环）。
  *
  * 接口与本文件同址（方案 §3.1）：`import { Segment3 } from '@feng3d/math'` 一字不改。
  */
@@ -254,7 +254,7 @@ export function seg3Equals(a: Segment3Like, b: Segment3Like, precision = mathUti
  *
  * 原实现是 `line.fromPoints(this.p0.clone(), this.p1.clone())`——两次 `clone()` 只是为了不与调用方
  * 共享 `Vector3`；`line3FromPoints` 本身已是**值语义**（复制分量），所以直接传 `p0` / `p1`。
- * 缺省 `out` 与 `line3Ops` 的缺省一致（原点替零、方向 +Z）——纯数据形态下没有「构造器默认值」，
+ * 缺省 `out` 与 `line3` 的缺省一致（原点替零、方向 +Z）——纯数据形态下没有「构造器默认值」，
  * 这里按同一默认显式写出来，语义与 `new Line3()` 对齐（方案 §10.1 的 P6）。
  */
 export function seg3GetLine(

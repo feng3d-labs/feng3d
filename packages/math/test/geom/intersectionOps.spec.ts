@@ -1,15 +1,15 @@
 import { assert, describe, it } from 'vitest';
-import type { Line3Like } from '../../src/geom/line3Ops';
-import { line3Equals, line3FromPoints, line3OnWithPoint } from '../../src/geom/line3Ops';
-import type { Segment3Like } from '../../src/geom/segment3Ops';
-import { seg3Equals, seg3FromPoints } from '../../src/geom/segment3Ops';
-import type { Triangle3Like } from '../../src/geom/triangle3Ops';
-import { tri3FromPoints } from '../../src/geom/triangle3Ops';
-import { line3IntersectWithLine3D, seg3IntersectionWithLine, tri3IntersectionWithLine } from '../../src/geom/intersectionOps';
-import { vec3Equals } from '../../src/geom/vector3Ops';
+import type { Line3Like } from '../../src/geom/line3';
+import { line3Equals, line3FromPoints, line3OnWithPoint } from '../../src/geom/line3';
+import type { Segment3Like } from '../../src/geom/segment3';
+import { seg3Equals, seg3FromPoints } from '../../src/geom/segment3';
+import type { Triangle3Like } from '../../src/geom/triangle3';
+import { tri3FromPoints } from '../../src/geom/triangle3';
+import { line3IntersectWithLine3D, seg3IntersectionWithLine, tri3IntersectionWithLine } from '../../src/geom/intersection';
+import { vec3Equals } from '../../src/geom/vector3';
 
 /**
- * `intersectionOps` 纯函数层的契约测试（issue #134 阶段 C-a）。
+ * `intersection` 纯函数层的契约测试（issue #134 阶段 C-a）。
  *
  * 这一层取代的是三个 class 里「联合类型 + `instanceof`」的成员
  * （`Line3.intersectWithLine3D` / `Segment3.intersectionWithLine` / `Triangle3.intersectionWithLine`），
@@ -18,7 +18,7 @@ import { vec3Equals } from '../../src/geom/vector3Ops';
  * 期望值全部**手算**（不是在调用同一个实现的两条路径之间对拍）：
  * 这里的几何都是整数坐标 + 轴对齐情形，交点是显然的。
  */
-describe('intersectionOps 纯函数层（#134 C-a）', () =>
+describe('intersection 纯函数层（#134 C-a）', () =>
 {
     /** 结果形状的名字，便于断言 */
     function shapeOf(r: unknown): 'line' | 'segment' | 'point' | 'null'

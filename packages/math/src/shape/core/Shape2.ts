@@ -1,5 +1,5 @@
 import earcut from 'earcut';
-import type { Vector2Like } from '../../geom/vector2Ops';
+import type { Vector2Like } from '../../geom/vector2';
 import { Path2 } from './Path2';
 
 export class Shape2 extends Path2

@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest';
-import { mat4FromArray } from '../../src/geom/matrix4x4Ops';
-import type { Frustum } from '../../src/geom/frustumOps';
+import { mat4FromArray } from '../../src/geom/matrix4x4';
+import type { Frustum } from '../../src/geom/frustum';
 import {
     frustumContainsPoint,
     frustumCopy,
@@ -8,15 +8,15 @@ import {
     frustumIntersectsBox,
     frustumIntersectsSphere,
     frustumSet,
-} from '../../src/geom/frustumOps';
+} from '../../src/geom/frustum';
 
 /** 6 个都是 y = 0 平面（a=0,b=1,c=0,d=0）——便于手算距离。 */
 const mk = () => ({ planes: Array.from({ length: 6 }, () => ({ a: 0, b: 1, c: 0, d: 0 })) });
 
 /**
- * `frustumOps` 纯函数层的**契约测试**（issue #134 阶段 A2o，A2 的最后一个类型）。
+ * `frustum` 纯函数层的**契约测试**（issue #134 阶段 A2o，A2 的最后一个类型）。
  */
-describe('frustumOps 纯函数层（#134 A2o）', () =>
+describe('frustum 纯函数层（#134 A2o）', () =>
 {
     it('运算不修改入参', () =>
     {

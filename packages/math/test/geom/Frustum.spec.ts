@@ -8,8 +8,8 @@
  * `a.containsPoint(p)` → `frustumContainsPoint(a, p)`、`a.intersectsSphere(s)` →
  * `frustumIntersectsSphere(a, s)`、`a.intersectsBox(b)` → `frustumIntersectsBox(a, b)`）。
  */
-import { mat4SetOrtho, mat4SetPerspective } from '../../src/geom/matrix4x4Ops';
-import type { Frustum } from '../../src/geom/frustumOps';
+import { mat4SetOrtho, mat4SetPerspective } from '../../src/geom/matrix4x4';
+import type { Frustum } from '../../src/geom/frustum';
 import {
     frustumContainsPoint,
     frustumCopy,
@@ -17,10 +17,10 @@ import {
     frustumIntersectsBox,
     frustumIntersectsSphere,
     frustumSet,
-} from '../../src/geom/frustumOps';
-import { box3Translate } from '../../src/geom/box3Ops';
-import { planeCopy, planeEquals } from '../../src/geom/planeOps';
-import { VEC3_ONE, VEC3_ZERO, vec3Copy } from '../../src/geom/vector3Ops';
+} from '../../src/geom/frustum';
+import { box3Translate } from '../../src/geom/box3';
+import { planeCopy, planeEquals } from '../../src/geom/plane';
+import { VEC3_ONE, VEC3_ZERO, vec3Copy } from '../../src/geom/vector3';
 
 import { assert, describe, it } from 'vitest';
 
