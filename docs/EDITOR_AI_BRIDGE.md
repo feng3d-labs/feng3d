@@ -957,6 +957,13 @@ scene.validate
 
 > 结论先说：现状是**能力插件化、暴露面手写**；推荐 **先走路径 A（清单贡献 `aiTools`）让插件今天就能自带
 > AI 工具，再用路径 B（方法自带元数据 + 动态 `tools/list`）收口**。契约草案、代价与门禁都在下面。
+>
+> **进展（2026-10-05）**：**A 的编辑侧已落地**——`PluginContributions.aiTools` 契约
+> （`name` / `method` / `description` / `inputSchema`，全是纯数据）、注册表登记（**同层重名拒绝**、
+> 启用过滤、层叠加 → 上层赢且留痕）、`editor.plugins` 暴露（`aiTools` + `aiToolCount`）、
+> 单测 4 条（`packages/editor/test/pluginAiTools.spec.ts`）。
+> **消费侧（MCP `tools/list` 现算合并 + 静态兜底）与 §15.2 的三条一致性门禁是下一步**；
+> 样板插件会随那一步一起演示"**装一个插件 → AI 立刻多一个工具**"。
 > 这一条是 [#281](https://github.com/feng3d-labs/feng3d/issues/281) 的任务 5「评估是否需要 AI 专用贡献点」，
 > 此前**没有任何评估痕迹**，也不在 #267 的 8 项决策清单里（属"没有归属的决策"，见 §15.5）。
 
