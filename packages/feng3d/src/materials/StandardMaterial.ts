@@ -15,6 +15,7 @@ import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTexture
 import { standardVertexWGSL } from './standardVertexShader';
 import { reactive, effect, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 import { globalUniformsWGSL } from '../render/renderer/ForwardRenderer';
+import { getStandardLightingParsWGSL } from '../shaders/tsl/standardLightingPars';
 
 /**
  * 把声明式纹理引用收窄成 `TextureField`。
@@ -314,105 +315,9 @@ export { standardSkinnedVertexWGSL, standardVertexWGSL } from './standardVertexS
 // 各材质需保证 uniforms struct 含以下字段（同名同类型，供 standardLightingMainWGSL 引用）：
 //   u_alphaThreshold/u_specular/u_glossiness/u_ambient/u_reflectivity/
 //   u_fogMinDistance/u_fogMaxDistance/u_fogColor/u_fogDensity/u_fogMode
-export const standardLightingParsWGSL = `
-// ---- lights_pars_frag ----
-struct DirectionalLightData {
-    direction: vec3<f32>,
-    intensity: f32,
-    color: vec3<f32>,
-    _pad0: f32,
-}
-
-struct PointLightData {
-    position: vec3<f32>,
-    range: f32,
-    color: vec3<f32>,
-    intensity: f32,
-}
-
-struct SpotLightData {
-    position: vec3<f32>,
-    range: f32,
-    color: vec3<f32>,
-    intensity: f32,
-    direction: vec3<f32>,
-    coneCos: f32,
-    penumbraCos: f32,
-    _pad1: f32,
-}
-
-struct LightsUniform {
-    u_directionalLight: DirectionalLightData,
-    u_pointLightCount: f32,
-    _pad0: f32,
-    _pad1: f32,
-    _pad2: f32,
-    u_pointLights: array<PointLightData, 8>,
-    u_spotLight: SpotLightData,
-}
-
-@group(0) @binding(4) var<uniform> lights: LightsUniform;
-
-// ---- shadowmap_pars_frag ----
-struct ShadowUniforms {
-    u_shadowVP: mat4x4<f32>,
-    u_lightPosition: vec3<f32>,
-    u_shadowCameraNear: f32,
-    u_shadowCameraFar: f32,
-    u_shadowBias: f32,
-    u_shadowEnabled: f32,
-    _pad0: f32,
-    _pad1: f32,
-}
-
-@group(0) @binding(5) var<uniform> shadowData: ShadowUniforms;
-
-// ---- shadowmap_pars_frag: 阴影纹理 ----
-// depth 纹理必须用 texture_depth_2d 声明 + sampler_comparison 比较采样器。
-// textureSampleCompare 直接返回比较结果（1.0=照亮，0.0=阴影），硬件 PCF。
-@group(2) @binding(0) var s_shadowMapSampler: sampler_comparison;
-@group(2) @binding(1) var s_shadowMap: texture_depth_2d;
-
-// ---- shadowmap_pars_frag: 阴影采样函数 ----
-// shadowMap 为 depth 纹理，用 textureSampleCompare（比较采样器）直接做硬件深度比较。
-// sampler.compare = 'less'：textureSampleCompare 比较 depth_ref < texel_depth，
-// 即片元深度比存储的最近表面更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。
-// 这是标准阴影映射约定。
-fn getShadow(shadowPos: vec3<f32>) -> f32 {
-    // 参考 webgpu shadowMapping fragment.wgsl：用顶点传入的 shadowPos（已在 [0,1] UV 空间，
-    // z 直接与 depth buffer 同空间 [0,1]）做 textureSampleCompare。
-    // bias 必须**减小**参考深度（shadowPos.z - bias，与参考实现 shadowPos.z - 0.007 同向）：
-    // compare='less' 判定 depth_ref < texel_depth，把片元深度往光源方向偏移一个 bias，
-    // 才能避开深度量化误差导致的自阴影（shadow acne）。写成 + bias 会加重自阴影。
-    let uv = shadowPos.xy;
-    let depthRef = shadowPos.z - shadowData.u_shadowBias;
-    let inFrustum = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0 && depthRef <= 1.0 && depthRef >= 0.0;
-    var shadow = textureSampleCompare(s_shadowMap, s_shadowMapSampler, uv, depthRef);
-
-    return select(1.0, shadow, inFrustum);
-}
-
-// ---- lights_pars_frag: 光照辅助函数 ----
-fn computeDistanceLightFalloff(lightDistance: f32, range: f32) -> f32 {
-    return max(0.0, 1.0 - lightDistance / range);
-}
-
-fn calculateLightDiffuse(normal: vec3<f32>, lightDir: vec3<f32>) -> f32 {
-    return clamp(dot(normal, lightDir), 0.0, 1.0);
-}
-
-fn calculateLightSpecular(normal: vec3<f32>, lightDir: vec3<f32>, viewDir: vec3<f32>, glossiness: f32) -> f32 {
-    let halfVec = normalize(lightDir + viewDir);
-    var specComp = max(dot(normal, halfVec), 0.0);
-    // glossiness <= 0 视为完全粗糙（无高光）：直接返回 0。
-    // 这样既对齐 PBR 语义（glossiness=0 → 粗糙无镜面），也避免 pow(specComp, 0)
-    // 在部分 GPU 上返回 NaN 污染整条 resultColor（NaN + 任意值 = NaN → 渲染全黑）。
-    if (glossiness <= 0.0) {
-        return 0.0;
-    }
-    return pow(specComp, glossiness);
-}
-`;
+// 光照/阴影的 pars 片段改由 TSL 生成（见 shaders/tsl/standardLightingPars.ts）。
+// 保持同名导出：terrain 的 TerrainMaterial 也用它。
+export const standardLightingParsWGSL = getStandardLightingParsWGSL();
 
 // ============================================================================
 // 标准光照/阴影片元 main 片段（共享：StandardMaterial + TerrainMaterial）

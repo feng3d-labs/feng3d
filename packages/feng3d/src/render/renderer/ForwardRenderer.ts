@@ -356,14 +356,17 @@ export class ForwardRenderer
                     // 阴影 depth 纹理用 webgpu Texture 接口（2d 视图）。
                     // depth24plus 是纯 depth 格式，直接绑定（与参考实现 shadowMapping 一致，
                     // 不需要 aspect:'depth-only'）。
-                    r_bindingResources.s_shadowMap = _sharedShadowMap as never;
+                    // 键名按 TSL 的采样器展开约定：samplerComparison 会展开成
+                    // s_shadowMap_texture（texture_depth_2d）+ s_shadowMap（sampler_comparison），
+                    // 见 shaders/tsl/standardLightingPars.ts。
+                    r_bindingResources.s_shadowMap_texture = _sharedShadowMap as never;
                     // 阴影采样器为比较采样器（sampler_comparison）：compare='less'
                     // textureSampleCompare 比较 depth_ref < texel_depth：片元深度比存储的最近表面
                     // 更近（没被遮挡）→ 1（照亮），否则 → 0（阴影）。这是标准阴影映射约定。
                     // addressMode 用 clamp-to-edge：越界 uv 钳到边界（边界处深度=clearValue 1.0，
                     // ref<1.0 → 照亮），避免 repeat 把阴影纹理另一侧的内容采到当前片元。
                     // filter 配置无意义：比较采样器只做深度比较，GPU 忽略 filter。
-                    r_bindingResources.s_shadowMapSampler = SHADOW_MAP_COMPARISON_SAMPLER;
+                    r_bindingResources.s_shadowMap = SHADOW_MAP_COMPARISON_SAMPLER;
                 }
 
                 logic(renderable).beforeRender(renderObject);
