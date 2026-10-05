@@ -368,4 +368,4 @@ export class RenderableLogic extends BehaviourLogic
     }
 }
 // 注册到分发表
-registerLogic('Renderable', RenderableLogic as unknown as new (data: Renderable) => RenderableLogic);
+registerLogic('Renderable', RenderableLogic.create);

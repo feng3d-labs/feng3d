@@ -105,27 +105,27 @@ describe('插件贡献表', () =>
             .toEqual(getPanelContributions().map((panel) => panel.id));
     });
 
-    it('视图 loader 与 Logic 类都不进贡献表（dump 出来是函数，没有意义）', () =>
+    it('视图 loader 与 Logic 工厂都不进贡献表（dump 出来是函数，没有意义）', () =>
     {
         registerPlugins([manifest('p1', { panels: [{ id: 'a', labelKey: 'k', view: loader('A'), placement: 'main' }] })]);
 
         // 贡献表是给"看"的：只该有 id / 落位 / 标签键 / 来源这类元数据。
-        // Logic 尤其要注意——清单里存的是**类本身**，直接序列化会打出一串压缩后的函数源码
+        // Logic 尤其要注意——清单里存的是**工厂函数本身**，直接序列化会打出一串压缩后的函数源码
         const table = getContributionTable();
 
         expect(JSON.stringify(table)).not.toContain('function');
         expect(table.logics).toEqual([]);
     });
 
-    it('Logic 贡献点带类型名与来源，且不带类本身', () =>
+    it('Logic 贡献点带类型名与来源，且不带工厂本身', () =>
     {
-        class FakeLogic { protected constructor(data: unknown) { void data; } }
+        const fakeLogic = (_data: unknown): unknown => ({});
 
         registerPlugins([{
             id: 'p1',
             name: 'p1',
             apiVersion: EDITOR_PLUGIN_API_VERSION,
-            contributes: { logics: [{ name: 'Fake', logic: FakeLogic }] },
+            contributes: { logics: [{ name: 'Fake', logic: fakeLogic }] },
         }]);
 
         const table = getContributionTable();

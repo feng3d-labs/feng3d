@@ -186,7 +186,7 @@ const TERRAIN_DEFAULT_UNIFORMS = {
  * TerrainMaterialLogic 逻辑类：填入 terrain 着色器，监听 6 个纹理变化重算绑定。
  *
  * 结构与 TextureMaterialLogic 一致：构造逻辑收敛为私有字段/方法，仅暴露 isLoaded /
- * beforeRender。通过 registerLogic('TerrainMaterial', TerrainMaterialLogic) 注册，
+ * beforeRender。通过 registerLogic('TerrainMaterial', TerrainMaterialLogic.create) 注册，
  * 调用方用 `logic(material)` 获取实例。
  */
 export class TerrainMaterialLogic extends MaterialLogic
@@ -291,7 +291,7 @@ export class TerrainMaterialLogic extends MaterialLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('TerrainMaterial', TerrainMaterialLogic as unknown as new (data: TerrainMaterial) => TerrainMaterialLogic);
+registerLogic('TerrainMaterial', TerrainMaterialLogic.create);
 
 // 注册默认材质工厂（由 Material.ts 的 ensureDefaultMaterials 惰性调用）
 // Terrain 组件用 getDefaultMaterial('Terrain-Material') 取用本材质。

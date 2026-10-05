@@ -330,4 +330,4 @@ export class PolyhedronGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('PolyhedronGeometry', PolyhedronGeometryLogic as unknown as new (data: PolyhedronGeometry) => PolyhedronGeometryLogic);
+registerLogic('PolyhedronGeometry', PolyhedronGeometryLogic.create);

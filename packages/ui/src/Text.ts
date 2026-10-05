@@ -226,7 +226,7 @@ export class TextLogic extends ComponentLogicBase
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Text', TextLogic as unknown as new (data: Text) => TextLogic);
+registerLogic('Text', TextLogic.create);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Text 是 Component3D（进而 Component）的子类型。
 registerComponentType('Text', { baseTypes: ['Component3D'] });

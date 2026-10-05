@@ -220,4 +220,4 @@ export class TransformLayoutLogic extends ComponentLogicBase
     }
 }
 // 注册到 logic 分发表
-registerLogic('TransformLayout', TransformLayoutLogic as unknown as new (data: TransformLayout) => TransformLayoutLogic);
+registerLogic('TransformLayout', TransformLayoutLogic.create);

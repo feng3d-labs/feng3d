@@ -252,4 +252,4 @@ export class LatheGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('LatheGeometry', LatheGeometryLogic as unknown as new (data: LatheGeometry) => LatheGeometryLogic);
+registerLogic('LatheGeometry', LatheGeometryLogic.create);

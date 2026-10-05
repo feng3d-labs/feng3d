@@ -13,9 +13,9 @@ import { toRaw } from './shared/general';
  * logic(transform)        // 等价于原 transformLogic(transform)
  * ```
  *
- * 注册：
+ * 注册（第二参数只能是**工厂函数**，issue #653）：
  * ```ts
- * registerLogic('Camera', CameraLogic);
+ * registerLogic('Camera', CameraLogic.create);
  * registerLogic('View', viewLogic);
  * ```
  *
@@ -46,20 +46,21 @@ export interface LogicMap
     [type: string]: any;
 }
 
-type LogicConstructor<K extends keyof LogicMap> = new (data: { readonly __type__: K }) => LogicMap[K];
-type LogicFactory<K extends keyof LogicMap> = (data: { readonly __type__: K }) => LogicMap[K];
-
 /**
- * logic 工厂：可以是 class 构造函数（`new (data) => Logic`），
- * 也可以是普通工厂函数（`(data) => Logic`）。
+ * Logic 工厂函数：把 `__type__` 对应的纯数据对象转换为 logic 实例。
  *
- * 两种形式在 logic() 内部统一用 `new factory(data)` 调用——
- * 对 class 是正常构造；对工厂函数（函数体 return 对象），
- * new 会返回该 return 的对象（详见 ES 规范 [[Construct]]）。
+ * `registerLogic` **只接受工厂函数**（issue #653）：class 构造函数只有构造签名、
+ * 没有调用签名，无法赋给本类型——这就是"新增 Logic 必须用工厂函数"在类型层的执行者。
+ * 既有 Logic 类统一用 `static create(data)` 作为创建入口（`protected constructor`
+ * 的唯一出口），注册写 `registerLogic('Camera', CameraLogic.create)`。
+ *
+ * 参数类型为 `any`：各创建入口的签名是**具体数据接口**（如 `(data: Camera) => CameraLogic`），
+ * 函数参数逆变下无法赋给更窄的 `{ readonly __type__: K }`；而 `logic()` 收到的
+ * 本来就是运行期弱类型对象。
  */
-type LogicFactoryLike<K extends keyof LogicMap> = LogicConstructor<K> | LogicFactory<K>;
+export type LogicFactory<K extends keyof LogicMap> = (data: any) => LogicMap[K];
 
-let _factories: Map<string, LogicFactoryLike<string>> | null = null;
+let _factories: Map<string, LogicFactory<string>> | null = null;
 let _logicMap: WeakMap<object, unknown> | null = null;
 
 /**
@@ -68,7 +69,7 @@ let _logicMap: WeakMap<object, unknown> | null = null;
  * 原来是模块级 `new Map()`：模块被 import 就分配内存并执行代码——违反 R2「零模块级副作用」，
  * 也让 tree-shaking 无法判定这个模块是否可整体消除（issue #88）。缓存一律 lazy-init。
  */
-function getFactories(): Map<string, LogicFactoryLike<string>>
+function getFactories(): Map<string, LogicFactory<string>>
 {
     if (!_factories)
     {
@@ -92,28 +93,25 @@ function getLogicMap(): WeakMap<object, unknown>
 /**
  * 注册数据类型与 logic 的对应关系。
  *
- * 第二参数 factory 支持两种形式：
- * - **class 构造函数**：`registerLogic('Camera', CameraLogic)`
- *   （现有所有 logic 子类都用这种方式）
- * - **工厂函数**：`registerLogic('View', viewLogic)`
- *   （适合需要预处理或单例控制的场景）
- *
- * 两者内部统一用 `new factory(data)` 调用，对工厂函数也成立
- * （ES [[Construct]]：函数体 return 非对象时 new 返回 this，return 对象时返回该对象）。
+ * 第二参数 factory **只能是工厂函数**（issue #653）：`(data) => Logic`。
+ * 既有 Logic 类的统一写法是注册它的 `static create`：
+ * `registerLogic('Camera', CameraLogic.create)`。
+ * class 构造函数（LogicConstructor）不再支持——`logic()` 内部直接调用工厂，
+ * 不再用 `new`（普通函数能被 `new` 只是 ES [[Construct]] 的副作用，箭头函数则不行）。
  *
  * factory 为必填：每个 `__type__` 注册时必须提供对应的 Logic 工厂。
  * 默认值由各 Logic 自行处理：在构造函数 / 工厂函数顶部对 raw 缺失字段单独赋值。
  *
  * @param __type__ 数据的 __type__ 字段值
- * @param factory logic 构造函数或工厂函数（必填）
+ * @param factory logic 工厂函数（必填）
  */
 export function registerLogic<K extends keyof LogicMap>(
     __type__: K,
-    factory: LogicFactoryLike<K>,
+    factory: LogicFactory<K>,
 ): void
 {
     // 注册表按 string 键存通用工厂：泛型不变性下需经 unknown 桥接
-    getFactories().set(__type__ as string, factory as unknown as LogicFactoryLike<string>);
+    getFactories().set(__type__ as string, factory as unknown as LogicFactory<string>);
 }
 
 /**
@@ -181,7 +179,7 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
 
     if (cached !== undefined) return cached as LogicMap[K];
 
-    const factory = getFactories().get(raw.__type__ as string) as unknown as LogicFactoryLike<K>;
+    const factory = getFactories().get(raw.__type__ as string) as unknown as LogicFactory<K>;
 
     if (!factory)
     {
@@ -208,11 +206,10 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
         return null as LogicMap[K];
     }
 
-    // 先缓存占位（防止构造函数内部递归调用 logic() 导致栈溢出）
+    // 先缓存占位（防止工厂内部递归调用 logic() 导致栈溢出）
     getLogicMap().set(raw, _pending);
-    // 统一用 new 调用：class 正常构造；工厂函数（return 对象）也返回该对象（ES [[Construct]]）。
-    // 类型断言绕过 TS 对普通函数 new 的限制（运行时合法）。
-    const l = new (factory as LogicConstructor<K>)(raw);
+    // 直接调用工厂函数（issue #653：注册值只能是函数，不再用 new 调用）
+    const l = factory(raw);
 
     getLogicMap().set(raw, l);
 

@@ -126,7 +126,7 @@ export class CanvasRendererLogic extends RenderableLogic
 }
 
 // 注册到统一 logic 分发表
-registerLogic('CanvasRenderer', CanvasRendererLogic as unknown as new (data: CanvasRenderer) => CanvasRendererLogic);
+registerLogic('CanvasRenderer', CanvasRendererLogic.create);
 
 // 登记组件类型：让引擎的类型表认识这个**上层包**的类型（feng3d 不硬编码 ui 的类型名）。
 // 不做这一步的后果（收尾批任务 1 实测）：`matchType` / `isRenderable` / `isRayCastable`

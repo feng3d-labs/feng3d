@@ -144,4 +144,4 @@ export function writeTextureBindings(renderObject: RenderObject, bindings: Recor
     }
 }
 
-registerLogic('Material', MaterialLogic as unknown as new (data: Material) => MaterialLogic);
+registerLogic('Material', MaterialLogic.create);

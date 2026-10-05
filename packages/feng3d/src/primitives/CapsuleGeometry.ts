@@ -306,4 +306,4 @@ export class CapsuleGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('CapsuleGeometry', CapsuleGeometryLogic as unknown as new (data: CapsuleGeometry) => CapsuleGeometryLogic);
+registerLogic('CapsuleGeometry', CapsuleGeometryLogic.create);

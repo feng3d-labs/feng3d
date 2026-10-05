@@ -112,4 +112,4 @@ export class CustomGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('CustomGeometry', CustomGeometryLogic as unknown as new (data: CustomGeometry) => CustomGeometryLogic);
+registerLogic('CustomGeometry', CustomGeometryLogic.create);

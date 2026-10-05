@@ -178,4 +178,4 @@ export class CircleGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('CircleGeometry', CircleGeometryLogic as unknown as new (data: CircleGeometry) => CircleGeometryLogic);
+registerLogic('CircleGeometry', CircleGeometryLogic.create);

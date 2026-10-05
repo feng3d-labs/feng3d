@@ -200,7 +200,7 @@ export class DirectionalLightLogic extends LightLogic
 }
 
 // 注册到 logic 分发表
-registerLogic('DirectionalLight', DirectionalLightLogic as unknown as new (data: DirectionalLight) => DirectionalLightLogic);
+registerLogic('DirectionalLight', DirectionalLightLogic.create);
 
 // ============================================================================
 // wgpu-matrix 风格 mat4 工具函数（WebGPU 约定：z→[0,1]，列主序，右手 lookAt 看 -Z）

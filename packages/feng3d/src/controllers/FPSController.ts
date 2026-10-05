@@ -297,4 +297,4 @@ export class FPSControllerLogic extends BehaviourLogic
     }
 }
 // 注册到 logic 分发表
-registerLogic('FPSController', FPSControllerLogic as unknown as new (data: FPSController) => FPSControllerLogic);
+registerLogic('FPSController', FPSControllerLogic.create);

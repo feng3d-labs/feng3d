@@ -277,4 +277,4 @@ export class CubeGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('CubeGeometry', CubeGeometryLogic as unknown as new (data: CubeGeometry) => CubeGeometryLogic);
+registerLogic('CubeGeometry', CubeGeometryLogic.create);

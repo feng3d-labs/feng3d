@@ -77,4 +77,4 @@ export class IcosahedronGeometryLogic extends PolyhedronGeometryLogic
     }
 }
 
-registerLogic('IcosahedronGeometry', IcosahedronGeometryLogic as unknown as new (data: IcosahedronGeometry) => IcosahedronGeometryLogic);
+registerLogic('IcosahedronGeometry', IcosahedronGeometryLogic.create);

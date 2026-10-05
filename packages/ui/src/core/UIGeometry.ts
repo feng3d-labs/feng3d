@@ -82,7 +82,7 @@ export class UIGeometryLogic extends GeometryLogic
 }
 
 // 注册到统一 logic 分发表
-registerLogic('UIGeometry', UIGeometryLogic as unknown as new (data: UIGeometry) => UIGeometryLogic);
+registerLogic('UIGeometry', UIGeometryLogic.create);
 
 /**
  * 创建 UI 几何体数据。

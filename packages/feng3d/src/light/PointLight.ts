@@ -140,7 +140,7 @@ export class PointLightLogic extends LightLogic
     }
 }
 // 注册到 logic 分发表
-registerLogic('PointLight', PointLightLogic as unknown as new (data: PointLight) => PointLightLogic);
+registerLogic('PointLight', PointLightLogic.create);
 
 /** cubemap 6 面的 target 方向（+X, -X, +Z, -Z, +Y, -Y） */
 const cubeDirections = [

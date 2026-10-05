@@ -471,4 +471,4 @@ export class CylinderGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('CylinderGeometry', CylinderGeometryLogic as unknown as new (data: CylinderGeometry) => CylinderGeometryLogic);
+registerLogic('CylinderGeometry', CylinderGeometryLogic.create);

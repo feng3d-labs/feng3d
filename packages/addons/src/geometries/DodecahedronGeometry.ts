@@ -95,4 +95,4 @@ export class DodecahedronGeometryLogic extends PolyhedronGeometryLogic
     }
 }
 
-registerLogic('DodecahedronGeometry', DodecahedronGeometryLogic as unknown as new (data: DodecahedronGeometry) => DodecahedronGeometryLogic);
+registerLogic('DodecahedronGeometry', DodecahedronGeometryLogic.create);

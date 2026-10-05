@@ -216,4 +216,4 @@ export class RingGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('RingGeometry', RingGeometryLogic as unknown as new (data: RingGeometry) => RingGeometryLogic);
+registerLogic('RingGeometry', RingGeometryLogic.create);

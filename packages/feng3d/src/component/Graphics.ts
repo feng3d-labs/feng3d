@@ -60,6 +60,12 @@ export class GraphicsLogic extends ComponentLogicBase
         super(data);
     }
 
+    /** 工厂函数：registerLogic 的唯一创建入口（protected constructor 的唯一出口） */
+    static create(data: Graphics): GraphicsLogic
+    {
+        return new GraphicsLogic(data);
+    }
+
     get entity(): Object3D | null
     {
         return this._entity as Object3D | null;
@@ -120,5 +126,5 @@ export function watchContext2D(context2D: CanvasRenderingContext2D, watchFuncs =
     });
 }
 
-// 注册到 logic 分发表（class 经 new factory(data) 统一调用）
-registerLogic('Graphics', GraphicsLogic as unknown as new (data: Graphics) => GraphicsLogic);
+// 注册到 logic 分发表（只接受工厂函数，见 registerLogic 的说明）
+registerLogic('Graphics', GraphicsLogic.create);

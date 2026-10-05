@@ -183,4 +183,4 @@ export class TubeGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('TubeGeometry', TubeGeometryLogic as unknown as new (data: TubeGeometry) => TubeGeometryLogic);
+registerLogic('TubeGeometry', TubeGeometryLogic.create);

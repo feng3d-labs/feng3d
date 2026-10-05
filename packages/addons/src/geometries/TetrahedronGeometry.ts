@@ -70,4 +70,4 @@ export class TetrahedronGeometryLogic extends PolyhedronGeometryLogic
     }
 }
 
-registerLogic('TetrahedronGeometry', TetrahedronGeometryLogic as unknown as new (data: TetrahedronGeometry) => TetrahedronGeometryLogic);
+registerLogic('TetrahedronGeometry', TetrahedronGeometryLogic.create);

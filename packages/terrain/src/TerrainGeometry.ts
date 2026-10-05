@@ -263,4 +263,4 @@ export class TerrainGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('TerrainGeometry', TerrainGeometryLogic as unknown as new (data: TerrainGeometry) => TerrainGeometryLogic);
+registerLogic('TerrainGeometry', TerrainGeometryLogic.create);

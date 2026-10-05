@@ -279,4 +279,4 @@ export class TorusKnotGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('TorusKnotGeometry', TorusKnotGeometryLogic as unknown as new (data: TorusKnotGeometry) => TorusKnotGeometryLogic);
+registerLogic('TorusKnotGeometry', TorusKnotGeometryLogic.create);

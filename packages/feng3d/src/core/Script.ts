@@ -18,8 +18,12 @@ declare module '../component/Component'
  * 子类定义自己的纯数据接口 + logic：
  * ```ts
  * interface ScriptDemo extends Script { readonly __type__: 'ScriptDemo'; }
- * class ScriptDemoLogic extends ScriptLogic { update(interval) { ... } }
- * registerLogic('ScriptDemo', ScriptDemoLogic as never);
+ * class ScriptDemoLogic extends ScriptLogic
+ * {
+ *     static create(data: ScriptDemo): ScriptDemoLogic { return new ScriptDemoLogic(data); }
+ *     update(interval: number) { ... }
+ * }
+ * registerLogic('ScriptDemo', ScriptDemoLogic.create);
  * ```
  */
 export interface Script extends Behaviour
@@ -65,4 +69,4 @@ export function scriptLogic(data: Script): ScriptLogic
 }
 
 // 注册到分发表
-registerLogic('Script', ScriptLogic as unknown as new (data: Script) => ScriptLogic);
+registerLogic('Script', ScriptLogic.create);

@@ -239,8 +239,8 @@ export class GeometryLogic
 /**
  * 组合函数：创建 GeometryLogic 实例（子类工厂的组合入口）。
  *
- * 保留泛型签名：registerLogic 的 data 类型为 `{ __type__: K }`（与 Geometry 弱类型
- * 不相交），泛型函数可经由实例化通过类型检查。
+ * 保留泛型签名：Geometrys 是具体子类型联合（与 `logic()` 的 `{ __type__: K }` 弱类型
+ * 不相交），泛型函数可经由实例化通过 registerLogic 的类型检查。
  */
 export function geometryLogic<T extends Geometrys>(geometry: T): GeometryLogic
 {

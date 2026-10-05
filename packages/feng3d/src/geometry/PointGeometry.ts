@@ -190,4 +190,4 @@ export class PointGeometryLogic extends GeometryLogic
     }
 }
 
-registerLogic('PointGeometry', PointGeometryLogic as unknown as new (data: PointGeometry) => PointGeometryLogic);
+registerLogic('PointGeometry', PointGeometryLogic.create);

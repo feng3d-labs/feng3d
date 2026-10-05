@@ -251,7 +251,7 @@ export class ButtonLogic extends BehaviourLogic
 }
 
 // 注册到统一 logic 分发表
-registerLogic('Button', ButtonLogic as unknown as new (data: Button) => ButtonLogic);
+registerLogic('Button', ButtonLogic.create);
 
 // 登记组件类型（理由见 core/CanvasRenderer.ts）：Button 是 Behaviour 的子类型，不登记则
 // `Scene.activeBehaviours` 扫不到它 → `ButtonLogic.update`（按钮状态机）永远不被驱动。

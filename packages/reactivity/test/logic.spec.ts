@@ -35,6 +35,11 @@ describe('reactivity/logic 未注册类型', () =>
                 this.#data = d;
             }
 
+            static create(d: unknown): LateRegisteredLogic
+            {
+                return new LateRegisteredLogic(d);
+            }
+
             get value(): string
             {
                 return 'registered';
@@ -46,7 +51,7 @@ describe('reactivity/logic 未注册类型', () =>
                 return this.#data;
             }
         }
-        registerLogic('LateRegisteredType' as never, LateRegisteredLogic as never);
+        registerLogic('LateRegisteredType' as never, LateRegisteredLogic.create);
 
         // 修复前：缓存中的 null 使此处仍为 null
         const l = logic(data) as unknown as LateRegisteredLogic;

@@ -97,30 +97,17 @@ export interface SceneOverlayContribution
 }
 
 /**
- * 清单里持有的 Logic 类引用。
+ * 清单里持有的 Logic 工厂函数（issue #653）。
  *
- * **刻意不声明构造签名**：编辑器里每个 Logic 都是 `protected constructor`
- * （只有 `logic()` 能创建，见 AGENTS.md §3），而 TS 不允许把 protected 构造的类赋给
- * 任何构造签名——实测 `new (data: never) => unknown` 与
- * `abstract new (data: never) => unknown` 都报 TS2322「Cannot assign a 'protected'
- * constructor type to a 'public' constructor type」。若强行声明构造签名，
- * 清单里 23 处都得写 `as unknown as`，数据就不再是数据了。
+ * `registerLogic` 只接受工厂函数，class 构造函数（只有构造签名、没有调用签名）
+ * 不再可注册。编辑器里每个 Logic 都是 `protected constructor`
+ * （只有 `logic()` 能创建，见 AGENTS.md §3），由 `static create(data)` 作为唯一
+ * 创建入口；清单里存的就是 `XxxLogic.create` 这个函数本身。
  *
- * 所以类型只描述"这是一个类引用"，把构造签名的断言收到 `install.ts`
- * **唯一一处注册边界**；而后者本来就要把清单交给 `registerLogic`（它接的正是构造签名）。
- *
- * `prototype` 不是给注册用的，它是**结构判据**：类与普通函数都有、箭头函数没有，
- * 于是"误把任意对象写进清单"会被类型检查挡住（写成 `ArbitraryTypeValue` 也可以，
- * 但凡声明了 `name` 的对象都能满足，太松）。
+ * 类型描述"这是一个能把 `__type__` 数据变成 Logic 实例的函数"，
+ * 结构判据由调用签名承担：误把任意对象写进清单会被类型检查挡住。
  */
-export interface LogicClassRef
-{
-    /** 类名（诊断用；清单里的 `name` 应与它对得上，有测试盯着） */
-    readonly name: string;
-
-    /** 类原型（结构判据，注册时不读） */
-    readonly prototype: object;
-}
+export type LogicFactoryRef = (data: never) => unknown;
 
 /**
  * Logic 贡献点：声明"某个 `__type__` 由哪个 Logic 实现"。
@@ -130,8 +117,8 @@ export interface LogicClassRef
  * 漏 import 一个文件就等于该类型静默失去行为（`logic()` 返回 null）。
  * 搬进清单后这份清单是可 dump、可检查的数据（issue #170）。
  *
- * 与面板/浮层的区别：这里放的是**类本身**而不是动态导入的 loader——
- * 清单被安装时就要注册，注册需要拿到类；而 Logic 类本就在编辑器的
+ * 与面板/浮层的区别：这里放的是**工厂函数本身**而不是动态导入的 loader——
+ * 清单被安装时就要注册，注册需要拿到工厂；而 Logic 类本就在编辑器的
  * import 图里（编辑器自己的功能），没有按需加载的需要。
  */
 export interface LogicContribution
@@ -139,8 +126,8 @@ export interface LogicContribution
     /** `__type__` 字面量（全局唯一；重复会被注册表拒绝） */
     readonly name: string;
 
-    /** 实现该类型的 Logic 类 */
-    readonly logic: LogicClassRef;
+    /** 实现该类型的 Logic 工厂函数（`XxxLogic.create`） */
+    readonly logic: LogicFactoryRef;
 }
 
 /** 一个插件贡献什么 */
