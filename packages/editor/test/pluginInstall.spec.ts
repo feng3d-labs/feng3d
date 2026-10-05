@@ -93,7 +93,7 @@ describe('清单 → 引擎注册表（Logic）', () =>
     {
         // registerLogic 只接受工厂函数；清单里若写 class 构造函数，安装时会抛
         // "Class constructor ... cannot be invoked without 'new'"（registerLogic 直接调用工厂）。
-        // `XxxLogic.create` 是类的方法（普通函数），Function.prototype.toString 不以 class 开头。
+        // `xxxLogic` 是普通函数，Function.prototype.toString 不以 class 开头。
         const notFactory = LOGIC_PLUGINS
             .flatMap((plugin) => plugin.contributes.logics ?? [])
             .filter((entry) => /^\s*class\b/.test(Function.prototype.toString.call(entry.logic)))

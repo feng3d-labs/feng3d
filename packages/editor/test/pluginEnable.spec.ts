@@ -51,7 +51,7 @@ function manifest(id: string, extra: Partial<EditorPluginManifest> = {}): Editor
 /** 造一份带面板 + Logic + 桥接方法的清单（三类贡献点齐备，便于一次验"关干净"） */
 function richManifest(id: string, typeName: string): EditorPluginManifest
 {
-    // registerLogic 只接受工厂函数（issue #653）：清单里放 `XxxLogic.create` 这样的函数
+    // registerLogic 只接受工厂函数（issue #653）：清单里放 `xxxLogic` 这样的工厂函数
     const fakeLogic = (_data: unknown): unknown => ({});
 
     return {

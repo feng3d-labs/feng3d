@@ -61,8 +61,9 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 
 > 组件链（Behaviour/Renderable/Entity/Container/Object3D）的基座都是 `createXxxLogicBase(data)` 返回 `{ state, members }` 的形态，
 > 子类工厂 `const { state, members } = createBehaviourLogicBase(data);` 后逐项委托；`initComponents(logic, state)` 由**最派生**工厂在自身字段装完后调用（issue #222）。
+
 ## 4. 文件组织
-- 纯数据接口与 Logic 合并到同一文件（如 Behaviour.ts 包含 interface Behaviour + class BehaviourLogic）
+- 纯数据接口与 Logic 合并到同一文件（如 Behaviour.ts 包含 interface Behaviour + `behaviourLogic` 工厂）
 - import 用 `logic` 函数（不用 `componentLogic`），局部变量冲突时用 `getLogic` 别名
 - 避免默认导出、避免不必要的导出
 - 避免动态 `import('./x').Type`，改用顶部 `import type { Type } from './x'`
@@ -279,7 +280,7 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 | R7 | 作用域守卫异常安全 | 🔶 机制已有（`batchRun` / `noMutationCount` 均 `try/finally` + API 级回归），但 11 个生产调用点没有逐个异常用例，**无执行者** |
 | R8 | 视觉回归强度 | 🔶 容差真实存在（`playwright.config.ts` 全局 0.01；`e2e/examples.config.ts` 26 处放宽、最宽 0.4），但 examples 视觉回归**未进 CI**，"放宽需说明理由"无执行者 |
 | R9 | 包体天花板 | ✅ `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（进 CI） |
-| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（52/42/49/52，2026-10-05 修复 issue #667 的读数虚高后按新基线复测重定）+ `npm run test:coverage`（进 CI；末尾追加 `check-coverage-inflation.mjs` 拦新增的函数级失真；根因修复见 `scripts/vitest-v8-coverage-provider.mjs`） |
+| R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（**52/42/45/52**：函数阈值 2026-10-05 因 #674「Logic 改工厂闭包对象形态」让函数分母 +499、比例 53.5%→47.5% 而由 49 重定为 45；其余三项按 issue #667 新基线复测重定）+ `npm run test:coverage`（进 CI；末尾追加 `check-coverage-inflation.mjs` 拦新增的函数级失真；根因修复见 `scripts/vitest-v8-coverage-provider.mjs`） |
 | R11 | 文档现状标签 | ✅ `check-doc-status-labels.mjs`（进 CI） |
 | R12 | 提交规范 | ✅ 约定式提交 + PR 评审（**无机器门禁**，有意为之） |
 | R13 | 纯函数层 | ✅ `scripts/check-pure-modules.mjs` + `scripts/pure-modules.json`（进 CI：挂在 `prelint:ci` 上）——登记为纯函数的模块不得依赖 `@feng3d/reactivity` 与上层包；分类口径与已知局限见 [docs/CODE_TAXONOMY.md](docs/CODE_TAXONOMY.md) |
