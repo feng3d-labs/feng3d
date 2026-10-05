@@ -21,7 +21,7 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 | `packages/*/test/**/*.spec.ts` | 其余 19 个子包的测试 |
 | `test/**/*.spec.ts` | 仓库级脚本的测试（发布版本决策 `release-version.mjs`、Release 正文生成 `release-notes.mjs` 等） |
 
-**当前基线：234 个测试文件 / 2692 个测试用例全部通过**（2026-10-02，vitest 5.0.2 实测；补测试后请同步本行与 §2.1）。
+**当前基线：234 个测试文件 / 2709 个测试用例全部通过**（2026-10-05 本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
 
 这批测试同时产出覆盖率并校验阈值（issue #74），见 §1.3。
 
@@ -164,16 +164,94 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 
 ### 2.1 质量门禁 job
 
-| 步骤 | 命令 | 作用 |
+下表按 [`ci.yml`](../.github/workflows/ci.yml) 的**实际步骤顺序**列出 `quality` job 的门禁（`npm ci` 等准备步骤不列），
+「规范」列是它服务的 [AGENTS.md](../AGENTS.md) §15 规范编号。
+
+> **R1–R12 的状态、缺口与执行者以 [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) §3.1 现状表为唯一权威**
+> （[AGENTS.md](../AGENTS.md) §15 是它的速查副本）。本节只登记「在 quality job 的哪一步跑、跑什么命令、拦什么」，
+> 判断与 §3.1 冲突时**以 §3.1 为准**——三处不各写一份互不相同的清单，是本节的写入约定。
+
+| # | 步骤 | 命令 | 规范 | 拦什么 |
+|---|---|---|---|---|
+| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则） | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `gates:host`（16 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
+| 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
+| 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
+| 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | 顶层**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入——**新增即失败** |
+| 5 | tree-shaking 产物校验 | `node scripts/check-tree-shaking.mjs` | R2（产物级） | 真打一次包，断言未引用的重量级模块不在产物里，并用「显式引入」的对照产物自证判据有效 |
+| 6 | 文档现状标签 | `node scripts/check-doc-status-labels.mjs` | R11 | `FRAMEWORK_DESIGN.md` 每个 `##` 章节必须有 `> 现状：✅/🔶/⬜（证据）` 标签 |
+| 7 | 分层依赖 | `node scripts/check-layer-deps.mjs` | R1 | 最底层包（`math` / `reactivity`）的 `@feng3d/*` 依赖白名单 + 无环 |
+| 8 | 示例 lint | `npm run lint:examples` | ——（示例纪律，issue #77） | `examples/src/**/*.ts` 零警告；`prelint:examples` 钩子先跑 `check-examples-imports.mjs`（示例入口可解析，见下） |
+| 9 | strictNullChecks 独立配置 | `node scripts/check-strict-dirs.mjs` | R6 | `feng3d` / `editor` 走 `tsconfig.strict.json`，本包 `src` 的类型错误必须为 0 |
+| 10 | strictNullChecks 包级清单 | `node scripts/check-strict-packages.mjs` | R6 | `scripts/strict-packages.json` 双向校验：漏登记与误关闭都失败 |
+| 11 | 依赖方向 | `node scripts/check-layer-direction.mjs` | R1 | 按包级依赖检查分层，存量向上依赖冻结在基线、新增即失败 |
+| 12 | 单元测试 + 覆盖率门禁 | `npm run test:coverage` | R10 | 全量 **234 个测试文件 / 2709 个测试用例**，并校验四项覆盖率不低于阈值（见 §1.3） |
+| 13 | 分包覆盖率与 §1.3 一致 | `node scripts/coverage-by-package.mjs --check` | R10 | 复用上一步的覆盖率产出与 §1.3 那张表比对，防它悄悄过时（issue #369） |
+| 14 | 类型检查 | `npm run types:packages` | R6 | **19 个包**的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查）——`feng3d-editor` 没有 `types` 脚本（它是 `vue-tsc` 的 `type-check`），其类型门禁在 §2.2 的 `check-editor-types.mjs` |
+| 15 | 构建校验 | `npm run build:packages` | —— | **20 个包**的 `build`（确保 `build` 脚本可用；编辑器走 `vite build`） |
+| 16 | 模块级 `new` 存量门禁 | `node scripts/check-toplevel-new.mjs` | R2 | **其余**模块级 `new`（`export const x = new X()` 这类声明形式，含 `new Set([...])` 只读常量集合、示例入口的 `new GUI(...)`、库代码单例）按「文件::构造器」冻结在 `scripts/toplevel-new-baseline.json`，**新增即失败**、减少只提示 |
+| 17 | 纯数据声明式 | `node scripts/check-imperative-construction.mjs` | R3 | 对「纯数据类」名单（`gen-objectview-schema.mjs` 的产物）使用 `new`；基线已归零、新增即失败 |
+| 18 | math 数值 / 几何类型禁 class | `node scripts/check-math-no-class.mjs` | ——（issue #134 阶段 C 收尾） | 19 个目标类型不得再是 class，基线已为空。（同一条命令也挂在 `prelint:ci` 上，所以本步是本次运行里的第二次执行） |
+| 19 | 包体基线与 byte 天花板 | `node scripts/check-bundle-size.mjs` | R9 | 3 档引用面 × raw/gzip 与 `scripts/bundle-size-baseline.json` 比对，超出容忍（+2%）即失败——判据是**改代码**，不是跑一次 `--update` |
+| 20 | 发布产物预演 | `npm run release:dry-run -- --force --no-build` | —— | 构建 + `npm pack` + **内容校验**，不发布（`--no-build` 复用第 15 步产物） |
+| 21 | 工作区污染检查 | `git status --porcelain` | —— | 构建若改动了受版本控制的文件则失败 |
+
+**R1–R12 各自对应上面哪一步**（状态 ✅/🔶/❌ 与缺口以 §3.1 为准，此处不重复判断）：
+
+| 规范 | 步骤 | 执行者 |
 |---|---|---|
-| 代码检查 | `npm run lint:ci` | eslint，**零警告**门禁（覆盖 `packages/` + `scripts/` + `test/`） |
-| 示例 lint（含入口可解析预检） | `npm run lint:examples` | `examples/src/**/*.ts` 的 eslint（零警告）；其 `prelint:examples` 钩子先跑一次示例入口可解析检查（见下） |
-| 模块级副作用（R2，#88 / #606） | `node scripts/check-module-side-effects.mjs --strict` + `node scripts/check-tree-shaking.mjs` + `node scripts/check-toplevel-new.mjs` | 第一条拦**缓存创建**（`new Map/WeakMap/Set/WeakSet()`，泛型实参不影响判定）/ **启动型调用** / `globalThis` 写入（**新增即失败**）；第二条是产物级 tree-shaking 验收；第三条按「文件::构造器」把**其余模块级 `new`**（声明形式，含 `new Set([...])` 常量集合与库代码单例）冻结在 `scripts/toplevel-new-baseline.json`，**新增即失败**、减少只提示。第三条与第一条的重叠**有意保留**（去重比漏网好） |
-| 单元测试 + 覆盖率门禁 | `npm run test:coverage` | 全量 234 个测试文件 / 2708 个测试用例，并校验覆盖率不低于阈值（见 §1.3） |
-| 类型检查 | `npm run types:packages` | 20 个包的 `tsc`（各包 tsconfig 为 `noEmit`，故等价类型检查） |
-| 构建校验 | `npm run build:packages` | 同上，确保 `build` 脚本可用 |
-| 发布产物预演 | `npm run release:dry-run -- --force` | 构建 + `npm pack` + **内容校验**，不发布 |
-| 工作区污染检查 | `git status --porcelain` | 构建若改动了受版本控制的文件则失败 |
+| R1 依赖方向只向下 | 7、11 | `check-layer-deps.mjs`、`check-layer-direction.mjs` |
+| R2 零模块级副作用 | 1、4、5、16（编辑器侧另见 §2.2） | 规则 `feng3d/no-module-side-effect`（随 lint）、`check-module-side-effects.mjs --strict`、`check-tree-shaking.mjs`、`check-toplevel-new.mjs`、`check-editor-module-effects.mjs` |
+| R3 纯数据声明式 | 17 | `check-imperative-construction.mjs`（基线归零、0 处存量） |
+| R4 响应式纪律 | 1 | 4 条自研规则（随 lint）；**仍是真缺口**：不识别 `toReactive` / `logic()` 产生的代理，`this.effect(` 不受检 |
+| R5 effect 必须注解 | 1、3 | 规则 `feng3d/effect-annotation` + `check-effect-inventory.mjs` |
+| R6 可空性显式 | 9、10、14 | `check-strict-dirs.mjs`、`check-strict-packages.mjs`、`types:packages` |
+| R7 作用域守卫异常安全 | —— | **无执行者**：`batchRun` / `noMutationCount` 机制已有 `try/finally` 与 API 级回归，但 11 个生产调用点没有逐个异常用例 |
+| R8 视觉回归强度 | —— | **未进 CI**：容差在 `playwright.config.ts`（全局 0.01）与 `e2e/examples.config.ts`（26 处放宽）里，examples 视觉回归不在任一 workflow；`editor-e2e` 跑的是编辑器产物、不校验容差 |
+| R9 包体天花板 | 19 | `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json` |
+| R10 覆盖率门禁 | 12、13 | `npm run test:coverage`（四项阈值）+ `coverage-by-package.mjs --check`（§1.3 表一致性） |
+| R11 文档现状标签 | 6 | `check-doc-status-labels.mjs` |
+| R12 提交规范 | —— | **有意不设机器门禁**（约定式提交 + PR 评审；提交信息语义无法机器判定） |
+
+**两条 R2 脚本的分工与重叠**（issue #606 明确，别再有"我以为你管了"的夹缝）：第 4 步只认**缓存形态**，
+第 16 步兜**其余模块级 `new`**；`new Map()` 这类会**同时**出现在两处报告里，重叠是**有意**的（去重比漏网好）。
+
+**R2 的两处存量单例为什么仍冻结在基线里**（本次复核，不是"忘了改"）：
+
+| 位置 | 形态 | 引用面（本次实测） | 处置 |
+|---|---|---|---|
+| `packages/event/src/GlobalEmitter.ts` | `export const globalEmitter = new EventEmitter<MixinsGlobalEvents>()` | `globalEmitter` **77 处 / 20 文件**（其中 editor 69 处），并经 `feng3d` 公开入口 `export *` 出去 | 保持冻结，见下 |
+| `packages/shortcut/src/WindowEventProxy.ts` | `export const windowEventProxy = new EventProxy<WindowEventMap>(self)`（**还在用顶层 `self`**） | `windowEventProxy` **121 处 / 23 文件**（editor 49、`feng3d/src` 35） | 保持冻结，见下 |
+
+三点理由：
+
+1. **它们不是缓存，是"身份敏感"的对象单例**。`EventEmitter` 的构造会把自己写进三个 `static` 注册表
+   （`targetEmitterMap` / `emitterTargetMap` / `emitterListenerMap`），事件路由靠 `instanceof` 与对象身份；
+   改成 `getGlobalEmitter()` 这类 getter 函数是**公开 API 变更**（`feng3d` / `@feng3d/event` / `@feng3d/shortcut` 三个包），
+   要动约 198 处调用点、编辑器 `resource/template/libs/feng3d.d.ts`（用户脚本用的 API 快照），
+   以及按源码文本断言 `globalEmitter.on(` 的 `packages/editor/test/selectionSync.spec.ts`。
+2. **只改这两处并不能让模块变成 R2 干净**：`EventEmitter` 自己还有三个模块级 `static ... = new Map()`，
+   `EventProxy` 继承它们——那同样是 import 时执行。也就是说这种做法只是把门禁的键"挪走"，
+   真正的 import 期注册写入还在原地，属于**看起来修好了**。
+3. 正确修法是设计改动而不是判据补丁：注册表 lazy 化 + getter API + 一个 deprecation 窗口
+   （先加 `getGlobalEmitter()` / `getWindowEventProxy()`，`feng3d` 内与 editor 的调用点迁完、发大版本时再删旧导出）。
+   `WindowEventProxy` 那条顶层 `self` 还额外让 `@feng3d/shortcut` 在非浏览器环境 **import 即 `ReferenceError`**
+   （Node 里 `typeof self === 'undefined'`，目前靠 `vitest.setup.ts` 补全局才跑得起来）——这一条最值得先做，建议单开 issue。
+
+门禁在这种情况下**如何认可它**：第 16 步是**存量冻结**策略——基线里的「文件::构造器」视为已知存量放行，
+新增即失败、减少只提示。所以这两处**不是白名单豁免**，而是**登记在册的欠账**
+（`scripts/toplevel-new-baseline.json`）：清理掉一处就该跑一次 `--update` 收紧，基线**只允许减少**。
+
+**两条脚本共同的已知局限（本次探针实测）**：判据建立在「**行首无空白 = 模块顶层**」这个行级前提上，
+因此下面的形态**都在盲区**（它们都是 import 时真的会执行）——类 `static` 字段初始化器
+（如 `private static map = new ChainMap()`）、顶层 IIFE（issue #56 的根因 `new AudioContext()` 正是这个形态）、
+多行声明（`const x =\n  new Map();`）、以及模块级块 / 对象字面量 / 回调里的缩进行。
+本次探针在 `packages/` 下实测：按 AST 判定「import 时真的会执行」的 `new` 共 158 处，两条行级脚本能看见 97 处，
+**漏掉 61 处**（换算成「文件::构造器」是 44 个基线键），其中 12 处是**空参缓存**
+（本该按第 4 步「新增即失败」拦下）。仓库里已有 AST 判据的先例（`scripts/check-editor-module-effects.mjs` 按
+TypeScript AST 只看模块顶层语句），但收紧本条会让基线一次性新增 40 余个键、需要先与它们逐个定性——
+建议**单开 issue**，不要顺手夹带在本节的门禁接线里。
+（顺带一条：自研规则 `feng3d/no-module-side-effect` 虽然是 AST 判据，但**跳过类字段初始化器与 IIFE 体**、
+候选名单里也**没有 `WeakSet`**——所以第 1 步与第 4/16 步的覆盖并不重合，别拿任一条当作全覆盖。）
 
 「发布产物预演」这一步的价值：`npm pack` 与 `npm publish` 走同一套打包逻辑，所以能在 PR 阶段就发现「包里少了入口文件」这类**发布成功但完全不可用**的缺陷（见 §4.1 的真实案例）。
 
@@ -629,17 +707,34 @@ npx feng3d-editor --port 8080 --open
 ```bash
 npm ci
 
-# 与 CI 质量门禁等价
+# `npm run ci` 只是 quality job 的**子集**（lint:ci + 示例入口可解析 + test:coverage +
+# types:packages + build:packages + release:dry-run；lint:ci 还会顺带跑 gates:host 与
+# check-math-no-class）。它**不含** R1/R2/R3/R5/R9/R11 的那批脚本、lint:examples、
+# 分包覆盖率一致性、工作区污染检查——逐条对照见 §2.1，要完整复现 quality job 就按 §2.1 的步骤顺序挨个跑。
 npm run ci
 
-# 单独跑
-npm run lint:ci          # eslint，零警告
-npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告）
+# 单独跑（括号里是 §2.1 的步骤号）
+npm run lint:ci          # eslint，零警告（含 gates:host 16 条宿主门禁 + check-math-no-class）
+npm run lint:examples    # 示例 eslint（examples/src/**/*.ts，零警告，§2.1 第 8 步）
 node scripts/check-examples-imports.mjs   # 示例入口可解析（等价 Vite dev 的依赖扫描）
-npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3）
+node scripts/check-docs-links.mjs         # 文档相对链接（第 2 步）
+node scripts/check-effect-inventory.mjs   # R5（第 3 步）
+node scripts/check-module-side-effects.mjs --strict   # R2（第 4 步）
+node scripts/check-tree-shaking.mjs       # R2 产物级（第 5 步）
+node scripts/check-doc-status-labels.mjs  # R11（第 6 步）
+node scripts/check-layer-deps.mjs         # R1（第 7 步）
+node scripts/check-strict-dirs.mjs        # R6（第 9 步）
+node scripts/check-strict-packages.mjs    # R6（第 10 步）
+node scripts/check-layer-direction.mjs    # R1（第 11 步）
+npm run test:coverage    # 全量单元测试 + 覆盖率门禁（阈值与现状见 §1.3，第 12 步）
+node scripts/coverage-by-package.mjs --check   # §1.3 覆盖率表一致性（第 13 步）
 npm run test:run         # 只要测试结果、不要覆盖率门禁时用这个
-npm run types:packages   # 20 个包类型检查
-npm run build:packages   # 20 个包构建校验
+npm run types:packages   # 20 个包类型检查（第 14 步）
+npm run build:packages   # 20 个包构建校验（第 15 步）
+node scripts/check-toplevel-new.mjs       # R2 其余模块级 new（第 16 步）
+node scripts/check-imperative-construction.mjs   # R3（第 17 步）
+node scripts/check-math-no-class.mjs      # math 数值 / 几何禁 class（第 18 步，prelint:ci 已跑一次）
+node scripts/check-bundle-size.mjs        # R9（第 19 步）
 
 # 发布预演（安全，不发布）
 npm run release:dry-run -- --force
