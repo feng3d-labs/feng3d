@@ -4,6 +4,7 @@ export * from './core/CanvasRenderer';
 export * from './core/Transform2D';
 export * from './core/UIGeometry';
 export * from './core/UIMaterial';
+export * from './core/UIPass';
 export * from './enums/UIRenderMode';
 export * from './Image';
 export * from './Rect';

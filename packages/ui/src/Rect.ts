@@ -1,5 +1,5 @@
 import { Component3D, Component3DLogic, createComponentLogicBase, Object3D, registerComponentType } from 'feng3d';
-import { registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { Color4 } from '@feng3d/math';
 import { uiUniforms } from './core/UIMaterial';
 // 副作用导入：`createRectObject3D()` 返回的纯数据字面量要在运行时分发到 Transform2DLogic /
@@ -77,7 +77,9 @@ export function rectLogic(data: Rect): RectLogic
         {
             members.beforeRender(renderObject);
 
-            uiUniforms(renderObject).u_color = data.color;
+            // 经响应式代理写入（容器是 UIMaterial 的 uniform 数据源，见 Transform2DLogic.beforeRender）
+            const r_uniforms = reactive(uiUniforms(renderObject));
+            r_uniforms.u_color = data.color;
         },
         get isLoaded() { return members.isLoaded; },
         dispose() { members.dispose(); },
