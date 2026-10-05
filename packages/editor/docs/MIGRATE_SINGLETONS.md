@@ -429,6 +429,18 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 >    （后者 `new AssetNode(...)`），`AssetNode` 侧若值导入 `EditorAsset` 就会形成**运行时循环**，
 >    类型导入不会。
 >
+> **`editorRS` 路线 B 第一批已完成（2026-10-05）**：`MenuConfig` **构造注入** `editorRS`
+> （入口 `new MenuConfig(editorAsset, resourceSystem)`——`resourceSystem` 就是
+> `installEditorResourceSystem()` 的返回值，**零新增引用**）——`editorRS` **28 → 23 处**。
+>
+> **为什么只做了 5 处就停**：`editorRS` 剩下的 23 处里，`AssetNode`(6) 的 rs 只能由它的
+**创建者** `EditorAsset` 传；而 `EditorAsset` 是**在自己的模块顶层创建自己**的
+>（`export const editorAsset = new EditorAsset();`）——外面拿不到注入的时机。
+> 这就是"**鸡生蛋**"：要给 `EditorAsset` 注入，得先把它的创建挪到入口（`main.ts`），
+> 而那又牵动 import 它的那几个文件。所以这一批只吃掉**能独立完成**的那部分，
+> 把 `EditorAsset`(13) + `AssetNode`(6) + `writeMisc`(2) + `CommonConfig` 末尾(1)
+> 共 22 处留给"挪创建点"那一批——那才是 `editorRS` 的主战场。
+>
 > **登记之后暴露出一件更根本的事：这三个单例的依赖是成环的**——
 >
 > ```
