@@ -1,9 +1,18 @@
-import { describe, expect, it, test, vi } from 'vitest';
+import { afterEach, describe, expect, it, test, vi } from 'vitest';
 import { batchRun, Effect, effect, reactive, toRaw } from '../src';
 import { EffectReactivity } from '../src/effect';
+import { captureConsoleAssert } from './captureConsoleAssert';
 
 describe('reactivity/effect', () =>
 {
+    // 本文件有几条负例用例会命中 `baseHandlers.set` 里**有意保留**的开发期防御
+    // （`console.assert(target === toRaw(receiver))`）。它们各自用 `captureConsoleAssert()`
+    // 把那一行变成断言而不是 stderr 噪音；这里只作"用例中途失败时恢复 spy"的兜底。
+    afterEach(() =>
+    {
+        vi.restoreAllMocks();
+    });
+
     it('should run the passed function once (wrapped by a effect)', () =>
     {
         const fnSpy = vi.fn(() =>
@@ -95,6 +104,10 @@ describe('reactivity/effect', () =>
 
     it('should observe properties on the prototype chain', () =>
     {
+        // 代理充当原型 → 必然命中 `baseHandlers.set` 里**有意保留**的开发期防御，
+        // 先把那一行 `Assertion failed` 收进数组（下面正向断言它确实报了）
+        const captured = captureConsoleAssert();
+
         let dummy;
         const counter = reactive<{ num?: number }>({ num: 0 });
         const parentCounter = reactive({ num: 2 });
@@ -109,10 +122,16 @@ describe('reactivity/effect', () =>
         expect(dummy).toBe(4);
         counter.num = 3;
         expect(dummy).toBe(3);
+
+        expect(captured.messages.length).toBeGreaterThan(0);
+        captured.restore();
     });
 
     it('should observe has operations on the prototype chain', () =>
     {
+        // 同上：代理充当原型，命中开发期防御
+        const captured = captureConsoleAssert();
+
         let dummy;
         const counter = reactive<{ num?: number }>({ num: 0 });
         const parentCounter = reactive<{ num?: number }>({ num: 2 });
@@ -127,10 +146,16 @@ describe('reactivity/effect', () =>
         expect(dummy).toBe(false);
         counter.num = 3;
         expect(dummy).toBe(true);
+
+        expect(captured.messages.length).toBeGreaterThan(0);
+        captured.restore();
     });
 
     it('should observe inherited property accessors', () =>
     {
+        // 同上：代理充当原型，命中开发期防御
+        const captured = captureConsoleAssert();
+
         let dummy; let parentDummy; let
             hiddenValue: any;
         const obj = reactive<{ prop?: number }>({});
@@ -158,6 +183,9 @@ describe('reactivity/effect', () =>
         parent.prop = 2;
         expect(dummy).toBe(2);
         expect(parentDummy).toBe(2);
+
+        expect(captured.messages.length).toBeGreaterThan(0);
+        captured.restore();
     });
 
     it('should observe function call chains', () =>
@@ -411,6 +439,9 @@ describe('reactivity/effect', () =>
 
     it('should not be triggered by inherited raw setters', () =>
     {
+        // 同上：代理充当原型，命中开发期防御
+        const captured = captureConsoleAssert();
+
         let dummy; let parentDummy; let
             hiddenValue: any;
         const obj = reactive<{ prop?: number }>({});
@@ -434,6 +465,9 @@ describe('reactivity/effect', () =>
         toRaw(obj).prop = 4;
         expect(dummy).toBe(undefined);
         expect(parentDummy).toBe(undefined);
+
+        expect(captured.messages.length).toBeGreaterThan(0);
+        captured.restore();
     });
 
     it('should avoid implicit infinite recursive loops with itself', () =>

@@ -1,10 +1,17 @@
-import { describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { computed, effect, isProxy, isReactive, isRef, reactive, ref, toRaw } from '../src';
 
 import { ComputedReactivity } from '../src/computed';
+import { captureConsoleAssert } from './captureConsoleAssert';
 
 describe('reactivity/reactive', () =>
 {
+    // 下面 `mutation on objects using reactive as prototype should not trigger` 会命中
+    // `baseHandlers.set` 里**有意保留**的开发期防御；这里只作"用例中途失败时恢复 spy"的兜底。
+    afterEach(() =>
+    {
+        vi.restoreAllMocks();
+    });
     test('class instance with computed and ref properties', () =>
     {
         class A
@@ -238,6 +245,10 @@ describe('reactivity/reactive', () =>
     // #1246
     test('mutation on objects using reactive as prototype should not trigger', () =>
     {
+        // 代理充当原型 → 必然命中 `baseHandlers.set` 里**有意保留**的开发期防御，
+        // 先把那一行 `Assertion failed` 收进数组（下面正向断言它确实报了）
+        const captured = captureConsoleAssert();
+
         const observed = reactive({ foo: 1 });
         const original = Object.create(observed);
         let dummy;
@@ -250,6 +261,9 @@ describe('reactivity/reactive', () =>
         expect(dummy).toBe(2);
         original.foo = 4;
         expect(dummy).toBe(2);
+
+        expect(captured.messages.length).toBeGreaterThan(0);
+        captured.restore();
     });
 
     test('toRaw', () =>

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { ReadRS } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import {
@@ -152,12 +152,37 @@ describe('assets/Object3DAssetFile', () =>
         // 旧格式（`__class__`）在本函数里直接判掉
         expect(object3DDataFromAssetFile({ __class__: 'Object3D', name: 'Legacy' })).toBeNull();
 
-        // 对照：旧格式走资源系统的异步链路——它靠 `__class__` 反射构造，取不到类名时**必须失败**
-        // （#402 之后是带类名的显式错误，而不是此前的 `TypeError: Cannot read properties of undefined`）
-        await expect(ReadRS.rs.deserializeWithAssets({ __class__: 'Object3D', name: 'Legacy' })).rejects.toThrow(/取不到类名或类未注册/);
+        // 反射链路取不到类名时，会先由 `ClassUtils.getInstanceByName` 里的**开发期防御**
+        // `console.assert` 报一句「无法获取名称为 X 的实例!」，再由 `deserializeWithAssets` 抛显式错误
+        // （`packages/polyfill/src/ClassUtils.ts` / `packages/assets/src/rs/ReadRS.ts`）。
+        // 那句 assert 是**有意保留**的防御（提示调用方误用了旧链路），本用例正是它的负例——
+        // 不该让这句预期内的提示漏进 stderr。做法与 `packages/assets/test/objectAssetReadFile.spec.ts`
+        // 的既有先例一致：收进数组，并把"防御确实报了"变成正向断言。
+        const assertMessages: unknown[][] = [];
+        const assertSpy = vi.spyOn(console, 'assert').mockImplementation((...args: unknown[]) =>
+        {
+            assertMessages.push(args);
+        });
 
-        // 而纯数据（没有 `__class__`）走同一条链路同样失败——缺口在数据本身（取不到类名），
-        // 这正是"纯数据走同步链路、旧格式走异步链路"这条分流存在的理由
-        await expect(ReadRS.rs.deserializeWithAssets(object3DToAssetFileData(buildTree()))).rejects.toThrow(/取不到类名或类未注册/);
+        try
+        {
+            // 对照：旧格式走资源系统的异步链路——它靠 `__class__` 反射构造，取不到类名时**必须失败**
+            // （#402 之后是带类名的显式错误，而不是此前的 `TypeError: Cannot read properties of undefined`）
+            await expect(ReadRS.rs.deserializeWithAssets({ __class__: 'Object3D', name: 'Legacy' })).rejects.toThrow(/取不到类名或类未注册/);
+
+            // 而纯数据（没有 `__class__`）走同一条链路同样失败——缺口在数据本身（取不到类名），
+            // 这正是"纯数据走同步链路、旧格式走异步链路"这条分流存在的理由
+            await expect(ReadRS.rs.deserializeWithAssets(object3DToAssetFileData(buildTree()))).rejects.toThrow(/取不到类名或类未注册/);
+        }
+        finally
+        {
+            assertSpy.mockRestore();
+        }
+
+        // 两次调用各命中一次开发期防御：一次类名在、但类已随纯数据化删除（Object3D），一次连类名都没有
+        expect(assertMessages.map((args) => String(args[1]))).toEqual([
+            '无法获取名称为 Object3D 的实例!',
+            '无法获取名称为 undefined 的实例!',
+        ]);
     });
 });
