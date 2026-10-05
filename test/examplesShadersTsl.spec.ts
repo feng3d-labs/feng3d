@@ -24,6 +24,8 @@ import { getReversedZVertexWGSL } from '../packages/webgpu/examples/src/shaders-
 import { getReversedZVertexDepthPrePassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexDepthPrePass';
 import { getReversedZVertexPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexPrecisionErrorPass';
 import { getReversedZVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexTextureQuad';
+import { getReversedZFragmentTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentTextureQuad';
+import { getReversedZFragmentPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentPrecisionErrorPass';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -418,5 +420,39 @@ describe('reversedZ 示例的 TSL 生成', () =>
         const wgsl = getReversedZFragmentWGSL();
         expect(wgsl).toContain('@location(0) fragColor: vec4<f32>');
         expect(wgsl).toContain('return input.fragColor;');
+    });
+});
+
+/**
+ * reversedZ 示例的深度读取片元着色器（TSL 版）离线验收。
+ *
+ * 这两个是"深度纹理读取"能力的直接消费者，也是 reversedZ 最后两个 .wgsl。
+ */
+describe('reversedZ 的深度读取片元着色器', () =>
+{
+    it('深度纹理声明为 texture_depth_2d，且**不**附带 sampler 绑定', () =>
+    {
+        for (const wgsl of [getReversedZFragmentTextureQuadWGSL(), getReversedZFragmentPrecisionErrorPassWGSL()])
+        {
+            expect(wgsl).toContain('var depthTexture_texture: texture_depth_2d;');
+            // 深度纹理不需要配套 sampler（普通纹理才需要）
+            expect(wgsl).not.toContain('var depthTexture: sampler;');
+        }
+    });
+
+    it('textureLoad + floor + vec2<i32> 与手写一致', () =>
+    {
+        const wgsl = getReversedZFragmentTextureQuadWGSL();
+        expect(wgsl).toContain('@builtin(position) fragCoord: vec4<f32>');
+        expect(wgsl).toContain('let depthValue = textureLoad(depthTexture_texture, vec2<i32>(floor(fragCoord)), 0u);');
+        expect(wgsl).toContain('return vec4<f32>(depthValue, depthValue, depthValue, 1.0);');
+    });
+
+    it('precisionErrorPass：abs(clipPos.z / clipPos.w - depth) * 2000000.0', () =>
+    {
+        const wgsl = getReversedZFragmentPrecisionErrorPassWGSL();
+        expect(wgsl).toContain('@location(0) clipPos: vec4<f32>');
+        expect(wgsl).toContain('var v = abs(input.clipPos.z / input.clipPos.w - depthValue) * 2000000.0;');
+        expect(wgsl).toContain('return vec4<f32>(v, v, v, 1.0);');
     });
 });

@@ -82,6 +82,8 @@ export { pow } from './math/exponential/pow';
 export { sqrt } from './math/exponential/sqrt';
 
 // math/common - 通用数学函数
+export { abs } from './math/common/abs';
+export { floor } from './math/common/floor';
 export { clamp } from './math/common/clamp';
 export { fract } from './math/common/fract';
 export { max } from './math/common/max';

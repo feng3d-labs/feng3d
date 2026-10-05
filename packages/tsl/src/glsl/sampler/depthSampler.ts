@@ -25,6 +25,19 @@ export class DepthSampler extends Sampler
     {
         return true;
     }
+
+    /**
+     * 深度纹理的 WGSL 声明。
+     *
+     * **只声明 texture 本身**——深度纹理不需要配套的 `sampler`（对比 {@link Sampler}：
+     * 普通纹理在 WGSL 里 texture 与 sampler 是分开的两个绑定）。
+     *
+     * @returns WGSL 声明文本
+     */
+    override toWGSL(): string
+    {
+        return `@binding(${this.uniform.binding}) @group(${this.uniform.group}) var ${this.uniform.name}_texture: ${this.getWGSLTextureType()};`;
+    }
 }
 
 /**
