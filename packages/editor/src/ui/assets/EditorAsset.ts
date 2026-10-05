@@ -3,7 +3,6 @@ import type { Object3D, gPartial, Material, Scene } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
 import { editorRS } from '../../assets/EditorRS';
-import { nativeAPI } from '../../assets/NativeRequire';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { menu, MenuItem } from '../components/Menu';
 import { assetFileTemplates } from './AssetFileTemplates';
@@ -323,18 +322,6 @@ export class EditorAsset
                             ],
                         },
                     ]
-                },
-                {
-                    label: 'Show In Explorer', click: () =>
-                    {
-                        const fullpath = editorRS.fs.getAbsolutePath(assetNode.asset.assetPath);
-                        nativeAPI.showFileInExplorer(fullpath);
-                    }, enable: !!nativeAPI
-                }, {
-                    label: '使用VSCode打开项目', click: async () =>
-                    {
-                        await nativeAPI.openWithVSCode(editorRS.fs.projectname);
-                    }, enable: !!nativeAPI,
                 },
                 {
                     label: 'Open', click: () =>

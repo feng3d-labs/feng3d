@@ -599,8 +599,9 @@ const TOOLS = [
     },
     {
         name: 'scene_save',
-        description: '把当前场景写回存储，使改动在刷新页面后仍然存在。注意：浏览器环境下写入 indexedDB'
-            + '（nativeFS 才落磁盘），所以不会出现在项目文件里，但 readScene 能从同一处读回。需要写通道已启用。',
+        description: '把当前场景写回存储，使改动在刷新页面后仍然存在。注意：写的是**编辑器当前的文件系统**'
+            + '——宿主开着项目时经 HostFS **直接落盘**（改动会出现在项目文件里）；否则写浏览器侧的 indexedDB'
+            + '（刷新后仍在，但不在项目目录里）。两种情况 `readScene` 都能从同一处读回。需要写通道已启用。',
         inputSchema: {
             type: 'object',
             properties: { path: { type: 'string', description: '存储路径，默认 default.scene.json' } },
