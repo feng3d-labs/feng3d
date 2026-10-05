@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, array, arrayLength, assign, builtin, compute, continue_, discard, float, forRange_, forU32_, fragment, if_, int, let_, max, return_, samplerComparison, storageBuffer, struct, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
+import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, ivec2, int, let_, max, return_, samplerComparison, storageBuffer, struct, texelFetch, textureSampleCompare, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4 } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -379,5 +379,36 @@ describe('无符号整数与 uvec2 的类型放宽（#785，gameOfLife 渲染的
         expect(wgsl).toContain('var<uniform> size');
         expect(wgsl).toContain('vec2<u32>');
         expect(wgsl).toContain('let w = size.x;');
+    });
+});
+
+describe('深度纹理读取（#712，reversedZ / DebugShadowMap 的前置）', () =>
+{
+    it('深度纹理声明为 texture_depth_2d', () =>
+    {
+        const depthTexture = depthSampler(uniform('depthTexture', 0, 0));
+        const f = fragment('main', () =>
+        {
+            const d = let_('d', texelFetch(depthTexture, ivec2(vec2(0.0, 0.0))));
+            return_(vec4(d, d, d, float(1.0)));
+        });
+        const wgsl = f.toWGSL();
+
+        expect(wgsl).toContain('var depthTexture_texture: texture_depth_2d;');
+        expect(wgsl).toContain('textureLoad(depthTexture_texture,');
+    });
+
+    it('texelFetch 对深度纹理返回 f32（不是 vec4）', () =>
+    {
+        const depthTexture = depthSampler(uniform('d2', 0, 0));
+        const value = texelFetch(depthTexture, ivec2(vec2(1.0, 2.0)));
+
+        expect(value.toWGSL()).toBe('textureLoad(d2_texture, vec2<i32>(vec2<f32>(1.0, 2.0)), 0u)');
+    });
+
+    it('floor / abs 生成对应内置', () =>
+    {
+        expect(floor(vec2(1.5, -2.5)).toWGSL()).toBe('floor(vec2<f32>(1.5, -2.5))');
+        expect(abs(float(-3.5)).toWGSL()).toBe('abs(-3.5)');
     });
 });
