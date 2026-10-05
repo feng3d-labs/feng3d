@@ -53,37 +53,12 @@ import type { Components, Skeleton } from 'feng3d';
  * 而加载器现在一律产出 `StandardMaterial`，本次不做转换；静默按三角形列表产出错误几何
  * （"画出来不对但不报错"）比直接失败更难排查，因此选择让调用方拿到可判别的失败。
  *
- * **着色器尚未实现蒙皮**：`a_skinIndices`/`a_skinWeights` 当前只解析落盘（由 `SkinnedMeshRenderer`
- * 与面元着色器消费它们属于后续工作）。
+ * **蒙皮已落地（issue #337）**：带 `node.skin` 的节点产出 `SkinnedMeshRenderer`（而非 `MeshRenderer`），
+ * 主库的 WGSL 蒙皮变体会按 `a_skinIndices`/`a_skinWeights`（含第二组）加权顶点位置。
+ * `a_skinIndices` 等字段的接口声明在主库 `CustomGeometry`（顶点属性通道也已接通）。
  *
  * 对应 three.js addons/loaders/GLTFLoader.js（大幅简化）。
  */
-
-declare module 'feng3d'
-{
-    /**
-     * 蒙皮顶点属性（issue #337 第一步：加载器负责解析落盘）。
-     *
-     * 命名沿用主库既有约定（见 `packages/feng3d/src/shaders/modules/skeleton_pars_vert.glsl` 的
-     * `a_skinIndices`/`a_skinWeights`，第二组 `a_skinIndices1`/`a_skinWeights1` 对应
-     * `JOINTS_1`/`WEIGHTS_1`，每顶点最多 8 根骨骼）。名字带 `a_` 前缀是因为它们最终要以顶点属性
-     * 形式进入着色器。
-     *
-     * 这些字段目前只是几何数据上的附加数据：`CustomGeometryLogic` 尚未把它们接入顶点属性表，
-     * 消费它们是 issue #337 第二步（着色器 + `SkinnedMeshRenderer`）的工作。
-     */
-    interface CustomGeometry
-    {
-        /** 骨骼索引（每顶点 4 个，来自 `JOINTS_0`；无蒙皮属性时为 undefined） */
-        readonly a_skinIndices?: ReadonlyArray<number>;
-        /** 骨骼权重（每顶点 4 个，来自 `WEIGHTS_0`；无蒙皮属性时为 undefined） */
-        readonly a_skinWeights?: ReadonlyArray<number>;
-        /** 骨骼索引第二组（每顶点 4 个，来自 `JOINTS_1`；缺失时为 undefined） */
-        readonly a_skinIndices1?: ReadonlyArray<number>;
-        /** 骨骼权重第二组（每顶点 4 个，来自 `WEIGHTS_1`；缺失时为 undefined） */
-        readonly a_skinWeights1?: ReadonlyArray<number>;
-    }
-}
 
 /** glTF componentType → TypedArray 构造器 */
 const COMPONENT_TYPES: Record<number, { new (n: number): ArrayBufferView; new (buffer: ArrayBufferLike): ArrayBufferView; BYTES_PER_ELEMENT: number }> = {
@@ -1497,16 +1472,19 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
      *
      * 语义选择：多个 primitive 之间**不做几何合并**——CustomGeometry 承载顶点/索引数组，
      * 跨 primitive 合并需要同时重排索引与顶点属性（且各 primitive 可有不同属性集与材质），
-     * 收益不抵复杂度。因此每个 primitive 独立产出一份几何 + 一份 MeshRenderer，
+     * 收益不抵复杂度。因此每个 primitive 独立产出一份几何 + 一份渲染组件，
      * 全部组件挂在同一个节点下，结果里另有 `primitives`/`meshes` 两个平铺列表可供检索。
+     *
+     * `skinned` 为真（节点带 `node.skin`）时产出 `SkinnedMeshRenderer`——主库据此把顶点着色器换成
+     * 蒙皮变体并按 `a_skinIndices`/`a_skinWeights` 加权（issue #337）；否则产出 `MeshRenderer`。
      */
     function buildMeshComponents(
-        meshIndex: number, nodeIndex: number, worldMatrix: Matrix4x4): { __type__: 'MeshRenderer'; geometry: CustomGeometry; material: StandardMaterial }[]
+        meshIndex: number, nodeIndex: number, worldMatrix: Matrix4x4, skinned: boolean): Components[]
     {
         const meshDef = meshesDef[meshIndex];
         if (!meshDef) throw new Error(`glTF: meshes[${meshIndex}] 不存在`);
 
-        const components: { __type__: 'MeshRenderer'; geometry: CustomGeometry; material: StandardMaterial }[] = [];
+        const components: Components[] = [];
         const group: GLTFPrimitive[] = [];
 
         for (let primitiveIndex = 0; primitiveIndex < meshDef.primitives.length; primitiveIndex++)
@@ -1520,7 +1498,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             // 贴图索引链与因子映射是两条独立产物：图片不加载，只解出"该去哪加载"
             const textures = resolveMaterialTextures(prim.material);
 
-            components.push({ __type__: 'MeshRenderer', geometry, material });
+            components.push({ __type__: skinned ? 'SkinnedMeshRenderer' : 'MeshRenderer', geometry, material } as Components);
 
             const info: GLTFPrimitive = {
                 meshIndex,
@@ -1549,8 +1527,9 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
         const worldMatrix = worldMatrices.get(nodeIndex) || { __type__: 'Matrix4x4', ...mat4Identity() };
 
+        const skinned = nodeDef.skin !== undefined;
         const components: Components[] = nodeDef.mesh !== undefined
-            ? buildMeshComponents(nodeDef.mesh, nodeIndex, worldMatrix)
+            ? buildMeshComponents(nodeDef.mesh, nodeIndex, worldMatrix, skinned)
             : [];
 
         // 引用 skin 的节点挂上 Skeleton 组件数据（joints → boneNames，inverseBindMatrices → boneInverses）
