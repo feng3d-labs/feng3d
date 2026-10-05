@@ -2423,7 +2423,7 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 | 迁入 `packages/math/src/mathutil.ts` | `class MathUtil` + 模块级单例 `export const mathUtil = new MathUtil()` → **模块级函数 + 模块级常量**，单例消失（原 `check-toplevel-new` 基线里的 `packages/polyfill/src/MathUtil.ts::MathUtil` 随之清掉） |
 | 命名 | 全部加 `mathUtil` 前缀（`mathUtilClamp` / `mathUtilEquals` / …），常量加 `MATHUTIL_` 前缀——与批 A 的 `mathf*` / `MATHF_*` **并置而不撞名**，让「同名不同义」在调用点一眼可见 |
 | 消费点迁移 | math 包内 19 个源文件 + 9 个 spec 走相对路径；`feng3d` / `assets` / `particlesystem` 走 `@feng3d/math`；`editor` 的 7 个文件（含 3 个 `.vue`）从 `feng3d` 聚合桶取 |
-| 分层收益 | `packages/math` 去掉 `@feng3d/polyfill` 依赖（`triangleGeometry.ts` 的 `ArrayUtils.unique` 就地内联为文件私有的 `uniqueInPlace`）；`scripts/check-layer-deps.mjs` 的白名单收紧为 `['@feng3d/serialization']` |
+| 分层收益 | `packages/math` 去掉 `@feng3d/polyfill` 依赖（`triangleGeometry.ts` 的 `ArrayUtils.unique` 就地内联为文件私有的 `uniqueInPlace`）；`scripts/check-layer-deps.mjs` 的白名单收紧为 `[]`（`polyfill` 与 `serialization` 两项都清掉——后者实测从未被 math 使用，是过期的允许项） |
 
 ##### 逐条采纳 §11.18.4 的建议
 
@@ -2455,7 +2455,7 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 | `npx vitest run` | ✅ 235 个文件 / 2741 个测试全绿（批 A 之后基线 234 / 2709；本批 +1 文件 / +32 测试 = 新增 `test/mathutil.spec.ts`） |
 | `npx tsc -p packages/math/tsconfig.json --noEmit` | ✅ 无输出 |
 | `npm run test:coverage` | ✅ 通过；`math` 与 `polyfill` 两行已按实测更新到 `docs/CI.md` §1.3 |
-| `node scripts/check-layer-deps.mjs` | ✅ 通过（`math` 白名单收紧为 `['@feng3d/serialization']`） |
+| `node scripts/check-layer-deps.mjs` | ✅ 通过（`math` 白名单收紧为 `[]`——不依赖任何其它 `@feng3d/*` 包） |
 | `node scripts/check-layer-direction.mjs` | ✅ 通过（无新增向上依赖） |
 | `node scripts/check-module-side-effects.mjs --strict` | ✅ 通过 |
 | `node scripts/check-toplevel-new.mjs` | ✅ 通过（基线 90 → 89，清掉 `polyfill/src/MathUtil.ts::MathUtil`） |
@@ -2470,9 +2470,14 @@ math 的 19 个 `XxxLike` 里 18 个是只读，只有 `Vector3Like` 沿用了 c
 2. **批 A 保留的纯转发仍在**（`mathfTan` / `mathfSin` / `mathfSqrt` / `mathfCeil` … 共 19 个）。
    本批**没有**动它们——那是批 A 刚合入的代码，删除属独立一批的改动面
    （要同步改 `mathf.spec.ts` / `mathfAngles.spec.ts`）。若要清理，建议单开一批。
-3. **`packages/math/package.json` 仍声明 `@feng3d/serialization`**，但 `packages/math/src` 里
-   grep 不到任何 `@serialize` / serialization 的 import——看起来是**多余的依赖**。
-   本批只解开了 `polyfill`，这条建议另开 issue 核实。
+3. **`scripts/check-layer-deps.mjs` 里 `math` 的白名单原先还挂着两项过期允许项**
+   （`@feng3d/polyfill` 与 `@feng3d/serialization`）。`serialization` 早在 **A1（§5.6 / §11 进度表）
+   就已解开**（13 个文件的 `@serialize` 与依赖声明一并移除），白名单那一项纯属未同步；
+   `polyfill` 则是本批解开的。**已在本批的收尾修正里一并清空为 `[]`**——
+   实测核实范围：`packages/math/src` + `packages/math/test` 下
+   `@feng3d/serialization` / `@serialize` / `Serialization` / `serialization` / `serializers`
+   五个模式全部零命中，`package.json` 的 `dependencies` 也只有 `earcut`。
+   清空后 `math` 这个 Layer 0 地基包的**允许依赖为空**：新增任何 `@feng3d/*` 依赖都会直接失败。
 4. `editor/resource/template/libs/feng3d.{js,d.ts}`（编辑器模板快照）里仍是旧的 `mathUtil.*` 形态、
    且写着 `DefaultRotationOrder = YXZ`（源码早已是 `XYZ`）——**快照与源码本就不一致**，
    属既有问题、非本批引入。
