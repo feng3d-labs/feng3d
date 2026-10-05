@@ -1,4 +1,4 @@
-import { TextureLike } from '../types/TextureLike';
+import { TextureLike } from '../data/Texture';
 
 import { WGPUCanvasTexture } from './WGPUCanvasTexture';
 import { WGPUTexture } from './WGPUTexture';

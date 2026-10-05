@@ -1,4 +1,4 @@
-import { Color } from '../types/Color';
+import { Color } from '../data/RenderPassColorAttachment';
 import { RenderPassFormat } from '../internal/RenderPassFormat';
 
 export type CommandType =
