@@ -1,16 +1,36 @@
 /**
  * 模块级 `new` 的存量门禁（R2 的补强，issue #56 的副产品）。
  *
- * 背景：`scripts/check-module-side-effects.mjs` 把「顶层定时器/rAF/ticker」与「顶层
- * `Map`/`WeakMap`/`Set` 缓存」列为错误，但**其它**顶层调用只统计不拦（实测 91 处）。
- * issue #56 的根因 `new AudioContext()` 正好落在那个盲区里——它是模块顶层一个 IIFE 里
- * 的副作用，会在 import 时执行，浏览器因此报 "The AudioContext was not allowed to start"。
+ * **与 `scripts/check-module-side-effects.mjs` 的分工**（issue #606 明确，消灭"我以为你管了"的夹缝）：
+ *   - 那条脚本管**缓存形态**（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`）、
+ *     启动型调用（定时器 / rAF / ticker）与写 `globalThis`——**新增即失败**；
+ *   - 本脚本管**其余模块级 `new`**——`export const x = new X()` 这类**声明形式**的构造，
+ *     含 `new Set([...])` 只读常量集合、`new Float32Array([...])`、示例入口里的 `new GUI(...)`、
+ *     以及库代码里的模块级单例。**存量冻结**，新增即失败。
  *
- * 为什么不做成"直接报错"：实测全仓顶层 `new` 有 **95 处**，其中既有真副作用
- * （21 处 `new GUI`、各种 FS/渲染器/管理器的单例），也有无害的只读常量
+ * 背景：issue #56 的根因 `new AudioContext()` 是模块顶层一个 IIFE 里的副作用，会在 import 时执行，
+ * 浏览器因此报 "The AudioContext was not allowed to start"——它落在上面那条脚本的统计盲区里
+ * （那条只统计**裸调用语句**，声明形式的构造整行跳过），所以要独立一条门禁兜底。
+ *
+ * **本脚本不再跳过 `Map/WeakMap/Set`（issue #606）**：原先那句跳过写的是
+ * `\bnew\s+(Map|WeakMap|Set)\b`，`\b` 边界让 **`WeakSet` 也算命中**——于是两条门禁都以为对方管了，
+ * 三处模块级 `new WeakSet()`（`Entity.ts` / `WGPUBindEntry.ts` / `generate-mipmap.ts`）被**双向放行**；
+ * 另外泛型写法 `new WeakSet<Components>()` 也过不了那条门禁的正则。现在本脚本对**所有**模块级 `new`
+ * 生效，与那条门禁的重叠是**有意**的：**去重比漏网好**——重复报告同一处，好过"两条都不管"。
+ *
+ * **泛型实参不再漏网（issue #606 同批）**：判据原先是 `new\s+(名字)\s*\(`，构造器名后紧跟 `(` 才命中，
+ * 于是 `new Foo<Bar>()` 整类**完全逃逸**——实测命中两处真副作用：`packages/event/src/GlobalEmitter.ts`
+ * 的 `globalEmitter` 与 `packages/shortcut/src/WindowEventProxy.ts` 的 `windowEventProxy`（后者还用了顶层
+ * `self`），而那条门禁也管不到它们（不是缓存形态、行首是 `export` 不算裸调用）——又一条"第三条夹缝"。
+ * 现在判据放宽为 `new\s+(名字)\s*(?:<[^(]*>)?\s*\(`，与 `check-module-side-effects.mjs` 的泛型口径对齐。
+ * **已知局限**：类型实参里含 `(` 的极端写法、或 `new Foo` 与 `(` 之间换行的写法仍会漏（都不在本仓现状内）。
+ *
+ * 为什么不做成"直接报错"：全仓顶层 `new` 是大几十处的量级，其中既有真副作用
+ * （示例入口的 `new GUI`、各种 FS/渲染器/管理器的单例），也有无害的只读常量
  * （`new Float32Array` / `new Vector3` / `new Matrix4x4` / `new Date` / `new RegExp`）。
  * 一次性全报只会让人把门禁当噪音忽略——这与 `check-module-side-effects.mjs` 里
  * "一次报一百多条只会让人把这条门禁当噪音忽略"的判断一致。
+ * （存量规模**不写死在这个注释里**：它会随每次收紧而腐化，以脚本输出 / `--list` 为准。）
  *
  * 所以采用与 `check-layer-direction.mjs` 相同的**存量冻结**策略：
  *   - 基线里的（`文件 + 构造器` 组合）视为已知存量，放行；
@@ -35,8 +55,10 @@ const list = args.includes('--list');
 /**
  * 收集模块顶层的 `new Xxx()`。
  *
- * 判据与 `check-module-side-effects.mjs` 对齐：只看**行首无空白**的行（模块顶层），
- * 跳过注释行；`new Map/WeakMap/Set` 由那条门禁负责，这里跳过以免重复报告。
+ * 判据与 `check-module-side-effects.mjs` 对齐：只看**行首无空白**的行（模块顶层），跳过注释行。
+ * **不跳过任何构造器**（issue #606 删掉了原先的 `Map/WeakMap/Set` 跳过——它的 `\b` 边界
+ * 让 `WeakSet` 也命中，造成两条门禁互相让路）：缓存形态的 `new Map()` 之类会与那条门禁
+ * 重复报告，这是有意为之。
  *
  * @param file 绝对路径
  * @param rel 用于报告的相对路径
@@ -53,9 +75,8 @@ function scanFile(file, rel)
         const t = line.trim();
 
         if (t.startsWith('//') || t.startsWith('*') || t.startsWith('/*')) return;
-        if (/\bnew\s+(Map|WeakMap|Set)\b/.test(t)) return;
 
-        const m = t.match(/new\s+([A-Za-z_$][\w$.]*)\s*\(/);
+        const m = t.match(/new\s+([A-Za-z_$][\w$.]*)\s*(?:<[^(]*>)?\s*\(/);
 
         if (m) found.push(`${rel}::${m[1]}`);
     });
