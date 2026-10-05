@@ -65,6 +65,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, relative } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const require = createRequire(import.meta.url);
 const ts = require('typescript');
@@ -239,6 +240,10 @@ function scanFile(file)
  * @param out 收集数组
  * @returns 收集数组
  */
+
+/** 实际扫到的 .ts 文件数（扫描量自证，issue #652） */
+let scannedFiles = 0;
+
 function walk(dir, out = [])
 {
     let entries;
@@ -264,6 +269,7 @@ function walk(dir, out = [])
         }
         else if (name.endsWith('.ts') && !name.endsWith('.spec.ts') && !name.endsWith('.d.ts'))
         {
+            scannedFiles++;
             out.push(...scanFile(full));
         }
     }
@@ -278,6 +284,20 @@ function walk(dir, out = [])
 const PURE_DATA = readPureDataNames();
 
 const found = SCAN_DIRS.flatMap((d) => walk(join(ROOT, d)));
+
+assertScanVolume({
+    label: 'R3 命令式构造扫描（SCAN_DIRS 下的 .ts 源文件）',
+    count: scannedFiles,
+    min: 1,
+    detail: `扫描范围：${SCAN_DIRS.join('、')}；命名命中 ${found.length} 处（命中 0 处是合法状态——基线 entries 本就为空）。`,
+});
+
+assertScanVolume({
+    label: 'R3 纯数据类名单（DATA_TYPE_SCHEMA 的顶层键）',
+    count: PURE_DATA.size,
+    min: 1,
+    detail: `名单来源：${SCHEMA_FILE}（名单为空时判据找不到任何目标，会静默通过）。`,
+});
 
 /**
  * 「文件::类型」→ 出现次数。

@@ -89,6 +89,7 @@
  */
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const ROOT = process.cwd();
 const BASELINE = join(ROOT, 'scripts', 'math-no-class-baseline.json');
@@ -240,6 +241,13 @@ function scan()
 // ---------------------------------------------------------------------------
 
 const { counts, allClasses, files } = scan();
+
+assertScanVolume({
+    label: 'math 去 class 扫描（packages/math/src 下的 .ts）',
+    count: files.length,
+    min: 1,
+    detail: `扫描范围：${SCAN_DIR}；命中数为 0 是终极目标（不是异常），但扫到的文件数不能为 0。`,
+});
 
 const total = [...counts.values()].reduce((a, b) => a + b, 0);
 const allTotal = [...allClasses.values()].reduce((a, b) => a + b, 0);

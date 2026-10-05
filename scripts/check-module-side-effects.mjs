@@ -102,6 +102,7 @@ import {
     readBaseline,
     toRelative,
 } from './r2-module-scope.mjs';
+import { assertScanVolume } from './scan-volume.mjs';
 
 /** --strict：有基线外的违规即 exit 1（CI 用；默认只报告） */
 const strict = process.argv.includes('--strict');
@@ -347,7 +348,16 @@ const stats = {
 /** 记录模块级 `new` 的「文件::构造器」键（报告里与探针读数对照用） */
 const newsKeys = new Set();
 
-for (const file of collectTsFiles(PACKAGES))
+const tsFiles = collectTsFiles(PACKAGES);
+
+assertScanVolume({
+    label: 'R2 模块级副作用扫描（packages/ 下全部 .ts）',
+    count: tsFiles.length,
+    min: 1,
+    detail: '扫描根：packages/（scripts/r2-module-scope.mjs 的 collectTsFiles）',
+});
+
+for (const file of tsFiles)
 {
     const rel = toRelative(ROOT, file);
     const isEntry = isEntryFile(rel);

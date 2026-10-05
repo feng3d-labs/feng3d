@@ -15,8 +15,9 @@
  *   node scripts/check-layer-direction.mjs            # 校验（CI 用）
  *   node scripts/check-layer-direction.mjs --update   # 用当前实测重写基线（清偿后使用）
  */
-import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { assertScanVolume } from './scan-volume.mjs';
 
 const ROOT = process.cwd();
 const BASELINE_FILE = join(ROOT, 'scripts', 'layer-direction-baseline.json');
@@ -62,6 +63,8 @@ for (const layer of LAYERS)
 function collectPackages()
 {
     const result = new Map();
+    /** 目录里存在 package.json、却读不出来或解析失败的（不能静默跳过——那是判据的又一种空转） */
+    const parseFailures = [];
 
     for (const dir of readdirSync(join(ROOT, 'packages'), { withFileTypes: true }))
     {
@@ -69,14 +72,18 @@ function collectPackages()
 
         const pkgFile = join(ROOT, 'packages', dir.name, 'package.json');
 
+        // 目录里没有 package.json 的不是 workspace 包，跳过是合法的
+        if (!existsSync(pkgFile)) continue;
+
         let json;
 
         try
         {
             json = JSON.parse(readFileSync(pkgFile, 'utf8'));
         }
-        catch
+        catch (error)
         {
+            parseFailures.push(`${dir.name}（${error.message}）`);
             continue;
         }
 
@@ -86,10 +93,25 @@ function collectPackages()
         result.set(json.name, { dir: dir.name, deps, missing });
     }
 
-    return result;
+    return { packages: result, parseFailures };
 }
 
-const packages = collectPackages();
+const { packages, parseFailures } = collectPackages();
+
+if (parseFailures.length > 0)
+{
+    console.error(`❌ packages/ 下有 ${parseFailures.length} 个 package.json 存在却解析失败（不能静默跳过）：`);
+    for (const failure of parseFailures) console.error(`  - ${failure}`);
+    process.exit(1);
+}
+
+assertScanVolume({
+    label: 'R1 依赖方向扫描（packages/ 下的 workspace 包）',
+    count: packages.size,
+    min: 1,
+    detail: '扫描根：packages/（目录里存在 package.json 的才算一个 workspace 包）；扫到 0 个说明扫描根被改坏。',
+});
+
 const violations = [];
 const unclassified = [];
 
