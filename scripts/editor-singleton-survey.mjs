@@ -126,7 +126,7 @@ const EDITORDATA_MAX_REFERENCES = 0;
  * 为什么先立上限再动手：45 处消费面不可能一次改完，而没有上限时"顺手加一处 import"
  * 会静悄悄把进度抹掉。数字口径与 `EDITORDATA_MAX_REFERENCES` 一致（**大小写敏感**）。
  */
-const EDITORRS_MAX_REFERENCES = 44;
+const EDITORRS_MAX_REFERENCES = 37;
 
 let total = 0;
 let failed = 0;
@@ -205,7 +205,16 @@ function countByName(files, name)
 
     for (const file of files)
     {
-        const count = readFileSync(file, 'utf8').split('\n').filter((line) => pattern.test(line)).length;
+        // **排除注释**：注释里提到某个名字是**说明**，不是"谁在用它"。
+        // 口径要与"顶层使用"那一栏一致（那一栏早就排除了注释行），否则
+        // "多写一句解释"会让台账涨一处——那既不准，也会逼人不敢写注释。
+        // 行尾注释（`code(); // 提到 editorRS`）先砍掉 `//` 之后的部分，代码部分照常计数。
+        const count = readFileSync(file, 'utf8')
+            .split('\n')
+            .map((line) => line.replace(/\/\/.*$/, ''))
+            .filter((line) => !/^\s*(\/\*|\*)/.test(line))
+            .filter((line) => pattern.test(line))
+            .length;
 
         if (count > 0) hits.set(file, count);
     }
