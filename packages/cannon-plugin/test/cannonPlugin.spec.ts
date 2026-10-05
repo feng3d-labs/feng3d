@@ -349,6 +349,68 @@ describe('cannon-plugin：物理世界', () =>
         expect(physicsWorldLogic.world.constraints.length).toBe(1);
     });
 
+    it('LockConstraint / PointToPointConstraint 与其它约束同构地连接两端刚体', () =>
+    {
+        for (const type of ['LockConstraint', 'PointToPointConstraint'])
+        {
+            const object3D: Object3D = {
+                __type__: 'Object3D',
+                components: [{ __type__: 'PhysicsWorld' }],
+                children: [{
+                    __type__: 'Object3D',
+                    name: 'A',
+                    components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 0 }],
+                }, {
+                    __type__: 'Object3D',
+                    name: 'B',
+                    position: { x: 2, y: 0, z: 0 },
+                    components: [
+                        { __type__: 'BoxCollider' },
+                        { __type__: 'Rigidbody', mass: 1 },
+                        { __type__: type, targetName: 'A' },
+                    ],
+                }],
+            } as Object3D;
+            logic(object3D);
+            const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+            physicsWorldLogic.update(1000 / 60);
+
+            expect(physicsWorldLogic.world.constraints.length, type).toBe(1);
+        }
+    });
+
+    it('Spring 走"步进前钩子"：被它吊住的刚体不会自由落体', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Anchor',
+                position: { x: 0, y: 10, z: 0 },
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 0 }],
+            }, {
+                __type__: 'Object3D',
+                name: 'Bob',
+                position: { x: 0, y: 6, z: 0 },
+                components: [
+                    { __type__: 'SphereCollider' },
+                    { __type__: 'Rigidbody', mass: 1 },
+                    { __type__: 'Spring', targetName: 'Anchor', restLength: 4, stiffness: 200, damping: 5 },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+        for (let i = 0; i < 60; i++) physicsWorldLogic.update(1000 / 60);
+
+        const bob = object3D.children![1];
+        // 无弹簧时 1 秒自由落体会掉到 y≈1；被弹簧吊住则应稳定在静止长度附近（略被拉伸）
+        expect(bob.position!.y).toBeGreaterThan(4);
+    });
+
     it('刚体声明弹性时拿到独立材质，并注册与世界默认材质的 ContactMaterial（弹性取较大者）', () =>
     {
         const object3D: Object3D = {

@@ -50,6 +50,8 @@ export default {
         "BodyTypesTest",
         "CollisionFilterTest",
         "FixedRotationTest",
+        "SpringTest",
+        "RagdollTest",
     ],
     "renderer": [
         "Basic",
