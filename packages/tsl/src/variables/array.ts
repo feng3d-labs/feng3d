@@ -1,5 +1,6 @@
 import { IElement, ShaderValue } from '../core/IElement';
 import { Int } from '../types/scalar/int';
+import { type StructMembers, type StructType, isStructConstructor } from './struct';
 import { UInt } from '../types/scalar/uint';
 
 /**
@@ -23,8 +24,38 @@ export class Array<T extends ShaderValue> implements ShaderValue
     // 初始化值列表（数组字面量）
     private _values?: T[];
 
+    // 结构体元素：保存构造函数与父 uniform（`index()` 时用来构造元素实例）
+    private _structCtor?: StructType<StructMembers>;
+    private _parentUniform?: import('./uniform').Uniform;
+    // 结构体元素的工厂：给定"元素访问路径"返回该元素的实例。
+    // 由 struct.ts 在绑定时注入（避免 array.ts 反向依赖 struct.ts 造成循环）。
+    private _structElementFactory?: (path: string) => T;
+
     constructor(elementType: T, length: number)
     {
+        this.length = length;
+
+        // 结构体元素（如 `array(PointLightData, 8)`）：类型名就是结构体名，
+        // 且元素实例必须由"父 uniform"构造（结构体实例的成员访问路径要挂在它上面），
+        // 所以这里只记下构造函数，等绑定 uniform 时再用。
+        if (isStructConstructor(elementType))
+        {
+            this._structCtor = elementType as unknown as StructType<StructMembers>;
+            this.glslType = this._structCtor._definition.name;
+            this.wgslType = this._structCtor._definition.name;
+            this.elementType = (() =>
+            {
+                if (!this._parentUniform)
+                {
+                    throw new Error(`结构体数组 '${this.wgslType}' 需要先绑定 uniform（应作为 struct 成员使用）`);
+                }
+
+                return this._structCtor!(this._parentUniform) as unknown as T;
+            }) as () => T;
+
+            return;
+        }
+
         // elementType 可能是构造器函数（如 mat4/vec4）或实例；
         // 统一转换为实例以获取类型信息
         const instance: T = typeof elementType === 'function'
@@ -32,11 +63,58 @@ export class Array<T extends ShaderValue> implements ShaderValue
             : elementType;
         // 使用实例的构造函数作为工厂函数
         this.elementType = (() => new (instance.constructor as new () => T)()) as () => T;
-        this.length = length;
 
         // 从实例获取类型信息
         this.glslType = instance.glslType;
         this.wgslType = instance.wgslType;
+    }
+
+    /**
+     * 元素类型是否是结构体；是则返回它的构造函数（供结构体定义收集嵌套声明用）。
+     *
+     * @returns 结构体构造函数，非结构体元素时为 undefined
+     */
+    get _elementStructCtor(): StructType<StructMembers> | undefined
+    {
+        return this._structCtor;
+    }
+
+    /**
+     * 克隆一个"同元素类型、同长度"的数组（供 struct 成员复制用）。
+     *
+     * 与 `new TSLArray(this.elementType(), this.length)` 的区别：**不调用 `elementType()`**——
+     * 结构体元素在那个时点还没绑定父 uniform，调用会抛错。
+     *
+     * @returns 新的数组实例
+     */
+    _clone(): Array<T>
+    {
+        if (this._structCtor)
+        {
+            return new Array<T>(this._structCtor as unknown as T, this.length);
+        }
+
+        return new Array<T>(this.elementType(), this.length);
+    }
+
+    /**
+     * 绑定父 uniform（结构体数组的元素实例要用它构造）。
+     *
+     * @param uniform 父 uniform
+     */
+    _setParentUniform(uniform: import('./uniform').Uniform): void
+    {
+        this._parentUniform = uniform;
+    }
+
+    /**
+     * 注入结构体元素的工厂（由 struct.ts 提供，参数是元素的访问路径）。
+     *
+     * @param factory 工厂函数
+     */
+    _setStructElementFactory(factory: (path: string) => T): void
+    {
+        this._structElementFactory = factory;
     }
 
     /**
@@ -119,6 +197,16 @@ export class Array<T extends ShaderValue> implements ShaderValue
      */
     index(idx: number | Int | UInt): T
     {
+        // 结构体元素：元素实例的成员访问路径要带上下标（如 lights.u_pointLights[0].position），
+        // 这由 struct.ts 注入的工厂负责构造（它知道父 uniform 与结构体定义）
+        if (this._structElementFactory)
+        {
+            const idxText = typeof idx === 'number' ? `${idx}` : (idx.toRawWGSL?.() ?? idx.toWGSL());
+            const result = this._structElementFactory(`${this.toWGSL()}[${idxText}]`);
+
+            return result;
+        }
+
         const result = this.elementType();
 
         // 动态计算索引字符串，确保在 toGLSL/toWGSL 调用时获取最新值
