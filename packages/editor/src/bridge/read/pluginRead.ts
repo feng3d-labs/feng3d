@@ -36,6 +36,7 @@ export function editorPlugins(): unknown
         logicCount: table.logics.length,
         typeAttributeViewCount: table.typeAttributeViews.length,
         bridgeMethodCount: table.bridgeMethods.length,
+        aiToolCount: table.aiTools.length,
         overridePolicy: table.overridePolicy,
         // 用户覆盖层（issue #171）：本地 patch 有没有、从哪读的、覆盖了什么。
         // 它不入库，所以"当前到底有没有用户层"必须能一眼看到
@@ -67,6 +68,9 @@ export function editorPlugins(): unknown
         logics: table.logics,
         typeAttributeViews: table.typeAttributeViews,
         bridgeMethods: table.bridgeMethods,
+        // AI 工具（#281 路径 A）：MCP 侧在 `tools/list` 时读它做增量合并——
+        // 于是"AI 现在能用哪些**插件贡献的**工具"在 `editor.plugins` 里直接看得到
+        aiTools: table.aiTools,
         hint: '贡献点按落位与 order 排序；`source` 是贡献它的插件 id、`layer` 是所在层'
             + '（builtin < plugin < user），`overriddenBy` 列出被它盖住的下层来源。'
             + '被禁用的插件也会出现在 plugins 里（enabled=false），但它的贡献点不在下面各表里；'
