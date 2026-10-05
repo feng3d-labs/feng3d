@@ -44,4 +44,6 @@ export const WEBGPU_EXAMPLES: WebgpuExampleSpec[] = [
     { name: 'instancedCube', url: '/src/webgpu/instancedCube/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     { name: 'timestampQuery', url: '/src/webgpu/timestampQuery/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
     { name: 'transparentCanvas', url: '/src/webgpu/transparentCanvas/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    { name: 'texturedCube', url: '/src/webgpu/texturedCube/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
+    { name: 'imageBlur', url: '/src/webgpu/imageBlur/index.html', warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.02 },
 ];
