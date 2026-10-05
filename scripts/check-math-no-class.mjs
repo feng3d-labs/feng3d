@@ -37,6 +37,10 @@
  * 名单显式写在这里是**有意的**：每删掉一批就 `--update` 收紧一次基线，
  * **`entries` 归零即「math 全树再无 `export class`」——那是本方案的终点**。
  *
+ * **补充（`MathUtil` 迁移批）**：`packages/polyfill/src/MathUtil.ts` 的 `class MathUtil`
+ * 已迁入 `packages/math/src/mathutil.ts` 并纯函数化（`mathUtil*` 前缀），本判据不受影响
+ * （`MathUtil` 从来不在写死的 27 个目标类型里），但它让 math 全树的 `export class` 又少 1 个。
+ *
  * ## 判据口径
  *
  * - **只看 `export class`**：非导出的内部 class 不构成对外 API，不管；
