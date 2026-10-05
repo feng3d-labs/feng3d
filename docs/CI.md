@@ -681,7 +681,7 @@ R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的�
 `scripts/probe-r2-blindspots.mjs` 的 `CACHE_RE` **刻意不在名单比对的范围内**：它要冻结历史读数，
 跟着门禁一起改会让"上一批 / 这一批"的读数不可比（理由见该脚本文件头）。
 
-#### 做法 3：扫描量自证（本批，issue #652）
+#### 做法 3：扫描量自证（issue #652）
 
 上面三层守的是「判据形状」与「名单漂移」，但它们都**默认判据扫到了东西**。
 `scripts/check-*.mjs` 大多是「遍历文件 / 包 / 规则 → 收集命中 → 集合为空即通过」，
@@ -695,21 +695,50 @@ R2 的四层判据此前**既无判据单测、也无任何自检**。#652 的�
 | `check-imperative-construction.mjs` | `SCAN_DIRS` 下实际扫到的 `.ts` 文件数；`DATA_TYPE_SCHEMA` 顶层键数 | 两者都 ≥ 1（**命中数为 0 是合法状态**——基线 `entries` 本就为空） |
 | `check-math-no-class.mjs` | `packages/math/src` 下的 `.ts` 文件数 | ≥ 1（命中数为 0 是终极目标，不是异常） |
 | `check-readonly-array-fields.mjs` | `packages/*/src` 下的 `.ts` 文件数 | ≥ 1（存量 16 处是合法状态） |
+| `check-effect-inventory.mjs`（第二批） | `packages/` 下收集到的 `.ts` 文件数（R5） | ≥ 1（原判据扫到 0 个时 problems 为空 → 静默通过） |
+| `check-editor-module-effects.mjs`（第二批） | `packages/editor/src` 下 `.ts` 文件数（R2 编辑器侧） | ≥ 1 |
+| `check-docs-links.mjs`（第二批） | `walk(ROOT)` 扫到的 `.md` 文件数（§14） | ≥ 1（0 个时 broken 为空 → exit 0） |
+| `check-strict-packages.mjs`（第二批） | `packages/*` 下带 `tsconfig.json` 的包数（R6） | ≥ 1 |
+| `check-register-logic-factory.mjs`（第二批） | 各包 `src`/`test` + `examples/src` + `test` 下 TS 文件数（#653） | ≥ 1 |
 
 - 公共判据 `scripts/scan-volume.mjs`：`describeScanVolume`（纯函数）+ `assertScanVolume`（不达标即 exit 1）。
   阈值优先表达「**应为正数**」（`min` 默认 1），**不写死具体数字**——具体数字会随仓库变大而过期；
-- 判据层用例 `test/scanVolume.spec.ts`（17 条）：纯函数分支 + 子进程断言「扫到 0 个 → 退出码非 0」
-  + **合成 cwd**（一个空的 `packages/`）跑 3 个真实脚本 + 6 个脚本的接线断言；
+- 判据层用例 `test/scanVolume.spec.ts`（27 条）：纯函数分支 + 子进程断言「扫到 0 个 → 退出码非 0」
+  + **合成临时仓库**跑 8 个真实脚本（空 `packages/`、空 `packages/editor/src`，以及把
+  `check-docs-links.mjs` 复制进不含 `.md` 的目录）+ 11 个脚本的接线断言。第二批新接的 5 个
+  断言都排在**读清单 / 基线之前**，于是空扫描根就能干净驱动，测试不必铺那些产物；
 - **不适用 / 已有自证**（逐条核实过，不是漏做）：`check-layer-deps.mjs`（读固定清单，读不到 `package.json` 直接抛错，
   走不到空集合分支）、`check-tree-shaking.mjs`（已有「显式引入 `@feng3d/terrain` 后产物必须含 `TerrainGeometry`」
   的方法自证）、`check-runtime-half-deps.mjs`（扫到 0 个是合法状态，注释已写明理由）、
   `check-pure-modules.mjs`（登记项下没有 `.ts` 已判失败）、`check-editor-publish-files.mjs`
   （已有「扫到了运行时才取的仓库内路径（否则这条检查是空转）」）；
-- **仍欠账**（已确认有目录遍历、集合为空即静默通过、本批未覆盖）：`check-effect-inventory.mjs`（R5）、
-  `check-editor-module-effects.mjs`（R2 编辑器侧）、`check-docs-links.mjs`（§14 文档链接）、
-  `check-strict-packages.mjs`（R6）、`check-register-logic-factory.mjs`（#653 的工厂形态，已有判据自检、无扫描量自证）；
-  其余 `check-*.mjs` 尚未逐条核实是否存在同类空集合分支（全量清单见 issue #652）。本批只做了
-  R1 / R2 / R3 三个"机器执行者"族里危害最大的 6 个（元规则点名保护率最低的一组）。
+- **第一批**做了 R1 / R2 / R3 三个"机器执行者"族里危害最大的 6 个（元规则点名保护率最低的一组）；
+- **第二批（本批）补上 5 个**已确认「有目录遍历、集合为空即静默通过」的欠账（即上表标「第二批」的行）：
+  `check-effect-inventory.mjs`（R5）、`check-editor-module-effects.mjs`（R2 编辑器侧）、
+  `check-docs-links.mjs`（§14 文档链接）、`check-strict-packages.mjs`（R6）、
+  `check-register-logic-factory.mjs`（#653 的工厂形态，已有判据自检、无扫描量自证）；
+- **仍欠账**：其余 `check-*.mjs`（现约 37 个）尚未逐条核实是否存在同类空集合分支（全量清单见 issue #652）。
+
+#### 做法 4：退出码回归（临时仓库 + `spawnSync`，本批新增）
+
+判据层单测（`test/r2ModuleScope.spec.ts`）与脚本内的合成样例自检都**在各自进程里**断言判据结果，
+**不经过 `process.exit`**；`test/scanVolume.spec.ts` 的合成 cwd 也只证明了「扫描量自证」这一条退出码。
+于是「判据命中 → 真的 `exit 1`」这条接线此前只能靠人读代码。本批新增
+`test/gateExitCodes.spec.ts`（7 条），用 `mkdtempSync` 造临时仓库 + `spawnSync(process.execPath, ...)` 跑完整脚本：
+
+| 脚本 | 用例 | 断言 |
+|---|---|---|
+| `check-module-side-effects.mjs` | 模块级 `new Map()` / 函数体内 `new Map()` / 违规但不带 `--strict` | `--strict` 违规 exit 1；干净 exit 0；默认模式只报告、exit 0（CI 用的正是前者） |
+| `check-toplevel-new.mjs` | 模块级 `new Wrapper()` / 函数体内 `new Wrapper()` | 违规 exit 1、干净 exit 0（存量冻结基线） |
+| `check-math-no-class.mjs` | 新增 `export class Vector3` / 普通 `export const` | 违规 exit 1、干净 exit 0 |
+
+临时仓库里要铺的**启动前置**（与判据无关）：`ENTRY_FILES` 的 3 个应用入口
+（R2 两条脚本的 `missingEntryFiles` 反向校验）、空基线，以及 `check-module-side-effects.mjs`
+名单一致性断言要读的两份对侧名单文件——**原样复制**而不是在测试里再写一份，避免测试变成
+「第四份名单」（真实仓库改名单时它跟着变，`WeakSet` 那类漂移不会从后门回来）。
+
+**破坏性验证（本批实测）**：把 `isCacheCreation` 改成恒 `false`（一处改动）后，
+该组 3 条用例立刻变红——判据漏报会被退出码用例抓住，而不是静默全绿。
 
 ### 2.2 编辑器 job
 
