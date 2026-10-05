@@ -1,10 +1,9 @@
 // registerLogic/logic 直接从 @feng3d/reactivity 导入（不经 feng3d barrel）：
 // feng3d barrel 在 particlesystem 之后才 re-export reactivity，node/vitest 下
 // barrel 模块求值顺序会取到未初始化的绑定（浏览器/vite 不受影响）
-import { AddComponentMenu, createRenderableLogicBase, Object3D, QuadGeometry, Renderable, RenderableLogic, RunEnvironment, StandardMaterial } from 'feng3d';
-import { registerLogic } from '@feng3d/reactivity';
-import type { RenderObject, VertexAttribute } from '@feng3d/webgpu';
-import { logic } from '@feng3d/reactivity';
+import { AddComponentMenu, createRenderableLogicBase, Object3D, ParticleMaterial, QuadGeometry, registerComponentType, Renderable, RenderableLogic, RunEnvironment } from 'feng3d';
+import { logic, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { Buffer, BufferBinding, BindingResources, IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
 
 declare module '@feng3d/reactivity'
@@ -48,17 +47,25 @@ declare module 'feng3d'
 }
 
 /**
- * 粒子系统写入 renderObject.uniforms 的 uniform 集合。
- * 各字段值可为矩阵实例或返回矩阵的工厂函数（渲染管线按需求值）。
+ * 粒子系统写入 renderObject.bindingResources.particle_uniforms 的 uniform 值。
+ *
+ * 与着色器里的 ParticleUniforms 结构一一对应（见 feng3d 的 shaders/particleMaterial.ts）。
  */
-interface ParticleUniforms
+interface ParticleSystemUniforms
 {
-    /** 公告牌矩阵 */
-    u_particle_billboardMatrix?: Matrix3x3 | (() => Matrix4x4);
-    /** 模型矩阵（世界空间时由渲染管线按帧求值） */
-    u_modelMatrix?: Matrix3x3 | (() => Matrix4x4);
-    /** 模型矩阵的逆转置（世界空间时由渲染管线按帧求值） */
-    u_ITModelMatrix?: Matrix3x3 | (() => Matrix4x4);
+    /** 公告牌矩阵（把粒子面片朝向相机） */
+    u_particle_billboardMatrix: Matrix3x3;
+    /** 模型矩阵（World 模拟空间时为单位矩阵——粒子位置已是世界坐标；Local 时为宿主 local2world） */
+    u_modelMatrix: Matrix4x4;
+}
+
+declare module '@feng3d/webgpu'
+{
+    interface BindingResources
+    {
+        /** 粒子系统 per renderObject uniform（公告牌 / 模型矩阵） */
+        particle_uniforms?: BufferBinding;
+    }
 }
 
 /**
@@ -80,9 +87,18 @@ export class ParticleSystem implements Renderable
     _obj(): Object3D
     {
         // entity 类型上可为 null（组件未挂载），但下面二十来处调用都假定已挂载；
-        // 未挂载时读它仍然与原来一样会崩，故用断言而不放宽带宽返回类型（否则调用点连锁报错）
-        return logic(this).entity!;
+        // 未挂载时读它仍然与原来一样会崩，故用断言而不放宽带宽返回类型（否则调用点连锁报错）。
+        //
+        // 优先用 logic.init 注入的宿主：过渡期里 logic 由**字面量**创建、行为落在实例上，
+        // 此时 logic(this) 会按实例再取一份 logic（宿主 components 已被替换为实例），
+        // 那份 logic 的 entity 未注入；直接读注入值可避开这层歧义。
+        return (this._owner ?? logic(this).entity)!;
     }
+
+    /**
+     * 宿主 Object3D（由 particleSystemLogic.init 注入）。
+     */
+    _owner: Object3D | null = null;
 
     /**
      * Is the particle system playing right now ?
@@ -341,7 +357,7 @@ export class ParticleSystem implements Renderable
     geometry = { __type__: 'QuadGeometry' } as unknown as QuadGeometry;
 
     @oav({ block: 'Renderer' })
-    material = { __type__: 'StandardMaterial' } as unknown as StandardMaterial;
+    material = { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial;
 
     @oav({ block: 'Renderer' })
     @serialize
@@ -381,6 +397,13 @@ export class ParticleSystem implements Renderable
 
     update(interval: number)
     {
+        // 每帧递增响应式版本：粒子的模拟状态（位置 / 寿命 / 活跃数）不在响应式系统里，
+        // ForwardRenderer.draw 与 Renderable.renderObject 这些 computed 不会被它们失效，
+        // 于是渲染只会停在第 0 帧。这个版本号被 _syncRenderData 读取而成为渲染 computed 的
+        // 依赖，使粒子每帧重新求值并把最新实例数据写入 renderObject。
+        const frame = this._frame;
+        reactive(frame).version = frame.version + 1;
+
         if (!this.isPlaying) return;
 
         const deltaTime = this.main.simulationSpeed * interval / 1000;
@@ -510,8 +533,8 @@ export class ParticleSystem implements Renderable
 
     beforeRender(renderObject: RenderObject)
     {
-        logic(this).baseBeforeRender(renderObject);
-
+        // 基类分发（transform / 同宿主其它组件）由 particleSystemLogic.beforeRender 负责：
+        // class 侧再调一次会在过渡期形成「字面量 logic → 实例 → 字面量 logic」的回环。
         if (!this._awaked)
         {
             if (this.main.playOnAwake && !this._isPlaying)
@@ -550,49 +573,145 @@ export class ParticleSystem implements Renderable
             }
         }
 
-        const positions: number[] = [];
-        const scales: number[] = [];
-        const rotations: number[] = [];
-        const colors: number[] = [];
-        const tilingOffsets: number[] = [];
-        const flipUVs: number[] = [];
-        for (let i = 0, n = this._activeParticles.length; i < n; i++)
-        {
-            const particle = this._activeParticles[i];
-            positions.push(particle.position.x, particle.position.y, particle.position.z);
-            scales.push(particle.size.x, particle.size.y, particle.size.z);
+        this._syncRenderData(renderObject, billboardMatrix, isbillboard);
+    }
 
-            rotations.push(particle.rotation.x, particle.rotation.y, particle.rotation.z);
-            colors.push(particle.color.r, particle.color.g, particle.color.b, particle.color.a);
-            tilingOffsets.push(particle.tilingOffset.x, particle.tilingOffset.y, particle.tilingOffset.z, particle.tilingOffset.w);
-            flipUVs.push(particle.flipUV.x, particle.flipUV.y);
+    /**
+     * 把当前活跃粒子写入渲染对象：交错实例属性 + 实例数 + 粒子 uniform（公告牌 / 模型矩阵）。
+     *
+     * 每帧由 ForwardRenderer 调用（renderObject computed 重算时也会调用，写入幂等）。
+     * 实例缓冲容量固定为 `main.maxParticles`，每帧原地写入后用 `Buffer.writeBuffers` 增量上传
+     * （复用同一 ArrayBuffer，不每帧新建 GPU 缓冲）。
+     *
+     * @param renderObject 渲染对象（几何体已写入 vertices / indices / draw）
+     * @param billboardMatrix 公告牌矩阵（非公告牌模式为单位矩阵）
+     * @param isbillboard 是否公告牌模式（公告牌下绕 z 旋转取反，与原先 CPU 侧处理等价）
+     */
+    private _syncRenderData(renderObject: RenderObject, billboardMatrix: Matrix3x3, isbillboard: boolean): void
+    {
+        // 建立对帧版本的响应式依赖（让渲染 computed 每帧失效），并去掉同一帧内的重复调用
+        const frame = this._frame;
+        const frameVersion = reactive(frame).version;
+
+        if (this._uploadedFrameVersion === frameVersion) return;
+
+        this._uploadedFrameVersion = frameVersion;
+
+        const particles = this._activeParticles;
+        const count = particles.length;
+        // 容量至少为 1：0 容量的 Float32Array 无法作为顶点缓冲（且引擎会按 0 推断顶点数）
+        const capacity = Math.max(1, this.main.maxParticles | 0);
+
+        this._ensureParticleBuffer(capacity);
+
+        const data = this._particleData!;
+        const stride = PARTICLE_STRIDE_FLOATS;
+
+        // 原地写入前 count 个实例（不新建 TypedArray，避免每帧重建 GPU 缓冲与顶点布局）
+        for (let i = 0; i < count; i++)
+        {
+            const particle = particles[i];
+            const offset = i * stride;
+
+            const position = particle.position;
+            data[offset] = position.x;
+            data[offset + 1] = position.y;
+            data[offset + 2] = position.z;
+
+            const size = particle.size;
+            data[offset + 3] = size.x;
+            data[offset + 4] = size.y;
+            data[offset + 5] = size.z;
+
+            const rotation = particle.rotation;
+            data[offset + 6] = rotation.x;
+            data[offset + 7] = rotation.y;
+            data[offset + 8] = isbillboard ? -rotation.z : rotation.z;
+
+            const color = particle.color;
+            data[offset + 9] = color.r;
+            data[offset + 10] = color.g;
+            data[offset + 11] = color.b;
+            data[offset + 12] = color.a;
+
+            const tilingOffset = particle.tilingOffset;
+            data[offset + 13] = tilingOffset.x;
+            data[offset + 14] = tilingOffset.y;
+            data[offset + 15] = tilingOffset.z;
+            data[offset + 16] = tilingOffset.w;
+
+            const flipUV = particle.flipUV;
+            data[offset + 17] = flipUV.x;
+            data[offset + 18] = flipUV.y;
         }
 
-        if (isbillboard)
+        // 增量上传：Buffer 按 ArrayBuffer 身份缓存，同一缓冲只提交本帧前 count 个实例的区间
+        if (count > 0)
         {
-            for (let i = 0, n = rotations.length; i < n; i += 3)
+            const buffer = Buffer.getBuffer(data.buffer);
+
+            reactive(buffer).writeBuffers = [{ data: data.subarray(0, count * stride) }];
+        }
+
+        const r_renderObject = reactive(renderObject) as UnReadonly<RenderObject>;
+        const ro = renderObject as { vertices?: VertexAttributes; draw?: IDraw };
+
+        // 顶点属性：几何体属性 + 粒子实例属性（稳定引用；几何体属性表未换时复用合并结果）
+        const geometryVertices = ro.vertices ?? {};
+
+        if (!this._renderVertices || this._renderVerticesSource !== geometryVertices)
+        {
+            this._renderVerticesSource = geometryVertices;
+            this._renderVertices = { ...geometryVertices, ...this._particleAttributes! };
+        }
+        r_renderObject.vertices = this._renderVertices;
+
+        // 实例数：几何体 draw 暴露的是自身（instanceCount 恒为 1），这里覆盖为活跃粒子数
+        const draw = ro.draw;
+
+        if (draw)
+        {
+            r_renderObject.draw = { ...draw, instanceCount: count } as IDraw;
+        }
+
+        // 粒子 uniform：公告牌矩阵（per renderObject）+ 模型矩阵
+        const bindingResources = renderObject.bindingResources as BindingResources | undefined;
+
+        if (bindingResources)
+        {
+            if (!bindingResources.particle_uniforms)
             {
-                rotations[i + 2] = -rotations[i + 2];
+                reactive(bindingResources).particle_uniforms = { value: undefined } as BufferBinding;
             }
+
+            const binding = bindingResources.particle_uniforms as BufferBinding<ParticleSystemUniforms>;
+            const u_modelMatrix: Matrix4x4 = this.main.simulationSpace === ParticleSystemSimulationSpace.World
+                ? { __type__: 'Matrix4x4', ...mat4Identity() }
+                : logic(this._obj()).local2world;
+
+            reactive(binding).value = {
+                u_particle_billboardMatrix: billboardMatrix,
+                u_modelMatrix,
+            };
         }
+    }
 
-        //
-        this._attributes.a_particle_position.data = new Float32Array(positions);
-        this._attributes.a_particle_scale.data = new Float32Array(scales);
-        this._attributes.a_particle_rotation.data = new Float32Array(rotations);
-        this._attributes.a_particle_color.data = new Float32Array(colors);
-        this._attributes.a_particle_tilingOffset.data = new Float32Array(tilingOffsets);
-        this._attributes.a_particle_flipUV.data = new Float32Array(flipUVs);
+    /**
+     * 保证交错实例缓冲容量足够（容量变化时重建缓冲与属性表）。
+     *
+     * @param capacity 实例容量（粒子数）
+     */
+    private _ensureParticleBuffer(capacity: number): void
+    {
+        if (this._particleData && this._particleCapacity === capacity) return;
 
-        // 写入粒子系统相关 uniform（renderObject.uniforms 为渲染管线动态附加字段）
-        const ro = renderObject as RenderObject & { uniforms: ParticleUniforms };
-        ro.uniforms.u_particle_billboardMatrix = billboardMatrix;
-
-        if (this.main.simulationSpace === ParticleSystemSimulationSpace.World)
-        {
-            ro.uniforms.u_modelMatrix = () => ({ __type__: 'Matrix4x4', ...mat4Identity() });
-            ro.uniforms.u_ITModelMatrix = () => ({ __type__: 'Matrix4x4', ...mat4Identity() });
-        }
+        this._particleCapacity = capacity;
+        this._particleData = new Float32Array(capacity * PARTICLE_STRIDE_FLOATS);
+        this._particleAttributes = createParticleAttributes(this._particleData);
+        // 属性对象已换新，强制重建合并后的顶点属性表；并允许同帧重新写入数据
+        this._renderVertices = null;
+        this._renderVerticesSource = null;
+        this._uploadedFrameVersion = -1;
     }
 
     private _awaked = false;
@@ -607,15 +726,39 @@ export class ParticleSystem implements Renderable
     private _activeParticles: Particle[] = [];
 
     /**
-     * 属性数据列表（直接使用 webgpu VertexAttribute，data 为 Float32Array）。
+     * 每帧递增的渲染版本（响应式）：驱动渲染 computed 每帧重算（见 update 注释）。
      */
-    private _attributes: Record<string, VertexAttribute> = {
-        a_particle_position: { data: new Float32Array([]), format: 'float32x3', stepMode: 'instance' },
-        a_particle_scale: { data: new Float32Array([]), format: 'float32x3', stepMode: 'instance' },
-        a_particle_rotation: { data: new Float32Array([]), format: 'float32x3', stepMode: 'instance' },
-        a_particle_color: { data: new Float32Array([]), format: 'float32x4', stepMode: 'instance' },
-        a_particle_tilingOffset: { data: new Float32Array([]), format: 'float32x4', stepMode: 'instance' },
-        a_particle_flipUV: { data: new Float32Array([]), format: 'float32x2', stepMode: 'instance' } };
+    private _frame = { version: 0 };
+
+    /**
+     * 已写入 renderObject 的帧版本（同一帧内 computed 与 ForwardRenderer 各调一次 beforeRender 时去重）。
+     */
+    private _uploadedFrameVersion = -1;
+
+    /**
+     * 交错实例缓冲（容量 = 粒子容量 × PARTICLE_STRIDE_FLOATS），每帧原地写入前 N 个实例。
+     */
+    private _particleData: Float32Array | null = null;
+
+    /**
+     * 粒子实例属性表（6 个属性共享同一交错缓冲，稳定引用）。
+     */
+    private _particleAttributes: Record<string, VertexAttribute> | null = null;
+
+    /**
+     * 当前实例缓冲容量（粒子数）。
+     */
+    private _particleCapacity = -1;
+
+    /**
+     * 合并后的顶点属性表（几何体属性 + 粒子实例属性，稳定引用）。
+     */
+    private _renderVertices: VertexAttributes | null = null;
+
+    /**
+     * 合并表的几何体来源（引用比较；几何体属性表变化时重建合并表）。
+     */
+    private _renderVerticesSource: VertexAttributes | null = null;
 
     private readonly _modules: ParticleModule[] = [];
 
@@ -1161,6 +1304,90 @@ export class ParticleSystem implements Renderable
 }
 
 /**
+ * 粒子实例属性交错缓冲的浮点步长。
+ *
+ * 布局（与粒子着色器的 location 4–9 一一对应）：
+ * position(3) + scale(3) + rotation(3) + color(4) + tilingOffset(4) + flipUV(2)。
+ */
+const PARTICLE_STRIDE_FLOATS = 19;
+
+/**
+ * 创建粒子实例属性表。
+ *
+ * 6 个属性共享**同一个** TypedArray 对象：引擎的 WGPUVertexBufferLayout 按"属性数据对象"分组建
+ * 顶点缓冲，共享对象只占 1 个 maxVertexBuffers 名额（WebGPU 默认上限 8），靠 offset / arrayStride 区分。
+ *
+ * @param data 交错实例缓冲
+ * @returns 粒子实例属性表
+ */
+function createParticleAttributes(data: Float32Array): Record<string, VertexAttribute>
+{
+    const stride = PARTICLE_STRIDE_FLOATS * 4;
+
+    return {
+        a_particle_position: { data, format: 'float32x3', offset: 0, arrayStride: stride, stepMode: 'instance' },
+        a_particle_scale: { data, format: 'float32x3', offset: 3 * 4, arrayStride: stride, stepMode: 'instance' },
+        a_particle_rotation: { data, format: 'float32x3', offset: 6 * 4, arrayStride: stride, stepMode: 'instance' },
+        a_particle_color: { data, format: 'float32x4', offset: 9 * 4, arrayStride: stride, stepMode: 'instance' },
+        a_particle_tilingOffset: { data, format: 'float32x4', offset: 13 * 4, arrayStride: stride, stepMode: 'instance' },
+        a_particle_flipUV: { data, format: 'float32x2', offset: 17 * 4, arrayStride: stride, stepMode: 'instance' },
+    };
+}
+
+/**
+ * 把「纯数据字面量」提升为 ParticleSystem 实例（过渡期兼容层）。
+ *
+ * 已经是实例时原样返回；否则基于默认实例把字面量字段**递归合并**进去：目标是保留 class 上的
+ * 行为与各模块默认值（构造函数建立模块与 particleSystem 的反向引用），只覆盖调用方显式声明的字段。
+ *
+ * 背景：场景数据按规范 §2 用纯数据字面量声明，而 ParticleSystem 目前仍是 class（纯数据化欠账，
+ * 见 issue）。合并规则对"默认值是 class 实例"的字段（MinMaxCurve / AnimationCurve / 各模块）
+ * 递归合并到实例上，从而保住它们的 getValue / initParticleState 等方法。
+ *
+ * @param data 组件数据（实例或字面量）
+ * @returns 可用的 ParticleSystem 实例
+ */
+function instantiateParticleSystem(data: ParticleSystem): ParticleSystem
+{
+    if (data instanceof ParticleSystem) return data;
+
+    const system = new ParticleSystem();
+
+    mergeObjectInto(system as unknown as Record<string, unknown>, data as unknown as Record<string, unknown>);
+
+    return system;
+}
+
+/**
+ * 递归合并 source 的字段到 target：目标上已是 class 实例的对象走递归，保住其方法；
+ * 其余（标量 / 数组 / 纯对象）整体替换。
+ *
+ * @param target 合并目标（默认实例）
+ * @param source 合并来源（字面量）
+ */
+function mergeObjectInto(target: Record<string, unknown>, source: Record<string, unknown>): void
+{
+    for (const key of Object.keys(source))
+    {
+        const value = source[key];
+
+        if (value === undefined) continue;
+
+        const current = target[key];
+
+        if (current !== null && typeof current === 'object' && !Array.isArray(current)
+            && (current as object).constructor !== Object
+            && value !== null && typeof value === 'object' && !Array.isArray(value))
+        {
+            mergeObjectInto(current as Record<string, unknown>, value as Record<string, unknown>);
+            continue;
+        }
+
+        target[key] = value;
+    }
+}
+
+/**
  * 粒子系统发射器状态信息
  */
 export interface ParticleSystemEmitInfo
@@ -1228,10 +1455,15 @@ interface ParticleSystemLogic extends RenderableLogic
 {
 }
 
-/** 工厂函数：ParticleSystem Logic 的唯一创建入口 */
+/** 工厂函数：ParticleSystem Logic 的唯一创建入口（字面量与实例两种输入都接受） */
 export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 {
-    const { members } = createRenderableLogicBase(data);
+    // 过渡期兼容层：场景数据是纯数据声明，而 ParticleSystem 仍是 class。
+    // 这里把字面量提升为实例（行为、模块默认值都在实例上），随后把宿主 components 里的
+    // 字面量替换成实例——必须替换，否则基类的「跳过自身」判断（element !== state.component）
+    // 认不出同一个组件，组件分发会形成回环。
+    const system = instantiateParticleSystem(data);
+    const { members } = createRenderableLogicBase(system);
 
     const logic: ParticleSystemLogic = {
         /** 关联的组件数据（raw） */
@@ -1252,15 +1484,48 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         get isLoaded() { return members.isLoaded; },
         /** 基类 beforeRender（子类 logic 可调用后再追加自身逻辑） */
         baseBeforeRender(renderObject) { members.baseBeforeRender(renderObject); },
-        /** 渲染前回调：委托 ParticleSystem 自身逻辑 */
+        /** 渲染前回调：先做基类分发（transform / 同宿主其它组件），再执行粒子自身逻辑 */
         beforeRender(ro)
         {
-            (members.component as ParticleSystem).beforeRender(ro);
+            members.baseBeforeRender(ro);
+            system.beforeRender(ro);
         },
-        /** 初始化：注入所属 Object3D（幂等），并创建光源拾取器 */
-        init(object3D) { members.init(object3D); },
-        /** 每帧更新（委托 Behaviour 基类） */
-        update(interval) { members.update(interval); },
+        /**
+         * 初始化：注入所属 Object3D（幂等），创建光源拾取器，并把宿主 components 里的
+         * 原始字面量替换为实例（保证同一组件只有一个对象身份）。
+         */
+        init(object3D)
+        {
+            members.init(object3D);
+
+            const owner = (object3D ?? members.entity) as Object3D | null;
+
+            system._owner = owner;
+
+            const components = owner?.components;
+
+            if (components && data !== system)
+            {
+                const index = components.indexOf(data as never);
+
+                if (index >= 0)
+                {
+                    (reactive(components) as unknown[]).splice(index, 1, system);
+
+                    // effect 的重跑不保证同步，而宿主接下来的渲染 / 拾取都按新身份（system）
+                    // 取 logic——这里显式把实例的 logic 初始化一次，否则它拿不到 entity。
+                    // 注意用 getLogic 别名：本工厂的返回值就叫 logic（局部变量遮蔽了同名函数）。
+                    getLogic(system).init(owner);
+                }
+            }
+        },
+        /**
+         * 每帧更新。
+         *
+         * 模拟逻辑在 ParticleSystem 实例上（发射 / 生命周期 / 各模块），这里必须转发过去——
+         * 委托 Behaviour 基座的空实现会让粒子永不发射（SceneLogic 只调 logic 的 update）。
+         */
+        update(interval) { system.update(interval); },
         /** 与局部空间射线相交 */
         localRayIntersection(localRay) { return members.localRayIntersection(localRay); },
         /** 与世界空间射线相交 */
@@ -1272,4 +1537,9 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     return logic;
 }
 registerLogic('ParticleSystem', particleSystemLogic);
+
+// 登记组件类型：ScenePickCache 用 isRenderable（内置表 {Renderable, MeshRenderer,
+// SkinnedMeshRenderer} + 登记表）筛选渲染列表，未登记的上层包组件只会命中 matchType 的
+// 拾取列表、进不了渲染列表——表现是"粒子永远不渲染"。
+registerComponentType('ParticleSystem', { baseTypes: ['Renderable'] });
 
