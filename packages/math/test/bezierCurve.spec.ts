@@ -1,6 +1,7 @@
+import { bezierCurveLinear, bezierCurveQuadratic, bezierCurveCubic, bezierCurveLinearDerivative, bezierCurveQuadraticDerivative, bezierCurveCubicDerivative, bezierCurveQuadraticSecondDerivative, bezierCurveLinearSecondDerivative, bezierCurveCubicSecondDerivative, bezierCurveBn, bezierCurveBnDerivative, bezierCurveBnSecondDerivative } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
-import { BezierCurve } from '../src/curve/BezierCurve';
+
 
 /**
  * `BezierCurve`（`packages/math/src/curve/`；此前行覆盖率 0.67%）。
@@ -13,8 +14,6 @@ import { BezierCurve } from '../src/curve/BezierCurve';
  * - 二阶导：`quadraticSecondDerivative` 应当是**常数** `2(p0 - 2p1 + p2)`；
  * - **`bn` 与 `linear`/`quadratic`/`cubic` 在相同数据上必须一致**（同一族的一致性）。
  */
-
-const curve = new BezierCurve();
 
 /** 标准伯恩斯坦形式：n 次贝塞尔在 t 处的值 */
 function bezier(n: number, t: number, ps: number[]): number
@@ -56,9 +55,9 @@ describe('BezierCurve（math/curve）', () =>
     {
         it('★ 端点与中点符合直线插值', () =>
         {
-            expect(curve.linear(0, 3, 9)).toBeCloseTo(3, 10);
-            expect(curve.linear(1, 3, 9)).toBeCloseTo(9, 10);
-            expect(curve.linear(0.5, 3, 9)).toBeCloseTo(6, 10);
+            expect(bezierCurveLinear(0, 3, 9)).toBeCloseTo(3, 10);
+            expect(bezierCurveLinear(1, 3, 9)).toBeCloseTo(9, 10);
+            expect(bezierCurveLinear(0.5, 3, 9)).toBeCloseTo(6, 10);
         });
 
         it('★ 与 p0 + (p1 - p0)·t 在整段 t 上一致', () =>
@@ -69,7 +68,7 @@ describe('BezierCurve（math/curve）', () =>
             {
                 const t = i / 10;
 
-                expect(curve.linear(t, p0, p1), `t=${t}`).toBeCloseTo(p0 + (p1 - p0) * t, 10);
+                expect(bezierCurveLinear(t, p0, p1), `t=${t}`).toBeCloseTo(p0 + (p1 - p0) * t, 10);
             }
         });
 
@@ -77,7 +76,7 @@ describe('BezierCurve（math/curve）', () =>
         {
             for (const t of [0, 0.25, 0.5, 0.75, 1])
             {
-                expect(curve.linear(t, 4, 4), `t=${t}`).toBeCloseTo(4, 10);
+                expect(bezierCurveLinear(t, 4, 4), `t=${t}`).toBeCloseTo(4, 10);
             }
         });
     });
@@ -92,14 +91,14 @@ describe('BezierCurve（math/curve）', () =>
             {
                 const t = i / 10;
 
-                expect(curve.quadratic(t, ps[0], ps[1], ps[2]), `t=${t}`).toBeCloseTo(bezier(2, t, ps), 9);
+                expect(bezierCurveQuadratic(t, ps[0], ps[1], ps[2]), `t=${t}`).toBeCloseTo(bezier(2, t, ps), 9);
             }
         });
 
         it('quadratic 的端点落在 p0 / p2', () =>
         {
-            expect(curve.quadratic(0, 1, -3, 7)).toBeCloseTo(1, 10);
-            expect(curve.quadratic(1, 1, -3, 7)).toBeCloseTo(7, 10);
+            expect(bezierCurveQuadratic(0, 1, -3, 7)).toBeCloseTo(1, 10);
+            expect(bezierCurveQuadratic(1, 1, -3, 7)).toBeCloseTo(7, 10);
         });
 
         it('★ cubic 在整段 t 上与标准闭式一致', () =>
@@ -110,14 +109,14 @@ describe('BezierCurve（math/curve）', () =>
             {
                 const t = i / 10;
 
-                expect(curve.cubic(t, ps[0], ps[1], ps[2], ps[3]), `t=${t}`).toBeCloseTo(bezier(3, t, ps), 9);
+                expect(bezierCurveCubic(t, ps[0], ps[1], ps[2], ps[3]), `t=${t}`).toBeCloseTo(bezier(3, t, ps), 9);
             }
         });
 
         it('cubic 的端点落在 p0 / p3', () =>
         {
-            expect(curve.cubic(0, 2, -1, 5, 11)).toBeCloseTo(2, 10);
-            expect(curve.cubic(1, 2, -1, 5, 11)).toBeCloseTo(11, 10);
+            expect(bezierCurveCubic(0, 2, -1, 5, 11)).toBeCloseTo(2, 10);
+            expect(bezierCurveCubic(1, 2, -1, 5, 11)).toBeCloseTo(11, 10);
         });
     });
 
@@ -129,29 +128,29 @@ describe('BezierCurve（math/curve）', () =>
 
             for (const t of [0, 0.25, 0.5, 0.75, 1])
             {
-                expect(curve.linearDerivative(t, p0, p1), `t=${t}`).toBeCloseTo(p1 - p0, 8);
+                expect(bezierCurveLinearDerivative(t, p0, p1), `t=${t}`).toBeCloseTo(p1 - p0, 8);
             }
         });
 
         it('★ quadraticDerivative 与数值一阶导一致', () =>
         {
             const ps = [1, -3, 7];
-            const f = (t: number) => curve.quadratic(t, ps[0], ps[1], ps[2]);
+            const f = (t: number) => bezierCurveQuadratic(t, ps[0], ps[1], ps[2]);
 
             for (const t of [0.1, 0.25, 0.5, 0.75, 0.9])
             {
-                expect(curve.quadraticDerivative(t, ps[0], ps[1], ps[2]), `t=${t}`).toBeCloseTo(diff1(f, t), 5);
+                expect(bezierCurveQuadraticDerivative(t, ps[0], ps[1], ps[2]), `t=${t}`).toBeCloseTo(diff1(f, t), 5);
             }
         });
 
         it('★ cubicDerivative 与数值一阶导一致', () =>
         {
             const ps = [2, -1, 5, 11];
-            const f = (t: number) => curve.cubic(t, ps[0], ps[1], ps[2], ps[3]);
+            const f = (t: number) => bezierCurveCubic(t, ps[0], ps[1], ps[2], ps[3]);
 
             for (const t of [0.1, 0.25, 0.5, 0.75, 0.9])
             {
-                expect(curve.cubicDerivative(t, ps[0], ps[1], ps[2], ps[3]), `t=${t}`).toBeCloseTo(diff1(f, t), 5);
+                expect(bezierCurveCubicDerivative(t, ps[0], ps[1], ps[2], ps[3]), `t=${t}`).toBeCloseTo(diff1(f, t), 5);
             }
         });
     });
@@ -165,7 +164,7 @@ describe('BezierCurve（math/curve）', () =>
 
             for (const t of [0, 0.25, 0.5, 0.75, 1])
             {
-                expect(curve.quadraticSecondDerivative(t, p0, p1, p2), `t=${t}`).toBeCloseTo(expected, 8);
+                expect(bezierCurveQuadraticSecondDerivative(t, p0, p1, p2), `t=${t}`).toBeCloseTo(expected, 8);
             }
         });
 
@@ -173,18 +172,18 @@ describe('BezierCurve（math/curve）', () =>
         {
             for (const t of [0, 0.5, 1])
             {
-                expect(curve.linearSecondDerivative(t, 3, 9), `t=${t}`).toBeCloseTo(0, 10);
+                expect(bezierCurveLinearSecondDerivative(t, 3, 9), `t=${t}`).toBeCloseTo(0, 10);
             }
         });
 
         it('★ cubicSecondDerivative 与数值二阶导一致', () =>
         {
             const ps = [2, -1, 5, 11];
-            const f = (t: number) => curve.cubic(t, ps[0], ps[1], ps[2], ps[3]);
+            const f = (t: number) => bezierCurveCubic(t, ps[0], ps[1], ps[2], ps[3]);
 
             for (const t of [0.25, 0.5, 0.75])
             {
-                expect(curve.cubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]), `t=${t}`).toBeCloseTo(diff2(f, t), 2);
+                expect(bezierCurveCubicSecondDerivative(t, ps[0], ps[1], ps[2], ps[3]), `t=${t}`).toBeCloseTo(diff2(f, t), 2);
             }
         });
     });
@@ -199,9 +198,9 @@ describe('BezierCurve（math/curve）', () =>
             {
                 const t = i / 10;
 
-                expect(curve.bn(t, [ps[0], ps[1]]), `1 次 t=${t}`).toBeCloseTo(curve.linear(t, ps[0], ps[1]), 9);
-                expect(curve.bn(t, [ps[0], ps[1], ps[2]]), `2 次 t=${t}`).toBeCloseTo(curve.quadratic(t, ps[0], ps[1], ps[2]), 9);
-                expect(curve.bn(t, ps), `3 次 t=${t}`).toBeCloseTo(curve.cubic(t, ps[0], ps[1], ps[2], ps[3]), 9);
+                expect(bezierCurveBn(t, [ps[0], ps[1]]), `1 次 t=${t}`).toBeCloseTo(bezierCurveLinear(t, ps[0], ps[1]), 9);
+                expect(bezierCurveBn(t, [ps[0], ps[1], ps[2]]), `2 次 t=${t}`).toBeCloseTo(bezierCurveQuadratic(t, ps[0], ps[1], ps[2]), 9);
+                expect(bezierCurveBn(t, ps), `3 次 t=${t}`).toBeCloseTo(bezierCurveCubic(t, ps[0], ps[1], ps[2], ps[3]), 9);
             }
         });
 
@@ -209,8 +208,8 @@ describe('BezierCurve（math/curve）', () =>
         {
             const ps = [2, -1, 5, 11, -4];
 
-            expect(curve.bn(0, ps)).toBeCloseTo(ps[0], 9);
-            expect(curve.bn(1, ps)).toBeCloseTo(ps[ps.length - 1], 9);
+            expect(bezierCurveBn(0, ps)).toBeCloseTo(ps[0], 9);
+            expect(bezierCurveBn(1, ps)).toBeCloseTo(ps[ps.length - 1], 9);
         });
 
         it('★ bn 在 4 次时与标准伯恩斯坦形式一致', () =>
@@ -221,18 +220,18 @@ describe('BezierCurve（math/curve）', () =>
             {
                 const t = i / 10;
 
-                expect(curve.bn(t, ps), `t=${t}`).toBeCloseTo(bezier(4, t, ps), 9);
+                expect(bezierCurveBn(t, ps), `t=${t}`).toBeCloseTo(bezier(4, t, ps), 9);
             }
         });
 
         it('★ bnDerivative 与数值一阶导一致', () =>
         {
             const ps = [1, 2, 3, 4, 5];
-            const f = (t: number) => curve.bn(t, ps);
+            const f = (t: number) => bezierCurveBn(t, ps);
 
             for (const t of [0.2, 0.5, 0.8])
             {
-                expect(curve.bnDerivative(t, ps), `t=${t}`).toBeCloseTo(diff1(f, t), 4);
+                expect(bezierCurveBnDerivative(t, ps), `t=${t}`).toBeCloseTo(diff1(f, t), 4);
             }
         });
 
@@ -243,7 +242,7 @@ describe('BezierCurve（math/curve）', () =>
 
             for (const t of [0, 0.3, 0.5, 0.7, 1])
             {
-                expect(curve.bnSecondDerivative(t, ps), `t=${t}`).toBeCloseTo(expected, 8);
+                expect(bezierCurveBnSecondDerivative(t, ps), `t=${t}`).toBeCloseTo(expected, 8);
             }
         });
 
@@ -255,15 +254,15 @@ describe('BezierCurve（math/curve）', () =>
             // 这里改为如实钉住这个数学事实。
             for (const t of [0.3, 0.5, 0.7])
             {
-                expect(curve.bnSecondDerivative(t, [1, 2, 3, 4, 5]), `t=${t}`).toBeCloseTo(0, 8);
+                expect(bezierCurveBnSecondDerivative(t, [1, 2, 3, 4, 5]), `t=${t}`).toBeCloseTo(0, 8);
             }
         });
 
         it('bnSecondDerivative 在控制点少于 3 个时返回 0（实现里的早退）', () =>
         {
-            expect(curve.bnSecondDerivative(0.5, [1, 2])).toBe(0);
-            expect(curve.bnSecondDerivative(0.5, [1])).toBe(0);
-            expect(curve.bnSecondDerivative(0.5, [])).toBe(0);
+            expect(bezierCurveBnSecondDerivative(0.5, [1, 2])).toBe(0);
+            expect(bezierCurveBnSecondDerivative(0.5, [1])).toBe(0);
+            expect(bezierCurveBnSecondDerivative(0.5, [])).toBe(0);
         });
     });
 });

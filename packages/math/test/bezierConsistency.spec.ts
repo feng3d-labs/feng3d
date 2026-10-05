@@ -1,7 +1,8 @@
+import { bezierCurveLinear, bezierCurveLinearDerivative, bezierCurveLinearSecondDerivative, bezierCurveQuadratic, bezierCurveQuadraticDerivative, bezierCurveQuadraticSecondDerivative, bezierCurveCubic, bezierCurveCubicDerivative, bezierCurveCubicSecondDerivative, bezierCurveBn, bezierCurveBnDerivative, bezierCurveBnSecondDerivative, bezierCurveBnND, bezierCurveGetValue, bezierCurveGetDerivative, bezierCurveGetSecondDerivative, bezierCurveGetExtremums, bezierCurveGetMonotoneIntervals, bezierCurveGetTFromValue, bezierCurveSplit, bezierCurveMerge, bezierCurveGetSamples } from '@feng3d/math';
 import { describe, expect, it } from 'vitest';
 
 import { Bezier, bezier } from '../src/bezier/Bezier';
-import { BezierCurve, bezierCurve } from '../src/curve/BezierCurve';
+
 
 /**
  * **两份重复实现的一致性对照**（`packages/math/src/bezier/Bezier.ts`，148 行，行覆盖率 **0.67%**；
@@ -51,29 +52,29 @@ type Case = [name: string, fromBezier: () => unknown, fromBezierCurve: () => unk
  * ⚠️ 每个用例都传 `slice()` 出来的**新数组**，避免两个实现共享可变输入而互相影响。
  */
 const cases: Case[] = [
-    ['linear', () => new Bezier().linear(T, 3, 9), () => new BezierCurve().linear(T, 3, 9)],
-    ['linearDerivative', () => new Bezier().linearDerivative(T, 3, 9), () => new BezierCurve().linearDerivative(T, 3, 9)],
-    ['linearSecondDerivative', () => new Bezier().linearSecondDerivative(T, 3, 9), () => new BezierCurve().linearSecondDerivative(T, 3, 9)],
-    ['quadratic', () => new Bezier().quadratic(T, PS2[0], PS2[1], PS2[2]), () => new BezierCurve().quadratic(T, PS2[0], PS2[1], PS2[2])],
-    ['quadraticDerivative', () => new Bezier().quadraticDerivative(T, PS2[0], PS2[1], PS2[2]), () => new BezierCurve().quadraticDerivative(T, PS2[0], PS2[1], PS2[2])],
-    ['quadraticSecondDerivative', () => new Bezier().quadraticSecondDerivative(T, PS2[0], PS2[1], PS2[2]), () => new BezierCurve().quadraticSecondDerivative(T, PS2[0], PS2[1], PS2[2])],
-    ['cubic', () => new Bezier().cubic(T, PS3[0], PS3[1], PS3[2], PS3[3]), () => new BezierCurve().cubic(T, PS3[0], PS3[1], PS3[2], PS3[3])],
-    ['cubicDerivative', () => new Bezier().cubicDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3]), () => new BezierCurve().cubicDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3])],
-    ['cubicSecondDerivative', () => new Bezier().cubicSecondDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3]), () => new BezierCurve().cubicSecondDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3])],
-    ['bn (2 次)', () => new Bezier().bn(T, PS2.slice()), () => new BezierCurve().bn(T, PS2.slice())],
-    ['bn (4 次)', () => new Bezier().bn(T, PS4.slice()), () => new BezierCurve().bn(T, PS4.slice())],
-    ['bnDerivative', () => new Bezier().bnDerivative(T, PS4.slice()), () => new BezierCurve().bnDerivative(T, PS4.slice())],
-    ['bnSecondDerivative', () => new Bezier().bnSecondDerivative(T, [1, -3, 7]), () => new BezierCurve().bnSecondDerivative(T, [1, -3, 7])],
-    ['bnND (1 阶)', () => new Bezier().bnND(T, 1, PS4.slice()), () => new BezierCurve().bnND(T, 1, PS4.slice())],
-    ['bnND (2 阶)', () => new Bezier().bnND(T, 2, PS4.slice()), () => new BezierCurve().bnND(T, 2, PS4.slice())],
-    ['getValue', () => new Bezier().getValue(T, PS4.slice()), () => new BezierCurve().getValue(T, PS4.slice())],
-    ['getDerivative', () => new Bezier().getDerivative(T, PS4.slice()), () => new BezierCurve().getDerivative(T, PS4.slice())],
-    ['getSecondDerivative', () => new Bezier().getSecondDerivative(T, PS4.slice()), () => new BezierCurve().getSecondDerivative(T, PS4.slice())],
-    ['getExtremums', () => new Bezier().getExtremums(PS3.slice()), () => new BezierCurve().getExtremums(PS3.slice())],
-    ['getMonotoneIntervals', () => new Bezier().getMonotoneIntervals(PS3.slice()), () => new BezierCurve().getMonotoneIntervals(PS3.slice())],
-    ['getTFromValue', () => new Bezier().getTFromValue(5, PS3.slice()), () => new BezierCurve().getTFromValue(5, PS3.slice())],
-    ['split', () => new Bezier().split(0.5, PS3.slice()), () => new BezierCurve().split(0.5, PS3.slice())],
-    ['merge', () => new Bezier().merge(PS2.slice(), PS2.slice()), () => new BezierCurve().merge(PS2.slice(), PS2.slice())],
+    ['linear', () => new Bezier().linear(T, 3, 9), () => bezierCurveLinear(T, 3, 9)],
+    ['linearDerivative', () => new Bezier().linearDerivative(T, 3, 9), () => bezierCurveLinearDerivative(T, 3, 9)],
+    ['linearSecondDerivative', () => new Bezier().linearSecondDerivative(T, 3, 9), () => bezierCurveLinearSecondDerivative(T, 3, 9)],
+    ['quadratic', () => new Bezier().quadratic(T, PS2[0], PS2[1], PS2[2]), () => bezierCurveQuadratic(T, PS2[0], PS2[1], PS2[2])],
+    ['quadraticDerivative', () => new Bezier().quadraticDerivative(T, PS2[0], PS2[1], PS2[2]), () => bezierCurveQuadraticDerivative(T, PS2[0], PS2[1], PS2[2])],
+    ['quadraticSecondDerivative', () => new Bezier().quadraticSecondDerivative(T, PS2[0], PS2[1], PS2[2]), () => bezierCurveQuadraticSecondDerivative(T, PS2[0], PS2[1], PS2[2])],
+    ['cubic', () => new Bezier().cubic(T, PS3[0], PS3[1], PS3[2], PS3[3]), () => bezierCurveCubic(T, PS3[0], PS3[1], PS3[2], PS3[3])],
+    ['cubicDerivative', () => new Bezier().cubicDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3]), () => bezierCurveCubicDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3])],
+    ['cubicSecondDerivative', () => new Bezier().cubicSecondDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3]), () => bezierCurveCubicSecondDerivative(T, PS3[0], PS3[1], PS3[2], PS3[3])],
+    ['bn (2 次)', () => new Bezier().bn(T, PS2.slice()), () => bezierCurveBn(T, PS2.slice())],
+    ['bn (4 次)', () => new Bezier().bn(T, PS4.slice()), () => bezierCurveBn(T, PS4.slice())],
+    ['bnDerivative', () => new Bezier().bnDerivative(T, PS4.slice()), () => bezierCurveBnDerivative(T, PS4.slice())],
+    ['bnSecondDerivative', () => new Bezier().bnSecondDerivative(T, [1, -3, 7]), () => bezierCurveBnSecondDerivative(T, [1, -3, 7])],
+    ['bnND (1 阶)', () => new Bezier().bnND(T, 1, PS4.slice()), () => bezierCurveBnND(T, 1, PS4.slice())],
+    ['bnND (2 阶)', () => new Bezier().bnND(T, 2, PS4.slice()), () => bezierCurveBnND(T, 2, PS4.slice())],
+    ['getValue', () => new Bezier().getValue(T, PS4.slice()), () => bezierCurveGetValue(T, PS4.slice())],
+    ['getDerivative', () => new Bezier().getDerivative(T, PS4.slice()), () => bezierCurveGetDerivative(T, PS4.slice())],
+    ['getSecondDerivative', () => new Bezier().getSecondDerivative(T, PS4.slice()), () => bezierCurveGetSecondDerivative(T, PS4.slice())],
+    ['getExtremums', () => new Bezier().getExtremums(PS3.slice()), () => bezierCurveGetExtremums(PS3.slice())],
+    ['getMonotoneIntervals', () => new Bezier().getMonotoneIntervals(PS3.slice()), () => bezierCurveGetMonotoneIntervals(PS3.slice())],
+    ['getTFromValue', () => new Bezier().getTFromValue(5, PS3.slice()), () => bezierCurveGetTFromValue(5, PS3.slice())],
+    ['split', () => new Bezier().split(0.5, PS3.slice()), () => bezierCurveSplit(0.5, PS3.slice())],
+    ['merge', () => new Bezier().merge(PS2.slice(), PS2.slice()), () => bezierCurveMerge(PS2.slice(), PS2.slice())],
 ];
 
 describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
@@ -99,7 +100,7 @@ describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
         //   curve/BezierCurve.ts  → [number, ...]  （数字数组）
         // 所以它被从"必须一致"的对照表里移出，改为在这里如实钉住，避免以后被误当成"回归"。
         const a = new Bezier().getSamples(PS3.slice(), 4);
-        const b = new BezierCurve().getSamples(PS3.slice(), 4);
+        const b = bezierCurveGetSamples(PS3.slice(), 4);
 
         expect(a.length).toBe(b.length);
         expect(typeof a[0]).toBe('number');     // Bezier 返回数字
@@ -111,9 +112,9 @@ describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
     it('★★ 两个单例（bezier / bezierCurve）与各自 new 出来的实例行为一致', () =>
     {
         expect(bezier.linear(T, 3, 9)).toBe(new Bezier().linear(T, 3, 9));
-        expect(bezierCurve.linear(T, 3, 9)).toBe(new BezierCurve().linear(T, 3, 9));
+        expect(bezierCurveLinear(T, 3, 9)).toBe(bezierCurveLinear(T, 3, 9));
         expect(bezier.bn(T, PS4.slice())).toBe(new Bezier().bn(T, PS4.slice()));
-        expect(bezierCurve.bn(T, PS4.slice())).toBe(new BezierCurve().bn(T, PS4.slice()));
+        expect(bezierCurveBn(T, PS4.slice())).toBe(bezierCurveBn(T, PS4.slice()));
     });
 
     describe('★★ 与标准伯恩斯坦闭式对照（避免"两边一起错"）', () =>
@@ -123,7 +124,7 @@ describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
             const expected = bernstein(1, T, [3, 9]);
 
             expect(new Bezier().linear(T, 3, 9)).toBeCloseTo(expected, 9);
-            expect(new BezierCurve().linear(T, 3, 9)).toBeCloseTo(expected, 9);
+            expect(bezierCurveLinear(T, 3, 9)).toBeCloseTo(expected, 9);
         });
 
         it('★ quadratic 与二次伯恩斯坦一致', () =>
@@ -131,7 +132,7 @@ describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
             const expected = bernstein(2, T, PS2);
 
             expect(new Bezier().quadratic(T, PS2[0], PS2[1], PS2[2])).toBeCloseTo(expected, 9);
-            expect(new BezierCurve().quadratic(T, PS2[0], PS2[1], PS2[2])).toBeCloseTo(expected, 9);
+            expect(bezierCurveQuadratic(T, PS2[0], PS2[1], PS2[2])).toBeCloseTo(expected, 9);
         });
 
         it('★ cubic 与三次伯恩斯坦一致', () =>
@@ -139,7 +140,7 @@ describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
             const expected = bernstein(3, T, PS3);
 
             expect(new Bezier().cubic(T, PS3[0], PS3[1], PS3[2], PS3[3])).toBeCloseTo(expected, 9);
-            expect(new BezierCurve().cubic(T, PS3[0], PS3[1], PS3[2], PS3[3])).toBeCloseTo(expected, 9);
+            expect(bezierCurveCubic(T, PS3[0], PS3[1], PS3[2], PS3[3])).toBeCloseTo(expected, 9);
         });
 
         it('★ bn 与标准伯恩斯坦一致（4 次）', () =>
@@ -147,16 +148,15 @@ describe('Bezier 与 BezierCurve 的一致性（两份重复实现）', () =>
             const expected = bernstein(4, T, PS4);
 
             expect(new Bezier().bn(T, PS4.slice())).toBeCloseTo(expected, 8);
-            expect(new BezierCurve().bn(T, PS4.slice())).toBeCloseTo(expected, 8);
+            expect(bezierCurveBn(T, PS4.slice())).toBeCloseTo(expected, 8);
         });
 
         it('★ bn 与 quadratic / cubic 在相同数据上一致（同族自洽）', () =>
         {
             const a = new Bezier();
-            const b = new BezierCurve();
 
             expect(a.bn(T, PS2.slice())).toBeCloseTo(a.quadratic(T, PS2[0], PS2[1], PS2[2]), 9);
-            expect(b.bn(T, PS3.slice())).toBeCloseTo(b.cubic(T, PS3[0], PS3[1], PS3[2], PS3[3]), 9);
+            expect(bezierCurveBn(T, PS3.slice())).toBeCloseTo(bezierCurveCubic(T, PS3[0], PS3[1], PS3[2], PS3[3]), 9);
         });
     });
 });
