@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref, onMounted } from 'vue';
-import { ParticleModule, ParticleSystem } from '@feng3d/particlesystem';
+import { ParticleSystem, type ParticleModuleLike } from '@feng3d/particlesystem';
 import ParticleComponentView from '../../components/ParticleComponentView.vue';
 
 const props = defineProps<{
@@ -44,14 +44,14 @@ const label = computed(() => {
 // 获取组件列表
 const components = computed(() => {
     const value = r_owner[props.name];
-    return (value as ParticleModule[]) || [];
+    return (value as ParticleModuleLike[]) || [];
 });
 
 // 组件视图引用
 const componentViewRefs = ref<InstanceType<typeof ParticleComponentView>[]>([]);
 
 // 获取组件唯一键
-function getComponentKey(component: ParticleModule, index: number) {
+function getComponentKey(component: ParticleModuleLike, index: number) {
     return `particle-module-${index}`;
 }
 
