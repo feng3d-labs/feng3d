@@ -30,6 +30,9 @@ import { getCheckerShaderWGSL } from '../packages/webgpu/examples/src/shaders-ts
 import { getSolidColorLitWGSL } from '../packages/webgpu/examples/src/shaders-tsl/solidColorLit';
 import { getCubemapSampleCubemapWGSL } from '../packages/webgpu/examples/src/shaders-tsl/cubemapSampleCubemap';
 import { getFractalCubeSampleSelfWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fractalCubeSampleSelf';
+import { getDeferredVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredVertexTextureQuad';
+import { getDeferredVertexWriteGBuffersWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredVertexWriteGBuffers';
+import { getCamerasCubeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/camerasCube';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -551,5 +554,41 @@ describe('cubemap / fractalCube 的片元着色器', () =>
         // 与手写逐字相同：select(1.0, 0.0, length(...) < 0.01)
         expect(wgsl).toContain('let f = select(1.0, 0.0, length(texColor.xyz - vec3<f32>(0.5)) < 0.01);');
         expect(wgsl).toContain('return (1.0 - f) * input.fragPosition + f * texColor;');
+    });
+});
+
+/**
+ * deferredRendering / cameras 的顶点着色器（TSL 版）离线验收。
+ */
+describe('deferredRendering / cameras 的着色器', () =>
+{
+    it('deferredRendering 全屏四边形：常量数组 + vertex_index', () =>
+    {
+        const wgsl = getDeferredVertexTextureQuadWGSL();
+        expect(wgsl).toContain('@builtin(vertex_index) vertexIndex: u32');
+        expect(wgsl).toContain('array<vec2<f32>, 6>(vec2<f32>(-1.0), vec2<f32>(1.0, -1.0)');
+        expect(wgsl).toContain('output.position = vec4<f32>(pos, 0.0, 1.0);');
+    });
+
+    it('deferredRendering G-Buffer 顶点：世界空间位置/法线 + uv', () =>
+    {
+        const wgsl = getDeferredVertexWriteGBuffersWGSL();
+        expect(wgsl).toContain('@group(0) @binding(0) var<uniform> uniforms: Uniforms;');
+        expect(wgsl).toContain('@group(0) @binding(1) var<uniform> camera: Camera;');
+        expect(wgsl).toContain('let fragPosition = (uniforms.modelMatrix * vec4<f32>(position, 1.0)).xyz;');
+        expect(wgsl).toContain('output.position = camera.viewProjectionMatrix * vec4<f32>(fragPosition, 1.0);');
+        expect(wgsl).toContain('output.fragNormal = normalize((uniforms.normalModelMatrix * vec4<f32>(normal, 1.0)).xyz);');
+        expect(wgsl).toContain('output.fragUV = uv;');
+    });
+
+    it('cameras/cube：两个入口 + 采样器展开顺序与手写相反', () =>
+    {
+        const shader = getCamerasCubeWGSL();
+        expect(shader.vertex).toContain('fn vertex_main(');
+        expect(shader.fragment).toContain('fn fragment_main(');
+        expect(shader.vertex).toContain('output.position = uniforms.modelViewProjectionMatrix * position;');
+        expect(shader.fragment).toContain('var myTexture_texture: texture_2d<f32>;');
+        expect(shader.fragment).toContain('var myTexture: sampler;');
+        expect(shader.fragment).toContain('return textureSample(myTexture_texture, myTexture, input.fragUV);');
     });
 });

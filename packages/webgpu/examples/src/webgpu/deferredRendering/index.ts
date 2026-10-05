@@ -7,8 +7,8 @@ import fragmentDeferredRendering from './fragmentDeferredRendering.wgsl';
 import fragmentGBuffersDebugView from './fragmentGBuffersDebugView.wgsl';
 import fragmentWriteGBuffers from './fragmentWriteGBuffers.wgsl';
 import lightUpdate from './lightUpdate.wgsl';
-import vertexTextureQuad from './vertexTextureQuad.wgsl';
-import vertexWriteGBuffers from './vertexWriteGBuffers.wgsl';
+import { getDeferredVertexTextureQuadWGSL } from '../../shaders-tsl/deferredVertexTextureQuad';
+import { getDeferredVertexWriteGBuffersWGSL } from '../../shaders-tsl/deferredVertexWriteGBuffers';
 
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, Buffer, RenderPass, RenderPassDescriptor, RenderPipeline, Submit, Texture, TextureView, VertexAttributes } from '@feng3d/webgpu';
@@ -86,7 +86,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const writeGBuffersPipeline: RenderPipeline = {
         vertex: {
-            code: vertexWriteGBuffers,
+            code: getDeferredVertexWriteGBuffersWGSL(),
         },
         fragment: {
             code: fragmentWriteGBuffers,
@@ -96,7 +96,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const gBuffersDebugViewPipeline: RenderPipeline = {
         vertex: {
-            code: vertexTextureQuad,
+            code: getDeferredVertexTextureQuadWGSL(),
         },
         fragment: {
             code: fragmentGBuffersDebugView,
@@ -109,7 +109,7 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
     };
     const deferredRenderPipeline: RenderPipeline = {
         vertex: {
-            code: vertexTextureQuad,
+            code: getDeferredVertexTextureQuadWGSL(),
         },
         fragment: {
             code: fragmentDeferredRendering,

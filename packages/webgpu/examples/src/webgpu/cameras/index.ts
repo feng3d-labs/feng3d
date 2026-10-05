@@ -2,7 +2,7 @@ import { GUI } from 'dat.gui';
 import { mat4, vec3 } from 'wgpu-matrix';
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
 import { ArcballCamera, WASDCamera } from './camera';
-import cubeWGSL from './cube.wgsl';
+import { getCamerasCubeWGSL } from '../../shaders-tsl/camerasCube';
 import { createInputHandler } from './input';
 
 import { reactive } from '@feng3d/reactivity';
@@ -11,6 +11,9 @@ import { WebGPU } from '@feng3d/webgpu';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 {
+    // 用 TSL 构建的着色器（懒构建，见 shaders-tsl/camerasCube）
+    const shader = getCamerasCubeWGSL();
+
     // The input handler
     const inputHandler = createInputHandler(window, canvas);
 
@@ -53,10 +56,10 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 
     const pipeline: RenderPipeline = {
         vertex: {
-            code: cubeWGSL,
+            code: shader.vertex,
         },
         fragment: {
-            code: cubeWGSL,
+            code: shader.fragment,
         },
         primitive: {
             topology: 'triangle-list',
@@ -101,8 +104,9 @@ const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
         uniforms: {
             value: { modelViewProjectionMatrix: new Float32Array(16) },
         },
-        mySampler: sampler,
-        myTexture: { texture: cubeTexture },
+        // TSL 展开：myTexture_texture（纹理）+ myTexture（采样器）
+        myTexture_texture: { texture: cubeTexture },
+        myTexture: sampler,
     };
 
     const renderObject: RenderObject = {
