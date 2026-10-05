@@ -14,7 +14,7 @@ export { var_ } from './variables/var';
 
 // shader - 着色器相关
 export { compute, Compute, type ComputeOptions, type WorkgroupSize, type WorkgroupSizeComponent } from './shader/compute';
-export { fragment } from './shader/fragment';
+export { type FragmentOptions, fragment } from './shader/fragment';
 export { transform } from './shader/transform';
 export { vertex } from './shader/vertex';
 export { func } from './shader/func';
@@ -88,6 +88,7 @@ export { clamp } from './math/common/clamp';
 export { saturate } from './math/common/saturate';
 export { fract } from './math/common/fract';
 export { max } from './math/common/max';
+export { min } from './math/common/min';
 export { mix } from './math/common/mix';
 export { smoothstep } from './math/common/smoothstep';
 export { step } from './math/common/step';

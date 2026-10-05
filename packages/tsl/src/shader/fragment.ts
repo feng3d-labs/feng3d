@@ -14,11 +14,27 @@ import { Vertex } from './vertex';
 /**
  * Fragment 类，继承自 Func
  */
+/** Fragment 的可选参数 */
+export interface FragmentOptions
+{
+    /**
+     * `override` 声明（名 → 默认值）。
+     *
+     * 生成 `override <name> = <value>;`，可由 WebGPU 的 pipeline `constants` 在运行期替换
+     * （与 compute 的做法一致）。
+     */
+    overrides?: Record<string, number | string>;
+}
+
 export class Fragment extends Func
 {
-    constructor(name: string, body: () => void)
+    /** 可选参数（override 声明等） */
+    readonly options: FragmentOptions;
+
+    constructor(name: string, body: () => void, options: FragmentOptions = {})
     {
         super(name, body);
+        this.options = options;
     }
 
     /**
@@ -273,6 +289,12 @@ export class Fragment extends Func
         {
 
             const lines: string[] = [];
+
+            // override 声明（可由 pipeline constants 在运行期替换）
+            for (const [name, value] of Object.entries(this.options.overrides ?? {}))
+            {
+                lines.push(`override ${name} = ${value};`);
+            }
 
             // 先执行 body 收集依赖（只收集依赖，不生成代码）
             this.executeBodyIfNeeded();
@@ -763,8 +785,8 @@ export class Fragment extends Func
  * @param body 函数体
  * @returns Fragment 实例
  */
-export function fragment(name: string, body: () => void): Fragment
+export function fragment(name: string, body: () => void, options?: FragmentOptions): Fragment
 {
-    return new Fragment(name, body);
+    return new Fragment(name, body, options);
 }
 
