@@ -283,6 +283,15 @@ P5 在这一步的角色不是"迁"，而是**登记进度 + 设一个可查的�
 > （`EditorRS.ts::ReadWriteFS`）。另补 `test/editorRS.spec.ts`（4 条：装配显式 / 幂等 /
 > 装完槽位真的指向它 / 模块顶层不再写全局）。
 >
+> **阶段 4b 第一批（2026-10-05）**：`Editor` 改成**构造注入** `EditorRS`
+> （`new Editor(rs)`）；装配点 `App.vue` 用的是 `installEditorResourceSystem()` 的
+> **返回值**，而**不是** import 单例——否则那只是"把引用挪个地方"，不叫去单例化
+> （第一版就是这么写的，实测引用数**从 45 涨到 46**，当场改掉）。
+>
+> 同批给门禁立了 **`EDITORRS_MAX_REFERENCES = 44`**：消费面**只减不增**，
+> 每批往下压一次——与 `EDITORDATA_MAX_REFERENCES` 同一条纪律（45 处不可能一次改完，
+> 没有上限时"顺手加一处 import"会把进度悄悄抹掉）。读数：**45 → 44 处**。
+>
 > **为什么"引用面归零"不能在同一步做完**：`ReadRS.rs` 是**引擎侧**的静态槽位
 > （`packages/assets/src/rs/ReadRS.ts:18` 就有 `static rs = new ReadRS()` **默认实例**），
 > 引擎内部多处直接读它（`AssetData.ts:20`、`FileAsset.ts:202`、`ReadRS.ts:221`）。
