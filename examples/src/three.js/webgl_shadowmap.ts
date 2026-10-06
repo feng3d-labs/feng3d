@@ -494,6 +494,10 @@ const textShapes = textFont.generateShapes('THREE.JS', 200);
 /** three.js: textMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, specular: 0xffffff }) */
 const textMaterial: StandardMaterial = {
     __type__: 'StandardMaterial',
+    // 与地面材质同一口径：three 在线性空间算光照、输出时再编码回 sRGB。
+    // 早先这里漏了这一项（地面有、文字没有），于是文字比 three 暗得多——
+    // 影子与暗红的字挤在同一亮度区间，看起来就像「没有阴影」。
+    linearLighting: true,
     uniforms: {
         u_diffuse: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
         // MeshPhongMaterial 的 specular 0xffffff → 本仓的高光色 + 适度光泽
