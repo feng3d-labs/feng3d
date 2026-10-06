@@ -15,9 +15,9 @@ export { var_ } from './variables/var';
 // shader - 着色器相关
 export { compute, Compute, type ComputeOptions, type WorkgroupSize, type WorkgroupSizeComponent } from './shader/compute';
 export { type FragmentOptions, fragment } from './shader/fragment';
-export { overrideF32, overrideI32, overrideU32 } from './shader/override';
+export { overrideBool, overrideF32, overrideI32, overrideU32 } from './shader/override';
 export { transform } from './shader/transform';
-export { vertex } from './shader/vertex';
+export { type VertexOptions, vertex } from './shader/vertex';
 export { func } from './shader/func';
 export type { FuncDefinitionSource, ShaderFuncCallable } from './shader/func';
 
@@ -61,6 +61,7 @@ export { dFdy } from './glsl/derivative/dFdy';
 export { continue_ } from './control/continue_';
 export { while_ } from './control/while_';
 export { switch_ } from './control/switch_';
+export { type Overrides, type OverrideValue } from './shader/overrides';
 export { type SwitchBuilder } from './control/switch_';
 export { discard } from './control/discard';
 export { forRange_, forU32_ } from './control/for_';

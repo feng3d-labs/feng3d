@@ -8,15 +8,27 @@ import { Func } from './func';
 import { Sampler } from '../glsl/sampler/sampler';
 import { Uniform } from '../variables/uniform';
 import { Varying } from '../variables/varying';
+import { buildOverrideLines, Overrides } from './overrides';
+
+/** Vertex 的可选参数 */
+export interface VertexOptions
+{
+    /** `override` 声明（名 → 值/类型），与 fragment / compute 一致 */
+    overrides?: Overrides;
+}
 
 /**
  * Vertex 类，继承自 Func
  */
 export class Vertex extends Func
 {
-    constructor(name: string, body: () => void)
+    /** 可选参数（override 声明等） */
+    readonly options: VertexOptions;
+
+    constructor(name: string, body: () => void, options: VertexOptions = {})
     {
         super(name, body);
+        this.options = options;
     }
 
     /**
@@ -159,6 +171,9 @@ export class Vertex extends Func
         return buildShader({ language: 'wgsl', stage: 'vertex', version: 1, convertDepth }, () =>
         {
             const lines: string[] = [];
+
+            // override 声明（与 fragment / compute 共用同一份生成逻辑）
+            lines.push(...buildOverrideLines(this.options.overrides));
 
             // 执行 body 收集依赖
             this.executeBodyIfNeeded();
@@ -598,7 +613,7 @@ export class Vertex extends Func
  * @param body 函数体
  * @returns Vertex 实例
  */
-export function vertex(name: string, body: () => void): Vertex
+export function vertex(name: string, body: () => void, options?: VertexOptions): Vertex
 {
-    return new Vertex(name, body);
+    return new Vertex(name, body, options);
 }

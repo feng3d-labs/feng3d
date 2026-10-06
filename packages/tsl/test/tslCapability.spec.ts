@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -669,5 +669,52 @@ describe('textureDimensions（#712，compute 的边界判断与 UV 归一化）'
         const out = storageTexture2D(uniform('fb', 0, 0), 'rgba8unorm');
 
         expect(textureDimensions(out, 1).toWGSL()).toBe('textureDimensions(fb, 1)');
+    });
+});
+
+describe('override 的三个入口共用一份生成逻辑（#712）', () =>
+{
+    it('vertex 支持 override（原先只有 fragment / compute 有）', () =>
+    {
+        const vs = vertex('vsmain', () =>
+        {
+            gl_Position.assign(vec4(0.0, 0.0, 0.0, 1.0));
+        }, { overrides: { scale: 2.0 } });
+
+        expect(vs.toWGSL()).toContain('override scale = 2;');
+    });
+
+    it('boolean override：override invertY = false;', () =>
+    {
+        const vs = vertex('vsmain', () =>
+        {
+            gl_Position.assign(vec4(0.0, 0.0, 0.0, 1.0));
+        }, { overrides: { invertY: false, premultiplyAlpha: false } });
+        const w = vs.toWGSL();
+
+        expect(w).toContain('override invertY = false;');
+        expect(w).toContain('override premultiplyAlpha = false;');
+    });
+
+    it('只声明类型（无值）与带类型有值两种形态', () =>
+    {
+        const vs = vertex('vsmain', () =>
+        {
+            gl_Position.assign(vec4(0.0, 0.0, 0.0, 1.0));
+        }, { overrides: { sizeX: { type: 'u32' }, sizeY: { type: 'f32', value: '1024.0' } } });
+        const w = vs.toWGSL();
+
+        expect(w).toContain('override sizeX: u32;');
+        expect(w).toContain('override sizeY: f32 = 1024.0;');
+    });
+
+    it('compute 的 override 也走同一份逻辑', () =>
+    {
+        const c = compute('main', [1, 1, 1], () =>
+        {
+            return_();
+        }, { overrides: { flag: false } });
+
+        expect(c.toWGSL()).toContain('override flag = false;');
     });
 });
