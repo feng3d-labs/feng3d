@@ -1530,8 +1530,34 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         const expanded = expandIndicesToTriangles(indices, prim.mode === undefined ? MODE_TRIANGLES : prim.mode);
         indices = expanded.indices;
 
+        // 顶点色（COLOR_0）：glTF 的材质因子/纹理之外，颜色还可以来自逐顶点色。
+        //
+        // 实测教训：本仓原先这里**无条件写白**（1,1,1,1），而 Horse/Stork/Flamingo/Parrot 这些
+        // glTF 的材质只有 `pbrMetallicRoughness: { metallicFactor: 0, roughnessFactor: 1 }`（白色、无纹理），
+        // 颜色**全在 COLOR_0 里**——于是动物渲染出来是一团灰剪影（片元着色器的 `v_color * finalColor` 乘的是白，
+        // 但 three 的材质会自动乘顶点色）。
+        //
+        // `readAccessor` 已按 glTF 规范处理 `normalized`（整数分量会除到 0..1），所以这里直接用。
         const colors: number[] = [];
-        for (let i = 0; i < vertexCount; i++) colors.push(1, 1, 1, 1);
+        const colorAccessor = prim.attributes.COLOR_0;
+        if (colorAccessor !== undefined)
+        {
+            const raw = readAccessor(colorAccessor);
+            // COLOR_0 允许 VEC3 或 VEC4；VEC3 时补 alpha = 1
+            const components = vertexCount > 0 ? Math.round(raw.length / vertexCount) : 0;
+            if (components === 3 || components === 4)
+            {
+                for (let i = 0; i < vertexCount; i++)
+                {
+                    const o = i * components;
+                    colors.push(raw[o], raw[o + 1], raw[o + 2], components === 4 ? raw[o + 3] : 1);
+                }
+            }
+        }
+        if (colors.length === 0)
+        {
+            for (let i = 0; i < vertexCount; i++) colors.push(1, 1, 1, 1);
+        }
 
         const geo: CustomGeometry = { __type__: 'CustomGeometry' };
         // 顶点数据通过响应式数据接口写入（logic 字段只读）
