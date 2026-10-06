@@ -32,12 +32,16 @@ const view: View = {
         }, {
             __type__: 'Object3D',
             name: 'light1',
-            rotation: { x: Math.PI / 2, y: 0, z: 0 },
+            // 光源方向 = 物体本地 -Z 的世界方向；绕 X 轴 -90° 让本地 +Z 指向世界 +Y，
+            // 于是光从上往下照（原值 +90° 会让光朝上，地面无法被照亮）
+            rotation: { x: -Math.PI / 2, y: 0, z: 0 },
             components: [{
                 __type__: 'DirectionalLight',
                 intensity: 0.7,
                 color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
                 shadowType: 1,
+                // 阴影偏移（原值缺省 = 0 → 严重的 self-shadowing 条纹）
+                shadowBias: 0.01,
             }],
         // }, {
         //     __type__: 'Object3D',
