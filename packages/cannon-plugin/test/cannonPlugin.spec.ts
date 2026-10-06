@@ -439,6 +439,106 @@ describe('cannon-plugin：物理世界', () =>
         }
     });
 
+    it('raycastClosest 命中球体，给出命中点、法线与被命中的 Object3D', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld', gravity: { x: 0, y: 0, z: 0 } }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Target',
+                components: [{ __type__: 'SphereCollider', radius: 1 }, { __type__: 'Rigidbody', mass: 1 }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        physicsWorldLogic.update(1000 / 60);
+
+        const result = physicsWorldLogic.raycastClosest({ x: -5, y: 0, z: 0 }, { x: 5, y: 0, z: 0 });
+
+        expect(result.hasHit).toBe(true);
+        // 从左边打过去，命中点应该在球的左半边
+        expect(result.hitPoint.x).toBeLessThan(0);
+        expect(result.object?.name).toBe('Target');
+
+        // 打偏了就不该命中
+        const miss = physicsWorldLogic.raycastClosest({ x: -5, y: 20, z: 0 }, { x: 5, y: 20, z: 0 });
+        expect(miss.hasHit).toBe(false);
+    });
+
+    it('onAfterStep 在每个物理步之后各回调一次', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld', gravity: { x: 0, y: -10, z: 0 } }],
+            children: [{
+                __type__: 'Object3D',
+                components: [{ __type__: 'SphereCollider', radius: 1 }, { __type__: 'Rigidbody', mass: 1 }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+        let steps = 0;
+        const off = physicsWorldLogic.onAfterStep(() => { steps++; });
+
+        physicsWorldLogic.update(1000 / 60);
+        physicsWorldLogic.update(1000 / 60);
+        expect(steps).toBe(2);
+
+        // 退订之后不再回调
+        off();
+        physicsWorldLogic.update(1000 / 60);
+        expect(steps).toBe(2);
+    });
+
+    it('collisionResponse: false 落到刚体上（标记点照常检测但不被推开）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                components: [
+                    { __type__: 'ParticleCollider' },
+                    { __type__: 'Rigidbody', mass: 1, collisionResponse: false },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        physicsWorldLogic.update(1000 / 60);
+
+        const rigidbodyLogic = logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
+
+        expect(rigidbodyLogic.body.collisionResponse).toBe(false);
+    });
+
+    it('SPHParticle 的 materialName 会套到粒子刚体上', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld', materials: [{ name: 'fluid', friction: 0.06 }] }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'SPH',
+                components: [{ __type__: 'SPHSystem' }],
+            }, {
+                __type__: 'Object3D',
+                position: { x: 0, y: 1, z: 0 },
+                components: [{ __type__: 'SPHParticle', mass: 0.01, materialName: 'fluid' }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        physicsWorldLogic.update(1000 / 60);
+
+        const particleBody = [...physicsWorldLogic.world.bodies].find((body) => Math.abs(body.mass - 0.01) < 1e-9);
+        expect(particleBody).toBeDefined();
+        expect(particleBody?.material?.name).toBe('fluid');
+        expect(particleBody?.material?.friction).toBe(0.06);
+    });
+
     it('applyLocalForce 施加局部力：带偏移时产生角速度（对应 impulses.html 的 Local force 幕）', () =>
     {
         const object3D: Object3D = {

@@ -85,6 +85,14 @@ export interface Rigidbody extends Behaviour
     /** 是否触发器（照常报告接触，但不产生碰撞响应——用于"穿过并触发"） */
     readonly isTrigger?: boolean;
 
+    /**
+     * 是否参与碰撞**响应**（缺失时 true）。
+     *
+     * 置 false 时刚体照常参与检测（能收到 collide 事件），但不会被推开——
+     * 原版 `trimesh.html` 的 "Raycasting" 幕用一批这种"标记点"来显示射线命中的位置。
+     */
+    readonly collisionResponse?: boolean;
+
     /** 线性阻尼（缺失时用 cannon-es 默认 0.01） */
     readonly linearDamping?: number;
 
@@ -120,6 +128,9 @@ export interface RigidbodyLogic extends BehaviourLogic
 
     /** 该刚体声明的材质名（未声明时 undefined） */
     readonly materialName: string | undefined;
+
+    /** 该刚体声明的"是否参与碰撞响应"（未声明时 undefined = 按 cannon-es 默认） */
+    readonly collisionResponse: boolean | undefined;
 
     /**
      * 施加**持续的力**（cannon-es 每次 step 后会把力清零，所以要持续就得每帧调用）。
@@ -192,6 +203,7 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
         get friction() { return data.friction; },
         get restitution() { return data.restitution; },
         get materialName() { return data.materialName; },
+        get collisionResponse() { return data.collisionResponse; },
         applyForce(force, relativePoint)
         {
             body.applyForce(
