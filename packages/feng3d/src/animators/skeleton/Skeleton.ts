@@ -1,7 +1,7 @@
 import { mat4Copy, mat4Identity, mat4Prepend, Matrix4x4 } from '@feng3d/math';
 import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
 import { Component3D, Component3DLogic, createComponentLogicBase } from '../../component/Component';
-import type { Object3D } from '../../core/Object3D';
+import type { Object3D, Object3DLogic } from '../../core/Object3D';
 
 declare module '../../component/Component'
 {
@@ -55,6 +55,38 @@ function findBoneByName(root: Object3D, name: string): Object3D | null
     }
 
     return null;
+}
+
+/**
+ * 在实体所在**整棵对象树**里按名字找骨骼。
+ *
+ * 先搜 Skeleton 自身的子树（既有行为）；搜不到时上溯到对象树根，再做一次**全树**搜索——
+ * glTF 的 `joints` 常与引用 skin 的节点**同层**（实测 `whale.glb`：Skeleton 挂在 `orca`，
+ * 6 根 `Bone*` 是它的兄弟节点，同在 `Armature.001` 下），只搜子树会一根都找不到、
+ * `globalMatrices` 恒为单位矩阵（蒙皮完全不动，且不报错——最难排查的那种）。
+ *
+ * 上溯时父级 logic 可能**正在构造中**（读它的 getter 都是 undefined），取不到就停，
+ * 与 `Object3D.getParentLogic` 同一口径。
+ *
+ * @param entity Skeleton 所在的实体
+ * @param name 骨骼名称
+ */
+function findBoneFrom(entity: Object3D, name: string): Object3D | null
+{
+    const local = findBoneByName(entity, name);
+    if (local) return local;
+
+    let top: Object3D = entity;
+    for (;;)
+    {
+        const topLogic = getLogic(top) as Object3DLogic | undefined;
+        const parent = topLogic?.parent;
+
+        if (!parent) break;
+        top = parent;
+    }
+
+    return top === entity ? null : findBoneByName(top, name);
 }
 
 /**
@@ -118,7 +150,7 @@ export function skeletonLogic(data: Skeleton): SkeletonLogic
             {
                 // 阶段 C-e：`Matrix4x4` 的 class 已删除，新建即「单位矩阵字面量 + 判别字段」
                 const matrix = globalMatrices[i] ?? (globalMatrices[i] = { __type__: 'Matrix4x4', ...mat4Identity() });
-                const bone = findBoneByName(root, boneNames[i]);
+                const bone = findBoneFrom(root, boneNames[i]);
                 const boneInverse = boneInverses[i];
 
                 // 骨骼或逆矩阵缺失时保持单位矩阵：宁可"这一根骨骼不动"，也不要像旧实现那样抛
