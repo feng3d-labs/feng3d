@@ -18,6 +18,13 @@ export interface DebugShadowMapUniforms
 {
     /** 阴影图纹理尺寸（像素） */
     readonly u_texSize: { x: number; y: number };
+    /**
+     * 是否反相输出（1 = 输出 `1 - depth`）。
+     *
+     * three 的 `ShadowMapViewer` 用 `UnpackDepthRGBAShader`，它输出的就是 `1 - depth`；
+     * 复刻该 HUD 时把它设为 1。缺省 0 保持既有示例（直接输出深度）的行为。
+     */
+    readonly u_invert?: number;
 }
 
 /**

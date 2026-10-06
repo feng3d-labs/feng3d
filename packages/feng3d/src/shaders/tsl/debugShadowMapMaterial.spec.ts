@@ -41,6 +41,9 @@ describe('DebugShadowMapMaterial 的 TSL 着色器', () =>
         // '>=' 对 NaN 为 false，所以 NaN → 0，与手写一致。
         expect(shader.fragment).toContain('depth = select(0.0, depth, depth >= 0.0);');
         expect(shader.fragment).toContain('depth = select(1.0, depth, depth <= 1.0);');
-        expect(shader.fragment).toContain('return vec4<f32>(depth, depth, depth, 1.0);');
+        // u_invert = 1 时输出 1 - depth（three 的 ShadowMapViewer 用的 UnpackDepthRGBAShader 就是它）
+        expect(shader.fragment).toContain('u_invert: f32');
+        expect(shader.fragment).toContain('let gray = mix(depth, 1.0 - depth, material_uniforms.u_invert);');
+        expect(shader.fragment).toContain('return vec4<f32>(gray, gray, gray, 1.0);');
     });
 });
