@@ -439,6 +439,30 @@ describe('cannon-plugin：物理世界', () =>
         }
     });
 
+    it('applyLocalForce 施加局部力：带偏移时产生角速度（对应 impulses.html 的 Local force 幕）', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld', gravity: { x: 0, y: 0, z: 0 } }],
+            children: [{
+                __type__: 'Object3D',
+                components: [{ __type__: 'SphereCollider', radius: 1 }, { __type__: 'Rigidbody', mass: 2 }],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        const rigidbodyLogic = logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
+
+        physicsWorldLogic.update(1000 / 60);
+
+        // 局部力作用在局部球顶（0,1,0）上 → 既有平动也有绕 Z 的转动
+        rigidbodyLogic.applyLocalForce({ x: -500, y: 0, z: 0 }, { x: 0, y: 1, z: 0 });
+        physicsWorldLogic.update(1000 / 60);
+
+        expect(rigidbodyLogic.body.velocity.x).toBeLessThan(0);
+        expect(Math.abs(rigidbodyLogic.body.angularVelocity.z)).toBeGreaterThan(0);
+    });
+
     it('onEndCollide 订阅"结束接触"：穿过触发器时会收到离开事件', () =>
     {
         const object3D: Object3D = {

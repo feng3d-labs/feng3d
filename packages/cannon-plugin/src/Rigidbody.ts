@@ -125,8 +125,20 @@ export interface RigidbodyLogic extends BehaviourLogic
      * 施加**持续的力**（cannon-es 每次 step 后会把力清零，所以要持续就得每帧调用）。
      *
      * @param force 世界坐标下的力
+     * @param relativePoint 相对刚体质心的施力点（缺失时按质心处理 = 只平动）；给偏移会产生力矩
      */
-    applyForce(force: Vector3Like): void;
+    applyForce(force: Vector3Like, relativePoint?: Vector3Like): void;
+
+    /**
+     * 施加**局部坐标系下的力**（对应 cannon-es 的 applyLocalForce）。
+     *
+     * 与原版 `impulses.html` 的 "Local force" 幕对应：那里把球绕 Z 转了 180°，
+     * 于是"局部球顶"在世界上是底部——同一个局部力方向也就反了过来。
+     *
+     * @param localForce 刚体局部坐标下的力
+     * @param localPoint 刚体局部坐标下的施力点（缺失时按质心处理）
+     */
+    applyLocalForce(localForce: Vector3Like, localPoint?: Vector3Like): void;
 
     /**
      * 施加力矩。
@@ -180,7 +192,18 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
         get friction() { return data.friction; },
         get restitution() { return data.restitution; },
         get materialName() { return data.materialName; },
-        applyForce(force) { body.applyForce(new Vec3(force.x, force.y, force.z)); },
+        applyForce(force, relativePoint)
+        {
+            body.applyForce(
+                new Vec3(force.x, force.y, force.z),
+                relativePoint === undefined ? undefined : new Vec3(relativePoint.x, relativePoint.y, relativePoint.z));
+        },
+        applyLocalForce(localForce, localPoint)
+        {
+            body.applyLocalForce(
+                new Vec3(localForce.x, localForce.y, localForce.z),
+                localPoint === undefined ? undefined : new Vec3(localPoint.x, localPoint.y, localPoint.z));
+        },
         applyTorque(torque) { body.applyTorque(new Vec3(torque.x, torque.y, torque.z)); },
         applyImpulse(impulse, relativePoint)
         {
