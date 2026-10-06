@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 110 个类型 / 673 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 111 个类型 / 681 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -363,6 +363,16 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'gradient', type: 'Gradient', control: 'Object', readonly: true, typeNames: ['Gradient'] },
         { name: 'gradientMin', type: 'Gradient', control: 'Object', readonly: true, typeNames: ['Gradient'] },
         { name: 'gradientMax', type: 'Gradient', control: 'Object', readonly: true, typeNames: ['Gradient'] },
+    ],
+    'MorphMeshRenderer': [
+        { name: 'geometry', type: 'Geometrys', control: 'Object', optional: true, readonly: true, typeNames: ['CustomGeometry', 'PointGeometry', 'SegmentGeometry', 'CapsuleGeometry', 'CylinderGeometry', 'ConeGeometry', 'CubeGeometry', 'PlaneGeometry', 'QuadGeometry', 'SphereGeometry', 'TorusGeometry', 'TerrainGeometry'] },
+        { name: 'material', type: 'Materials', control: 'Object', optional: true, readonly: true, typeNames: ['ColorMaterial', 'DebugShadowMapMaterial', 'NormalMaterial', 'ParticleMaterial', 'PointMaterial', 'ProjectedShadowMaterial', 'SegmentMaterial', 'StandardMaterial', 'TextureMaterial', 'TerrainMaterial'] },
+        { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'morphWeights', type: 'readonly number[]', control: 'Array', optional: true, readonly: true, itemControl: 'number' },
+        { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
     'NormalMaterial': [
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },

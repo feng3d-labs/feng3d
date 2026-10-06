@@ -13,16 +13,17 @@
  *
  * 构建结果懒加载并缓存（模块顶层不执行构建，见 AGENTS.md §15 R2）。
  */
-import { attribute, cross, float, func, gl_Position, let_, mat4, normalize, struct, uniform, varying, vec2, vec3, vec4, vertex } from '@feng3d/tsl';
+import { attribute, cross, float, func, gl_Position, gl_VertexID, let_, mat4, normalize, struct, uniform, varying, vec2, vec3, vec4, vertex } from '@feng3d/tsl';
 import { createCameraUniforms, createGlobalUniforms, createTransformUniforms } from './uniforms';
 import { createSkeletonUniforms, createSkinPositionFunc } from './skeleton';
+import { createMorphPositionFunc, createMorphUniforms } from './morph';
 
 type Vec2Value = ReturnType<typeof vec2>;
 type Vec3Value = ReturnType<typeof vec3>;
 type Vec4Value = ReturnType<typeof vec4>;
 
-/** 懒构建缓存（非蒙皮 / 蒙皮两份） */
-let cached: { standard: string; skinned: string } | null = null;
+/** 懒构建缓存（标准 / 蒙皮 / morph 三份） */
+let cached: { standard: string; skinned: string; morph: string } | null = null;
 
 /**
  * 获取标准材质顶点着色器（非蒙皮）。
@@ -33,7 +34,7 @@ export function getStandardVertexWGSL(): string
 {
     if (cached === null)
     {
-        cached = { standard: buildStandardVertexWGSL(false), skinned: buildStandardVertexWGSL(true) };
+        cached = buildAllStandardVertexWGSL();
     }
 
     return cached.standard;
@@ -48,19 +49,47 @@ export function getStandardSkinnedVertexWGSL(): string
 {
     if (cached === null)
     {
-        cached = { standard: buildStandardVertexWGSL(false), skinned: buildStandardVertexWGSL(true) };
+        cached = buildAllStandardVertexWGSL();
     }
 
     return cached.skinned;
 }
 
 /**
+ * 获取标准材质顶点着色器（morph 变体，阶段 C）。
+ *
+ * 顶点位置先经 `morphPosition`（按 morph target 权重加权 delta），其余与标准版完全共用。
+ *
+ * @returns WGSL 文本
+ */
+export function getStandardMorphVertexWGSL(): string
+{
+    if (cached === null)
+    {
+        cached = buildAllStandardVertexWGSL();
+    }
+
+    return cached.morph;
+}
+
+/** 一次构建三个变体（缓存填充） */
+function buildAllStandardVertexWGSL(): { standard: string; skinned: string; morph: string }
+{
+    return {
+        standard: buildStandardVertexWGSL(false, false),
+        skinned: buildStandardVertexWGSL(true, false),
+        morph: buildStandardVertexWGSL(false, true),
+    };
+}
+
+/**
  * 构建标准材质顶点着色器。
  *
  * @param skinned 是否蒙皮变体
+ * @param morphed 是否 morph target 变体（本批不与蒙皮组合：morph 模型都没有骨骼）
  * @returns WGSL 文本
  */
-function buildStandardVertexWGSL(skinned: boolean): string
+function buildStandardVertexWGSL(skinned: boolean, morphed: boolean): string
 {
     const transform = createTransformUniforms();
     const camera = createCameraUniforms();
@@ -112,6 +141,14 @@ function buildStandardVertexWGSL(skinned: boolean): string
         skinWeights1 = vec4(attribute('a_skinWeights1', 8));
     }
 
+    // morph target：声明 uniform + morphPosition 函数（顶点位置按权重加权 delta）
+    let morphPositionFn = null as ReturnType<typeof func> | null;
+    if (morphed)
+    {
+        void createMorphUniforms;
+        morphPositionFn = createMorphPositionFunc();
+    }
+
     const shader = vertex('main', () =>
     {
         void shadowData;
@@ -127,7 +164,15 @@ function buildStandardVertexWGSL(skinned: boolean): string
                 skinIndices1 as Vec4Value, skinWeights1 as Vec4Value,
             ));
         }
-        const position = (skinned ? skinnedPosition : localPosition) as Vec4Value;
+        let position = (skinned ? skinnedPosition : localPosition) as Vec4Value;
+
+        // morph target：顶点位置 = 原位置 + Σᵢ wᵢ × deltaᵢ（gl_VertexID 用来索引 delta）
+        if (morphed)
+        {
+            const morphCall = morphPositionFn as unknown as (p: Vec4Value, vertexIndex: unknown) => Vec4Value;
+
+            position = let_('morphedPosition', morphCall(position, gl_VertexID));
+        }
 
         // worldposition_vert
         const worldPosition = let_('worldPosition', transform.u_modelMatrix.multiply(position));
