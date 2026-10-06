@@ -8,10 +8,10 @@ describe('textureInvertYPremultiplyAlpha 的着色器（TSL）', () =>
 {
     const shader = getTextureInvertYPremultiplyAlphaWGSL();
 
-    it('两个 boolean override（手写是 override invertY = false;）', () =>
+    it('两个 u32 override（原手写是 bool，但 WebGPU constants 只能传 number，无法覆盖 bool）', () =>
     {
-        expect(shader.vertex).toContain('override invertY = false;');
-        expect(shader.vertex).toContain('override premultiplyAlpha = false;');
+        expect(shader.vertex).toContain('override invertY: u32 = 0u;');
+        expect(shader.vertex).toContain('override premultiplyAlpha: u32 = 0u;');
     });
 
     it('纹理与采样器成对声明（texture@0 + sampler@1）且是过滤采样', () =>
@@ -24,13 +24,13 @@ describe('textureInvertYPremultiplyAlpha 的着色器（TSL）', () =>
 
     it('invertY 在顶点里翻转 vUV.y（分量赋值）', () =>
     {
-        expect(shader.vertex).toContain('if (invertY) {');
+        expect(shader.vertex).toContain('if ((invertY == 1u)) {');
         expect(shader.vertex).toContain('output.vUV.y = 1.0 - output.vUV.y;');
     });
 
     it('premultiplyAlpha 在片元里预乘 alpha', () =>
     {
-        expect(shader.fragment).toContain('if (premultiplyAlpha) {');
+        expect(shader.fragment).toContain('if ((premultiplyAlpha == 1u)) {');
         expect(shader.fragment).toContain('let a = color.w;');
         expect(shader.fragment).toContain('color = vec4<f32>(color.x * a, color.y * a, color.z * a, a);');
     });
