@@ -22,6 +22,7 @@ export * from './component/OutLine';
 export * from './component/Wireframe';
 export * from './controllers/ControllerBase';
 export * from './controllers/FPSController';
+export * from './controllers/FirstPersonControls';
 export * from './controllers/HoverController';
 export * from './controllers/LookAtController';
 export * from './controllers/OrbitControls';
