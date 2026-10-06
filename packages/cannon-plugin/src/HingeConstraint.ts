@@ -41,6 +41,12 @@ export interface HingeConstraint extends Constraint
     readonly pivotB?: Vector3Like;
     /** 最大约束力（缺失时用 cannon-es 的默认） */
     readonly maxForce?: number;
+
+    /** 是否启用马达（缺失时 false）；启用后绕轴以 {@link motorSpeed} 主动转动 */
+    readonly enableMotor?: boolean;
+
+    /** 马达转速（弧度/秒；仅在 enableMotor 为 true 时生效） */
+    readonly motorSpeed?: number;
 }
 
 /**
@@ -69,13 +75,25 @@ function toVec3(v: Vector3Like | undefined): Vec3 | undefined
 export function hingeConstraintLogic(data: HingeConstraint): HingeConstraintLogic
 {
     const { state, members } = createConstraintLogicBase(data);
-    state.createConstraint = (bodyA, bodyB) => new CannonHingeConstraint(bodyA, bodyB, {
-        axisA: toVec3(data.axisA),
-        axisB: toVec3(data.axisB),
-        pivotA: toVec3(data.pivotA),
-        pivotB: toVec3(data.pivotB),
-        maxForce: data.maxForce,
-    });
+    state.createConstraint = (bodyA, bodyB) =>
+    {
+        const hinge = new CannonHingeConstraint(bodyA, bodyB, {
+            axisA: toVec3(data.axisA),
+            axisB: toVec3(data.axisB),
+            pivotA: toVec3(data.pivotA),
+            pivotB: toVec3(data.pivotB),
+            maxForce: data.maxForce,
+        });
+
+        // 马达（原版 hinge.html 的 Car 幕用它驱动后轮）
+        if (data.enableMotor === true)
+        {
+            hinge.enableMotor();
+            hinge.setMotorSpeed(data.motorSpeed ?? 0);
+        }
+
+        return hinge;
+    };
 
     const logic: HingeConstraintLogic = {
         get component() { return members.component; },

@@ -3,7 +3,7 @@
 import 'feng3d';
 import { Object3D, reactive } from 'feng3d';
 import { logic } from '@feng3d/reactivity';
-import { Box, ConvexPolyhedron, Cylinder, Heightfield, Particle, Plane, Sphere, Trimesh } from 'cannon-es';
+import { Body, Box, ConvexPolyhedron, Cylinder, Heightfield, HingeConstraint as CannonHingeConstraint, Particle, Plane, Sphere, Trimesh } from 'cannon-es';
 import { describe, expect, it } from 'vitest';
 import '../src/index';
 import type { BoxCollider } from '../src/BoxCollider';
@@ -18,6 +18,8 @@ import type { TrimeshCollider } from '../src/TrimeshCollider';
 import type { ConvexCollider } from '../src/ConvexCollider';
 import type { HeightfieldCollider } from '../src/HeightfieldCollider';
 import type { ParticleCollider } from '../src/ParticleCollider';
+import type { ConeTwistConstraint } from '../src/ConeTwistConstraint';
+import type { HingeConstraint, HingeConstraintLogic } from '../src/HingeConstraint';
 import type { Vehicle } from '../src/Vehicle';
 import type { SPHParticle } from '../src/SPHParticle';
 import type { SPHSystem } from '../src/SPHSystem';
@@ -436,6 +438,53 @@ describe('cannon-plugin：物理世界', () =>
 
             expect(physicsWorldLogic.world.constraints.length, type).toBe(1);
         }
+    });
+
+    it('ConeTwistConstraint 与其它约束同构地连接两端刚体', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Upper',
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 0 }],
+            }, {
+                __type__: 'Object3D',
+                name: 'Lower',
+                position: { x: 0, y: -2, z: 0 },
+                components: [
+                    { __type__: 'BoxCollider' },
+                    { __type__: 'Rigidbody', mass: 1 },
+                    { __type__: 'ConeTwistConstraint', targetName: 'Upper', angle: Math.PI / 4, twistAngle: Math.PI / 8 },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+        physicsWorldLogic.update(1000 / 60);
+
+        expect(physicsWorldLogic.world.constraints.length).toBe(1);
+    });
+
+    it('HingeConstraint 的 enableMotor / motorSpeed 真的落到 cannon-es 的马达上', () =>
+    {
+        const data = {
+            __type__: 'HingeConstraint',
+            targetName: 'Frame',
+            enableMotor: true,
+            motorSpeed: -14,
+        } as unknown as HingeConstraint;
+        const hingeLogic = logic(data) as HingeConstraintLogic;
+        const bodyA = new Body({ mass: 0 });
+        const bodyB = new Body({ mass: 1 });
+
+        const hinge = hingeLogic.createConstraint?.(bodyA, bodyB) as CannonHingeConstraint;
+
+        expect(hinge).toBeInstanceOf(CannonHingeConstraint);
+        expect((hinge as unknown as { motorEquation: { enabled: boolean; targetVelocity: number } }).motorEquation.enabled).toBe(true);
+        expect((hinge as unknown as { motorEquation: { targetVelocity: number } }).motorEquation.targetVelocity).toBe(-14);
     });
 
     it('Spring 走"步进前钩子"：被它吊住的刚体不会自由落体', () =>
