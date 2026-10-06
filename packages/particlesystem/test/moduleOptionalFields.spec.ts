@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { minMaxCurveDefault } from '@feng3d/math';
 import { logic } from 'feng3d';
 import type { Object3D } from 'feng3d';
+import { ParticleSystemSubEmitterProperties } from '../src/enums/ParticleSystemSubEmitterProperties';
+import { ParticleSystemSubEmitterType } from '../src/enums/ParticleSystemSubEmitterType';
 import { particleSystemLogic, type ParticleSystem } from '../src/ParticleSystem';
 
 /**
@@ -73,5 +75,29 @@ describe('模块字段可选化 + logic 补默认', () =>
         expect(system.main!.startSize3D!.yCurve!.constant).toBe(1);
         expect(system.main!.startSize3D!.yCurve!.between0And1).toBe(true);
         expect(system.main!.startSize3D!.zCurve).toBeDefined();
+    });
+    it('对象引用字段不会被深合并拷贝（子发射器 / 形状网格）', () =>
+    {
+        // 子发射器：这是一个**引用**字段，深合并造出的副本没有 logic（副本没有 object3D），
+        // 触发时会崩在 `getLogic(null)` 上——所以补默认必须保住用户传入的同一引用。
+        const subSystem = { __type__: 'ParticleSystem' } as unknown as ParticleSystem;
+        const mesh = { __type__: 'CubeGeometry' } as never;
+        const system = {
+            __type__: 'ParticleSystem',
+            shape: { shapeType: 0, mesh },
+            subEmitters: {
+                enabled: true,
+                subEmitters: [{ subEmitter: subSystem, type: ParticleSystemSubEmitterType.Birth, properties: ParticleSystemSubEmitterProperties.InheritNothing, emitProbability: 1 }],
+            },
+        } as unknown as ParticleSystem;
+
+        particleSystemLogic(system);
+
+        // 引用保持同一身份
+        expect(system.subEmitters!.subEmitters![0].subEmitter).toBe(subSystem);
+        expect(system.shape!.mesh).toBe(mesh);
+        // 条目里没写的字段仍然被补默认
+        expect(system.subEmitters!.subEmitters![0].emitProbability).toBe(1);
+        expect(system.subEmitters!.subEmitters![0].type).toBe(ParticleSystemSubEmitterType.Birth);
     });
 });
