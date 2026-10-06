@@ -35,6 +35,20 @@ export interface StorageBufferOptions<T extends ShaderValue>
      * （gameOfLife 的 `size` 就是这种形态）。
      */
     array?: boolean;
+    /**
+     * 地址空间（默认 `'storage'`）。
+     *
+     * 设为 `'workgroup'` 时声明为**工作组共享内存**：`var<workgroup> local_data: array<u32, 256>;`
+     * ——**没有 `@group/@binding`**，只在 compute 里可见，同一工作组的调用共享它。
+     * 写入后读之前要 `workgroupBarrier()`。
+     */
+    addressSpace?: 'storage' | 'workgroup';
+    /**
+     * 是否声明为**原子类型**（`atomic<u32>`）。
+     *
+     * 原子变量**不能直接读写**，要用 {@link atomicAdd} / {@link atomicLoad} 等操作访问。
+     */
+    atomic?: boolean;
 }
 
 /**
@@ -75,6 +89,12 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
     /** 是否按数组声明 */
     readonly isArray: boolean;
 
+    /** 地址空间（storage / workgroup） */
+    readonly addressSpace: 'storage' | 'workgroup';
+
+    /** 是否声明为原子类型（atomic<T>） */
+    readonly isAtomic: boolean;
+
     private _autoBinding?: number;
 
     /** 元素工厂（用于 `index()` 生成元素实例） */
@@ -91,6 +111,8 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
         this.binding = options.binding;
         this.length = options.length;
         this.isArray = options.array !== false;
+        this.addressSpace = options.addressSpace ?? 'storage';
+        this.isAtomic = options.atomic === true;
 
         const elementType = options.elementType;
         if (isStructConstructor(elementType))
@@ -157,14 +179,16 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
      */
     private _storageType(): string
     {
+        const inner = this.isAtomic ? `atomic<${this.elementTypeName}>` : this.elementTypeName;
+
         if (!this.isArray)
         {
-            return this.elementTypeName;
+            return inner;
         }
 
         return this.length === undefined
-            ? `array<${this.elementTypeName}>`
-            : `array<${this.elementTypeName}, ${this.length}>`;
+            ? `array<${inner}>`
+            : `array<${inner}, ${this.length}>`;
     }
 
     /**
@@ -232,6 +256,14 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
      */
     toGLSL(): string
     {
+        // 工作组共享内存：GLSL 的 `shared`（无 binding）
+        if (this.addressSpace === 'workgroup')
+        {
+            const size = this.length === undefined ? '' : `[${this.length}]`;
+
+            return `shared ${this.elementTypeName} ${this.name}${size};`;
+        }
+
         const layout = `layout(std430, binding = ${this.getEffectiveBinding() ?? 0}) `;
         const qualifier = this.access === 'read' ? 'readonly ' : '';
 
@@ -245,6 +277,12 @@ export class StorageBuffer<T extends ShaderValue> implements IElement
      */
     toWGSL(): string
     {
+        // 工作组共享内存：没有 @group/@binding
+        if (this.addressSpace === 'workgroup')
+        {
+            return `var<workgroup> ${this.name}: ${this._storageType()};`;
+        }
+
         const effectiveBinding = this.getEffectiveBinding();
         const binding = effectiveBinding !== undefined ? `@binding(${effectiveBinding}) ` : '';
 
