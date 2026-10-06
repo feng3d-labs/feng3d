@@ -16,9 +16,9 @@ describe('standardVertex 的 morph 变体', () =>
 
         expect(wgsl).toContain('morph.u_morphWeights[i]');
         expect(wgsl).toContain('struct MorphUniforms');
-        expect(wgsl).toContain('@group(4) @binding(0) var<uniform> morph: MorphUniforms;');
+        expect(wgsl).toContain('@group(0) @binding(6) var<uniform> morph: MorphUniforms;');
         // TSL 生成的 attribute 顺序是 binding 在前
-        expect(wgsl).toContain('@binding(1) @group(4) var<storage, read> u_morphPositions: array<vec4<f32>>;');
+        expect(wgsl).toContain('@binding(7) @group(0) var<storage, read> u_morphPositions: array<vec4<f32>>;');
         // 声明只出现一次（不能因为前置拼接而重复）
         expect(wgsl.split('var<uniform> morph: MorphUniforms;').length).toBe(2);
         // struct 只声明一次：TSL 自己会生成，前置段只补那一行 var<uniform>
