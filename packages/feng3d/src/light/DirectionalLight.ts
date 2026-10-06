@@ -1,7 +1,7 @@
 import { box3Clone, box3GetCenter, box3Union } from '@feng3d/math';
 // `vec3Sub` 与本文件里 wgpu-matrix 风格的本地 `vec3Sub(a: Vec3, b: Vec3)` 同名，导入时起别名
-import { Box3, Matrix4x4, vec3Add, vec3ScaleNumber, vec3Sub as mathVec3Sub } from '@feng3d/math';
-import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
+import { Box3, Matrix4x4, Vector2, Vector2Like, vec3Add, vec3ScaleNumber, vec3Sub as mathVec3Sub } from '@feng3d/math';
+import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
 import type { Texture } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Light, LightLogic, createLightLogicBase } from './Light';
@@ -31,6 +31,33 @@ export interface DirectionalLight extends Light
 {
     readonly __type__: 'DirectionalLight';
     readonly scutoff?: number;
+
+    /**
+     * 阴影视锥左边界（光源空间 x，对应 three.js 的 `shadow.camera.left`）。
+     *
+     * 六个 `shadowCamera*` 字段中任意一个被提供时进入**显式模式**：视点取光源的世界坐标
+     * （与 three.js 的 `shadow.camera.position.copy(light.position)` 一致），
+     * 未提供的边界仍按场景包围盒自动计算。全部缺省时保持原有"按包围盒自动算"的行为。
+     */
+    readonly shadowCameraLeft?: number;
+
+    /** 阴影视锥右边界（光源空间 x），语义见 {@link DirectionalLight.shadowCameraLeft} */
+    readonly shadowCameraRight?: number;
+
+    /** 阴影视锥上边界（光源空间 y），语义见 {@link DirectionalLight.shadowCameraLeft} */
+    readonly shadowCameraTop?: number;
+
+    /** 阴影视锥下边界（光源空间 y），语义见 {@link DirectionalLight.shadowCameraLeft} */
+    readonly shadowCameraBottom?: number;
+
+    /** 阴影相机近平面（沿光方向到光源的距离），语义见 {@link DirectionalLight.shadowCameraLeft} */
+    readonly shadowCameraNear?: number;
+
+    /** 阴影相机远平面（沿光方向到光源的距离），语义见 {@link DirectionalLight.shadowCameraLeft} */
+    readonly shadowCameraFar?: number;
+
+    /** 阴影贴图尺寸（宽 × 高，像素，对应 three.js 的 `shadow.mapSize`）。缺省 1024×1024 */
+    readonly shadowMapSize?: Vector2Like;
 }
 
 declare module '@feng3d/reactivity'
@@ -71,6 +98,28 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
 
     /** 方向光阴影深度纹理（depth32float，懒创建） */
     let shadowDepthTexture: Texture | null = null;
+    /** shadowDepthTexture 对应的尺寸 key：尺寸变化时重建纹理 */
+    let shadowDepthTextureKey = '';
+    /** shadowMapSize 的稳定缓存（同尺寸复用同一对象，避免每帧产生新引用） */
+    let shadowMapSizeCache: Vector2 | null = null;
+
+    /**
+     * 阴影贴图尺寸：数据侧 `shadowMapSize` 优先，缺省 1024×1024。
+     *
+     * 经响应式代理读，尺寸变化时依赖它的 computed（阴影 Pass / uniform 组装）自动失效。
+     */
+    const getShadowMapSize = (): Vector2 =>
+    {
+        const size = reactive(data).shadowMapSize;
+        const x = size?.x ?? 1024;
+        const y = size?.y ?? 1024;
+        if (!shadowMapSizeCache || shadowMapSizeCache.x !== x || shadowMapSizeCache.y !== y)
+        {
+            shadowMapSizeCache = { x, y } as Vector2;
+        }
+
+        return shadowMapSizeCache;
+    };
 
     const logic: DirectionalLightLogic = {
         // ---- Light / Behaviour / Component 基类成员（显式委托基座 members）----
@@ -106,18 +155,20 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
         get shadowCameraNear() { return members.shadowCameraNear; },
         /** 阴影相机远平面（供 shader uniform） */
         get shadowCameraFar() { return members.shadowCameraFar; },
-        /** 阴影图尺寸（默认 1024×1024） */
-        get shadowMapSize() { return members.shadowMapSize; },
+        /** 阴影图尺寸（默认 1024×1024；数据侧 `shadowMapSize` 可覆盖） */
+        get shadowMapSize() { return getShadowMapSize(); },
         /** 阴影采样纹理（DirectionalLight 用 shadowDepthTexture） */
         get shadowMap() { return members.shadowMap; },
 
         // ---- DirectionalLight 自身成员 ----
-        /** 方向光阴影深度纹理，懒创建（默认尺寸 1024×1024 depth32float） */
+        /** 方向光阴影深度纹理，懒创建（默认 1024×1024 depth32float；尺寸随 `shadowMapSize` 变化重建） */
         get shadowDepthTexture(): Texture
         {
-            if (!shadowDepthTexture)
+            const size = getShadowMapSize();
+            const key = `${size.x}x${size.y}`;
+            if (!shadowDepthTexture || key !== shadowDepthTextureKey)
             {
-                const size = members.shadowMapSize;
+                shadowDepthTextureKey = key;
                 // 直接用 webgpu 的 Texture 接口构造纯数据对象（无 __type__ 要求），
                 // 与 PointLight 的 depth cubemap 同范式。
                 shadowDepthTexture = {
@@ -168,20 +219,42 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
                 return pre;
             }, null) || fallbackBounds;
 
-            // 2. 光源位置：沿光源反方向退到包围盒外足够远处，朝向包围盒中心
+            // 2. 视点位置
+            //    显式配置阴影视锥时用光源的世界坐标（对齐 three.js 的
+            //    `shadow.camera.position.copy(light.position)`）；
+            //    否则沿光源反方向退到包围盒外足够远处（原有默认行为）。
             const center = box3GetCenter(worldBounds, { x: 0, y: 0, z: 0 });
             const lightDir = members.direction; // 光源方向（世界空间单位向量）
-            // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
-            const maxVec = { x: worldBounds.max.x, y: worldBounds.max.y, z: worldBounds.max.z };
-            const minVec = { x: worldBounds.min.x, y: worldBounds.min.y, z: worldBounds.min.z };
-            const sizeVec = mathVec3Sub(maxVec, minVec);
-            const radius = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
-            const distance = radius * 2 + 5; // 后退距离，确保整个场景在视锥内
+            const r_data = reactive(data);
+            const hasExplicitFrustum = r_data.shadowCameraLeft !== undefined
+                || r_data.shadowCameraRight !== undefined
+                || r_data.shadowCameraTop !== undefined
+                || r_data.shadowCameraBottom !== undefined
+                || r_data.shadowCameraNear !== undefined
+                || r_data.shadowCameraFar !== undefined;
             const lightPosition = { x: center.x, y: center.y, z: center.z };
-            const backOff = { x: lightDir.x, y: lightDir.y, z: lightDir.z };
 
-            vec3ScaleNumber(backOff, -distance, backOff);
-            vec3Add(lightPosition, backOff, lightPosition);
+            if (hasExplicitFrustum)
+            {
+                const p = members.position;
+
+                lightPosition.x = p.x;
+                lightPosition.y = p.y;
+                lightPosition.z = p.z;
+            }
+            else
+            {
+                // 包围盒尺寸，用于决定相机后退距离与正交视锥大小
+                const maxVec = { x: worldBounds.max.x, y: worldBounds.max.y, z: worldBounds.max.z };
+                const minVec = { x: worldBounds.min.x, y: worldBounds.min.y, z: worldBounds.min.z };
+                const sizeVec = mathVec3Sub(maxVec, minVec);
+                const radius = Math.max(sizeVec.x, sizeVec.y, sizeVec.z);
+                const distance = radius * 2 + 5; // 后退距离，确保整个场景在视锥内
+                const backOff = { x: lightDir.x, y: lightDir.y, z: lightDir.z };
+
+                vec3ScaleNumber(backOff, -distance, backOff);
+                vec3Add(lightPosition, backOff, lightPosition);
+            }
 
             // 3. wgpu-matrix 风格 view/projection 矩阵
             const upVector = Math.abs(lightDir.y) > 0.99
@@ -213,17 +286,25 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
                 if (c[1] < minY) minY = c[1]; if (c[1] > maxY) maxY = c[1];
                 if (c[2] < minZ) minZ = c[2]; if (c[2] > maxZ) maxZ = c[2];
             }
-            // 加 margin 确保边缘不被裁剪
+            // 加 margin 确保边缘不被裁剪（以下为按包围盒自动计算的值）
             const MARGIN = 1;
-            const left = minX - MARGIN;
-            const right = maxX + MARGIN;
-            const bottom = minY - MARGIN;
-            const top = maxY + MARGIN;
+            let left = minX - MARGIN;
+            let right = maxX + MARGIN;
+            let bottom = minY - MARGIN;
+            let top = maxY + MARGIN;
             // near/far 用光源空间 z 范围。wgpu-matrix lookAt：z 轴 = normalize(eye-target)，
             // 相机看 -Z，物体在 -Z 方向故光源空间 z 为负。near = 距最近物体距离 (|maxZ|)，
             // far = 距最远物体距离 (|minZ|)。
-            const near = Math.max(0.1, -maxZ);
-            const far = Math.max(near + 1, -minZ + MARGIN);
+            let near = Math.max(0.1, -maxZ);
+            let far = Math.max(near + 1, -minZ + MARGIN);
+
+            // 数据侧显式配置逐项覆盖自动值（对齐 three.js 的 shadow.camera.*）
+            if (r_data.shadowCameraLeft !== undefined) left = r_data.shadowCameraLeft;
+            if (r_data.shadowCameraRight !== undefined) right = r_data.shadowCameraRight;
+            if (r_data.shadowCameraBottom !== undefined) bottom = r_data.shadowCameraBottom;
+            if (r_data.shadowCameraTop !== undefined) top = r_data.shadowCameraTop;
+            if (r_data.shadowCameraNear !== undefined) near = r_data.shadowCameraNear;
+            if (r_data.shadowCameraFar !== undefined) far = r_data.shadowCameraFar;
 
             const lightProjectionMatrix = mat4Ortho(left, right, bottom, top, near, far);
             const lightViewProjMatrix = mat4Multiply(lightProjectionMatrix, lightViewMatrix);
