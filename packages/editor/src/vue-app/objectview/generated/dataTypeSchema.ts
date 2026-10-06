@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 109 个类型 / 646 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 109 个类型 / 653 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -170,6 +170,13 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'DirectionalLight': [
         { name: 'scutoff', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowCameraLeft', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowCameraRight', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowCameraTop', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowCameraBottom', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowCameraNear', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowCameraFar', type: 'number', control: 'number', optional: true, readonly: true },
+        { name: 'shadowMapSize', type: 'Vector2Like', control: 'Vector2', optional: true, readonly: true },
         { name: 'lightType', type: 'LightType', control: 'Enum', readonly: true, values: ['Directional', 'Point', 'Spot'], numericValues: { Directional: 0, Point: 1, Spot: 2 } },
         { name: 'color', type: 'Color3 | Color3Like', control: 'Color3', optional: true, readonly: true },
         { name: 'intensity', type: 'number', control: 'number', optional: true, readonly: true },
