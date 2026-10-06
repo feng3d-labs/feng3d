@@ -25,7 +25,8 @@
   },
   "files": [
     "src",
-    "lib"
+    "lib",
+    "!src/**/*.glsl"
   ],
   "dependencies": {
     "@feng3d/assets": "*",
