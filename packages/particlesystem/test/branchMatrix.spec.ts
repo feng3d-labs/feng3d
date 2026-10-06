@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Particle } from '../src/Particle';
 import { ParticleSystemAnimationType } from '../src/enums/ParticleSystemAnimationType';
-import { ParticleSystemShapeMultiModeValue } from '../src/enums/ParticleSystemShapeMultiModeValue';
-import { ParticleSystemShapeType } from '../src/enums/ParticleSystemShapeType';
 import { ParticleSystemSimulationSpace } from '../src/enums/ParticleSystemSimulationSpace';
 import { ParticleSystemSubEmitterProperties } from '../src/enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../src/enums/ParticleSystemSubEmitterType';
@@ -21,11 +19,6 @@ import {
     particleTextureSheetAnimationModuleDefault, particleTextureSheetAnimationModuleInitParticleState,
     particleTextureSheetAnimationModuleUpdateParticleState, type ParticleTextureSheetAnimationModule,
 } from '../src/modules/ParticleTextureSheetAnimationModule';
-import { particleSystemShapeBoxCalcParticlePosDir } from '../src/shapes/ParticleSystemShapeBox';
-import { particleSystemShapeCircleCalcParticlePosDir } from '../src/shapes/ParticleSystemShapeCircle';
-import { particleSystemShapeConeCalcParticlePosDir } from '../src/shapes/ParticleSystemShapeCone';
-import { particleSystemShapeEdgeCalcParticlePosDir } from '../src/shapes/ParticleSystemShapeEdge';
-import { particleShapeModuleDefault, type ParticleShapeModule } from '../src/modules/ParticleShapeModule';
 import type { ParticleSystem } from '../src/ParticleSystem';
 
 /**
