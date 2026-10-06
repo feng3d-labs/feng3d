@@ -16,7 +16,7 @@
  *    所以 NaN 会被钳到 0。TSL 里用 `select` 表达同一件事，**语义等价**。
  * 3. 中间值一律 `let_`（避免内联改变浮点结合顺序，见 ARCHITECTURE_V2 §P2）。
  */
-import { attribute, clamp, depthSampler, float, fragment, gl_Position, let_, return_, select, struct, texelFetch, uint, uniform, uvec2, var_, varying, vec2, vec3, vec4, vertex } from '@feng3d/tsl';
+import { attribute, clamp, depthSampler, float, fragment, gl_Position, let_, mix, return_, select, struct, texelFetch, uint, uniform, uvec2, var_, varying, vec2, vec3, vec4, vertex } from '@feng3d/tsl';
 import { createCameraUniforms, createTransformUniforms } from './uniforms';
 
 type FloatValue = ReturnType<typeof float>;
@@ -51,8 +51,8 @@ function buildDebugShadowMapShader(): { vertex: string; fragment: string }
     const transform = createTransformUniforms();
     const camera = createCameraUniforms();
 
-    const DebugUniforms = struct('DebugUniforms', { u_texSize: vec2 });
-    const material = DebugUniforms(uniform('material_uniforms', 0, 3)) as unknown as { u_texSize: Vec2Value };
+    const DebugUniforms = struct('DebugUniforms', { u_texSize: vec2, u_invert: float });
+    const material = DebugUniforms(uniform('material_uniforms', 0, 3)) as unknown as { u_texSize: Vec2Value; u_invert: FloatValue };
 
     // 深度纹理：binding 1 的 texture（binding 0 的 sampler 是占位，不声明）
     const s_texture = depthSampler(uniform('s_texture', 1, 1));
@@ -91,8 +91,11 @@ function buildDebugShadowMapShader(): { vertex: string; fragment: string }
         depthValue.assign(select(depthValue.greaterThanOrEqual(0.0), depthValue, 0.0));
         depthValue.assign(select(depthValue.lessThanOrEqual(1.0), depthValue, 1.0));
 
-        // 可视化：深度直接作为灰度
-        return_(vec4(depthValue, depthValue, depthValue, 1.0) as Vec4Value);
+        // 可视化：深度作为灰度；u_invert = 1 时输出 1 - depth
+        // （three 的 ShadowMapViewer 用 UnpackDepthRGBAShader，它输出的正是 1 - depth）
+        const gray = let_('gray', mix(depthValue, float(1.0).subtract(depthValue), material.u_invert)) as FloatValue;
+
+        return_(vec4(gray, gray, gray, 1.0) as Vec4Value);
     });
 
     return { vertex: vertexShader.toWGSL(), fragment: fragmentShader.toWGSL(vertexShader) };
