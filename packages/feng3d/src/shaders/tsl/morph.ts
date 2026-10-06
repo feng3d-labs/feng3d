@@ -38,8 +38,19 @@ type MorphDelta4 = ReturnType<typeof vec4>;
  */
 export const MORPH_TARGET_COUNT = 16;
 
-/** morph 的 `@group`（0–3 已被材质 / 相机 / 场景 / 蒙皮占用） */
-const MORPH_GROUP = 4;
+/**
+ * morph 的 `@group`。
+ *
+ * **必须复用已有 group**：WebGPU 的 `maxBindGroups` 默认是 **4**（group 0–3），
+ * 而标准管线已经把 0–3 用满了。最初把 morph 放在 `group(4)`，导致管线有 5 个 bind group layout，
+ * 编码阶段报 `bindGroupLayoutCount (5) is larger than the maximum allowed (4)`——
+ * 而且这条错误会被后续的 command buffer / render bundle 一律报成「前序错误」，表现为**整屏全黑、无有用报错**。
+ *
+ * 这里并入 group 0（标准管线在该组的 binding 0–5 已占用，6–7 空闲）。
+ */
+const MORPH_GROUP = 0;
+const MORPH_UNIFORM_BINDING = 6;
+const MORPH_STORAGE_BINDING = 7;
 
 /** 懒构建缓存 */
 let cachedMorph: { uniforms: string; morph: string } | null = null;
@@ -61,19 +72,19 @@ export function createMorphUniformStruct(count: number)
 }
 
 /**
- * 创建 MorphUniforms 的 TSL 实例（`@group(4) @binding(0)`）。
+ * 创建 MorphUniforms 的 TSL 实例（`@group(0) @binding(6)`）。
  */
 export function createMorphUniforms()
 {
-    return createMorphUniformStruct(MORPH_TARGET_COUNT)(uniform('morph', MORPH_GROUP, 0));
+    return createMorphUniformStruct(MORPH_TARGET_COUNT)(uniform('morph', MORPH_GROUP, MORPH_UNIFORM_BINDING));
 }
 
 /**
- * 创建 morph delta 的 storage buffer（`@group(4) @binding(1)`）。
+ * 创建 morph delta 的 storage buffer（`@group(0) @binding(7)`）。
  */
 export function createMorphPositions(): MorphPositions
 {
-    return storageBuffer('u_morphPositions', { elementType: vec4, group: MORPH_GROUP, binding: 1 });
+    return storageBuffer('u_morphPositions', { elementType: vec4, group: MORPH_GROUP, binding: MORPH_STORAGE_BINDING });
 }
 
 /**
@@ -151,7 +162,7 @@ function buildMorph(): { uniforms: string; morph: string }
     const morphPosition = createMorphPositionFunc();
 
     const uniforms = `${def.toWGSLStruct()}\n\n${def.toWGSLUniform('morph', MORPH_GROUP, 0)}\n`
-        + `\n@group(${MORPH_GROUP}) @binding(1) var<storage, read> u_morphPositions: array<vec4<f32>>;\n`;
+        + `\n@group(${MORPH_GROUP}) @binding(${MORPH_STORAGE_BINDING}) var<storage, read> u_morphPositions: array<vec4<f32>>;\n`;
 
     return { uniforms, morph: `${morphPosition.toWGSL()}\n` };
 }

@@ -16,7 +16,8 @@ describe('morph 的 TSL 着色器', () =>
     {
         expect(uniforms).toContain('u_morphWeights: array<f32, ' + MORPH_TARGET_COUNT + '>');
         expect(uniforms).toContain('u_morphVertexCount: u32');
-        expect(uniforms).toContain('@group(4) @binding(1) var<storage, read> u_morphPositions: array<vec4<f32>>;');
+        // morph 并入 group 0（标准管线已占 0–3，maxBindGroups 是 4，不能再开 group 4）
+        expect(uniforms).toContain('@group(0) @binding(7) var<storage, read> u_morphPositions: array<vec4<f32>>;');
     });
 
     it('morphPosition：按 target 遍历、以 targetIndex * vertexCount + vertexIndex 索引 delta', () =>
