@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, assign, atomicAdd, atomicLoad, atomicMax, atomicMin, atomicStore, atomicSub, storageBuffer, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, workgroupBarrier, storageBarrier, textureBarrier, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, assign, func as tslFunc, statement, void_, atomicAdd, atomicLoad, atomicMax, atomicMin, atomicStore, atomicSub, storageBuffer, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, workgroupBarrier, storageBarrier, textureBarrier, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -921,5 +921,58 @@ describe('工作组共享内存与原子（#710 三项能力之三）', () =>
         expect(w).toContain('atomicMin(&counter, 2u);');
         expect(w).toContain('atomicStore(&counter, 0u);');
         expect(w).toContain('let old = atomicLoad(&counter);');
+    });
+});
+
+describe('无返回值辅助函数与表达式语句（#710 / bitonicCompute 前置）', () =>
+{
+    it('void_ 作为 func 的返回类型：省略 "-> T"（WGSL）与 "void "（GLSL）', () =>
+    {
+        const f = tslFunc('noop', [['a', uint]], void_, () =>
+        {
+            return_();
+        });
+        const w = f.toWGSL();
+        const g = f.toGLSL();
+
+        expect(w).toContain('fn noop(a: u32) {');
+        expect(w).not.toContain('-> void');
+        expect(g).toContain('void noop(');
+        expect(g).not.toContain('void void noop');
+    });
+
+    it('statement() 把函数调用挂成独立语句（local_compare_and_swap(idx.x, idx.y);）', () =>
+    {
+        const swap = tslFunc('swap', [['a', uint], ['b', uint]], void_, () =>
+        {
+            return_();
+        });
+        const caller = tslFunc('caller', [['x', uint]], float, (x) =>
+        {
+            statement(swap(x, uint(1)));
+
+            return_(float(0));
+        });
+        const w = caller.toWGSL();
+
+        expect(w).toContain('swap(x, 1u);');
+        expect(w).toContain('fn caller(x: u32) -> f32 {');
+    });
+
+    it('statement() 也支持带返回值的调用（值被丢弃）', () =>
+    {
+        const getter = tslFunc('getter', [['x', uint]], float, () =>
+        {
+            return_(float(1));
+        });
+        const caller = tslFunc('caller2', [['x', uint]], float, (x) =>
+        {
+            statement(getter(x));
+
+            return_(float(0));
+        });
+        const w = caller.toWGSL();
+
+        expect(w).toContain('getter(x);');
     });
 });
