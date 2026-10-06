@@ -64,6 +64,58 @@ export interface PhysicsWorld extends Behaviour
 
     /** 每几次步进才归一化一次四元数（缺失时 0 = 每次都归一化） */
     readonly quatNormalizeSkip?: number;
+
+    /**
+     * **显式声明**的接触材质对（对应原版的 `ContactMaterial`）。
+     *
+     * 与 {@link Rigidbody.friction} / {@link Rigidbody.restitution} 的区别：
+     * 那两个是按数值**自动**与世界默认材质配对（摩擦取平均、弹性取较大者）；
+     * 这里是**按材质名成对指定**，可以精确复刻原版"地面×光滑箱 = 0、地面×地面 = 0.4"这种语义。
+     * 两端材质名要么来自刚体的 {@link Rigidbody.materialName}，要么是内置的 'default'。
+     */
+    readonly contactMaterials?: readonly PhysicsContactMaterial[];
+
+    /**
+     * **具名材质的定义**（对应原版给 `Material.friction` 直接赋值的那种用法）。
+     *
+     * 语义与 cannon-es 一致：材质上声明了 `friction`（>= 0）时，它会**覆盖** ContactMaterial 的取值，
+     * 且两个材质相遇时取**乘积**——所以原版 `simple_friction.html` 只要给地面材质 0.3、光滑材质 0，
+     * 相遇就是 `0.3 × 0 = 0`（滑），地面自己碰自己则是 `0.3 × 0.3 = 0.09`（不滑）。
+     * 不声明（保持 -1）时该材质不参与这条规则，一切按 ContactMaterial 走。
+     */
+    readonly materials?: readonly PhysicsMaterial[];
+}
+
+/** 一个具名材质的定义 */
+export interface PhysicsMaterial
+{
+    /** 材质名（与 {@link Rigidbody.materialName} 对应） */
+    readonly name: string;
+    /** 摩擦系数（对应 cannon-es 的 Material.friction；缺失时保持默认的 -1 = 不覆盖） */
+    readonly friction?: number;
+    /** 弹性系数（对应 cannon-es 的 Material.restitution；缺失时保持默认的 -1 = 不覆盖） */
+    readonly restitution?: number;
+}
+
+/** 一对材质之间的接触参数（对应 cannon-es 的 ContactMaterial） */
+export interface PhysicsContactMaterial
+{
+    /** A 端材质名 */
+    readonly a: string;
+    /** B 端材质名 */
+    readonly b: string;
+    /** 摩擦系数（缺失时用世界默认） */
+    readonly friction?: number;
+    /** 弹性系数（缺失时用世界默认） */
+    readonly restitution?: number;
+    /** 这一对的接触方程刚度（缺失时用 cannon-es 默认 1e7） */
+    readonly contactEquationStiffness?: number;
+    /** 这一对的接触方程松弛时间（缺失时用默认 3） */
+    readonly contactEquationRelaxation?: number;
+    /** 这一对的摩擦方程刚度 */
+    readonly frictionEquationStiffness?: number;
+    /** 这一对的摩擦方程松弛时间 */
+    readonly frictionEquationRelaxation?: number;
 }
 
 /**
@@ -233,6 +285,42 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     const defaultFriction = world.defaultContactMaterial.friction;
     const defaultRestitution = world.defaultContactMaterial.restitution;
 
+    // ---- 具名材质（对应原版 new CANNON.Material('ground') + ContactMaterial 成对声明） ----
+    /** 材质名 → Material；'default' 直接复用世界的默认材质 */
+    const namedMaterials = new Map<string, CannonMaterial>();
+    const getNamedMaterial = (name: string): CannonMaterial =>
+    {
+        if (name === 'default') return world.defaultMaterial;
+
+        let material = namedMaterials.get(name);
+        if (material === undefined)
+        {
+            material = new CannonMaterial(name);
+
+            // 声明过的才写（cannon-es 里 -1 表示"不用材质自己的值，按 ContactMaterial 走"）
+            const defined = (data.materials ?? []).find((m) => m.name === name);
+            if (defined?.friction !== undefined) material.friction = defined.friction;
+            if (defined?.restitution !== undefined) material.restitution = defined.restitution;
+
+            namedMaterials.set(name, material);
+        }
+
+        return material;
+    };
+
+    // 显式声明的接触材质对：这一对被**精确**指定，不走"摩擦平均、弹性取大"的自动配对
+    for (const contact of data.contactMaterials ?? [])
+    {
+        world.addContactMaterial(new ContactMaterial(getNamedMaterial(contact.a), getNamedMaterial(contact.b), {
+            friction: contact.friction ?? defaultFriction,
+            restitution: contact.restitution ?? defaultRestitution,
+            contactEquationStiffness: contact.contactEquationStiffness,
+            contactEquationRelaxation: contact.contactEquationRelaxation,
+            frictionEquationStiffness: contact.frictionEquationStiffness,
+            frictionEquationRelaxation: contact.frictionEquationRelaxation,
+        }));
+    }
+
     /** 按「摩擦:弹性」缓存的材质——同参数的刚体复用同一个 Material */
     const materialCache = new Map<string, CannonMaterial>();
 
@@ -318,8 +406,12 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
                     registered.add(body);
                 }
 
-                // 刚体声明了摩擦/弹性时给它一个独立材质（未声明的字段沿用世界默认）
-                if (rigidbodyLogic.friction !== undefined || rigidbodyLogic.restitution !== undefined)
+                // 声明了材质名就直接用它（对应原版的 material 字段，配合 contactMaterials 成对生效）
+                if (rigidbodyLogic.materialName !== undefined)
+                {
+                    body.material = getNamedMaterial(rigidbodyLogic.materialName);
+                }
+                else if (rigidbodyLogic.friction !== undefined || rigidbodyLogic.restitution !== undefined)
                 {
                     body.material = getMaterial(
                         rigidbodyLogic.friction ?? defaultFriction,
