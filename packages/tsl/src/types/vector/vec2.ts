@@ -62,6 +62,19 @@ export class Vec2 implements ShaderValue
                 this.toWGSL = () => `${wrapForSwizzle(vec.toWGSL())}.xy`;
                 this.dependencies = [vec];
             }
+            else if (typeof args[0] === 'number' || args[0] instanceof Float)
+            {
+                // **标量广播**：`vec2(0.5)` → `vec2<f32>(0.5, 0.5)`
+                // （对齐 vec3 / vec4 的同名分支；WGSL 允许 vecN<f32>(x) 这种广播写法。
+                //  补它之前 `vec2(0.5)` 会抛「无效的参数」，而手写 WGSL 里 `vec2<f32>(0.5)` 很常见。）
+                const scalar = args[0];
+                const scalarGLSL = () => (typeof scalar === 'number' ? formatNumber(scalar) : scalar.toGLSL());
+                const scalarWGSL = () => (typeof scalar === 'number' ? formatNumber(scalar) : scalar.toWGSL());
+
+                this.toGLSL = () => `vec2(${scalarGLSL()})`;
+                this.toWGSL = () => `vec2<f32>(${scalarWGSL()})`;
+                this.dependencies = typeof scalar === 'number' ? [] : [scalar];
+            }
             else if (isVariableHost(args[0]))
             {
                 // 从变量宿主（Uniform/Attribute/Varying）构造：将此实例作为宿主的类型值
