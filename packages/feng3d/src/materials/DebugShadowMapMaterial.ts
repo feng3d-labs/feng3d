@@ -1,21 +1,7 @@
-import { RenderPipeline, Sampler, Texture, TextureView } from '@feng3d/webgpu';
+import { RenderPipeline, Texture, TextureView } from '@feng3d/webgpu';
 import { Material, MaterialLogic, materialLogic, writeMaterialBase, writeTextureBindings } from './Material';
 import { reactive, registerLogic, computed, toRaw } from '@feng3d/reactivity';
 import { getDebugShadowMapShaderWGSL } from '../shaders/tsl/debugShadowMapMaterial';
-
-/**
- * 默认采样器（线性过滤 + repeat 寻址）。
- *
- * 本材质用 textureLoad 读深度，实际不使用采样器；此处仅填充 binding 槽位。
- */
-const DEFAULT_SAMPLER: Sampler = {
-    addressModeU: 'repeat',
-    addressModeV: 'repeat',
-    magFilter: 'linear',
-    minFilter: 'linear',
-    mipmapFilter: 'linear',
-    maxAnisotropy: 1,
-};
 
 declare module './Material'
 {
@@ -129,9 +115,10 @@ export function debugShadowMapMaterialLogic(data: DebugShadowMapMaterial): Debug
         }
 
         const result: Record<string, import('@feng3d/webgpu').BindingResource> = {};
-        result.s_texture = view;
-        // 普通采样器（textureLoad 不使用采样器，但 binding 槽位需要填充）
-        result.s_textureSampler = DEFAULT_SAMPLER;
+        // 键名必须与 WGSL 的变量名一致：TSL 的深度采样器同样按采样器展开约定命名
+        // （`depthSampler(uniform('s_texture', …))` → `s_texture_texture`），
+        // 写 `s_texture` 会在 WGPUBindGroupEntry 里找不到纹理绑定而抛错。
+        result.s_texture_texture = view;
 
         return result;
     });
