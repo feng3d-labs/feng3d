@@ -335,6 +335,11 @@ export function viewLogic(view: View): ViewLogic
                     depthClearValue: 1,
                     depthLoadOp: 'clear',
                     depthStoreOp: 'store',
+                    // 模板缓冲每帧清零：ProjectedShadowMaterial 用 stencil 保证
+                    // 同一像素的阴影只混合一次（对应 three.js ShadowMesh 的 stencilZPass）
+                    stencilClearValue: 0,
+                    stencilLoadOp: 'clear',
+                    stencilStoreOp: 'store',
                 },
             };
         }
@@ -431,6 +436,9 @@ export function viewLogic(view: View): ViewLogic
                             view: depthStencilView,
                             depthLoadOp: 'load',
                             depthStoreOp: 'store',
+                            // 沿用主 Pass 已清零的模板值（额外 Pass 只做叠加，不重置阴影计数）
+                            stencilLoadOp: 'load',
+                            stencilStoreOp: 'store',
                         },
                     },
                     renderPassObjects: [],
@@ -449,7 +457,9 @@ export function viewLogic(view: View): ViewLogic
     // ---- 原构造函数体 ----
 
     // 资源包装实例（构造期一次性创建，computed 懒引用）
-    const depthTexture: Texture = { descriptor: { size, format: 'depth24plus' } };
+    // 深度格式带 stencil8：ProjectedShadowMaterial（平面投影阴影）依赖模板缓冲做
+    // 「同一像素只混合一次」；其余材质不声明 stencil 状态，在该附件上照常工作。
+    const depthTexture: Texture = { descriptor: { size, format: 'depth24plus-stencil8' } };
     const canvasTexture: CanvasTexture = { context };
     const submitObject: Submit = { commandEncoders: [{ passEncoders }] };
 

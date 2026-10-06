@@ -66,6 +66,8 @@ export * from './materials/Material';
 export * from './materials/NormalMaterial';
 export * from './materials/ParticleMaterial';
 export * from './materials/PointMaterial';
+export * from './materials/ProjectedShadowMaterial';
+export { getProjectedShadowShaderWGSL } from './shaders/tsl/projectedShadowMaterial';
 export * from './materials/SegmentMaterial';
 export * from './materials/StandardMaterial';
 export { buildStandardFragment, getStandardFragmentWGSL, type StandardFragmentOptions } from './shaders/tsl/standardFragment';
