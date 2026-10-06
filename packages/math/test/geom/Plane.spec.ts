@@ -93,10 +93,14 @@ describe('Plane', () =>
 
     it('intersectWithPlane3D', () =>
     {
-        const p0 = vec3ScaleNumber(vec3Random(), 100);
-        const p1 = vec3ScaleNumber(vec3Random(), 100);
-        const p2 = vec3ScaleNumber(vec3Random(), 100);
-        const p3 = vec3ScaleNumber(vec3Random(), 100);
+        // 用**确定性**输入：两个平面都过直线 p0p1，因此必然交于该直线（XY 平面 ∩ XZ 平面 = X 轴）。
+        // 原先用 `vec3Random()` 取四点——随机输入一旦让两平面法线落进 `planeParallelWithPlane3D`
+        // 的 precision（近似平行），`planeIntersectWithPlane3D` 会**如实返回 null**，
+        // 这条没有保护的断言就偶发失败（CI 上实测过一次；本地连跑多次才能复现）。
+        const p0 = { x: 0, y: 0, z: 0 };
+        const p1 = { x: 1, y: 0, z: 0 };
+        const p2 = { x: 0, y: 1, z: 0 };
+        const p3 = { x: 0, y: 0, z: 1 };
 
         const line = line3FromPoints(p0, p1);
 
@@ -110,6 +114,16 @@ describe('Plane', () =>
         {
             assert.ok(line3Equals(line, crossLine));
         }
+    });
+
+    it('intersectWithPlane3D：平行平面如实返回 null', () =>
+    {
+        // 把边界行为钉住：两平面平行时没有交线。原先这条分支只由随机输入"偶然"覆盖，
+        // 而覆盖到它的表现是**断言失败**而不是通过——既 flaky，也说明边界没有被正面验证。
+        const plane0 = planeFromPoints({ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 });
+        const plane1 = planeFromPoints({ x: 0, y: 0, z: 5 }, { x: 1, y: 0, z: 5 }, { x: 0, y: 1, z: 5 });
+
+        assert.ok(planeIntersectWithPlane3D(plane0, plane1) === null);
     });
 
     it('intersectWithTwoPlane3D', () =>
