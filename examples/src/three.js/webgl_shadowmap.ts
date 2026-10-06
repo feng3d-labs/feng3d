@@ -511,12 +511,23 @@ const view: View = {
             __type__: 'Scene',
             // three.js: scene.background = new Color(0x59472b)
             background: srgbColor4(FOG_COLOR),
-            // three.js: AmbientLight(0xffffff) —— 同样补 1/π（BRDF_Lambert）
-            // 注意：three 的 BRDF_Lambert 那个 1/π **只作用于方向光的 BRDF**；
-        // AmbientLight 是直接把颜色累加进辐照度（`irradiance += ambientLightColor`），**不除 π**。
-        // 早先这里跟着方向光一起补了 1/π，导致环境项只有原值的 0.318——实测地平线以下
-        // 的地面比 three 暗约 24%（上方背景色因为不参与光照，两边完全一致）。
-        ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+            // three.js: AmbientLight(0xffffff)——**同样要补 1/π**，理由见下。
+            //
+            // three 的漫反射是 `irradiance * BRDF_Lambert(albedo)`，而 `BRDF_Lambert = albedo / π`——
+            // 那个 1/π 是对**整个入射辐照度**（环境 + 方向光之和）生效的，不是只作用于方向光。
+            // 本仓的漫反射没有这个 1/π，所以要让两边等价，**必须让辐照度整体除以 π**：
+            // 环境项与方向项都要除。
+            //
+            // 手算校验（地面法线朝上、光 (0,1500,1000) → dotNL = 0.832）：
+            //   three: irradiance = 1.0 + 3.0*0.832 = 3.496，反射 = albedo * 3.496/π
+            //          albedo(0xffdd99 线性化) = (1.0, 0.715, 0.318) → (1.113, 0.796, 0.354)
+            //          编码回 sRGB ≈ (255, 231, 160)  ← 与 three 实测的地面 (255, 228, 158) 吻合
+            //   本仓两项都除 π: irradiance = 0.318 + 0.955*0.832 = 1.113 → 同样的 (1.113, 0.796, 0.354)
+            //
+            // 反例（曾经改错过的版本）：只给方向光除 π、环境项留 1.0 → 辐照度 = 1.795，
+            // 地面算出 (1.795, 1.283, 0.571)，编码后 G 直接饱和 —— 实测地面中位色 (255,255,255)、
+            // 98.9% 的像素过曝（three 是 (255,228,158)、33%），这就是「地面偏亮」的真正原因。
+            ambientColor: { __type__: 'Color4', r: INV_PI, g: INV_PI, b: INV_PI, a: 1 },
         }],
         children: [
             // CAMERA（three.js: PerspectiveCamera(23, w/h, 10, 3000).position.set(700, 50, 1900)）
