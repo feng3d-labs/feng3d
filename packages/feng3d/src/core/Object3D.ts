@@ -562,8 +562,12 @@ registerLogic('Object3D', object3DLogic);
 
 export function findObject3DChild(object3D: Object3D, name: string): Object3D | undefined
 {
-    const object3DLogic = getLogic(object3D);
-    const children = object3DLogic.children;
+    const object3DLogic = getLogic(object3D) as Object3DLogic | undefined;
+    // 与 getParentLogic 同一口径：logic **正在构造中**时注册表里是占位对象，读它的任何 getter
+    // 都是 undefined。这里按"没有子节点"处理——否则在组件 init 的 effect 里遍历对象树时
+    // （如 Animation 解析 PropertyClip.path）会炸在 `children.length` 上，堆栈指不到真凶。
+    const children = object3DLogic?.children;
+    if (!children) return undefined;
     for (let i = 0; i < children.length; i++)
     {
         const child = children[i];
