@@ -460,9 +460,9 @@ addMorph(parrotMesh, parrot.animationClips[0], 450, 0.5, 500 - Math.random() * 5
 // 本仓自带 `Font`（@feng3d/math 的 shape/core/Font.ts，`generateShapes` 与 three 同构）与
 // `ExtrudeGeometry`（@feng3d/addons）——所以文字几何不需要新写：
 //
-// ⚠️ **已知差异**：本仓的 `ExtrudeGeometry` 是「简化版（无 bevel 倒角）」，它的 `bevelEnabled` 字段
-// 实际不产生倒角。原示例的 `bevelThickness: 2 / bevelSize: 5` 在 `size: 200` 的尺度下只有 2/5 个单位，
-// 视觉影响很小（主要影响字缘的高光细节），因此这一步**先不实现 bevel**，等它作为独立一批补上。
+// bevel 倒角已在本仓的 `ExtrudeGeometry` 里实现（`bevelThickness`/`bevelSize`/`bevelSegments`），
+// 参数与原示例逐项一致。注意 `bevelSegments` 沿用 three 的默认值 3——分层的 `t` 最大只到
+// `(segments-1)/segments`，所以实际外扩量略小于 `bevelSize`（three 同样如此）。
 const fontJson = await (await fetch('/helvetiker_bold.typeface.json')).json();
 const textFont = new Font(fontJson);
 const textShapes = textFont.generateShapes('THREE.JS', 200);
@@ -490,6 +490,10 @@ const textObject: Object3D = {
             shapes: textShapes,
             depth: 50,
             curveSegments: 12,
+            // three.js: bevelThickness: 2, bevelSize: 5, bevelEnabled: true（bevelSegments 默认 3）
+            bevelEnabled: true,
+            bevelThickness: 2,
+            bevelSize: 5,
         },
         material: textMaterial,
         castShadows: true,
