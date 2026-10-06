@@ -14,7 +14,11 @@
  *
  * 构建结果懒加载并缓存（模块顶层不执行构建，见 AGENTS.md §15 R2）。
  */
-import { array, clamp, dot, float, func, if_, let_, mat4, max, normalize, pow, return_, samplerComparison, select, struct, textureSampleCompare, uniform, var_, vec2, vec3 } from '@feng3d/tsl';
+import { array, clamp, dot, float, fract, func, if_, let_, mat4, max, mix, normalize, pow, return_, samplerComparison, select, struct, textureSampleCompare, uniform, var_, vec2, vec3 } from '@feng3d/tsl';
+/** TSL 标量 / 二维向量值类型（`let_` 保持传入类型，这里用于收窄多态运算的返回类型） */
+type FloatValue = ReturnType<typeof float>;
+type Vec2Value = ReturnType<typeof vec2>;
+
 /** 构建结果：WGSL 文本 + 供 body 片段调用的函数对象 */
 export interface StandardLightingPars
 {
@@ -90,6 +94,9 @@ function buildStandardLightingPars(): StandardLightingPars
         u_spotLight: SpotLightData,
     });
     // ---- shadowmap_pars_frag ----
+    // 布局与 standardVertex.ts 的 ShadowVPUniforms **必须逐字段一致**（同一 group/binding 的
+    // uniform 在两个阶段必须类型兼容）。字段位置：mat4(0) + vec3(64) + 5×f32(76..95)
+    // + vec2(96) + f32(104) → 108，按 mat4 的 16 字节对齐补齐到 112（与原 _pad0/_pad1 布局同大小）。
     const ShadowUniforms = struct('ShadowUniforms', {
         u_shadowVP: mat4,
         u_lightPosition: vec3,
@@ -97,8 +104,12 @@ function buildStandardLightingPars(): StandardLightingPars
         u_shadowCameraFar: float,
         u_shadowBias: float,
         u_shadowEnabled: float,
-        _pad0: float,
-        _pad1: float,
+        /** 阴影类型（ShadowType：1=硬、2=PCF、3=PCF_SOFT） */
+        u_shadowType: float,
+        /** 阴影贴图尺寸（宽 × 高，像素）：PCF 用它换算纹素步长 */
+        u_shadowMapSize: vec2,
+        /** 阴影采样半径（three.js 的 shadow.radius） */
+        u_shadowRadius: float,
     });
     const lights = LightsUniform(uniform('lights', 0, 4));
     const shadowData = ShadowUniforms(uniform('shadowData', 0, 5));
@@ -106,15 +117,23 @@ function buildStandardLightingPars(): StandardLightingPars
     // depth 纹理 + sampler_comparison（硬件 PCF 深度比较）
     const s_shadowMap = samplerComparison(uniform('s_shadowMap', 2, 0));
 
-    // ---- getShadow：与手写逐行对应 ----
+    // ---- getShadow：对齐 three.js 的 shadowmap_pars_fragment.glsl.js ----
+    //
+    // three 按 shadowMap.type 编译出三档实现，这里用运行期 uniform（u_shadowType）分派：
+    //   Hard_Shadows(1)   ：单次比较（对应 three 的 `#else` 无 PCF 分支）
+    //   PCF_Shadows(2)    ：17 次比较（3×3 网格 + 半步中点），偏移 = texel × shadowRadius
+    //   PCF_Soft_Shadows(3)：9 次比较 + mix（按纹素内的亚像素位置做双线性插值）
+    //
+    // 条件全部来自 uniform，属 WGSL 的 uniform control flow——这是 `textureSampleCompare`
+    // 允许出现在分支内的前提。
     const getShadow = func(
         'getShadow',
         [['shadowPos', vec3]],
         float,
         (shadowPos) =>
         {
-            const uv = let_('uv', vec2(shadowPos.x, shadowPos.y));
-            const depthRef = let_('depthRef', shadowPos.z.subtract(shadowData.u_shadowBias));
+            const uv = let_('uv', vec2(shadowPos.x, shadowPos.y)) as Vec2Value;
+            const depthRef = let_('depthRef', shadowPos.z.subtract(shadowData.u_shadowBias)) as FloatValue;
             const inFrustum = let_('inFrustum',
                 uv.x.greaterThanOrEqual(0.0)
                     .and(uv.x.lessThanOrEqual(1.0))
@@ -122,7 +141,99 @@ function buildStandardLightingPars(): StandardLightingPars
                     .and(uv.y.lessThanOrEqual(1.0))
                     .and(depthRef.lessThanOrEqual(1.0))
                     .and(depthRef.greaterThanOrEqual(0.0)));
-            const shadow = var_('shadow', textureSampleCompare(s_shadowMap, uv, depthRef));
+            const shadow = var_('shadow', float(1.0)) as FloatValue;
+
+            // ---- 硬阴影（ShadowType.Hard_Shadows = 1）----
+            if_(shadowData.u_shadowType.lessThan(1.5), () =>
+            {
+                shadow.assign(textureSampleCompare(s_shadowMap, uv, depthRef));
+            });
+
+            // ---- PCF（ShadowType.PCF_Shadows = 2）：three 的 SHADOWMAP_TYPE_PCF ----
+            if_(shadowData.u_shadowType.greaterThanOrEqual(1.5).and(shadowData.u_shadowType.lessThan(2.5)), () =>
+            {
+                const size = shadowData.u_shadowMapSize;
+                const texelX = let_('pcfTexelX', float(1.0).divide(size.x)) as FloatValue;
+                const texelY = let_('pcfTexelY', float(1.0).divide(size.y)) as FloatValue;
+                const radius = let_('pcfRadius', shadowData.u_shadowRadius) as FloatValue;
+                const scaledX = let_('pcfScaledX', texelX.multiply(radius)) as FloatValue;
+                const scaledY = let_('pcfScaledY', texelY.multiply(radius)) as FloatValue;
+                const dx0 = let_('pcfDx0', scaledX.multiply(-1.0)) as FloatValue;
+                const dy0 = let_('pcfDy0', scaledY.multiply(-1.0)) as FloatValue;
+                const dx1 = let_('pcfDx1', scaledX) as FloatValue;
+                const dy1 = let_('pcfDy1', scaledY) as FloatValue;
+                const dx2 = let_('pcfDx2', dx0.divide(2.0)) as FloatValue;
+                const dy2 = let_('pcfDy2', dy0.divide(2.0)) as FloatValue;
+                const dx3 = let_('pcfDx3', dx1.divide(2.0)) as FloatValue;
+                const dy3 = let_('pcfDy3', dy1.divide(2.0)) as FloatValue;
+
+                const pcfSum = var_('pcfSum', float(0.0)) as FloatValue;
+                const tap = (dx: unknown, dy: unknown) =>
+                {
+                    pcfSum.assign(pcfSum.add(
+                        textureSampleCompare(s_shadowMap, uv.add(vec2(dx as never, dy as never)), depthRef),
+                    ));
+                };
+
+                tap(dx0, dy0);
+                tap(0.0, dy0);
+                tap(dx1, dy0);
+                tap(dx2, dy2);
+                tap(0.0, dy2);
+                tap(dx3, dy2);
+                tap(dx0, 0.0);
+                tap(dx2, 0.0);
+                tap(0.0, 0.0);
+                tap(dx3, 0.0);
+                tap(dx1, 0.0);
+                tap(dx2, dy3);
+                tap(0.0, dy3);
+                tap(dx3, dy3);
+                tap(dx0, dy1);
+                tap(0.0, dy1);
+                tap(dx1, dy1);
+                shadow.assign(pcfSum.divide(17.0));
+            });
+
+            // ---- PCF Soft（ShadowType.PCF_Soft_Shadows = 3）：three 的 SHADOWMAP_TYPE_PCF_SOFT ----
+            if_(shadowData.u_shadowType.greaterThanOrEqual(2.5), () =>
+            {
+                const size = shadowData.u_shadowMapSize;
+                const texelX = let_('softTexelX', float(1.0).divide(size.x)) as FloatValue;
+                const texelY = let_('softTexelY', float(1.0).divide(size.y)) as FloatValue;
+                // f = fract(uv * shadowMapSize + 0.5)
+                const fx = let_('softFractX', fract(uv.x.multiply(size.x).add(float(0.5)))) as FloatValue;
+                const fy = let_('softFractY', fract(uv.y.multiply(size.y).add(float(0.5)))) as FloatValue;
+                // uv -= f * texelSize
+                const baseX = let_('softUvX', uv.x.subtract(fx.multiply(texelX))) as FloatValue;
+                const baseY = let_('softUvY', uv.y.subtract(fy.multiply(texelY))) as FloatValue;
+                const twoTexelX = let_('softTwoTexelX', texelX.multiply(2.0)) as FloatValue;
+                const twoTexelY = let_('softTwoTexelY', texelY.multiply(2.0)) as FloatValue;
+
+                const compareAt = (x: unknown, y: unknown) =>
+                    textureSampleCompare(s_shadowMap, vec2(x as never, y as never), depthRef);
+                const softSum = var_('softSum', float(0.0)) as FloatValue;
+                const addTap = (value: unknown) =>
+                {
+                    softSum.assign(softSum.add(value as never));
+                };
+
+                addTap(compareAt(baseX, baseY));
+                addTap(compareAt(baseX.add(texelX), baseY));
+                addTap(compareAt(baseX, baseY.add(texelY)));
+                addTap(compareAt(baseX.add(texelX), baseY.add(texelY)));
+                addTap(mix(compareAt(baseX.subtract(texelX), baseY), compareAt(baseX.add(twoTexelX), baseY), fx as never));
+                addTap(mix(compareAt(baseX.subtract(texelX), baseY.add(texelY)), compareAt(baseX.add(twoTexelX), baseY.add(texelY)), fx as never));
+                addTap(mix(compareAt(baseX, baseY.subtract(texelY)), compareAt(baseX, baseY.add(twoTexelY)), fy as never));
+                addTap(mix(compareAt(baseX.add(texelX), baseY.subtract(texelY)), compareAt(baseX.add(texelX), baseY.add(twoTexelY)), fy as never));
+                addTap(mix(
+                    mix(compareAt(baseX.subtract(texelX), baseY.subtract(texelY)), compareAt(baseX.add(twoTexelX), baseY.subtract(texelY)), fx as never),
+                    mix(compareAt(baseX.subtract(texelX), baseY.add(twoTexelY)), compareAt(baseX.add(twoTexelX), baseY.add(twoTexelY)), fx as never),
+                    fy as never,
+                ));
+
+                shadow.assign(softSum.divide(9.0));
+            });
 
             return_(select(inFrustum, shadow, 1.0));
         });

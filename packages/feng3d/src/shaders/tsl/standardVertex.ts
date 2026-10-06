@@ -74,8 +74,9 @@ function buildStandardVertexWGSL(skinned: boolean): string
         u_shadowCameraFar: float,
         u_shadowBias: float,
         u_shadowEnabled: float,
-        _pad0: float,
-        _pad1: float,
+        u_shadowType: float,
+        u_shadowMapSize: vec2,
+        u_shadowRadius: float,
     });
     const shadowData = ShadowVPUniforms(uniform('shadowData', 0, 5)) as unknown as { u_shadowVP: ReturnType<typeof mat4> };
 
