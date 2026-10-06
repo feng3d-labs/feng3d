@@ -1,3 +1,5 @@
+import { getGenerateMipmap3DWGSL, getGenerateMipmapWGSL } from './generateMipmapWGSL';
+
 /**
  * Generates mip levels from level 0 to the last mip for an existing texture
  *
@@ -35,50 +37,18 @@ export function generateMipmap(device: GPUDevice, texture: GPUTexture)
         moduleByView,
     } = perDeviceInfo;
     const view = getViewDimensionForTexture(texture);
-    let module = moduleByView[view];
+    let modules = moduleByView[view];
 
-    if (!module)
+    if (!modules)
     {
-        const type = view === '2d'
-            ? 'texture_2d<f32>'
-            : 'texture_2d_array<f32>';
-        const extraSampleParamsWGSL = view === '2d'
-            ? ''
-            : ', 0u';
+        // TSL 生成两份文本（顶点 / 片元），用两个 shader module
+        const shader = getGenerateMipmapWGSL(view === '2d-array');
 
-        module = device.createShaderModule({
-            label: `mip level generation for ${view}`,
-            code: `
-        struct VSOutput {
-          @builtin(position) position: vec4f,
-          @location(0) texcoord: vec2f,
+        modules = {
+            vertex: device.createShaderModule({ label: `mip level generation for ${view} (vs)`, code: shader.vertex }),
+            fragment: device.createShaderModule({ label: `mip level generation for ${view} (fs)`, code: shader.fragment }),
         };
-
-        @vertex fn vs(
-          @builtin(vertex_index) vertexIndex : u32
-        ) -> VSOutput {
-          var pos = array<vec2f, 3>(
-            vec2f(-1.0, -1.0),
-            vec2f(-1.0,  3.0),
-            vec2f( 3.0, -1.0),
-          );
-
-          var vsOutput: VSOutput;
-          let xy = pos[vertexIndex];
-          vsOutput.position = vec4f(xy, 0.0, 1.0);
-          vsOutput.texcoord = xy * vec2f(0.5, -0.5) + vec2f(0.5);
-          return vsOutput;
-        }
-
-        @group(0) @binding(0) var ourSampler: sampler;
-        @group(0) @binding(1) var ourTexture: ${type};
-
-        @fragment fn fs(fsInput: VSOutput) -> @location(0) vec4f {
-          return textureSample(ourTexture, ourSampler, fsInput.texcoord${extraSampleParamsWGSL});
-        }
-      `,
-        });
-        moduleByView[view] = module;
+        moduleByView[view] = modules;
     }
 
     if (!sampler)
@@ -97,11 +67,11 @@ export function generateMipmap(device: GPUDevice, texture: GPUTexture)
             label: `mip level generator pipeline for ${view}`,
             layout: 'auto',
             vertex: {
-                module,
+                module: modules.vertex,
                 entryPoint: 'vs',
             },
             fragment: {
-                module,
+                module: modules.fragment,
                 entryPoint: 'fs',
                 targets: [{ format: texture.format }],
             },
@@ -122,9 +92,9 @@ export function generateMipmap(device: GPUDevice, texture: GPUTexture)
             const bindGroup = device.createBindGroup({
                 layout: pipeline.getBindGroupLayout(0),
                 entries: [
-                    { binding: 0, resource: sampler },
+                    // TSL 的 sampler 展开是 texture@0 + sampler@1（原手写是 sampler@0 + texture@1）
                     {
-                        binding: 1,
+                        binding: 0,
                         resource: texture.createView({
                             dimension,
                             baseMipLevel: baseMipLevel - 1,
@@ -133,6 +103,7 @@ export function generateMipmap(device: GPUDevice, texture: GPUTexture)
                             arrayLayerCount: 1,
                         }),
                     },
+                    { binding: 1, resource: sampler },
                 ],
             });
 
@@ -290,30 +261,7 @@ function generateMipmap3D(device: GPUDevice, texture: GPUTexture)
     {
         const module = device.createShaderModule({
             label: `mip level generation for 3d texture (compute) - ${texture.format}`,
-            code: `
-@group(0) @binding(0) var inputTexture: texture_3d<f32>;
-@group(0) @binding(1) var outputTexture: texture_storage_3d<${storageFormat}, write>;
-@group(0) @binding(2) var textureSampler: sampler;
-
-@compute @workgroup_size(4, 4, 4)
-fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
-    let outputSize = textureDimensions(outputTexture);
-    
-    // 检查是否超出输出纹理范围
-    if (globalId.x >= outputSize.x || globalId.y >= outputSize.y || globalId.z >= outputSize.z) {
-        return;
-    }
-    
-    // 计算采样坐标（归一化到 0-1 范围，偏移半个像素以采样中心）
-    let texCoord = (vec3<f32>(globalId) + vec3<f32>(0.5)) / vec3<f32>(outputSize);
-    
-    // 使用线性采样从上一级 mip level 读取（自动进行 2x2x2 平均）
-    let color = textureSampleLevel(inputTexture, textureSampler, texCoord, 0.0);
-    
-    // 写入输出纹理
-    textureStore(outputTexture, globalId, color);
-}
-            `,
+            code: getGenerateMipmap3DWGSL(storageFormat),
         });
 
         pipeline = device.createComputePipeline({
@@ -368,9 +316,10 @@ fn main(@builtin(global_invocation_id) globalId: vec3<u32>) {
         const bindGroup = device.createBindGroup({
             layout: pipeline.getBindGroupLayout(0),
             entries: [
+                // TSL 的展开：inputTexture@0（纹理）+ 采样器@1 + outputTexture@2
                 { binding: 0, resource: inputView },
-                { binding: 1, resource: outputView },
-                { binding: 2, resource: sampler },
+                { binding: 1, resource: sampler },
+                { binding: 2, resource: outputView },
             ],
         });
 
