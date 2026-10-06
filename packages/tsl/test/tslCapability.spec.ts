@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, workgroupBarrier, storageBarrier, textureBarrier, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, assign, atomicAdd, atomicLoad, atomicMax, atomicMin, atomicStore, atomicSub, storageBuffer, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, workgroupBarrier, storageBarrier, textureBarrier, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -852,5 +852,74 @@ describe('compute 的多个 builtin + barrier（#710 三项能力之二）', () 
 
         expect(w).toContain('storageBarrier();');
         expect(w).toContain('textureBarrier();');
+    });
+});
+
+describe('工作组共享内存与原子（#710 三项能力之三）', () =>
+{
+    it('addressSpace: workgroup 生成 var<workgroup>，且**没有** @group/@binding', () =>
+    {
+        const local = storageBuffer('local_data', { elementType: uint, addressSpace: 'workgroup', length: 512 });
+        const c = compute('main', [256, 1, 1], () =>
+        {
+            assign(local.index(0) as never, uint(1));
+        });
+        const w = c.toWGSL();
+
+        expect(w).toContain('var<workgroup> local_data: array<u32, 512>;');
+        expect(w).not.toMatch(/@(group|binding)\(\d+\)[^\n]*local_data/);
+    });
+
+    it('共享内存可索引读写（local_data[i] = v）', () =>
+    {
+        const local = storageBuffer('local_data', { elementType: uint, addressSpace: 'workgroup', length: 8 });
+        const input = storageBuffer('input_data', { elementType: uint, group: 0, binding: 0 });
+        const c = compute('main', [8, 1, 1], () =>
+        {
+            const lid = uvec3(builtin('local_invocation_id'));
+
+            assign(local.index(lid.x) as never, input.index(lid.x) as never);
+        });
+
+        expect(c.toWGSL()).toContain('local_data[localInvocationId.x] = input_data[localInvocationId.x];');
+    });
+
+    it('atomic: true 生成 atomic<u32> 声明（单值形态）', () =>
+    {
+        const counter = storageBuffer('counter', {
+            elementType: uint, group: 0, binding: 3, access: 'read_write', atomic: true, array: false,
+        });
+        const c = compute('main', [8, 1, 1], () =>
+        {
+            atomicAdd(counter, 1);
+        });
+
+        expect(c.toWGSL()).toContain('@binding(3) @group(0) var<storage, read_write> counter: atomic<u32>;');
+        // 原子操作要**取地址**（&），这是与普通读写最大的区别
+        expect(c.toWGSL()).toContain('atomicAdd(&counter, 1u);');
+    });
+
+    it('原子操作族：Sub / Max / Min / Store / Load', () =>
+    {
+        const counter = storageBuffer('counter', {
+            elementType: uint, group: 0, binding: 0, access: 'read_write', atomic: true, array: false,
+        });
+        const c = compute('main', [8, 1, 1], () =>
+        {
+            atomicSub(counter, 1);
+            atomicMax(counter, 8);
+            atomicMin(counter, 2);
+            atomicStore(counter, 0);
+            const old = let_('old', atomicLoad(counter));
+
+            return_(vec4(float(old), 0.0, 0.0, 1.0));
+        });
+        const w = c.toWGSL();
+
+        expect(w).toContain('atomicSub(&counter, 1u);');
+        expect(w).toContain('atomicMax(&counter, 8u);');
+        expect(w).toContain('atomicMin(&counter, 2u);');
+        expect(w).toContain('atomicStore(&counter, 0u);');
+        expect(w).toContain('let old = atomicLoad(&counter);');
     });
 });
