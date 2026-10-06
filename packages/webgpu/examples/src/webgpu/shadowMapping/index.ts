@@ -5,9 +5,9 @@ import { mat4, vec3 } from 'wgpu-matrix';
 
 import { mesh } from '../../meshes/stanfordDragon';
 
-import { getShadowMappingFragmentWGSL } from '../../shaders-tsl/shadowMappingFragment';
-import { getShadowMappingVertexWGSL } from '../../shaders-tsl/shadowMappingVertex';
-import { getShadowMappingVertexShadowWGSL } from '../../shaders-tsl/shadowMappingVertexShadow';
+import { getShadowMappingFragmentWGSL } from './fragment.tsl';
+import { getShadowMappingVertexWGSL } from './vertex.tsl';
+import { getShadowMappingVertexShadowWGSL } from './vertexShadow.tsl';
 
 const shadowDepthTextureSize = 1024;
 

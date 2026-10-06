@@ -6,7 +6,7 @@ import Stats from 'stats.js';
 import { mat4, vec3 } from 'wgpu-matrix';
 
 import { SphereLayout, createSphereMesh } from '../../meshes/sphere';
-import { getRenderBundlesMeshWGSL } from '../../shaders-tsl/renderBundlesMesh';
+import { getRenderBundlesMeshWGSL } from './mesh.tsl';
 
 const meshShader = getRenderBundlesMeshWGSL();
 

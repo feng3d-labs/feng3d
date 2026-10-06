@@ -1,6 +1,6 @@
 import { Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
-import { getHelloTriangleWGSL } from '../../shaders-tsl/helloTriangle';
+import { getHelloTriangleWGSL } from './helloTriangle.tsl';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {

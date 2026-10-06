@@ -1,8 +1,8 @@
 import { reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
-import { getHelloTriangleWGSL } from '../../shaders-tsl/helloTriangle';
-import { getRenderObjectChangesVariantWGSL } from '../../shaders-tsl/renderObjectChangesVariant';
+import { getHelloTriangleWGSL } from '../helloTriangle/helloTriangle.tsl';
+import { getRenderObjectChangesVariantWGSL } from './variant.tsl';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {

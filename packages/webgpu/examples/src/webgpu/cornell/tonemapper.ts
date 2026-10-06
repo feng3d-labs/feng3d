@@ -2,7 +2,7 @@ import { BindingResources, CanvasTexture, CommandEncoder, PassEncoder, Texture }
 import { ComputePipeline } from '@feng3d/webgpu';
 
 import Common from './common';
-import { getTonemapperWGSL } from '../../shaders-tsl/tonemapper';
+import { getTonemapperWGSL } from './tonemapper.tsl';
 
 /**
  * Tonemapper implements a tonemapper to convert a linear-light framebuffer to

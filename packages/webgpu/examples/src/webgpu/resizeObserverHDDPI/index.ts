@@ -1,5 +1,5 @@
 import { GUI } from 'dat.gui';
-import { getCheckerShaderWGSL } from '../../shaders-tsl/checker';
+import { getCheckerShaderWGSL } from './checker.tsl';
 
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, RenderPassDescriptor, RenderPipeline, Submit } from '@feng3d/webgpu';

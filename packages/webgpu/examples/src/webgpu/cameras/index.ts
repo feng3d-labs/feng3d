@@ -2,7 +2,7 @@ import { GUI } from 'dat.gui';
 import { mat4, vec3 } from 'wgpu-matrix';
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
 import { ArcballCamera, WASDCamera } from './camera';
-import { getCamerasCubeWGSL } from '../../shaders-tsl/camerasCube';
+import { getCamerasCubeWGSL } from './cube.tsl';
 import { createInputHandler } from './input';
 
 import { reactive } from '@feng3d/reactivity';

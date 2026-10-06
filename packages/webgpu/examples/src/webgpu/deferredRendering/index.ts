@@ -3,12 +3,12 @@ import { GUI } from 'dat.gui';
 import { mat4, vec3, vec4 } from 'wgpu-matrix';
 import { mesh } from '../../meshes/stanfordDragon';
 
-import { getDeferredFragmentDeferredRenderingWGSL } from '../../shaders-tsl/deferredFragmentDeferredRendering';
-import { getFragmentGBuffersDebugViewWGSL } from '../../shaders-tsl/fragmentGBuffersDebugView';
+import { getDeferredFragmentDeferredRenderingWGSL } from './fragmentDeferredRendering.tsl';
+import { getFragmentGBuffersDebugViewWGSL } from './fragmentGBuffersDebugView.tsl';
 import fragmentWriteGBuffers from './fragmentWriteGBuffers.wgsl';
-import { getLightUpdateWGSL } from '../../shaders-tsl/lightUpdate';
-import { getDeferredVertexTextureQuadWGSL } from '../../shaders-tsl/deferredVertexTextureQuad';
-import { getDeferredVertexWriteGBuffersWGSL } from '../../shaders-tsl/deferredVertexWriteGBuffers';
+import { getLightUpdateWGSL } from './lightUpdate.tsl';
+import { getDeferredVertexTextureQuadWGSL } from './vertexTextureQuad.tsl';
+import { getDeferredVertexWriteGBuffersWGSL } from './vertexWriteGBuffers.tsl';
 
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, Buffer, RenderPass, RenderPassDescriptor, RenderPipeline, Submit, Texture, TextureView, VertexAttributes } from '@feng3d/webgpu';

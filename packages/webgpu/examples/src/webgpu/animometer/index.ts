@@ -3,7 +3,7 @@ import { RenderObject, RenderPass, RenderPassDescriptor, RenderPipeline, Submit 
 import { RenderBundle, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
-import { getAnimometerWGSL } from '../../shaders-tsl/animometer';
+import { getAnimometerWGSL } from './animometer.tsl';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 {

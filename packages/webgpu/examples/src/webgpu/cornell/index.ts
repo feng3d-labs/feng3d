@@ -5,7 +5,7 @@ import Radiosity from './radiosity';
 import Rasterizer from './rasterizer';
 import Raytracer from './raytracer';
 import CornellScene from './scene';
-import Tonemapper from './tonemapper';
+import Tonemapper from './tonemapper.tsl';
 
 import { CanvasContext, CommandEncoder, Submit, Texture } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';

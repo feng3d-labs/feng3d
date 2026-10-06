@@ -4,7 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import { getVolumeWGSL } from '../../shaders-tsl/volume';
+import { getVolumeWGSL } from './volume.tsl';
 
 const gui = new GUI();
 

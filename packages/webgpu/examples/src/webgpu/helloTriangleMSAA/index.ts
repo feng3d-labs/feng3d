@@ -1,8 +1,8 @@
 import { RenderPassDescriptor, Submit, RenderObject } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
 
-import { getRedFragWGSL } from '../../shaders-tsl/redFrag';
-import { getTriangleVertWGSL } from '../../shaders-tsl/triangleVert';
+import { getRedFragWGSL } from '../../shaders/red.frag.tsl';
+import { getTriangleVertWGSL } from '../../shaders/triangle.vert.tsl';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {

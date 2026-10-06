@@ -1,51 +1,50 @@
 import { describe, expect, it } from 'vitest';
-import { getBasicVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/basicVert';
-import { getBlackFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blackFrag';
-import { getFullscreenTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fullscreenTexturedQuad';
-import { getHelloTriangleWGSL } from '../packages/webgpu/examples/src/shaders-tsl/helloTriangle';
-import { getMultipleCanvasesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/multipleCanvases';
-import { getRedFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/redFrag';
-import { getRenderObjectChangesVariantWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderObjectChangesVariant';
-import { getInstancedVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/instancedVert';
-import { getSampleTextureFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/sampleTextureFrag';
-import { getSampleTextureMixColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/sampleTextureMixColorFrag';
-import { getTriangleVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/triangleVert';
-import { getVertexPositionColorFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/vertexPositionColorFrag';
-import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeCompute';
-import { getComputeBoidsSpriteWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsSprite';
-import { getUpdateSpritesWGSL } from '../packages/webgpu/examples/src/shaders-tsl/computeBoidsUpdateSprites';
-import { getGameOfLifeRenderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/gameOfLifeRender';
-import { getPointsOrangeFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsOrangeFrag';
-import { getPointsTexturedFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsTexturedFrag';
-import { getPointsDistanceSizedVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsDistanceSizedVert';
-import { getPointsFixedSizeVertWGSL } from '../packages/webgpu/examples/src/shaders-tsl/pointsFixedSizeVert';
-import { getReversedZFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragment';
-import { getReversedZVertexWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertex';
-import { getReversedZVertexDepthPrePassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexDepthPrePass';
-import { getReversedZVertexPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexPrecisionErrorPass';
-import { getReversedZVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZVertexTextureQuad';
-import { getReversedZFragmentTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentTextureQuad';
-import { getReversedZFragmentPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/shaders-tsl/reversedZFragmentPrecisionErrorPass';
-import { getCheckerShaderWGSL } from '../packages/webgpu/examples/src/shaders-tsl/checker';
-import { getSolidColorLitWGSL } from '../packages/webgpu/examples/src/shaders-tsl/solidColorLit';
-import { getCubemapSampleCubemapWGSL } from '../packages/webgpu/examples/src/shaders-tsl/cubemapSampleCubemap';
-import { getFractalCubeSampleSelfWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fractalCubeSampleSelf';
-import { getDeferredVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredVertexTextureQuad';
-import { getDeferredVertexWriteGBuffersWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredVertexWriteGBuffers';
-import { getCamerasCubeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/camerasCube';
-import { getShadowMappingVertexShadowWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertexShadow';
-import { getShadowMappingVertexWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingVertex';
-import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders-tsl/blendingTexturedQuad';
-import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/shaders-tsl/renderBundlesMesh';
-import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/examples/src/shaders-tsl/deferredFragmentDeferredRendering';
-import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/shaders-tsl/aBufferOpaque';
-import { getAnimometerWGSL } from '../packages/webgpu/examples/src/shaders-tsl/animometer';
-import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/shaders-tsl/bitonicDisplayFrag';
-import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/shaders-tsl/shadowMappingFragment';
-import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/shaders-tsl/fragmentGBuffersDebugView';
-import { getVolumeWGSL } from '../packages/webgpu/examples/src/shaders-tsl/volume';
-import { getLightUpdateWGSL } from '../packages/webgpu/examples/src/shaders-tsl/lightUpdate';
-import { getTonemapperWGSL } from '../packages/webgpu/examples/src/shaders-tsl/tonemapper';
+import { getBasicVertWGSL } from '../packages/webgpu/examples/src/shaders/basic.vert.tsl';
+import { getBlackFragWGSL } from '../packages/webgpu/examples/src/shaders/black.frag.tsl';
+import { getFullscreenTexturedQuadWGSL } from '../packages/webgpu/examples/src/shaders/fullscreenTexturedQuad.tsl';
+import { getHelloTriangleWGSL } from '../packages/webgpu/examples/src/webgpu/helloTriangle/helloTriangle.tsl';
+import { getMultipleCanvasesWGSL } from '../packages/webgpu/examples/src/webgpu/multipleCanvases/multipleCanvases.tsl';
+import { getRedFragWGSL } from '../packages/webgpu/examples/src/shaders/red.frag.tsl';
+import { getRenderObjectChangesVariantWGSL } from '../packages/webgpu/examples/src/webgpu/RenderObjectChanges/variant.tsl';
+import { getInstancedVertWGSL } from '../packages/webgpu/examples/src/shaders/instanced.vert.tsl';
+import { getSampleTextureMixColorFragWGSL } from '../packages/webgpu/examples/src/shaders/sampleTextureMixColor.frag.tsl';
+import { getTriangleVertWGSL } from '../packages/webgpu/examples/src/shaders/triangle.vert.tsl';
+import { getVertexPositionColorFragWGSL } from '../packages/webgpu/examples/src/shaders/vertexPositionColor.frag.tsl';
+import { getGameOfLifeComputeWGSL } from '../packages/webgpu/examples/src/webgpu/gameOfLife/compute.tsl';
+import { getComputeBoidsSpriteWGSL } from '../packages/webgpu/examples/src/webgpu/computeBoids/sprite.tsl';
+import { getUpdateSpritesWGSL } from '../packages/webgpu/examples/src/webgpu/computeBoids/updateSprites.tsl';
+import { getGameOfLifeRenderWGSL } from '../packages/webgpu/examples/src/webgpu/gameOfLife/render.tsl';
+import { getPointsOrangeFragWGSL } from '../packages/webgpu/examples/src/webgpu/points/orange.frag.tsl';
+import { getPointsTexturedFragWGSL } from '../packages/webgpu/examples/src/webgpu/points/textured.frag.tsl';
+import { getPointsDistanceSizedVertWGSL } from '../packages/webgpu/examples/src/webgpu/points/distance-sized-points.vert.tsl';
+import { getPointsFixedSizeVertWGSL } from '../packages/webgpu/examples/src/webgpu/points/fixed-size-points.vert.tsl';
+import { getReversedZFragmentWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/fragment.tsl';
+import { getReversedZVertexWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/vertex.tsl';
+import { getReversedZVertexDepthPrePassWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/vertexDepthPrePass.tsl';
+import { getReversedZVertexPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/vertexPrecisionErrorPass.tsl';
+import { getReversedZVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/vertexTextureQuad.tsl';
+import { getReversedZFragmentTextureQuadWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/fragmentTextureQuad.tsl';
+import { getReversedZFragmentPrecisionErrorPassWGSL } from '../packages/webgpu/examples/src/webgpu/reversedZ/fragmentPrecisionErrorPass.tsl';
+import { getCheckerShaderWGSL } from '../packages/webgpu/examples/src/webgpu/resizeObserverHDDPI/checker.tsl';
+import { getSolidColorLitWGSL } from '../packages/webgpu/examples/src/shaders/solidColorLit.tsl';
+import { getCubemapSampleCubemapWGSL } from '../packages/webgpu/examples/src/webgpu/cubemap/sampleCubemap.frag.tsl';
+import { getFractalCubeSampleSelfWGSL } from '../packages/webgpu/examples/src/webgpu/fractalCube/sampleSelf.frag.tsl';
+import { getDeferredVertexTextureQuadWGSL } from '../packages/webgpu/examples/src/webgpu/deferredRendering/vertexTextureQuad.tsl';
+import { getDeferredVertexWriteGBuffersWGSL } from '../packages/webgpu/examples/src/webgpu/deferredRendering/vertexWriteGBuffers.tsl';
+import { getCamerasCubeWGSL } from '../packages/webgpu/examples/src/webgpu/cameras/cube.tsl';
+import { getShadowMappingVertexShadowWGSL } from '../packages/webgpu/examples/src/webgpu/shadowMapping/vertexShadow.tsl';
+import { getShadowMappingVertexWGSL } from '../packages/webgpu/examples/src/webgpu/shadowMapping/vertex.tsl';
+import { getBlendingTexturedQuadWGSL } from '../packages/webgpu/examples/src/webgpu/blending/texturedQuad.tsl';
+import { getRenderBundlesMeshWGSL } from '../packages/webgpu/examples/src/webgpu/renderBundles/mesh.tsl';
+import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/examples/src/webgpu/deferredRendering/fragmentDeferredRendering.tsl';
+import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/webgpu/a-buffer/opaque.tsl';
+import { getAnimometerWGSL } from '../packages/webgpu/examples/src/webgpu/animometer/animometer.tsl';
+import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/webgpu/bitonicSort/bitonicDisplay.frag.tsl';
+import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/webgpu/shadowMapping/fragment.tsl';
+import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/webgpu/deferredRendering/fragmentGBuffersDebugView.tsl';
+import { getVolumeWGSL } from '../packages/webgpu/examples/src/webgpu/volumeRenderingTexture3D/volume.tsl';
+import { getLightUpdateWGSL } from '../packages/webgpu/examples/src/webgpu/deferredRendering/lightUpdate.tsl';
+import { getTonemapperWGSL } from '../packages/webgpu/examples/src/webgpu/cornell/tonemapper.tsl';
 
 /**
  * examples 共享着色器的 TSL 版验收（issue #712）。
@@ -104,16 +103,6 @@ describe('examples 共享着色器的 TSL 版（#712）', () =>
         expect(wgsl).toContain('return input.fragPosition;');
     });
 
-    it('sampleTexture.frag / sampleTextureMixColor.frag：纹理采样（TSL 展开格式）', () =>
-    {
-        const plain = getSampleTextureFragWGSL();
-        expect(plain).toContain(': texture_2d<f32>;');
-        expect(plain).toContain(': sampler;');
-        expect(plain).toContain('textureSample(');
-
-        const mix = getSampleTextureMixColorFragWGSL();
-        expect(mix).toContain('* input.fragPosition');
-    });
 
     it('fullscreenTexturedQuad：两个数组字面量 + vertex / fragment 两个入口', () =>
     {
@@ -997,4 +986,13 @@ describe('cornell 色调映射 compute', () =>
         expect(wgsl).toContain('pow(linearColor * vec3<f32>(0.5, 0.5, 0.5) / (vec3<f32>(1.0) + linearColor * vec3<f32>(0.5, 0.5, 0.5))');
         expect(wgsl).toContain('textureStore(output,');
     });
+    it('sampleTextureMixColor.frag：纹理采样（TSL 展开格式）', () =>
+    {
+        const mix = getSampleTextureMixColorFragWGSL();
+        expect(mix).toContain(': texture_2d<f32>;');
+        expect(mix).toContain(': sampler;');
+        expect(mix).toContain('textureSample(');
+        expect(mix).toContain('* input.fragPosition');
+    });
+
 });

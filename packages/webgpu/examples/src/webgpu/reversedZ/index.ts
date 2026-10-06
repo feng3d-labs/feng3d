@@ -2,13 +2,13 @@ import { GUI } from 'dat.gui';
 
 import { Mat4, mat4, vec3 } from 'wgpu-matrix';
 
-import { getReversedZFragmentPrecisionErrorPassWGSL } from '../../shaders-tsl/reversedZFragmentPrecisionErrorPass';
-import { getReversedZFragmentTextureQuadWGSL } from '../../shaders-tsl/reversedZFragmentTextureQuad';
-import { getReversedZFragmentWGSL } from '../../shaders-tsl/reversedZFragment';
-import { getReversedZVertexWGSL } from '../../shaders-tsl/reversedZVertex';
-import { getReversedZVertexDepthPrePassWGSL } from '../../shaders-tsl/reversedZVertexDepthPrePass';
-import { getReversedZVertexPrecisionErrorPassWGSL } from '../../shaders-tsl/reversedZVertexPrecisionErrorPass';
-import { getReversedZVertexTextureQuadWGSL } from '../../shaders-tsl/reversedZVertexTextureQuad';
+import { getReversedZFragmentPrecisionErrorPassWGSL } from './fragmentPrecisionErrorPass.tsl';
+import { getReversedZFragmentTextureQuadWGSL } from './fragmentTextureQuad.tsl';
+import { getReversedZFragmentWGSL } from './fragment.tsl';
+import { getReversedZVertexWGSL } from './vertex.tsl';
+import { getReversedZVertexDepthPrePassWGSL } from './vertexDepthPrePass.tsl';
+import { getReversedZVertexPrecisionErrorPassWGSL } from './vertexPrecisionErrorPass.tsl';
+import { getReversedZVertexTextureQuadWGSL } from './vertexTextureQuad.tsl';
 
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, CanvasContext, CanvasTexture, RenderPass, RenderPassDescriptor, RenderPipeline, Submit, Texture, TextureView, VertexAttributes } from '@feng3d/webgpu';

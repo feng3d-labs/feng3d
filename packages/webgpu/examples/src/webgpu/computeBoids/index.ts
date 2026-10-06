@@ -2,8 +2,8 @@ import { RenderObject, RenderPassDescriptor, Submit } from '@feng3d/webgpu';
 import { ComputeObject, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
-import { getComputeBoidsSpriteWGSL } from '../../shaders-tsl/computeBoidsSprite';
-import { getUpdateSpritesWGSL } from '../../shaders-tsl/computeBoidsUpdateSprites';
+import { getComputeBoidsSpriteWGSL } from './sprite.tsl';
+import { getUpdateSpritesWGSL } from './updateSprites.tsl';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>
 {

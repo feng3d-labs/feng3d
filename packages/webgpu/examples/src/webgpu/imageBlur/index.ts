@@ -3,7 +3,7 @@ import { BindingResources, Buffer, RenderPass, RenderPassDescriptor, RenderPipel
 import { ComputePass, ComputePipeline, WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 
-import { getFullscreenTexturedQuadWGSL } from '../../shaders-tsl/fullscreenTexturedQuad';
+import { getFullscreenTexturedQuadWGSL } from '../../shaders/fullscreenTexturedQuad.tsl';
 import blurWGSL from './blur.wgsl';
 
 // Contants from the blur.wgsl shader.
