@@ -80,6 +80,8 @@ async function runExample(page: Page, spec: {
     warmupFrames: number;
     freezeFrames: number;
     maxDiffPixelRatio?: number;
+    /** 若给出，则断言页面 `#info` 的文案包含它（说明文字不参与像素比对，需要单独守） */
+    infoContains?: string;
 })
 {
     const beforeTime = Date.now();
@@ -114,10 +116,31 @@ async function runExample(page: Page, spec: {
     // 5. 截图与基线对比
     const canvas = page.locator('#webgpu');
     await expect(canvas).toBeVisible();
+    //
+    // **mask 掉 `#info`**：那是页面左上/居中的说明文字（HTML 里的 `<div id="info">`），
+    // 不属于渲染内容，却会出现在 canvas 区域的截图里（Playwright 截的是该区域的像素，含叠层）。
+    // 它的改动只占全图约 0.8%，**正好落在默认 1% 容差以内**，于是文字写错也测不出来——
+    // 实测：把 `#info` 从「OrbitControls…」改成原示例的「three.js - shadowmap - models by mirada from rome」，
+    // 像素比对依然通过、`--update-snapshots` 也认为无需更新，基线因此长期停留在旧内容。
+    // 遮掉它之后，像素基线只反映真正的渲染画面；文字内容由下面那条断言负责。
     await expect(canvas).toHaveScreenshot(`${spec.name}.png`, {
+        mask: [page.locator('#info')],
         // 个别示例（如基于 Date.now 的动画）无法完全定格，按配置放宽像素容差
         ...(spec.maxDiffPixelRatio !== undefined && { maxDiffPixelRatio: spec.maxDiffPixelRatio }),
     });
+
+    // 6. 说明文字单独断言（像素里被 mask 掉了，这里补回来）
+    //    不是每个示例都有 `#info`；有就要求非空，spec 里给了 `infoContains` 就还要求包含该片段——
+    //    只判非空挡不住「文字写错」，而写错恰好是这次真实发生过的问题（见上面 mask 的注释）。
+    const infoText = await page.evaluate(() => document.getElementById('info')?.innerText?.replace(/\s+/g, ' ').trim() ?? null);
+    if (infoText !== null)
+    {
+        expect(infoText.length, `示例 ${spec.name} 的 #info 说明文字为空`).toBeGreaterThan(0);
+        if (spec.infoContains !== undefined)
+        {
+            expect(infoText, `示例 ${spec.name} 的 #info 文案与预期不符`).toContain(spec.infoContains);
+        }
+    }
 }
 
 /**
