@@ -1,90 +1,67 @@
-import { WebGPU } from '@feng3d/webgpu';
-import { logic, ticker } from 'feng3d';
-import type { Object3D, View } from 'feng3d';
-import '@feng3d/cannon-plugin';
-import type { RigidbodyLogic } from '@feng3d/cannon-plugin';
+import { logic, reactive } from 'feng3d';
+import type { Rigidbody, RigidbodyLogic } from '@feng3d/cannon-plugin';
+import { createPhysicsDemo } from './PhysicsDemo';
+import { createSphere } from './PhysicsSceneParts';
 
-const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
-const webgpu = await new WebGPU().init(); // 初始化 WebGPU
+const demo = createPhysicsDemo(document.getElementById('webgpu') as HTMLCanvasElement);
+
+/** 原版 impulses.html 的全局常量 */
+const RADIUS = 1;
+const MASS = 2;
+const STRENGTH = 500;
+const DT = 1 / 60;
+const DAMPING = 0.5;
+
+/** 球顶（相对球心）——"Top" 系列都用它当施力点 */
+const TOP_POINT = { x: 0, y: RADIUS, z: 0 };
 
 /**
- * 冲量示例（对应 cannon-es 的 `impulses.html`）。
+ * 冲量 / 力示例 —— 1:1 对应 cannon-es 的 `impulses.html`（**六幕**）。
  *
- * 三个球排成一排，每 1.2 秒被**施加一次向上的冲量**，于是反复弹起——高度按质量与冲量大小递减。
+ * 六幕全是"一个半径为 1、质量 2、阻尼 0.5 的球"，只有**施加方式**不同——
+ * 原版就是想让人看清"作用点不同、力和冲量不同"带来的差别：
  *
- * 冲量通过 `RigidbodyLogic.applyImpulse()` 施加：它是**一次性**的（调用一次即改变动量），
- * 与每帧都要调的 `applyForce()` 不同。这是运行时交互，所以走 Logic 的方法而不是数据字段。
+ * | 幕 | 施加方式 | 效果 |
+ * |---|---|---|
+ * | `Center impulse` | `applyImpulse`（质心） | 只平动 |
+ * | `Top impulse` | `applyImpulse`（球顶） | 平动 + 自转 |
+ * | `Center force` | `applyForce`（质心） | 只平动，且**只作用一步** |
+ * | `Top force` | `applyForce`（球顶） | 平动 + 力矩 |
+ * | `Local force` | `applyLocalForce`（局部球顶） | 球被绕 Z 转了 180°，"局部顶"在世界上是底部 |
+ * | `Torque` | `applyTorque` | 纯自转 |
+ *
+ * 冲量是 `strength × dt`（= 力作用一帧的等效），所以"Center impulse"与"Center force"初始速度相同。
+ * 注意前五幕都是**在创建时施加一次**——cannon-es 每步后会把 force 清零，所以"力"只影响一步。
+ *
+ * @param title 幕名
+ * @param apply 施加方式
+ * @param rotation 初始姿态（只有 Local force 幕需要）
  */
-const BALLS = [
-    { x: -3, mass: 1, color: { r: 0.90, g: 0.45, b: 0.30 } },
-    { x: 0, mass: 2, color: { r: 0.35, g: 0.75, b: 0.40 } },
-    { x: 3, mass: 4, color: { r: 0.35, g: 0.55, b: 0.95 } },
-];
-
-const ballObjects = BALLS.map((b, i) => ({
-    __type__: 'Object3D',
-    name: 'Ball-' + (i + 1),
-    position: { x: b.x, y: 1.2, z: 0 },
-    components: [{
-        __type__: 'MeshRenderer',
-        geometry: { __type__: 'SphereGeometry', radius: 0.6 },
-        material: {
-            __type__: 'ColorMaterial',
-            uniforms: { u_diffuseInput: { __type__: 'Color4', r: b.color.r, g: b.color.g, b: b.color.b, a: 1 } },
-        },
-    }, { __type__: 'SphereCollider', radius: 0.6 }, { __type__: 'Rigidbody', mass: b.mass }],
-}));
-
-const view: View = {
-    __type__: 'View',
-    canvas: webgpuCanvas,
-    root: {
-        __type__: 'Object3D',
-        name: 'PhysicsImpulses',
-        components: [{
-            __type__: 'Scene',
-            background: { __type__: 'Color4', r: 0.09, g: 0.10, b: 0.13, a: 1 },
-        }, {
-            __type__: 'PhysicsWorld',
-            gravity: { x: 0, y: -9.82, z: 0 },
-        }],
-        children: [{
-            __type__: 'Object3D',
-            name: 'Main Camera',
-            position: { x: 0, y: 5, z: 16 },
-            rotation: { x: -0.12, y: 0, z: 0 },
-            components: [{ __type__: 'PerspectiveCamera' }],
-        }, {
-            __type__: 'Object3D',
-            name: 'Ground',
-            components: [{
-                __type__: 'MeshRenderer',
-                geometry: { __type__: 'CubeGeometry' },
-                material: {
-                    __type__: 'ColorMaterial',
-                    uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0.24, g: 0.27, b: 0.32, a: 1 } },
-                },
-            }, { __type__: 'BoxCollider', width: 24, height: 1, depth: 12 }, { __type__: 'Rigidbody', mass: 0 }],
-            scale: { x: 24, y: 1, z: 12 },
-        }, ...ballObjects],
-    },
-};
-const viewLogic = logic(view);
-
-// 取到三个球的 logic，供施加冲量用
-const ballLogics = BALLS.map((_, i) => logic(ballObjects[i] as unknown as Object3D) as unknown as RigidbodyLogic);
-
-let elapsed = 0;
-ticker.onframe((interval) =>
+function addImpulseScene(title: string, apply: (rigidbodyLogic: RigidbodyLogic) => void, rotation?: { x: number; y: number; z: number })
 {
-    elapsed += interval;
-
-    if (elapsed >= 1200)
+    demo.addScene(title, (world) =>
     {
-        elapsed = 0;
-        // 同一个冲量下，质量越大的球被推得越低
-        for (const ballLogic of ballLogics) ballLogic.applyImpulse({ x: 0, y: 7, z: 0 });
-    }
+        // 原版 setupWorld 没有设重力，用的是 cannon-es 的默认值
+        reactive(world).gravity = { x: 0, y: -9.82, z: 0 };
 
-    webgpu.submit(viewLogic.submit);
-});
+        const sphere = createSphere('Sphere', { x: 0, y: 0, z: 0 }, RADIUS, {
+            mass: MASS,
+            linearDamping: DAMPING,
+            angularDamping: DAMPING,
+            rotation,
+            color: { r: 0.85, g: 0.8, b: 0.75 },
+        });
+
+        const rigidbodyLogic = logic(sphere.components![2] as Rigidbody) as RigidbodyLogic;
+        apply(rigidbodyLogic);
+
+        return [sphere];
+    });
+}
+
+addImpulseScene('Center impulse', (l) => l.applyImpulse({ x: -STRENGTH * DT, y: 0, z: 0 }));
+addImpulseScene('Top impulse', (l) => l.applyImpulse({ x: -STRENGTH * DT, y: 0, z: 0 }, TOP_POINT));
+addImpulseScene('Center force', (l) => l.applyForce({ x: -STRENGTH, y: 0, z: 0 }));
+addImpulseScene('Top force', (l) => l.applyForce({ x: -STRENGTH, y: 0, z: 0 }, TOP_POINT));
+addImpulseScene('Local force', (l) => l.applyLocalForce({ x: -STRENGTH, y: 0, z: 0 }, TOP_POINT), { x: 0, y: 0, z: Math.PI });
+addImpulseScene('Torque', (l) => l.applyTorque({ x: 0, y: 0, z: STRENGTH }));
