@@ -1,5 +1,6 @@
 import { CanvasTexture, ReadPixels, RenderObject, Submit, TextureView } from '@feng3d/render-api';
 import { WebGPU } from '@feng3d/webgpu';
+import { getSolidColorFragmentWGSL, getSolidColorVertexWGSL } from './solidColorShaders.tsl';
 
 // 创建两个重叠的三角形
 function createRedTriangle(): RenderObject
@@ -18,23 +19,8 @@ function createRedTriangle(): RenderObject
         draw: { __type__: 'DrawVertex' as const, vertexCount: 3 },
         bindingResources: { color: { value: [1, 0, 0, 1] } }, // 红色
         pipeline: {
-            vertex: {
-                code: `
-                    @vertex
-                    fn main(@location(0) position: vec3<f32>) -> @builtin(position) vec4<f32> {
-                        return vec4<f32>(position, 1.0);
-                    }
-                `,
-            },
-            fragment: {
-                code: `
-                    @binding(0) @group(0) var<uniform> color: vec4<f32>;
-                    @fragment
-                    fn main() -> @location(0) vec4<f32> {
-                        return color;
-                    }
-                `,
-            },
+            vertex: { code: getSolidColorVertexWGSL() },
+            fragment: { code: getSolidColorFragmentWGSL() },
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         },
     };
@@ -56,23 +42,8 @@ function createGreenTriangle(): RenderObject
         draw: { __type__: 'DrawVertex' as const, vertexCount: 3 },
         bindingResources: { color: { value: [0, 1, 0, 1] } }, // 绿色
         pipeline: {
-            vertex: {
-                code: `
-                    @vertex
-                    fn main(@location(0) position: vec3<f32>) -> @builtin(position) vec4<f32> {
-                        return vec4<f32>(position, 1.0);
-                    }
-                `,
-            },
-            fragment: {
-                code: `
-                    @binding(0) @group(0) var<uniform> color: vec4<f32>;
-                    @fragment
-                    fn main() -> @location(0) vec4<f32> {
-                        return color;
-                    }
-                `,
-            },
+            vertex: { code: getSolidColorVertexWGSL() },
+            fragment: { code: getSolidColorFragmentWGSL() },
             depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
         },
     };
