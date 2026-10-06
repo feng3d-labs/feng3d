@@ -34,6 +34,7 @@ export { samplerComparison } from './glsl/sampler/samplerComparison';
 export { samplerCube } from './glsl/sampler/samplerCube';
 export { usampler2D } from './glsl/sampler/usampler2D';
 export { depthSampler } from './glsl/sampler/depthSampler';
+export { type SampledDepthTexture, sampledDepthTexture } from './glsl/sampler/sampledDepthTexture';
 
 // glsl/builtin - 内置变量
 export { gl_Position, gl_FragColor, gl_VertexID, gl_FragCoord, gl_InstanceID, gl_FrontFacing, gl_PointSize } from './glsl/builtin/builtins';

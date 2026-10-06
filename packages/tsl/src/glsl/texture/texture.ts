@@ -1,5 +1,6 @@
 import { getBuildParam } from '../../core/buildShader';
 import { DepthSampler } from '../sampler/depthSampler';
+import { SampledDepthTexture } from '../sampler/sampledDepthTexture';
 import { Sampler2D } from '../sampler/sampler2D';
 import { Sampler2DArray } from '../sampler/sampler2DArray';
 import { SamplerCube } from '../sampler/samplerCube';
@@ -68,6 +69,13 @@ export function texture(sampler: Sampler2D, coord: Vec2): Vec4;
  */
 export function texture(sampler: DepthSampler, coord: Vec2): Vec4;
 /**
+ * texture 函数，用于采样**带 sampler 的深度纹理**（过滤采样）
+ * @param sampler 带 sampler 的深度纹理
+ * @param coord 纹理坐标（vec2）
+ * @returns 采样结果（vec4）
+ */
+export function texture(sampler: SampledDepthTexture, coord: Vec2): Vec4;
+/**
  * texture 函数，用于采样 3D 纹理
  * @param sampler 3D 纹理采样器
  * @param coord 纹理坐标（vec3）
@@ -113,7 +121,7 @@ export function texture(sampler: Sampler2D, coord: Vec2, bias: Float): Vec4;
  */
 export function texture(sampler: Sampler2D, coord: Vec2, bias: number): Vec4;
 export function texture(
-    sampler: Sampler2D | Sampler2DArray | Sampler3D | SamplerCube | USampler2D | DepthSampler,
+    sampler: Sampler2D | Sampler2DArray | Sampler3D | SamplerCube | USampler2D | DepthSampler | SampledDepthTexture,
     coord: Vec2 | Vec3,
     layerOrBias?: Int | Float | number,
 ): Vec4 | Uvec4
@@ -211,8 +219,9 @@ export function texture(
         const buildParam = getBuildParam();
         const isVertexStage = buildParam?.stage === 'vertex';
 
-        // 深度纹理需要使用 textureLoad 而不是 textureSample
-        if (isDepthTexture)
+        // 深度纹理默认用 textureLoad（裸深度纹理）；
+        // 但"带 sampler 的深度纹理"（SampledDepthTexture）要**过滤采样**，走下面的 textureSample 路径。
+        if (isDepthTexture && !(sampler instanceof SampledDepthTexture))
         {
             return depthWgslExpr();
         }
