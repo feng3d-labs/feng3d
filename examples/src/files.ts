@@ -45,6 +45,7 @@ export default {
         "CompoundTest",
         "BounceTest",
         "FrictionTest",
+        "SimpleFrictionTest",
         "ConstraintsTest",
         "HingeTest",
         "BodyTypesTest",

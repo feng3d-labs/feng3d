@@ -45,6 +45,12 @@ export interface PartOptions
     readonly rotation?: Vector3Like;
     /** 颜色 */
     readonly color?: PartColor;
+    /** 碰撞过滤分组（位掩码，原版的 collisionFilterGroup） */
+    readonly collisionFilterGroup?: number;
+    /** 碰撞过滤掩码（原版的 collisionFilterMask） */
+    readonly collisionFilterMask?: number;
+    /** 材质名（原版的 new CANNON.Material(name)） */
+    readonly materialName?: string;
 }
 
 /**
@@ -77,6 +83,9 @@ function rigidbody(options: PartOptions)
     if (options.fixedRotation !== undefined) body.fixedRotation = options.fixedRotation;
     if (options.linearDamping !== undefined) body.linearDamping = options.linearDamping;
     if (options.angularDamping !== undefined) body.angularDamping = options.angularDamping;
+    if (options.collisionFilterGroup !== undefined) body.collisionFilterGroup = options.collisionFilterGroup;
+    if (options.collisionFilterMask !== undefined) body.collisionFilterMask = options.collisionFilterMask;
+    if (options.materialName !== undefined) body.materialName = options.materialName;
 
     return body;
 }
@@ -88,7 +97,7 @@ function rigidbody(options: PartOptions)
  *
  * @returns 地面的 Object3D
  */
-export function createGroundPlane(): Object3D
+export function createGroundPlane(options: PartOptions = {}): Object3D
 {
     return {
         __type__: 'Object3D',
@@ -97,13 +106,10 @@ export function createGroundPlane(): Object3D
         components: [{
             __type__: 'MeshRenderer',
             geometry: { __type__: 'PlaneGeometry', width: 500, height: 500, segmentsW: 4, segmentsH: 4 },
-            material: material({ r: 0.55, g: 0.55, b: 0.55 }),
+            material: material(options.color ?? { r: 0.55, g: 0.55, b: 0.55 }),
         }, {
             __type__: 'PlaneCollider',
-        }, {
-            __type__: 'Rigidbody',
-            mass: 0,
-        }],
+        }, rigidbody(options) as never],
     };
 }
 

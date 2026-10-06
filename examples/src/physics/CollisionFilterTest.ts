@@ -1,94 +1,54 @@
-import { WebGPU } from '@feng3d/webgpu';
-import { logic, ticker } from 'feng3d';
-import type { View } from 'feng3d';
-import '@feng3d/cannon-plugin';
+import { reactive } from 'feng3d';
+import { createPhysicsDemo } from './PhysicsDemo';
+import { createBox, createCylinder, createSphere } from './PhysicsSceneParts';
 
-const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
-const webgpu = await new WebGPU().init(); // 初始化 WebGPU
+const demo = createPhysicsDemo(document.getElementById('webgpu') as HTMLCanvasElement);
 
 /**
- * 碰撞过滤示例（对应 cannon-es 的 `collision_filter.html`）。
+ * 碰撞过滤示例 —— 1:1 对应 cannon-es 的 `collision_filter.html`。
  *
- * 两组物体同时落下，各自的 `collisionFilterGroup` / `collisionFilterMask` 只认自己那一组：
- * 于是**红色组与蓝色组彼此穿过**（地面属于默认组 1，所以 —— 见下），而同组之间正常堆叠。
+ * 原版用**位掩码**控制谁和谁碰：
+ * `(A.group & B.mask) && (B.group & A.mask)` 都为真时才允许接触，判断发生在 broadphase。
  *
- * 位掩码的判据是 `(A.group & B.mask) !== 0 && (B.group & A.mask) !== 0`：
- * - 红组：group 2、mask 2 → 只与红组碰撞
- * - 蓝组：group 4、mask 4 → 只与蓝组碰撞
+ * 场景（**无重力**、solver 迭代 5、也没有地面）：
+ * - **球**：r=1、group 1、mask 2|3，放在 (-5,0,0) 并给初速度 (5,0,0) —— 它水平射向另外两个
+ * - **盒**：半边长 1、group 2、mask 1，就在原点
+ * - **圆柱**：r=1/h=2.2/10 段、group 3、mask 1，放在 (5,0,0)
  *
- * 注意地面用默认 group 1 / mask -1，所以它**谁都挡**——为了让两组都停在地上，
- * 这里把两组的 mask 各补上 1（即 `mask: 2 | 1` / `4 | 1`），它们仍互相穿过。
+ * 于是球会**穿过**盒与圆柱继续飞（它们彼此不允许碰撞），
+ * 而盒与圆柱之间也不碰（group 2 的 mask 只有 1，group 4 的 mask 也只有 1）。
  */
-const RED = { r: 0.90, g: 0.35, b: 0.30 };
-const BLUE = { r: 0.35, g: 0.55, b: 0.95 };
-
-function block(name: string, x: number, z: number, color: { r: number; g: number; b: number }, group: number, mask: number)
+demo.addScene('Collision filter', (world) =>
 {
-    return {
-        __type__: 'Object3D',
-        name,
-        position: { x, y: 6 + x * 0.3, z },
-        scale: { x: 1.4, y: 1.4, z: 1.4 },
-        components: [{
-            __type__: 'MeshRenderer',
-            geometry: { __type__: 'CubeGeometry' },
-            material: {
-                __type__: 'ColorMaterial',
-                uniforms: { u_diffuseInput: { __type__: 'Color4', r: color.r, g: color.g, b: color.b, a: 1 } },
-            },
-        }, { __type__: 'BoxCollider', width: 1.4, height: 1.4, depth: 1.4 }, {
-            __type__: 'Rigidbody',
-            mass: 1,
-            collisionFilterGroup: group,
-            collisionFilterMask: mask,
-        }],
-    };
-}
+    reactive(world).gravity = { x: 0, y: 0, z: 0 };
+    reactive(world).solverIterations = 5;
 
-const view: View = {
-    __type__: 'View',
-    canvas: webgpuCanvas,
-    root: {
-        __type__: 'Object3D',
-        name: 'PhysicsCollisionFilter',
-        components: [{
-            __type__: 'Scene',
-            background: { __type__: 'Color4', r: 0.09, g: 0.10, b: 0.13, a: 1 },
-        }, {
-            __type__: 'PhysicsWorld',
-            gravity: { x: 0, y: -9.82, z: 0 },
-        }],
-        children: [{
-            __type__: 'Object3D',
-            name: 'Main Camera',
-            position: { x: 0, y: 8, z: 20 },
-            rotation: { x: -0.35, y: 0, z: 0 },
-            components: [{ __type__: 'PerspectiveCamera' }],
-        }, {
-            __type__: 'Object3D',
-            name: 'Ground',
-            components: [{
-                __type__: 'MeshRenderer',
-                geometry: { __type__: 'CubeGeometry' },
-                material: {
-                    __type__: 'ColorMaterial',
-                    uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0.24, g: 0.27, b: 0.32, a: 1 } },
-                },
-            }, { __type__: 'BoxCollider', width: 30, height: 1, depth: 30 }, { __type__: 'Rigidbody', mass: 0 }],
-            scale: { x: 30, y: 1, z: 30 },
-        },
-        // 红组与蓝组各三个，沿 Z 排开；两组在 X 方向重叠，理应彼此穿过
-        block('Red-1', -1, -2.2, RED, 2, 2 | 1),
-        block('Red-2', -1, 0, RED, 2, 2 | 1),
-        block('Red-3', -1, 2.2, RED, 2, 2 | 1),
-        block('Blue-1', 1, -2.2, BLUE, 4, 4 | 1),
-        block('Blue-2', 1, 0, BLUE, 4, 4 | 1),
-        block('Blue-3', 1, 2.2, BLUE, 4, 4 | 1)],
-    },
-};
-const viewLogic = logic(view);
+    // 分组必须是 2 的幂
+    const GROUP1 = 1;
+    const GROUP2 = 2;
+    const GROUP3 = 4;
+    const size = 1;
+    const mass = 1;
 
-ticker.onframe(() =>
-{
-    webgpu.submit(viewLogic.submit);
+    return [
+        createSphere('Sphere', { x: -5, y: 0, z: 0 }, size, {
+            mass,
+            velocity: { x: 5, y: 0, z: 0 },
+            collisionFilterGroup: GROUP1,
+            collisionFilterMask: GROUP2 | GROUP3,
+            color: { r: 0.9, g: 0.6, b: 0.35 },
+        }),
+        createBox('Box', { x: 0, y: 0, z: 0 }, { x: size, y: size, z: size }, {
+            mass,
+            collisionFilterGroup: GROUP2,
+            collisionFilterMask: GROUP1,
+            color: { r: 0.5, g: 0.75, b: 0.95 },
+        }),
+        createCylinder('Cylinder', { x: 5, y: 0, z: 0 }, size, size, size * 2.2, 10, {
+            mass,
+            collisionFilterGroup: GROUP3,
+            collisionFilterMask: GROUP1,
+            color: { r: 0.6, g: 0.85, b: 0.6 },
+        }),
+    ];
 });
