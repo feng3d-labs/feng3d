@@ -4,7 +4,7 @@ import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVec
 // 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
 // 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
 // 直接写 new Material() 会被判为「对纯数据类的 new」——与 Plane / Sphere 同一类误报。
-import { Body, ContactMaterial, Material as CannonMaterial, World, type RaycastVehicle as CannonRaycastVehicle, type SPHSystem as CannonSPHSystem, type Spring as CannonSpring } from 'cannon-es';
+import { Body, ContactMaterial, Material as CannonMaterial, World, type GSSolver, type RaycastVehicle as CannonRaycastVehicle, type SPHSystem as CannonSPHSystem, type Spring as CannonSpring } from 'cannon-es';
 import type { ConstraintLogic } from './Constraint';
 import type { RigidbodyLogic } from './Rigidbody';
 import type { SpringLogic } from './Spring';
@@ -49,6 +49,21 @@ export interface PhysicsWorld extends Behaviour
 
     /** 世界默认弹性系数（缺失时沿用 cannon-es 的 0） */
     readonly restitution?: number;
+
+    /** 求解器迭代次数（缺失时用 cannon-es 默认 10）；刚体多、需要更好力传递时调大 */
+    readonly solverIterations?: number;
+
+    /** 接触方程刚度（缺失时用 cannon-es 默认 1e7）；调小 = 接触更"软" */
+    readonly contactEquationStiffness?: number;
+
+    /** 接触方程松弛时间（缺失时用 cannon-es 默认 3）；调大更稳但更"软" */
+    readonly contactEquationRelaxation?: number;
+
+    /** 是否用快速四元数归一化（缺失时 false）；刚体多到不太动时可省算力 */
+    readonly quatNormalizeFast?: boolean;
+
+    /** 每几次步进才归一化一次四元数（缺失时 0 = 每次都归一化） */
+    readonly quatNormalizeSkip?: number;
 }
 
 /**
@@ -202,6 +217,14 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
         for (const listener of collideListeners) listener(collideEvent);
     });
 
+    // ---- 求解器与接触方程（堆叠很多刚体时这些参数决定稳不稳） ----
+    // world.solver 默认是 GSSolver，只有它有 iterations
+    if (data.solverIterations !== undefined) (world.solver as GSSolver).iterations = data.solverIterations;
+    if (data.contactEquationStiffness !== undefined) world.defaultContactMaterial.contactEquationStiffness = data.contactEquationStiffness;
+    if (data.contactEquationRelaxation !== undefined) world.defaultContactMaterial.contactEquationRelaxation = data.contactEquationRelaxation;
+    if (data.quatNormalizeFast !== undefined) world.quatNormalizeFast = data.quatNormalizeFast;
+    if (data.quatNormalizeSkip !== undefined) world.quatNormalizeSkip = data.quatNormalizeSkip;
+
     // ---- 接触材质（摩擦 / 弹性） ----
     // 世界默认：cannon-es 的 defaultContactMaterial 兜住所有没有专门 ContactMaterial 的接触对
     if (data.friction !== undefined) world.defaultContactMaterial.friction = data.friction;
@@ -277,15 +300,18 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             const o3d = state.entity as Object3D | null;
             if (o3d === null) return;
 
-            // 每帧重建「刚体 → 所属 Object3D」映射：既补齐新出现的刚体，也能丢弃已移除的
+            // 每帧重建「刚体 → 所属 Object3D」映射，并对账 world 里的刚体：
+            // 本帧新出现的加进去，已从场景消失的移除（动态场景必需，否则会一直泄漏）
             bodyToObject3D.clear();
             const rigidbodies = getLogic(o3d).getComponentsInChildren('Rigidbody', true);
+            const currentBodies = new Set<Body>();
             for (const rigidbody of rigidbodies)
             {
                 const rigidbodyLogic = getLogic(rigidbody) as RigidbodyLogic | null;
                 if (rigidbodyLogic === null) continue;
 
                 const body = rigidbodyLogic.body;
+                currentBodies.add(body);
                 if (!registered.has(body))
                 {
                     world.addBody(body);
@@ -302,6 +328,14 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
 
                 const object3D = rigidbodyLogic.entity;
                 if (object3D !== null) bodyToObject3D.set(body, object3D);
+            }
+
+            // 对账：已从场景消失的刚体（动态场景里被 splice 掉的）要从 world 移除
+            for (const body of [...registered])
+            {
+                if (currentBodies.has(body)) continue;
+                world.removeBody(body);
+                registered.delete(body);
             }
 
             // ---- 约束：连接两个刚体（两端 body 都就绪才创建，且只创建一次） ----
