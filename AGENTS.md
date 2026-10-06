@@ -139,14 +139,19 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 - **不支持**：markRaw / shallowRef / shallowReactive / shallowReadonly / readonly / computed setter / `__v_skip`
 - 扩展规则：只有 `Object.isExtensible` 不通过的对象才不响应化（Float32Array 等可响应化）
 
-## 9. WGSL 着色器
-- WGSL 着色器从原始 GLSL（保留在 `packages/feng3d/src/shaders/*.glsl` 和 `packages/feng3d/src/shaders/modules/*.glsl`）翻译而来
-- 修改时对照对应 GLSL 文件，保持语义一致
-- 着色器以内联 TypeScript 字符串形式存在（`*.wgsl.ts` 导出字符串常量），不用 .wgsl 文件
+## 9. 着色器（TSL 单源）
+- **着色器一律用 TSL 编写**（`packages/tsl`；issue #708 总纲 / #709 收编），由 TSL **单源**生成 GLSL + WGSL——这是本仓消除「着色器双份人工维护」这一最大架构欠账的既定路线（见 [docs/ARCHITECTURE_V2.md](docs/ARCHITECTURE_V2.md) §P2）
+- **引擎内置着色器**：`packages/feng3d/src/shaders/tsl/*.ts`。手写内联字符串形式的 `*.wgsl.ts` **已全部迁完**（`packages/feng3d/src/**/*.wgsl.ts` 归零）
+- **示例着色器**：`packages/webgpu/examples/src/**/*.tsl.ts`——**与原 `.wgsl` 同目录、同名**，后缀固定 `.tsl.ts`（`basic.vert.wgsl` → `basic.vert.tsl.ts`）
+- **examples 有意保持 wgsl 与 tsl 双轨并存**（issue #712 范围调整后定稿）：已迁出的走 TSL，未迁的仍是 `.wgsl`。新写着色器**优先 TSL**，但**不要**为了「统一」而批量改写尚未迁移的示例
+- **运行时工具着色器**：`packages/webgpu/src/utils/*WGSL.ts`（`copyDepthTextureWGSL` / `generateMipmapWGSL` 等），同样由 TSL 生成
+- **GLSL 原始文件保留为参考样本**（`packages/feng3d/src/shaders/*.glsl`、`modules/*.glsl`）；「从构建路径移除」是单独一步（issue #713，未开始）
+- **TSL 生成结果与手写 WGSL 不要求逐字节一致**：TSL 有自己的生成风格（结构体大括号换行、`vec4<f32>` 而非 `vec4f`、成员名小写、`let`/`var` 选择、常量折叠、广播折叠等）。回归保护由 `test/tslWgslParity.spec.ts` + `scripts/tsl-parity-baseline.json`（**规范化基线**，生成结果意外变化即失败）承担；浮点结合顺序一类的改写用本地审计模式逐条核对：`TSL_PARITY_CHECK_ORIGINAL=1 npx vitest run test/tslWgslParity.spec.ts`
 - WGSL 与 GLSL 差异注意：
   - 不支持 swizzle 赋值
   - `textureSample` 需均匀控制流（非均匀流用 `textureSampleLevel`）
   - `@group/@binding` 在 vertex/fragment 间同名槽位必须一致
+  - **TSL 的采样器展开是两个绑定：`<name>_texture`（纹理）+ `<name>`（采样器）**——与手写常见的「sampler 在前、texture 在后」顺序相反，迁移时数据侧 `bindGroup` 要按 TSL 的顺序写
 
 ## 10. WebGPU readonly 边界
 - WebGPU API 要求数组可变，但库使用 readonly 数组

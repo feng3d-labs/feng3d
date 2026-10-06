@@ -14,7 +14,7 @@
    `SkeletonLogic.globalMatrices` 算出每根骨骼的蒙皮矩阵。
 4. **渲染**：`SkinnedMeshRenderer` 的 `beforeRender` 把骨骼矩阵补齐到 `SKIN_MATRIX_COUNT`（150）
    写入 `@group(3) @binding(0)`，并把标准材质顶点着色器换装成蒙皮变体
-   （`packages/feng3d/src/shaders/modules/skeleton.wgsl.ts`、
+   （`packages/feng3d/src/shaders/tsl/skeleton.ts`——原 `modules/skeleton.wgsl.ts` 已迁为 TSL、
    `packages/feng3d/src/materials/standardVertexShader.ts`）。
 
 ## 顶点缓冲布局（关键约束）
