@@ -394,7 +394,19 @@ interface GLTFJson
     }[];
     meshes?: {
         name?: string;
-        primitives: { attributes: Record<string, number>; indices?: number; material?: number; mode?: number }[];
+        /** 初始 morph 权重（与 `primitives[].targets` 的 target 数对应；缺省视为全 0） */
+        weights?: number[];
+        primitives: {
+            attributes: Record<string, number>;
+            indices?: number;
+            material?: number;
+            mode?: number;
+            /**
+             * morph target（形变目标）列表：每个 target 只声明它改动哪些属性。
+             * 本加载器目前只取 `POSITION`（NORMAL 等其它 delta 不产出）。
+             */
+            targets?: { POSITION?: number }[];
+        }[];
     }[];
     nodes?: {
         mesh?: number;
@@ -455,6 +467,21 @@ export interface GLTFPrimitive
     readonly textures: GLTFTextureUsage[];
     /** 该 primitive 的几何数据（顶点已烘焙到世界空间） */
     readonly geometry: CustomGeometry;
+    /**
+     * morph target（形变目标）的 `POSITION` delta，按 `primitives[].targets` 顺序。
+     *
+     * 每项是扁平数组（每顶点 3 个分量，与 `geometry.positions` 的顶点数一致）；
+     * delta 是**方向量**，因此只做了世界矩阵的线性部分（旋转/缩放），不含平移。
+     * 无 `targets` 的 primitive 为空数组。
+     */
+    readonly morphTargets: number[][];
+    /**
+     * 该 primitive 的初始 morph 权重（glTF 的 `meshes[].weights`）。
+     *
+     * 长度与 {@link GLTFPrimitive.morphTargets} 一致；文档未给 `weights` 时按 glTF 规范视为全 0。
+     * 无 `targets` 的 primitive 为空数组。
+     */
+    readonly morphWeights: number[];
 }
 
 /** 一个 glTF mesh 的解析结果（含它挂载到的节点） */
@@ -1442,8 +1469,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
      * @returns 几何数据与归一化后的绘制模式
      */
     function buildPrimitiveGeometry(
-        prim: { attributes: Record<string, number>; indices?: number; mode?: number },
-        worldMatrix: Matrix4x4): { readonly geometry: CustomGeometry; readonly mode: number }
+        prim: { attributes: Record<string, number>; indices?: number; mode?: number; targets?: { POSITION?: number }[] },
+        worldMatrix: Matrix4x4): { readonly geometry: CustomGeometry; readonly mode: number; readonly morphTargets: number[][] }
     {
         if (prim.attributes.POSITION === undefined) throw new Error('glTF: primitive 缺少 POSITION 属性');
 
@@ -1517,7 +1544,43 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             r_geo.a_skinWeights1 = skinGroup1.weights;
         }
 
-        return { geometry: geo, mode: expanded.mode };
+        return { geometry: geo, mode: expanded.mode, morphTargets: readMorphTargets(prim.targets, vertexCount, worldMatrix) };
+    }
+
+    /**
+     * 解析 morph target 的 `POSITION` delta（glTF 的 `primitives[].targets`）。
+     *
+     * delta 是**方向量**：只做世界矩阵的线性部分（旋转 / 缩放），**不加平移**——
+     * 顶点位置本身已经烘焙到世界空间，delta 跟着做同一套变换才与之一致。
+     * target 没写 `POSITION` 时补零数组，保持"每个 target 一项、长度都是 `vertexCount * 3`"的不变量。
+     */
+    function readMorphTargets(targets: { POSITION?: number }[] | undefined, vertexCount: number, worldMatrix: Matrix4x4): number[][]
+    {
+        if (!targets || targets.length === 0) return [];
+
+        const result: number[][] = [];
+        for (const target of targets)
+        {
+            const accessor = target.POSITION;
+            if (accessor === undefined)
+            {
+                result.push(new Array<number>(vertexCount * 3).fill(0));
+                continue;
+            }
+
+            const deltas = readAccessor(accessor);
+            const transformed = new Array<number>(vertexCount * 3);
+            for (let i = 0; i < vertexCount; i++)
+            {
+                const v = mat4TransformVector3(worldMatrix, { x: deltas[i * 3], y: deltas[i * 3 + 1], z: deltas[i * 3 + 2] });
+                transformed[i * 3] = v.x;
+                transformed[i * 3 + 1] = v.y;
+                transformed[i * 3 + 2] = v.z;
+            }
+            result.push(transformed);
+        }
+
+        return result;
     }
 
     /** 用世界矩阵的逆转置变换法线并归一化 */
@@ -1649,6 +1712,10 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
             components.push({ __type__: skinned ? 'SkinnedMeshRenderer' : 'MeshRenderer', geometry, material } as Components);
 
+            const morphTargets = built.morphTargets;
+            // glTF 的 `meshes[].weights` 缺省时按规范视为全 0
+            const morphWeights = morphTargets.map((_, i) => meshDef.weights?.[i] ?? 0);
+
             const info: GLTFPrimitive = {
                 meshIndex,
                 primitiveIndex,
@@ -1658,6 +1725,8 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
                 material,
                 textures,
                 geometry,
+                morphTargets,
+                morphWeights,
             };
             group.push(info);
             allPrimitives.push(info);
