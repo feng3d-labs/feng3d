@@ -52,6 +52,15 @@ export interface CustomGeometry extends Geometry
     readonly a_skinIndices1?: ReadonlyArray<number>;
     /** 骨骼权重第二组（来自 glTF `WEIGHTS_1`） */
     readonly a_skinWeights1?: ReadonlyArray<number>;
+    /**
+     * morph target（形变目标）的顶点位置 delta，按 target 顺序（来自 glTF `primitives[].targets`）。
+     *
+     * 每项是扁平数组（每顶点 3 分量，与 `positions` 的顶点数一致）。
+     * 形变量**不走顶点属性**：target 数可达十几个、会超出顶点 location 上限，数据量也远超 uniform 的
+     * 64KB（实测 Horse 的 796 顶点 × 15 target 需要约 186KB）——渲染层应把它落成 storage buffer，
+     * 顶点着色器按 `targetIndex * vertexCount + vertexIndex` 索引。
+     */
+    readonly morphTargets?: readonly (readonly number[])[];
     /** 索引数据 */
     readonly indices?: ReadonlyArray<number>;
 }
