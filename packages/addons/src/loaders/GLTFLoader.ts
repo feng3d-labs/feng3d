@@ -1264,8 +1264,14 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             case 'translation': return { propertyName: 'position', type: 'Vector3', components: 3 };
             case 'rotation': return { propertyName: 'rotation', type: 'Quaternion', components: 4 };
             case 'scale': return { propertyName: 'scale', type: 'Vector3', components: 3 };
-            // morph target 权重：值是长度为 target 数的数组，写到 MeshRenderer 组件的 morphWeights 上
-            case 'weights': return { propertyName: 'morphWeights', type: 'Numbers', components: 1, component: 'MeshRenderer' };
+            // morph target 权重：值是长度为 target 数的数组，写到**渲染组件**的 morphWeights 上。
+        //
+        // 这里的组件名必须用基类型 `Renderable`，不能用 `MeshRenderer`：
+        // `Animation.getPropertyHost` 是用 `matchType(component, 名字)` 找宿主的，而 `matchType` 只对
+        // 基类型名命中子类型（内置表里登记的是 Component / Behaviour / Renderable 这些**基类型**，
+        // `MeshRenderer` 是叶子、没有反查项）。示例把渲染组件换成 `MorphMeshRenderer` 之后，
+        // 若这里写 `MeshRenderer` 就永远找不到宿主，权重静默不写、morph 形变完全静止。
+            case 'weights': return { propertyName: 'morphWeights', type: 'Numbers', components: 1, component: 'Renderable' };
             default: return null;
         }
     }
