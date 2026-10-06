@@ -1094,7 +1094,7 @@ feng3d 自己的**纯数据接口**（`__type__` 必填、分量可选），不�
    结论：**`Color3` 的 math 消费者是 0**；`Color4` 只有 3 个文件 / 9 处 `new`
    （[createTexture.ts](../packages/feng3d/src/textures/createTexture.ts) 6、
    [Particle.ts](../packages/particlesystem/src/Particle.ts) 2、
-   [ParticlesAdditive.shader.ts](../packages/particlesystem/src/ParticlesAdditive.shader.ts) 1），
+   `ParticlesAdditive.shader.ts`（该遗留文件已在粒子包去 class 收尾批删除）1），
    另有 [PointGeometry.ts](../packages/feng3d/src/geometry/PointGeometry.ts) / [SegmentGeometry.ts](../packages/feng3d/src/geometry/SegmentGeometry.ts)
    以 `Color4 as Color4Math` 别名引类型（0 处 `new`）。
 2. **`Vector2/3/4`、`Quaternion`、`Matrix*`、`Box3`、`Ray3` 等的桶消费者是「隐藏引用」的主要来源**：
