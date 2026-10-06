@@ -136,11 +136,13 @@ export class Compute extends Func
             // 入口：@compute @workgroup_size(...) fn name(@builtin(...) ...)
             const size = this.workgroupSize.join(', ');
             const params: string[] = [];
+            // **通用**：按依赖里实际用到的 builtin 逐个生成参数
+            // （原先硬编码只生成 global_invocation_id，于是 local_invocation_id / workgroup_id 拿不到入口参数）
             for (const builtin of dependencies.builtins)
             {
-                if (builtin.isGlobalInvocationId && builtin.value)
+                if (builtin.value)
                 {
-                    params.push(`@builtin(global_invocation_id) ${builtin.defaultName}: ${builtin.value.wgslType}`);
+                    params.push(`@builtin(${builtin.wgslBuiltinName}) ${builtin.defaultName}: ${builtin.value.wgslType}`);
                 }
             }
 

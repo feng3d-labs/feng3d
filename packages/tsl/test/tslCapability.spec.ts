@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, workgroupBarrier, storageBarrier, textureBarrier, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -791,5 +791,66 @@ describe('vec2 的标量广播（#834 方案 A）', () =>
     {
         expect(vec2(1.0, 2.0).toWGSL()).toBe('vec2<f32>(1.0, 2.0)');
         expect(vec2(0.0, 0.0).toWGSL()).toBe('vec2<f32>(0.0)');
+    });
+});
+
+describe('compute 的多个 builtin + barrier（#710 三项能力之二）', () =>
+{
+    it('local_invocation_id / workgroup_id 能作为入口参数（原先硬编码只有 global_invocation_id）', () =>
+    {
+        const c = compute('computeMain', [256, 1, 1], () =>
+        {
+            const lid = uvec3(builtin('local_invocation_id'));
+            const wid = uvec3(builtin('workgroup_id'));
+
+            return_(vec4(float(lid.x), float(wid.x), 0.0, 1.0));
+        });
+        const w = c.toWGSL();
+
+        expect(w).toContain('@builtin(local_invocation_id) localInvocationId: vec3<u32>');
+        expect(w).toContain('@builtin(workgroup_id) workgroupId: vec3<u32>');
+        expect(w).toContain('fn computeMain(');
+    });
+
+    it('只用到哪个 builtin 就只生成哪个参数', () =>
+    {
+        const c = compute('main', [8, 1, 1], () =>
+        {
+            const gid = uvec3(builtin('global_invocation_id'));
+
+            return_(vec4(float(gid.x), 0.0, 0.0, 1.0));
+        });
+
+        expect(c.toWGSL()).not.toContain('local_invocation_id');
+        expect(c.toWGSL()).toContain('@builtin(global_invocation_id) globalInvocationId: vec3<u32>');
+    });
+
+    it('workgroupBarrier 是语句、挂在当前容器内（if 体内）', () =>
+    {
+        const c = compute('main', [8, 1, 1], () =>
+        {
+            const lid = uvec3(builtin('local_invocation_id'));
+
+            if_(lid.x.greaterThan(uint(0)), () =>
+            {
+                workgroupBarrier();
+            });
+        });
+        const w = c.toWGSL();
+
+        expect(w).toMatch(/if \([^\n]*\) \{\n\s+workgroupBarrier\(\);\n\s+\}/);
+    });
+
+    it('storageBarrier / textureBarrier 生成对应 WGSL 名', () =>
+    {
+        const c = compute('main', [8, 1, 1], () =>
+        {
+            storageBarrier();
+            textureBarrier();
+        });
+        const w = c.toWGSL();
+
+        expect(w).toContain('storageBarrier();');
+        expect(w).toContain('textureBarrier();');
     });
 });

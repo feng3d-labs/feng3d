@@ -32,7 +32,7 @@ export class Builtin implements IElement
      */
     private _structVarPrefix?: string;
 
-    constructor(builtinName: 'gl_Position' | 'gl_FrontFacing' | 'gl_VertexID' | 'gl_FragCoord' | 'gl_InstanceID' | 'gl_FragColor' | 'gl_PointSize' | 'global_invocation_id')
+    constructor(builtinName: 'gl_Position' | 'gl_FrontFacing' | 'gl_VertexID' | 'gl_FragCoord' | 'gl_InstanceID' | 'gl_FragColor' | 'gl_PointSize' | 'global_invocation_id' | 'local_invocation_id' | 'workgroup_id')
     {
         this.builtinName = builtinName;
     }
@@ -82,6 +82,8 @@ export class Builtin implements IElement
         if (this.builtinName === 'gl_PointSize') return 'point_size';
         // compute 的内置输入（本身就是 WGSL 名，1:1 映射）
         if (this.builtinName === 'global_invocation_id') return 'global_invocation_id';
+        if (this.builtinName === 'local_invocation_id') return 'local_invocation_id';
+        if (this.builtinName === 'workgroup_id') return 'workgroup_id';
 
         return this.builtinName;
     }
@@ -268,6 +270,8 @@ interface BuiltinMap
     'gl_FragColor': Vec4,
     'gl_PointSize': Float,
     'global_invocation_id': Uvec3,
+    'local_invocation_id': Uvec3,
+    'workgroup_id': Uvec3,
 }
 
 /**
