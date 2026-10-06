@@ -233,14 +233,22 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
                 || r_data.shadowCameraNear !== undefined
                 || r_data.shadowCameraFar !== undefined;
             const lightPosition = { x: center.x, y: center.y, z: center.z };
+            // 视点看向的目标：显式模式**沿光源方向**（对齐 three.js 的
+            // `shadow.camera.lookAt(light.target)`——three 的 target 默认在原点，
+            // 与 light.position 一起决定阴影相机的朝向）；自动模式仍看向包围盒中心。
+            const lightTarget = { x: center.x, y: center.y, z: center.z };
 
             if (hasExplicitFrustum)
             {
                 const p = members.position;
+                const dirNorm = vec3Normalize(vec3FromValues(lightDir.x, lightDir.y, lightDir.z));
 
                 lightPosition.x = p.x;
                 lightPosition.y = p.y;
                 lightPosition.z = p.z;
+                lightTarget.x = p.x + dirNorm[0];
+                lightTarget.y = p.y + dirNorm[1];
+                lightTarget.z = p.z + dirNorm[2];
             }
             else
             {
@@ -263,7 +271,7 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
 
             const lightViewMatrix = mat4LookAt(
                 vec3FromValues(lightPosition.x, lightPosition.y, lightPosition.z),
-                vec3FromValues(center.x, center.y, center.z),
+                vec3FromValues(lightTarget.x, lightTarget.y, lightTarget.z),
                 upVector,
             );
 
