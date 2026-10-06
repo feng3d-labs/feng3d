@@ -18,7 +18,6 @@ import type { TrimeshCollider } from '../src/TrimeshCollider';
 import type { ConvexCollider } from '../src/ConvexCollider';
 import type { HeightfieldCollider } from '../src/HeightfieldCollider';
 import type { ParticleCollider } from '../src/ParticleCollider';
-import type { ConeTwistConstraint } from '../src/ConeTwistConstraint';
 import type { HingeConstraint, HingeConstraintLogic } from '../src/HingeConstraint';
 import type { Vehicle } from '../src/Vehicle';
 import type { SPHParticle } from '../src/SPHParticle';
