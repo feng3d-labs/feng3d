@@ -47,5 +47,8 @@
   "peerDependencies": {
     "feng3d-editor": "*",
     "vue": "*"
+  },
+  "devDependencies": {
+    "vue": "3.5.43"
   }
 }
