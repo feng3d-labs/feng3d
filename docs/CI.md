@@ -381,7 +381,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | R5 effect 必须注解 | 1、3 | 规则 `feng3d/effect-annotation` + `check-effect-inventory.mjs` |
 | R6 可空性显式 | 9、10、14 | `check-strict-dirs.mjs`、`check-strict-packages.mjs`、`types:packages` |
 | R7 作用域守卫异常安全 | —— | **无执行者**：`batchRun` / `noMutationCount` 机制已有 `try/finally` 与 API 级回归，但 11 个生产调用点没有逐个异常用例 |
-| R8 视觉回归强度 | —— | **未进 CI**：容差在 `playwright.config.ts`（全局 0.01）、`e2e/examples.config.ts`（26 处放宽）与 `playwright.webgpu-examples.config.ts`（0.02，5 个 webgpu 示例，issue #712 补）里，examples 视觉回归不在任一 workflow；`editor-e2e` 跑的是编辑器产物、不校验容差 |
+| R8 视觉回归强度 | —— | **像素层未进 CI**（runner 无 GPU、基线与真实 GPU 不可比）；**行为层已进 CI**：`e2e/particlesystem.spec.ts` 挂在 `editor-e2e` job 上，逐个粒子示例校验「运行期无错误」，有 GPU 环境再加「渲染循环在提交帧」。容差在 `playwright.config.ts`（全局 0.01）、`e2e/examples.config.ts`（26 处放宽）与 `playwright.webgpu-examples.config.ts`（0.02，5 个 webgpu 示例，issue #712 补）里，examples 视觉回归不在任一 workflow；`editor-e2e` 跑的是编辑器产物、不校验容差 |
 | R9 包体天花板 | 19 | `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json` |
 | R10 覆盖率门禁 | 12、13 | `npm run test:coverage`（四项阈值 + `check-coverage-inflation.mjs` 虚高自检）+ `coverage-by-package.mjs --check`（§1.3 表一致性） |
 | R11 文档现状标签 | 6 | `check-doc-status-labels.mjs` |
@@ -1018,6 +1018,7 @@ CI 会以 `ERR_MODULE_NOT_FOUND: Cannot find module .../node_modules/eslint-plug
 | 步骤 | 命令 | 判据 |
 |---|---|---|
 | AI 桥接端到端验收（#150） | `node scripts/editor-e2e-scene.mjs --open` | 从零搭场景 + 导出→导入**往返等价**（结构自洽、画面有内容；无 GPU 时像素判据跳过，`EDITOR_HEADLESS=0` 有头时真跑——本机实测 10/10） |
+| 粒子示例端到端（R8 行为层） | `npx playwright test e2e/particlesystem.spec.ts` | 9 个粒子示例逐个校验「运行期无错误」（页面抛错 / WebGPU 校验失败 / 着色器编译失败都会落日志），有 GPU 时再加「渲染循环在提交帧」；**不比对像素**，因此不受 runner 显卡差异影响 |
 | 插件贡献表自洽（#168） | `node scripts/editor-plugins.mjs --open --check` | 真浏览器里取到的贡献表：贡献点都有来源、来源都在插件列表里、id 唯一、落位已知 |
 | 插槽驱动的界面（#276 S2b） | `node scripts/editor-slots.mjs --open` | 关掉一个面板插件后**界面标签真的少一个**、恢复后回来；面板标签数与贡献表面板数一致；pageerror 0（本机实测 11/11） |
 | 选中同步（#173） | `node scripts/editor-selection-sync-check.mjs --open` | 关闭再打开面板后，检查器/层级树**自己恢复**到当前选中（一次性事件 + 异步组件的经典坑） |

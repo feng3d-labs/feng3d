@@ -283,7 +283,7 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 | R5 | effect 必须注解 | ✅ `check-effect-inventory.mjs`（进 CI；实测 55 处 / 32 文件） |
 | R6 | 可空性显式 | ✅ `check-strict-dirs.mjs` + `check-strict-packages.mjs` + `types:packages`（均进 CI） |
 | R7 | 作用域守卫异常安全 | 🔶 机制已有（`batchRun` / `noMutationCount` 均 `try/finally` + API 级回归），但 11 个生产调用点没有逐个异常用例，**无执行者** |
-| R8 | 视觉回归强度 | 🔶 容差真实存在（`playwright.config.ts` 全局 0.01；`e2e/examples.config.ts` 26 处放宽、最宽 0.4），但 examples 视觉回归**未进 CI**，"放宽需说明理由"无执行者 |
+| R8 | 视觉回归强度 | 🔶 容差真实存在（`playwright.config.ts` 全局 0.01；`e2e/examples.config.ts` 26 处放宽、最宽 0.4）。**像素层未进 CI**（runner 无 GPU，基线与真实 GPU 不可比）；**行为层已进**：`e2e/particlesystem.spec.ts` 挂在 `editor-e2e` job 上，9 个粒子示例逐个校验「运行期无错误」+ 有 GPU 时「渲染循环在提交帧」。仍缺：**像素放宽须说明理由**没有机器执行者 |
 | R9 | 包体天花板 | ✅ `check-bundle-size.mjs` + `scripts/bundle-size-baseline.json`（进 CI） |
 | R10 | 覆盖率门禁 | ✅ `vitest.config.ts` `coverage.thresholds`（**52/42/45/52**：函数阈值 2026-10-05 因 #674「Logic 改工厂闭包对象形态」让函数分母 +499、比例 53.5%→47.5% 而由 49 重定为 45；其余三项按 issue #667 新基线复测重定）+ `npm run test:coverage`（进 CI；末尾追加 `check-coverage-inflation.mjs` 拦新增的函数级失真；根因修复见 `scripts/vitest-v8-coverage-provider.mjs`） |
 | R11 | 文档现状标签 | ✅ `check-doc-status-labels.mjs`（进 CI） |
