@@ -1,4 +1,5 @@
 import { Object3D, registerComponentType, type Geometrys } from 'feng3d';
+import type { Vector3Like } from '@feng3d/math';
 import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
 import { ConvexPolyhedron, Vec3 } from 'cannon-es';
 import { Collider, ColliderLogic, createColliderLogicBase } from './Collider';
@@ -32,8 +33,22 @@ export interface ConvexCollider extends Collider
 {
     readonly __type__: 'ConvexCollider';
 
-    /** 用于生成凸包的几何数据（取其 a_position 顶点与 vertexIndices 三角面） */
-    readonly geometry: Geometrys;
+    /**
+     * 用于生成凸包的几何数据（取其 a_position 顶点与 vertexIndices 三角面）。
+     *
+     * 与 {@link ConvexCollider.vertices} + {@link ConvexCollider.faces} 二选一。
+     */
+    readonly geometry?: Geometrys;
+
+    /**
+     * 显式给出的凸包顶点（与 {@link ConvexCollider.faces} 配套使用）。
+     *
+     * 用于手写形状（如四面体）——那些没有对应的 feng3d 几何。
+     */
+    readonly vertices?: readonly Vector3Like[];
+
+    /** 显式给出的面（顶点索引数组，每个面是一个多边形） */
+    readonly faces?: readonly (readonly number[])[];
 }
 
 /**
@@ -53,6 +68,18 @@ export function convexColliderLogic(data: ConvexCollider): ConvexColliderLogic
     const { state, members } = createColliderLogicBase(data);
     state.shapeFactory = () =>
     {
+        // 路径一：显式顶点 + 面（手写形状，如四面体）
+        if (data.vertices !== undefined && data.faces !== undefined)
+        {
+            return new ConvexPolyhedron({
+                vertices: data.vertices.map((v) => new Vec3(v.x, v.y, v.z)),
+                faces: data.faces.map((f) => f.slice()),
+            });
+        }
+
+        // 路径二：从几何体取顶点与三角面
+        if (data.geometry === undefined) throw new Error('ConvexCollider 需要 geometry，或 vertices + faces');
+
         const geometryLogic = getLogic(data.geometry);
         if (geometryLogic === null) throw new Error('该 geometry 不是已注册的几何类型，无法生成凸包');
 

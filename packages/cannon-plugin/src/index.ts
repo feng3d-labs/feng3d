@@ -6,6 +6,7 @@ export * from './CylinderCollider';
 export * from './TrimeshCollider';
 export * from './ConvexCollider';
 export * from './HeightfieldCollider';
+export * from './ParticleCollider';
 export * from './Rigidbody';
 export * from './PhysicsWorld';
 export * from './Constraint';
