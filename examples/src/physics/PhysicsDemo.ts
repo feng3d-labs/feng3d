@@ -3,7 +3,8 @@ import { WebGPU } from '@feng3d/webgpu';
 import { logic, reactive, ticker } from 'feng3d';
 import type { Object3D, View } from 'feng3d';
 import '@feng3d/cannon-plugin';
-import type { PhysicsWorld } from '@feng3d/cannon-plugin';
+import type { PhysicsWorld, PhysicsWorldLogic } from '@feng3d/cannon-plugin';
+import { createPhysicsDebugLayers, updatePhysicsDebugVisuals, type PhysicsDebugLayers } from './PhysicsDebugVisuals';
 
 /**
  * feng3d 版的 cannon-es 示例脚手架。
@@ -114,6 +115,8 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
     const scenes: PhysicsSceneFactory[] = [];
     /** 当前场景的物理世界数据（GUI 直接改它，经 reactive 生效） */
     let physicsWorld: PhysicsWorld | null = null;
+    /** 当前场景的调试可视化层（axes / aabbs / contacts / …） */
+    let debugLayers: PhysicsDebugLayers | null = null;
     let view: View | null = null;
     let viewLogic: ReturnType<typeof logic> | null = null;
 
@@ -193,6 +196,10 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
         // 先把世界数据交给场景，让它能改世界级参数（默认摩擦/弹性等），再交给 PhysicsWorld
         const children = factory(worldData);
 
+        // 调试可视化层（六个）：挂进场景根，由 ticker 每帧按开关刷新
+        const debug = createPhysicsDebugLayers();
+        debugLayers = debug.layers;
+
         view = {
             __type__: 'View',
             canvas,
@@ -232,6 +239,7 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
                         }],
                     },
                     ...children,
+                    debug.holder,
                 ],
             },
         };
@@ -278,8 +286,16 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
     ticker.onframe(async () =>
     {
         await ready;
-        if (webgpu === null || viewLogic === null || settings.paused) return;
-        webgpu.submit((viewLogic as { submit: unknown }).submit as never);
+        if (viewLogic === null || settings.paused) return;
+
+        // submit 会驱动 Scene.update → PhysicsWorld.update（物理步进）
+        if (webgpu !== null) webgpu.submit((viewLogic as { submit: unknown }).submit as never);
+
+        // 物理已经步进，再按开关刷新调试可视化（与原版 Demo 的每帧刷新一致）
+        if (physicsWorld === null || debugLayers === null) return;
+        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic | null;
+        if (physicsWorldLogic === null) return;
+        updatePhysicsDebugVisuals(physicsWorldLogic.world, settings, debugLayers);
     });
 
     return { gui, settings, addScene, changeScene, get webgpuFailed() { return webgpuFailed; } };
