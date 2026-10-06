@@ -1,6 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { createTextureFromCanvas, FogMode, logic, ShadowType, StandardMaterial, ticker, View } from 'feng3d';
-import type { Object3D } from 'feng3d';
+import type { FirstPersonControls, Object3D } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_shadowmap.html（1:1 复刻，分阶段推进）。
@@ -16,8 +16,9 @@ import type { Object3D } from 'feng3d';
  * - 地面 PlaneGeometry(100, 100) × scale 100，y = FLOOR(-250)，MeshPhongMaterial(0xffdd99)
  * - 两个大盒子 1500×220×150 / 1600×170×250，y = FLOOR - 50，z = 20，同一 planeMaterial
  *
- * 未做（后续阶段）：C = 4 个 GLB 的 8 只动物（骨骼动画 + 随机色相 + 循环位移）；
- * D = THREE.JS 立体字 / FirstPersonControls / ShadowMapViewer HUD。
+ * 已做（阶段 D 前半）：FirstPersonControls（lookSpeed 0.0125 / movementSpeed 500 / lookVertical）。
+ * 未做：C = 4 个 GLB 的 8 只动物（骨骼动画 + 随机色相 + 循环位移）；
+ * D 剩余 = THREE.JS 立体字（需字体资源）/ ShadowMapViewer HUD。
  *
  * 色彩：three 在线性空间算光照再编码回 sRGB，这里给 StandardMaterial 开 linearLighting: true
  * 与之对齐；three 的 BRDF_Lambert 带 1/π 而 fengd3 没有，故方向光 intensity 与
@@ -97,10 +98,19 @@ const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 const webgpu = await new WebGPU().init();
 
 /**
- * 主相机（three.js: PerspectiveCamera(23, w/h, 10, 3000).position.set(700, 50, 1900)）。
+ * 第一人称控制器（three.js: `new FirstPersonControls(camera, renderer.domElement)`）。
  *
- * 原示例的 FirstPersonControls 会 `lookAt(scene.position)`，阶段 B 还没有控制器，
- * 先用等价的相机 lookAt 原点；阶段 D 换成 FPSController。
+ * 参数逐项对齐原示例：`lookSpeed = 0.0125`、`movementSpeed = 500`、`lookVertical = true`。
+ */
+const firstPersonControls: FirstPersonControls = {
+    __type__: 'FirstPersonControls',
+    lookSpeed: 0.0125,
+    movementSpeed: 500,
+    lookVertical: true,
+};
+
+/**
+ * 主相机（three.js: PerspectiveCamera(23, w/h, 10, 3000).position.set(700, 50, 1900)）。
  */
 const cameraObject: Object3D = {
     __type__: 'Object3D',
@@ -112,7 +122,7 @@ const cameraObject: Object3D = {
         aspect: webgpuCanvas.width / webgpuCanvas.height,
         near: NEAR,
         far: FAR,
-    }],
+    }, firstPersonControls],
 };
 
 /** 方向光物体（three 的 light 挂在 scene 下，target 默认在原点 → 需要 lookAt 原点） */
@@ -214,7 +224,7 @@ const viewLogic = logic(view);
 
 // three.js 的 light.target 默认在原点：让方向光的本地 -Z 指向原点
 logic(lightObject).lookAt({ x: 0, y: 0, z: 0 });
-// 相机看向原点（等价于原示例 FirstPersonControls.lookAt(scene.position) 的初始朝向）
-logic(cameraObject).lookAt({ x: 0, y: 0, z: 0 });
+// three.js: controls.lookAt( scene.position )——第一人称控制器的初始朝向
+logic(firstPersonControls).lookAt({ x: 0, y: 0, z: 0 });
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
