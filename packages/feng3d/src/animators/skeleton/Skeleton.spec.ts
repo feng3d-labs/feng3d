@@ -165,6 +165,47 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         expect(() => skeletonLogic.globalMatrices).not.toThrow();
         expect(skeletonLogic.globalMatrices).toEqual([]);
     });
+
+    it('骨骼在兄弟分支（glTF 的常见布局）时也能找到——不是只搜自身子树', () =>
+    {
+        // whale.glb 实测布局：Skeleton 挂在 `orca` 节点，6 根骨骼是它的**兄弟**（同在 Armature.001 下）。
+        //   root
+        //     mesh [Skeleton]   ← Skeleton 挂这里
+        //     Bone              ← 骨骼是 mesh 的兄弟，不在 mesh 的子树里
+        const bone = makeObject3D('Bone', { position: { x: 3, y: 0, z: 0 } });
+        const mesh = makeObject3D('mesh');
+        const root = makeObject3D('root', { children: [mesh, bone] });
+
+        logic(root);
+        logic(mesh);
+        logic(bone);
+
+        const skeletonLogic = logic(makeSkeleton(['Bone'], [identityMatrix()])) as SkeletonLogic;
+
+        skeletonLogic.init(mesh as unknown as Entity);
+
+        // 找不到骨骼时会退回单位矩阵（平移 0）——这条断言把"必须搜到兄弟分支"钉死
+        expect(translationOrZero(skeletonLogic.globalMatrices[0])).toEqual([3, 0, 0]);
+    });
+
+    it('同名骨骼优先取自身子树里的那个（保持既有搜索优先级）', () =>
+    {
+        const inner = makeObject3D('Bone', { position: { x: 7, y: 0, z: 0 } });
+        const sibling = makeObject3D('Bone', { position: { x: 3, y: 0, z: 0 } });
+        const mesh = makeObject3D('mesh', { children: [inner] });
+        const root = makeObject3D('root', { children: [mesh, sibling] });
+
+        logic(root);
+        logic(mesh);
+        logic(inner);
+        logic(sibling);
+
+        const skeletonLogic = logic(makeSkeleton(['Bone'], [identityMatrix()])) as SkeletonLogic;
+
+        skeletonLogic.init(mesh as unknown as Entity);
+
+        expect(translationOrZero(skeletonLogic.globalMatrices[0])).toEqual([7, 0, 0]);
+    });
 });
 
 /** 取某位的平移分量；该位可能尚未创建（数组长度对齐后才有），返回零向量等价物 */

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { logic, reactive } from '@feng3d/reactivity';
 import { findObject3DChild } from 'feng3d';
-import type { Object3D } from 'feng3d';
+import type { Object3D, Skeleton } from 'feng3d';
 import { parseGLB } from '../src/loaders/GLTFLoader';
 
 /**
@@ -12,12 +12,13 @@ import { parseGLB } from '../src/loaders/GLTFLoader';
  * 不依赖任何新引入的第三方资源。四条断言逐层递进：
  * 1. 关键帧读全了（times/values 长度与曲线类型对齐、时间换算成毫秒且单调）；
  * 2. `path` 是场景根起的名称链，逐级都能在解析出的对象树里找到；
- * 3. 挂上 `Animation` 组件后 `update` **真的**改写了目标节点属性（不是只解析出数据）。
+ * 3. 挂上 `Animation` 组件后 `update` **真的**改写了目标节点属性（不是只解析出数据）；
+ * 4. 骨骼被驱动后 `Skeleton.globalMatrices`（蒙皮公式里的 jointMatrix）跟着变——
+ *    把"动画 → 骨骼 → 蒙皮矩阵"整条链路钉死。
  *
- * 有意**没有**在这里钉住 `Skeleton.globalMatrices`：该组件当前用 `findBoneByName(members.entity, name)`
- * 只在**自身子树**里按名字找骨骼，而 glTF 的 joints 往往挂在引用 skin 节点的祖先/兄弟分支下，
- * 于是每根骨骼都取不到、`globalMatrices` 恒为单位矩阵。这是阶段 C 落地前要先确认/修的已知问题
- * （详见 tmp/handoff-webgl-shadowmap.md）。
+ * 第 4 条依赖 `Skeleton` 能**找到**这些骨骼：whale.glb 里骨骼是 Skeleton 所在节点的**兄弟**
+ * （同在 Armature.001 下），只搜自身子树的旧实现一根都取不到——那条已修，
+ * 回归保护见 packages/feng3d/src/animators/skeleton/Skeleton.spec.ts。
  */
 
 const WHALE_URL = new URL('../../webgpu/examples/resources/assets/gltf/whale.glb', import.meta.url);
@@ -36,6 +37,22 @@ function loadWhale()
     const fileBuffer = readFileSync(WHALE_URL);
 
     return parseGLB(fileBuffer.buffer.slice(fileBuffer.byteOffset, fileBuffer.byteOffset + fileBuffer.byteLength));
+}
+
+/** 在对象树里找第一个挂了指定 `__type__` 组件的节点 */
+function findComponentHost(root: Object3D, type: string): { host: Object3D; component: unknown } | null
+{
+    for (const component of root.components ?? [])
+    {
+        if ((component as { __type__?: string }).__type__ === type) return { host: root, component };
+    }
+    for (const child of root.children ?? [])
+    {
+        const found = findComponentHost(child, type);
+        if (found) return found;
+    }
+
+    return null;
 }
 
 /** 沿 `PropertyClip.path` 找到目标节点 */
@@ -147,4 +164,26 @@ describe('glTF 动画 → AnimationClipData（whale.glb 真实资源）', () =>
         expect(changed).toBe(true);
     });
 
+    it('骨骼被驱动后 Skeleton.globalMatrices 跟着变（动画 → 骨骼 → 蒙皮矩阵）', () =>
+    {
+        const result = loadWhale();
+        const clip = result.animationClips[0];
+
+        // loader 把 Skeleton 挂在引用该 skin 的节点上（whale 里是 orca，骨骼是它的兄弟）
+        const skeletonHost = findComponentHost(result.root, 'Skeleton');
+
+        expect(skeletonHost).toBeTruthy();
+
+        const animationLogic = setupAnimation(result.root, clip);
+        const skeletonLogic = logic(skeletonHost!.component as Skeleton) as unknown as { globalMatrices: unknown[] };
+
+        // globalMatrices 是每次重算的 getter：至少有一根骨骼的 jointMatrix 变化
+        const before = skeletonLogic.globalMatrices.map((m) => JSON.stringify(m));
+
+        animationLogic.update(clip.length / 2);
+
+        const after = skeletonLogic.globalMatrices.map((m) => JSON.stringify(m));
+
+        expect(after.some((m, i) => m !== before[i])).toBe(true);
+    });
 });
