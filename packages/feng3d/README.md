@@ -22,7 +22,7 @@ import { WebGPU } from '@feng3d/webgpu';                      // GPU 执行
 | **相机** | `Camera`、`PerspectiveCamera`、`OrthographicCamera` |
 | **光源与阴影** | `DirectionalLight`、`PointLight`、`SpotLight`、`LightType`、`ShadowType`、`LightPicker` |
 | **几何体** | `Geometry`、`CustomGeometry`、`GeometryUtils`、`PointGeometry`、`SegmentGeometry`；内置体元：`Cube` / `Sphere` / `Plane` / `Quad` / `Cylinder` / `Cone` / `Capsule` / `Torus` |
-| **材质** | `Material`（虚类基接口，不预设字段；子类各自声明 uniforms / renderPipeline / sampler / textureView 并经 `MaterialMap` 纳入联合类型）、`ColorMaterial`、`TextureMaterial`、`NormalMaterial`、`PointMaterial`、`SegmentMaterial`、`StandardMaterial`、`DebugShadowMapMaterial` |
+| **材质** | `Material`（虚类基接口，不预设字段；子类各自声明 uniforms / renderPipeline / sampler / textureView 并经 `MaterialMap` 纳入联合类型）、`ColorMaterial`、`TextureMaterial`、`NormalMaterial`、`PointMaterial`、`SegmentMaterial`、`StandardMaterial`、`DebugShadowMapMaterial`、`ProjectedShadowMaterial`（平面投影阴影，复刻 three.js ShadowMesh） |
 | **渲染器** | `ForwardRenderer`、`ShadowRenderer`、`OutlineRenderer`、`WireframeRenderer`；渲染数据 `Index` / `Uniform` / `enums` |
 | **拾取** | `Raycaster`（含层级包围盒剔除）、`ScenePickCache`（编辑器用）、`Mouse3DManager`（游戏侧鼠标拾取）、`RayCastable` |
 | **动画** | `Animation`、`AnimationClip`、`PropertyClip`；骨骼 `Skeleton`、`SkinnedMeshRenderer` |
