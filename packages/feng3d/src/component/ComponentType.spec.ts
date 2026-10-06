@@ -29,6 +29,19 @@ describe('组件类型登记（registerComponentType）', () =>
         expect(matchType(component('SpecUnknown'), 'Renderable')).toBe(false);
     });
 
+    it('内置的 Renderable 系类型都在硬编码名单里（MorphMeshRenderer 曾漏登记）', () =>
+    {
+        // 实测教训：`_renderableTypes` 漏掉 `MorphMeshRenderer` 时，`ScenePickCache.collectActiveModels`
+        // 的 `isRenderable` 筛不到它——对象会被静默丢出渲染列表（不进 draw、不建管线、不报错、画面里没有）。
+        // 注意它与 `Entity._typeHierarchy` 是**两张不同的名单**：后者管 `getComponentsInChildren`，
+        // 前者管 `ScenePickCache` 的收集；只改一张会出现「models 数得对、却什么都没画」的怪象。
+        for (const type of ['Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer'])
+        {
+            expect(isRenderable(component(type)), type).toBe(true);
+            expect(isRayCastable(component(type)), type).toBe(true);
+        }
+    });
+
     it('登记 baseTypes: [Renderable]：渲染 / 拾取能力按基类型派生，且沿内置层次表上溯', () =>
     {
         registerComponentType('SpecRenderable', { baseTypes: ['Renderable'] });

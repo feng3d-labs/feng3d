@@ -25,8 +25,8 @@ export interface Component3D extends Component
 }
 
 // Renderable 系所有子类型的 __type__ 集合
-const _renderableTypes = new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer']);
-const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer']);
+const _renderableTypes = new Set(['Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer']);
+const _rayCastableTypes = new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer']);
 
 // ---- 组件类型登记表（上层扩展包的接入点） ----
 
