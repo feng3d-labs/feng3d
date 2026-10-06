@@ -51,6 +51,8 @@ export interface PartOptions
     readonly collisionFilterMask?: number;
     /** 材质名（原版的 new CANNON.Material(name)） */
     readonly materialName?: string;
+    /** 是否触发器（原版的 isTrigger：只报告接触、不产生碰撞响应） */
+    readonly isTrigger?: boolean;
 }
 
 /**
@@ -86,6 +88,7 @@ function rigidbody(options: PartOptions)
     if (options.collisionFilterGroup !== undefined) body.collisionFilterGroup = options.collisionFilterGroup;
     if (options.collisionFilterMask !== undefined) body.collisionFilterMask = options.collisionFilterMask;
     if (options.materialName !== undefined) body.materialName = options.materialName;
+    if (options.isTrigger !== undefined) body.isTrigger = options.isTrigger;
 
     return body;
 }

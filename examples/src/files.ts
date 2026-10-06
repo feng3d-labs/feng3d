@@ -55,6 +55,7 @@ export default {
         "RagdollTest",
         "ImpulsesTest",
         "EventsTest",
+        "CallbacksTest",
         "TriggerTest",
         "TrimeshTest",
         "ConvexTest",
