@@ -339,12 +339,20 @@ export class ShadowRenderer
         if (!renderObject)
         {
             // 首次创建，后续帧复用
+            // 阴影 Pass 的剔除面：对齐 three.js 的 `shadowSide`——
+            // three 对 FrontSide 材质在阴影 Pass 里渲染**背面**（shadowSide[FrontSide] = BackSide），
+            // 记录的深度是物体背面，能显著减少自遮挡（shadow acne）。
+            // 这里按材质的 cullFace 取反：back→front、front→back、none→none。
+            const materialCullFace = renderable.material?.cullFace;
+            const shadowCullFace = materialCullFace === 'none' ? 'none'
+                : materialCullFace === 'front' ? 'back' : 'front';
+
             renderObject = {
                 pipeline: {
                     // depth-only Pass：vertex-only pipeline（无 fragment），深度由光栅化写入。
                     // 参照 webgpu shadowMapping 示例：vertex-only pipeline 是 depth-only 渲染的标准做法。
                     vertex: { wgsl: getShadowVertexShaderWGSL(), entryPoint: 'main' },
-                    primitive: { cullFace: 'back' },
+                    primitive: { cullFace: shadowCullFace },
                     depthStencil: { depthWriteEnabled: true, depthCompare: 'less' },
                 },
                 vertices: undefined,
