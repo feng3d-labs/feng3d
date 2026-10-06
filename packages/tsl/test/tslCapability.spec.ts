@@ -765,3 +765,31 @@ describe('varying 的阶段前缀（#834 补记的 bug）', () =>
         expect(w).not.toContain('vec4<f32>(foo, 0.0, 0.0, 1.0)');
     });
 });
+
+describe('vec2 的标量广播（#834 方案 A）', () =>
+{
+    it('回归：vec2(0.5) 生成 vec2<f32>(0.5)（此前抛「无效的参数」，而手写 WGSL 很常见）', () =>
+    {
+        expect(vec2(0.5).toWGSL()).toBe('vec2<f32>(0.5)');
+    });
+
+    it('对 Float 标量同样成立', () =>
+    {
+        const s = float(0.5);
+
+        expect(vec2(s).toWGSL()).toBe('vec2<f32>(0.5)');
+    });
+
+    it('与 vec3 / vec4 的行为一致（三者都已支持标量广播）', () =>
+    {
+        expect(vec2(0.25).toWGSL()).toBe('vec2<f32>(0.25)');
+        expect(vec3(0.25).toWGSL()).toBe('vec3<f32>(0.25)');
+        expect(vec4(0.25).toWGSL()).toBe('vec4<f32>(0.25)');
+    });
+
+    it('既有的 vec2(x, y) 行为不变', () =>
+    {
+        expect(vec2(1.0, 2.0).toWGSL()).toBe('vec2<f32>(1.0, 2.0)');
+        expect(vec2(0.0, 0.0).toWGSL()).toBe('vec2<f32>(0.0)');
+    });
+});
