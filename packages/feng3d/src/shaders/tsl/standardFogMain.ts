@@ -14,7 +14,7 @@
  * - 2：指数平方雾 `1 - exp(-density² * dist²)`
  * - 其它：线性雾 `clamp((dist - min) / (max - min), 0, 1)`
  */
-import { Float, clamp, distance, exp, float, if_, let_, max, mix, var_, vec3, vec4 } from '@feng3d/tsl';
+import { Float, clamp, exp, float, if_, let_, mat4, max, mix, var_, vec3, vec4 } from '@feng3d/tsl';
 
 /** vec3 / vec4 的实例类型（TSL 只导出构造函数） */
 type Vec3Value = ReturnType<typeof vec3>;
@@ -31,8 +31,8 @@ export interface StandardFogContext
         u_fogMaxDistance: Float;
         u_fogColor: Vec4Value;
     };
-    /** 相机 uniform：u_cameraPos */
-    camera: { u_cameraPos: Vec3Value };
+    /** 相机 uniform：u_viewMatrix（雾深度用视图空间 z，与 three 的 vFogDepth 同口径） */
+    camera: { u_viewMatrix: ReturnType<typeof mat4> };
     /** 片元世界坐标（varying） */
     worldPosition: Vec3Value;
     /** 累积颜色（`var_` 可变变量，本函数就地修改） */
@@ -51,7 +51,10 @@ export function applyStandardFog(ctx: StandardFogContext): void
 
     if_(material.u_fogMode.greaterThan(0.0), () =>
     {
-        const dist = let_('dist', distance(ctx.camera.u_cameraPos, ctx.worldPosition));
+        // three.js 的 `vFogDepth = -mvPosition.z`：沿相机前向的**视图空间深度**，
+        // 不是到相机位置的欧氏距离——地面这类大平面上两者差异明显。
+        const viewPosition = let_('viewPosition', ctx.camera.u_viewMatrix.multiply(vec4(ctx.worldPosition, 1.0)));
+        const dist = let_('dist', viewPosition.z.multiply(-1.0));
         const fogFactor = var_('fogFactor', float);
 
         if_(material.u_fogMode.equals(1.0), () =>
@@ -68,8 +71,10 @@ export function applyStandardFog(ctx: StandardFogContext): void
                 )));
             }).else(() =>
             {
+                // three.js: fogFactor = smoothstep( fogNear, fogFar, vFogDepth )
                 const range = let_('range', max(material.u_fogMaxDistance.subtract(material.u_fogMinDistance), 0.0001));
-                fogFactor.assign(clamp(dist.subtract(material.u_fogMinDistance).divide(range), 0.0, 1.0));
+                const t = let_('fogT', clamp(dist.subtract(material.u_fogMinDistance).divide(range), 0.0, 1.0));
+                fogFactor.assign(t.multiply(t).multiply(float(3.0).subtract(t.multiply(2.0))));
             });
         });
 

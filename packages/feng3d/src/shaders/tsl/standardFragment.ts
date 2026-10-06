@@ -252,16 +252,18 @@ export function buildStandardFragment(options: StandardFragmentOptions): string
             });
         }
 
-        // ---- fog_frag ----
-        applyStandardFog({ material, camera, worldPosition, finalColor });
-
-        // 线性光照模式：输出前编码回 sRGB（对应 three.js 的 linearToOutputTexel）
+        // 线性光照模式：编码回 sRGB（对应 three.js 的 linearToOutputTexel）
         if (linearLighting)
         {
             const encodedColor = let_('encodedColor', pow(finalColor.xyz, vec3(1 / 2.2, 1 / 2.2, 1 / 2.2)));
 
             finalColor.assign(vec4(encodedColor.x, encodedColor.y, encodedColor.z, finalColor.a));
         }
+
+        // ---- fog_frag ----
+        // three.js 的 fog_fragment 排在 colorspace_fragment **之后**：雾色与已编码的颜色在
+        // 输出空间混合。所以这里必须放在编码之后（默认 γ 模式没有编码步骤，位置语义不变）。
+        applyStandardFog({ material, camera, worldPosition, finalColor });
 
         return_(finalColor);
     });
