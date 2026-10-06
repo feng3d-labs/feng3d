@@ -1,56 +1,7 @@
-const wgsl = `
-struct VarysStruct {
-    @builtin( position ) Position: vec4<f32>,
-    @location( 0 ) vUV : vec2<f32>
-};
+import { getCopyDepthTextureWGSL } from './copyDepthTextureWGSL';
 
-@vertex
-fn vsmain(
-    @builtin(vertex_index) VertexIndex: u32
-) -> VarysStruct {
-    var Varys : VarysStruct;
-
-    var pos = array< vec2<f32>, 4 >(
-        vec2<f32>( -1.0,  1.0 ),
-        vec2<f32>(  1.0,  1.0 ),
-        vec2<f32>( -1.0, -1.0 ),
-        vec2<f32>(  1.0, -1.0 )
-    );
-
-    var tex = array< vec2<f32>, 4 >(
-        vec2<f32>( 0.0, 0.0 ),
-        vec2<f32>( 1.0, 0.0 ),
-        vec2<f32>( 0.0, 1.0 ),
-        vec2<f32>( 1.0, 1.0 )
-    );
-
-    Varys.vUV = tex[ VertexIndex ];
-    Varys.Position = vec4<f32>( pos[ VertexIndex ], 0.0, 1.0 );
-
-    return Varys;
-}
-
-struct FragmentOut {
-    @location(0) color0: vec4<f32>
-};
-
-@group(0) @binding(0) var mySampler: sampler;
-@group(0) @binding(1) var myTexture: texture_depth_2d;
-
-@fragment
-fn fsmain(Varys : VarysStruct) -> FragmentOut {
-
-    var output: FragmentOut;
-
-    var color = textureSample(myTexture, mySampler, Varys.vUV);
-
-    output.color0 = vec4<f32>(color,color,color,1.0);
-
-    return output;
-}
-`;
-
-let wgslModel: GPUShaderModule;
+/** 两个入口各一个 module（TSL 生成两份文本；WebGPU 允许 vertex / fragment 用不同 module），按 device 懒缓存 */
+let cachedModules: { vertex: GPUShaderModule; fragment: GPUShaderModule } | null = null;
 
 /**
  * 拷贝 深度纹理到 普通纹理。
@@ -67,23 +18,29 @@ export function copyDepthTexture(device: GPUDevice, sourceTexture: GPUTexture, t
 
         return;
     }
-    if (!wgslModel)
+    if (!cachedModules)
     {
-        wgslModel = device.createShaderModule({ code: wgsl });
+        const shader = getCopyDepthTextureWGSL();
+
+        cachedModules = {
+            vertex: device.createShaderModule({ code: shader.vertex }),
+            fragment: device.createShaderModule({ code: shader.fragment }),
+        };
     }
     const bindGroupLayout = device.createBindGroupLayout({
         entries: [
+            // TSL 的 sampler 展开是 texture@0 + sampler@1（与旧手写的 sampler@0 + texture@1 相反）
             {
                 binding: 0,
-                visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
-                sampler: {},
-            } as GPUBindGroupLayoutEntry,
-            {
-                binding: 1,
                 visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
                 texture: {
                     sampleType: 'depth',
                 },
+            } as GPUBindGroupLayoutEntry,
+            {
+                binding: 1,
+                visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+                sampler: {},
             } as GPUBindGroupLayoutEntry,
         ],
     } as GPUBindGroupLayoutDescriptor);
@@ -92,14 +49,14 @@ export function copyDepthTexture(device: GPUDevice, sourceTexture: GPUTexture, t
         entries: [
             {
                 binding: 0,
+                resource: sourceTexture.createView(),
+            },
+            {
+                binding: 1,
                 resource: device.createSampler({
                     magFilter: 'linear',
                     minFilter: 'linear',
                 }),
-            },
-            {
-                binding: 1,
-                resource: sourceTexture.createView(),
             },
         ],
     });
@@ -108,11 +65,11 @@ export function copyDepthTexture(device: GPUDevice, sourceTexture: GPUTexture, t
             bindGroupLayouts: [bindGroupLayout],
         }),
         vertex: {
-            module: wgslModel,
+            module: cachedModules.vertex,
             entryPoint: 'vsmain',
         },
         fragment: {
-            module: wgslModel,
+            module: cachedModules.fragment,
             entryPoint: 'fsmain',
             targets: [{ format: targetTexture.format }],
         },
