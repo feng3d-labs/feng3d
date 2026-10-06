@@ -39,6 +39,8 @@ export interface PartOptions
     readonly fixedRotation?: boolean;
     /** 线性阻尼 */
     readonly linearDamping?: number;
+    /** 角阻尼 */
+    readonly angularDamping?: number;
     /** 欧拉角（弧度） */
     readonly rotation?: Vector3Like;
     /** 颜色 */
@@ -74,6 +76,7 @@ function rigidbody(options: PartOptions)
     if (options.velocity !== undefined) body.velocity = options.velocity;
     if (options.fixedRotation !== undefined) body.fixedRotation = options.fixedRotation;
     if (options.linearDamping !== undefined) body.linearDamping = options.linearDamping;
+    if (options.angularDamping !== undefined) body.angularDamping = options.angularDamping;
 
     return body;
 }
