@@ -226,9 +226,15 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: "three.js", name: "webgl_scene_solar", warmupFrames: 60, freezeFrames: 30 },
     { category: "three.js", name: "webgl_scene_spring", warmupFrames: 60, freezeFrames: 30 },
     { category: "three.js", name: "webgl_scene_terrain_heightmap", warmupFrames: 60, freezeFrames: 30 },
-    // 动物（glTF 的 morph 动画）沿用原示例的 `Math.random()` 初始位置，画面本就不逐像素稳定；
-    // 文字与场景是固定的，故只放宽到 0.2 容纳「动物出现在哪一条泳道」的差异。
-    { category: "three.js", name: "webgl_shadowmap", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
+    // 曾因「动物初始位置随机」放宽到 0.2——那是误判：`e2e/freeze.ts` 注入的 mulberry32 早已把
+    // `Math.random` 种子化，画面本来就确定（放宽的来源其实是 `#info` 文字差落在 1% 容差内，见 examples.spec.ts 的说明）。
+    // 现在说明文字已用 mask 排除、并改为单独断言，故恢复默认容差。
+    {
+        category: "three.js", name: "webgl_shadowmap", warmupFrames: 60, freezeFrames: 30,
+        // 原示例的 #info 文案（`three.js - shadowmap - models by mirada from rome`）——
+        // 这段文字不参与像素比对（已 mask），在此单独守住，防止它又被写回别的内容。
+        infoContains: "three.js - shadowmap - models by mirada from rome",
+    },
     { category: "three.js", name: "webgl_shadowmap_pointlight", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
     { category: "three.js", name: "webgl_shadowmesh", warmupFrames: 60, freezeFrames: 30 },
     { category: "three.js", name: "webgl_sprites", warmupFrames: 60, freezeFrames: 30 },
