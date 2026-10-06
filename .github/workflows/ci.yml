@@ -272,6 +272,11 @@ jobs:
         # 「运行期无错误」（页面抛错 / WebGPU 校验失败 / 着色器编译失败都会落到前端日志）；
         # 有 GPU 的环境再加一层「渲染循环在提交帧」。**像素基线回归仍不在 CI**——
         # runner 只有软件渲染，基线与真实 GPU 不可比，见 docs/CI.md 的 R8 说明。
+        #
+        # PLAYWRIGHT_HEADLESS=1：根 playwright.config.ts 默认**有头**（headless: !!env），
+        # 而 CI 没有 X server，不设它会在 browserType.launch 处报 "Missing X server or $DISPLAY"。
+        env:
+          PLAYWRIGHT_HEADLESS: '1'
         run: npx playwright test e2e/particlesystem.spec.ts
 
       - name: 启动编辑器宿主（AI 桥接需要）

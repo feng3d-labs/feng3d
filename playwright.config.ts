@@ -63,6 +63,10 @@ export default defineConfig({
                         '--enable-unsafe-webgpu',
                         '--enable-features=Vulkan',
                         '--ignore-gpu-blocklist',
+                        // CI runner 没有 GPU：允许 Chrome 退回软件 WebGPU（SwiftShader），
+                        // 这样 `e2e/particlesystem.spec.ts` 的「运行期无错误」层在 CI 上也真的会执行，
+                        // 而不是因为 `navigator.gpu` 不存在、示例初始化就抛错而全红。
+                        '--enable-unsafe-swiftshader',
                     ],
                 },
             },
