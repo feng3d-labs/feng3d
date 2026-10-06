@@ -9,7 +9,13 @@ export class PropertyClip
 
     propertyName: string;
 
-    type: 'Number' | 'Vector3' | 'Quaternion';
+    /**
+     * 曲线类型。
+     *
+     * `'Numbers'` 是**数字数组**（每帧若干个数），用于 glTF 的 morph target 权重（`weights` 通道）——
+     * 每帧分量数由 `values.length / times.length` 推出，`getValue` 返回该帧的切片。
+     */
+    type: 'Number' | 'Vector3' | 'Quaternion' | 'Numbers';
 
     times: number[];
 
@@ -19,7 +25,7 @@ export class PropertyClip
     {
         const times = this.times;
         // 可能全部分支都没赋值（times 为空或区间不匹配），显式允许 undefined
-        let propertyValue: number | Vector3 | Quaternion | undefined;
+        let propertyValue: number | number[] | Vector3 | Quaternion | undefined;
         if (cliptime <= times[0])
         {
             propertyValue = this.getpropertyValue(0)!;
@@ -50,9 +56,15 @@ export class PropertyClip
     private interpolation(prevalue: ClipPropertyType, nextValue: ClipPropertyType, factor: number)
     {
         let propertyValue: ClipPropertyType;
+        // 数字数组（morph weights）最先判别：`typeof [] === 'object'`，若放到后面会被下面两个分支漏掉
+        if (Array.isArray(prevalue))
+        {
+            const next = nextValue as number[];
+            propertyValue = prevalue.map((v, i) => v * (1 - factor) + next[i] * factor);
+        }
         // 阶段 C-e：`Quaternion` 的 class 已删除，`instanceof` 判别改成结构化判别（`w` 分量），
         // 语义等价——`Vector3` 没有 `w`，`number` 也不是对象。
-        if (typeof prevalue === 'object' && 'w' in prevalue)
+        else if (typeof prevalue === 'object' && 'w' in prevalue)
         {
             propertyValue = { __type__: 'Quaternion', ...quatLerp(prevalue, nextValue as Quaternion, factor) };
         }
@@ -91,6 +103,13 @@ export class PropertyClip
 
             return quaternion;
         }
+        if (this.type === 'Numbers')
+        {
+            const count = values.length / this.times.length;
+            const start = index * count;
+
+            return values.slice(start, start + count);
+        }
 
         console.error(`未处理 动画数据类型 ${this.type}`);
         console.error(``);
@@ -102,7 +121,7 @@ export class PropertyClip
 /**
  * [time:number,value:number | Vector3 | Quaternion]
  */
-export type ClipPropertyType = number | Vector3 | Quaternion;
+export type ClipPropertyType = number | number[] | Vector3 | Quaternion;
 export type PropertyClipPath = [PropertyClipPathItemType, string][];
 
 export enum PropertyClipPathItemType

@@ -1251,14 +1251,21 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         return paths;
     }
 
-    /** glTF 的 `target.path` → fengd3 的属性名与曲线类型（`weights` 不产出） */
-    function animationTarget(path: string): { propertyName: string; type: 'Number' | 'Vector3' | 'Quaternion'; components: number } | null
+    /**
+     * glTF 的 `target.path` → fengd3 的属性名与曲线类型。
+     *
+     * `weights`（morph target 权重）写的是**渲染组件**上的 `morphWeights`（数字数组），
+     * 因此它的 `PropertyClip.path` 要在对象名链之后再接一段"组件"项——由 {@link AnimationTarget.component} 指明。
+     */
+    function animationTarget(path: string): { propertyName: string; type: 'Number' | 'Vector3' | 'Quaternion' | 'Numbers'; components: number; component?: string } | null
     {
         switch (path)
         {
             case 'translation': return { propertyName: 'position', type: 'Vector3', components: 3 };
             case 'rotation': return { propertyName: 'rotation', type: 'Quaternion', components: 4 };
             case 'scale': return { propertyName: 'scale', type: 'Vector3', components: 3 };
+            // morph target 权重：值是长度为 target 数的数组，写到 MeshRenderer 组件的 morphWeights 上
+            case 'weights': return { propertyName: 'morphWeights', type: 'Numbers', components: 1, component: 'MeshRenderer' };
             default: return null;
         }
     }
@@ -1327,7 +1334,14 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 
                 const propertyClip = new PropertyClip();
 
-                propertyClip.path = namePath.map((name) => [PropertyClipPathItemType.Object3D, name] as [PropertyClipPathItemType, string]);
+                const clipPath = namePath.map((name) => [PropertyClipPathItemType.Object3D, name] as [PropertyClipPathItemType, string]);
+
+                // `weights` 的宿主是组件（`morphWeights` 在 MeshRenderer 上），其余是节点自身的变换属性
+                if (target.component !== undefined)
+                {
+                    clipPath.push([PropertyClipPathItemType.Component, target.component]);
+                }
+                propertyClip.path = clipPath;
                 propertyClip.propertyName = target.propertyName;
                 propertyClip.type = target.type;
                 propertyClip.times = times;

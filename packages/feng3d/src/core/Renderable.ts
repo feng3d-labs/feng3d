@@ -35,6 +35,13 @@ export interface Renderable extends RayCastable
      * 两策略互斥由消费方按资源形态选择；外联几何体（.gltf 等）适用本开关。
      */
     readonly renderWhenLoaded?: boolean;
+    /**
+     * morph target（形变目标）的当前权重，每项对应几何的 `morphTargets[i]`。
+     *
+     * 由 `Animation` 组件的 `weights` 曲线逐帧写入（glTF 的 morph 动画就是改这个数组）；
+     * 渲染层读它来加权顶点形变。缺失时按 glTF 规范视为全 0（不动）。
+     */
+    readonly morphWeights?: readonly number[];
 }
 
 declare module '@feng3d/reactivity'
