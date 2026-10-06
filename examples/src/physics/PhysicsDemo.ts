@@ -43,12 +43,35 @@ export interface PhysicsDemoSettings
 }
 
 /**
+ * 场景在**运行时**增删对象的入口（对应原版直接 `world.addBody` + `demo.addVisual` 那种动态场景）。
+ *
+ * 静态场景用不到它，直接返回子树即可；像原版 `pile.html` 那样"每 100ms 扔一个球、超过上限再删掉"
+ * 的场景就需要——因为那时场景已经装配好了。
+ */
+export interface PhysicsSceneContext
+{
+    /**
+     * 往当前场景加一个对象。
+     *
+     * @param child 要加的对象
+     */
+    addChild(child: Object3D): void;
+    /**
+     * 从当前场景移除一个对象。
+     *
+     * @param child 要移除的对象
+     */
+    removeChild(child: Object3D): void;
+}
+
+/**
  * 一个场景 = 一棵子树工厂（对应原版 addScene 的回调）。
  *
  * @param world 该场景的物理世界数据；场景想改世界级参数（默认摩擦/弹性、求解器等）就在这里改
+ * @param context 运行时增删对象的入口（动态场景才需要）
  * @returns 该场景的子树
  */
-export type PhysicsSceneFactory = (world: PhysicsWorld) => Object3D[];
+export type PhysicsSceneFactory = (world: PhysicsWorld, context: PhysicsSceneContext) => Object3D[];
 
 export interface PhysicsDemo
 {
@@ -117,6 +140,24 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
     let physicsWorld: PhysicsWorld | null = null;
     /** 当前场景的调试可视化层（axes / aabbs / contacts / …） */
     let debugLayers: PhysicsDebugLayers | null = null;
+    /** 当前场景的根（运行时增删对象要用它） */
+    let currentRoot: Object3D | null = null;
+
+    /** 运行时增删对象：走 children 的写入路径（Container 的 push/splice 就是为此设计的） */
+    const sceneContext: PhysicsSceneContext = {
+        addChild(child: Object3D)
+        {
+            if (currentRoot === null) return;
+            (reactive(currentRoot) as unknown as { children: Object3D[] }).children.push(child);
+        },
+        removeChild(child: Object3D)
+        {
+            if (currentRoot === null) return;
+            const children = (reactive(currentRoot) as unknown as { children: Object3D[] }).children;
+            const index = children.indexOf(child);
+            if (index >= 0) children.splice(index, 1);
+        },
+    };
     let view: View | null = null;
     let viewLogic: ReturnType<typeof logic> | null = null;
 
@@ -194,18 +235,15 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
 
         physicsWorld = worldData;
         // 先把世界数据交给场景，让它能改世界级参数（默认摩擦/弹性等），再交给 PhysicsWorld
-        const children = factory(worldData);
+        const children = factory(worldData, sceneContext);
 
         // 调试可视化层（六个）：挂进场景根，由 ticker 每帧按开关刷新
         const debug = createPhysicsDebugLayers();
         debugLayers = debug.layers;
 
-        view = {
-            __type__: 'View',
-            canvas,
-            root: {
-                __type__: 'Object3D',
-                name: 'PhysicsDemoRoot',
+        const root: Object3D = {
+            __type__: 'Object3D',
+            name: 'PhysicsDemoRoot',
                 components: [{
                     __type__: 'Scene',
                     // 环境光 0.1，对应原版 Demo.js 的 AmbientLight(0xffffff, 0.1)
@@ -241,8 +279,9 @@ export function createPhysicsDemo(canvas: HTMLCanvasElement): PhysicsDemo
                     ...children,
                     debug.holder,
                 ],
-            },
         };
+        currentRoot = root;
+        view = { __type__: 'View', canvas, root };
         viewLogic = logic(view);
 
         // 场景切换后把 GUI 里的参数同步过去
