@@ -508,7 +508,11 @@ const view: View = {
             // three.js: scene.background = new Color(0x59472b)
             background: srgbColor4(FOG_COLOR),
             // three.js: AmbientLight(0xffffff) —— 同样补 1/π（BRDF_Lambert）
-            ambientColor: { __type__: 'Color4', r: INV_PI, g: INV_PI, b: INV_PI, a: 1 },
+            // 注意：three 的 BRDF_Lambert 那个 1/π **只作用于方向光的 BRDF**；
+        // AmbientLight 是直接把颜色累加进辐照度（`irradiance += ambientLightColor`），**不除 π**。
+        // 早先这里跟着方向光一起补了 1/π，导致环境项只有原值的 0.318——实测地平线以下
+        // 的地面比 three 暗约 24%（上方背景色因为不参与光照，两边完全一致）。
+        ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         }],
         children: [
             // CAMERA（three.js: PerspectiveCamera(23, w/h, 10, 3000).position.set(700, 50, 1900)）
