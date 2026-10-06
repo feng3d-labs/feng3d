@@ -51,6 +51,26 @@ describe('glTF morph target 的解析', () =>
         expect(prim.morphWeights).toEqual([]);
     });
 
+    it('weights 通道产出 Numbers 曲线，path 指向 MeshRenderer.morphWeights', () =>
+    {
+        const result = load('Horse');
+        const clip = result.animationClips.find((c) => c.propertyClips.some((pc) => pc.propertyName === 'morphWeights'));
+
+        expect(clip).toBeTruthy();
+        const weightClip = clip!.propertyClips.find((pc) => pc.propertyName === 'morphWeights')!;
+
+        expect(weightClip.type).toBe('Numbers');
+        // path 末项是「组件」项（PropertyClipPathItemType.Component === 1）
+        const last = weightClip.path[weightClip.path.length - 1];
+        expect(last[0]).toBe(1);
+        expect(last[1]).toBe('MeshRenderer');
+        // Horse 有 15 个 target：每帧 15 个权重
+        expect(weightClip.values).toHaveLength(weightClip.times.length * 15);
+        // getValue 返回该帧的切片（长度 = target 数）
+        const frame = weightClip.getValue(weightClip.times[1]) as number[];
+        expect(frame).toHaveLength(15);
+    });
+
     it('morph 数据同时落到几何上（供渲染层转成 storage buffer）', () =>
     {
         const prim = load('Horse').primitives[0];

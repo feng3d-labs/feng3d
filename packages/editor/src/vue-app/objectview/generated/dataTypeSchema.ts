@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 110 个类型 / 669 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 110 个类型 / 673 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -335,6 +335,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'morphWeights', type: 'readonly number[]', control: 'Array', optional: true, readonly: true, itemControl: 'number' },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
@@ -602,6 +603,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'emitInfo', type: 'ParticleSystemEmitInfo', control: 'Object', optional: true, readonly: true },
         { name: 'isSubParticleSystem', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'morphWeights', type: 'readonly number[]', control: 'Array', optional: true, readonly: true, itemControl: 'number' },
     ],
     'ParticleSystemRenderer': [
         { name: 'activeVertexStreamsCount', type: 'number', control: 'number', readonly: true },
@@ -727,6 +729,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'morphWeights', type: 'readonly number[]', control: 'Array', optional: true, readonly: true, itemControl: 'number' },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
@@ -763,6 +766,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'castShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'receiveShadows', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'renderWhenLoaded', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
+        { name: 'morphWeights', type: 'readonly number[]', control: 'Array', optional: true, readonly: true, itemControl: 'number' },
         { name: 'enabled', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'runEnvironment', type: 'RunEnvironment', control: 'Enum', optional: true, readonly: true, values: ['feng3d', 'editor', 'all'], numeric: true },
     ],
