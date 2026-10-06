@@ -1495,16 +1495,6 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         const worldPositions: number[] = [];
         mat4TransformPoints(worldMatrix, positions, worldPositions);
 
-        // 法线：世界矩阵的逆转置（等比缩放下等价于旋转，非等比时保持法线垂直于表面）
-        let normals: number[];
-        if (prim.attributes.NORMAL !== undefined)
-        {
-            normals = transformNormals(readAccessor(prim.attributes.NORMAL), worldMatrix);
-        }
-        else
-        {
-            normals = new Array(vertexCount * 3).fill(0);
-        }
 
         let uvs: number[];
         if (prim.attributes.TEXCOORD_0 !== undefined)
@@ -1529,6 +1519,18 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         // 展开成三角形列表（TRIANGLES 原样；STRIP/FAN 展开；点/线抛错）
         const expanded = expandIndicesToTriangles(indices, prim.mode === undefined ? MODE_TRIANGLES : prim.mode);
         indices = expanded.indices;
+
+        // 法线：世界矩阵的逆转置（等比缩放下等价于旋转，非等比时保持法线垂直于表面）
+        let normals: number[];
+        if (prim.attributes.NORMAL !== undefined)
+        {
+            normals = transformNormals(readAccessor(prim.attributes.NORMAL), worldMatrix);
+        }
+        else
+        {
+            // 规范要求客户端自算法线；位置已变换到世界坐标，这里直接用它算（法线此时就是世界空间的）
+            normals = computeVertexNormals(worldPositions, indices, vertexCount);
+        }
 
         // 顶点色（COLOR_0）：glTF 的材质因子/纹理之外，颜色还可以来自逐顶点色。
         //
@@ -1629,6 +1631,63 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         }
 
         return result;
+    }
+
+    /**
+     * 按三角形计算顶点法线（面积加权）。
+     *
+     * glTF 规范（3.7.2.1 的 `NORMAL` 条目）要求：**primitive 未提供 `NORMAL` 时，客户端必须自行计算法线**。
+     * 原先这里直接填 0，后果是光照完全失效——实测 `Horse` / `Flamingo` / `Stork` / `Parrot` 四个 GLB 的
+     * primitive 属性只有 `POSITION, COLOR_0, TEXCOORD_0`（本来就都没有 `NORMAL`），于是动物全部渲染成
+     * **均匀的深色剪影**：既没有立体感（光照不对），morph 形变也因此看不出来（被误判成「动画没播」）。
+     *
+     * 实现上先累加各三角形的**未归一化**法线（叉积模长即面积，天然面积加权），再按顶点归一化——
+     * 既给出正确朝向，又比逐面拆顶点更省内存、曲面也更平滑。退化三角形（叉积为零）给一个稳定的朝上法线。
+     *
+     * @param positions 世界坐标下的顶点位置（每顶点 3 个分量）
+     * @param indices 已展开为三角形列表的索引
+     * @param vertexCount 顶点数
+     * @returns 每顶点 3 个分量的归一化法线
+     */
+    function computeVertexNormals(positions: number[], indices: number[], vertexCount: number): number[]
+    {
+        const normals = new Array<number>(vertexCount * 3).fill(0);
+
+        for (let i = 0; i + 2 < indices.length; i += 3)
+        {
+            const i0 = indices[i] * 3;
+            const i1 = indices[i + 1] * 3;
+            const i2 = indices[i + 2] * 3;
+            const ax = positions[i1] - positions[i0];
+            const ay = positions[i1 + 1] - positions[i0 + 1];
+            const az = positions[i1 + 2] - positions[i0 + 2];
+            const bx = positions[i2] - positions[i0];
+            const by = positions[i2 + 1] - positions[i0 + 1];
+            const bz = positions[i2 + 2] - positions[i0 + 2];
+            // cross(a, b)：不归一化，模长即两倍三角形面积（面积加权）
+            const nx = ay * bz - az * by;
+            const ny = az * bx - ax * bz;
+            const nz = ax * by - ay * bx;
+            normals[i0] += nx; normals[i0 + 1] += ny; normals[i0 + 2] += nz;
+            normals[i1] += nx; normals[i1 + 1] += ny; normals[i1 + 2] += nz;
+            normals[i2] += nx; normals[i2 + 1] += ny; normals[i2 + 2] += nz;
+        }
+
+        for (let i = 0; i < normals.length; i += 3)
+        {
+            const len = Math.sqrt(normals[i] * normals[i] + normals[i + 1] * normals[i + 1] + normals[i + 2] * normals[i + 2]);
+
+            if (len > 1e-9)
+            {
+                normals[i] /= len; normals[i + 1] /= len; normals[i + 2] /= len;
+            }
+            else
+            {
+                normals[i] = 0; normals[i + 1] = 1; normals[i + 2] = 0;
+            }
+        }
+
+        return normals;
     }
 
     /** 用世界矩阵的逆转置变换法线并归一化 */
