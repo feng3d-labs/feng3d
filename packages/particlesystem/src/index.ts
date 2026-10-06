@@ -34,8 +34,6 @@ export * from './modules/ParticleTextureSheetAnimationModule';
 export * from './modules/ParticleVelocityOverLifetimeModule';
 export * from './others/ParticleEmissionBurst';
 export * from './Particle';
-export * from './ParticlesAdditive.shader';
-export * from './ParticlesAlphaBlendedPremultiply.shader';
 export * from './ParticleSystem';
 export * from './shapes/ParticleSystemShapeBox';
 export * from './shapes/ParticleSystemShapeCircle';
