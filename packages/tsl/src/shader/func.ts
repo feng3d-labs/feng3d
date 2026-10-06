@@ -343,6 +343,7 @@ export class ShaderFunc<TParams extends ShaderValue[], TReturn extends ShaderVal
 
             // 生成函数签名
             const paramStr = this.params.map((p) => `in ${p.glslType} ${p.name}`).join(', ');
+            // void 返回类型：GLSL 里要写成前缀，void 时它就是 "void "；其它类型也走同一形式
             lines.push(`${this.returnType.glslType} ${this.name}(${paramStr}) {`);
 
             // 生成函数体
@@ -381,7 +382,9 @@ export class ShaderFunc<TParams extends ShaderValue[], TReturn extends ShaderVal
 
             // 生成函数签名
             const paramStr = this.params.map((p) => `${p.name}: ${p.wgslType}`).join(', ');
-            lines.push(`fn ${this.name}(${paramStr}) -> ${this.returnType.wgslType} {`);
+            // void 返回类型：WGSL 用 "-> T" 表示返回值，无返回值时**整个箭头省略**
+            const returnSuffix = this.returnType.wgslType === 'void' ? '' : ` -> ${this.returnType.wgslType}`;
+            lines.push(`fn ${this.name}(${paramStr})${returnSuffix} {`);
 
             // 生成函数体
             for (const stmt of this.statements)
