@@ -439,6 +439,45 @@ describe('cannon-plugin：物理世界', () =>
         }
     });
 
+    it('onEndCollide 订阅"结束接触"：穿过触发器时会收到离开事件', () =>
+    {
+        const object3D: Object3D = {
+            __type__: 'Object3D',
+            // 无重力 + 水平初速度，让球"穿过"触发器
+            components: [{ __type__: 'PhysicsWorld', gravity: { x: 0, y: 0, z: 0 } }],
+            children: [{
+                __type__: 'Object3D',
+                name: 'Ball',
+                position: { x: -5, y: 0, z: 0 },
+                components: [
+                    { __type__: 'SphereCollider', radius: 1 },
+                    { __type__: 'Rigidbody', mass: 1, velocity: { x: 5, y: 0, z: 0 } },
+                ],
+            }, {
+                __type__: 'Object3D',
+                name: 'Trigger',
+                position: { x: 0, y: 0, z: 0 },
+                components: [
+                    { __type__: 'BoxCollider', width: 4, height: 4, depth: 10 },
+                    { __type__: 'Rigidbody', mass: 0, isTrigger: true },
+                ],
+            }],
+        };
+        logic(object3D);
+        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+        let begins = 0;
+        let ends = 0;
+        physicsWorldLogic.onCollide(() => { begins++; });
+        physicsWorldLogic.onEndCollide(() => { ends++; });
+
+        // 2 秒足够球从 x=-5 走到 x=+5 并穿过 (0,0,0) 处的触发器
+        for (let i = 0; i < 120; i++) physicsWorldLogic.update(1000 / 60);
+
+        expect(begins).toBeGreaterThan(0);
+        expect(ends).toBeGreaterThan(0);
+    });
+
     it('contactMaterials 按材质名成对注册 ContactMaterial（接触参数原样写入）', () =>
     {
         const data = {

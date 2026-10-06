@@ -153,6 +153,16 @@ export interface PhysicsWorldLogic extends BehaviourLogic
      * @returns 退订函数
      */
     onCollide(listener: (event: CollideEvent) => void): () => void;
+
+    /**
+     * 订阅「结束接触」事件（对应 cannon-es 的 `endContact`），返回退订函数。
+     *
+     * 触发器场景（原版 `trigger.html`）用它判断物体**离开**触发器。
+     *
+     * @param listener 事件回调
+     * @returns 退订函数
+     */
+    onEndCollide(listener: (event: CollideEvent) => void): () => void;
 }
 
 /**
@@ -248,6 +258,8 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     // ---- 碰撞事件 ----
     /** 「开始接触」的订阅者 */
     const collideListeners = new Set<(event: CollideEvent) => void>();
+    /** 「结束接触」的订阅者 */
+    const endCollideListeners = new Set<(event: CollideEvent) => void>();
     /**
      * 刚体 → 所属 Object3D（每帧重建）。
      *
@@ -267,6 +279,20 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             bodyB: event.bodyB,
         };
         for (const listener of collideListeners) listener(collideEvent);
+    });
+
+    // endContact 与 beginContact 同形，只是时机相反
+    world.addEventListener('endContact', (event: { bodyA: Body; bodyB: Body }) =>
+    {
+        if (endCollideListeners.size === 0) return;
+
+        const collideEvent: CollideEvent = {
+            objectA: bodyToObject3D.get(event.bodyA) ?? null,
+            objectB: bodyToObject3D.get(event.bodyB) ?? null,
+            bodyA: event.bodyA,
+            bodyB: event.bodyB,
+        };
+        for (const listener of endCollideListeners) listener(collideEvent);
     });
 
     // ---- 求解器与接触方程（堆叠很多刚体时这些参数决定稳不稳） ----
@@ -378,6 +404,12 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             collideListeners.add(listener);
 
             return () => { collideListeners.delete(listener); };
+        },
+        onEndCollide(listener)
+        {
+            endCollideListeners.add(listener);
+
+            return () => { endCollideListeners.delete(listener); };
         },
         init(object3D) { members.init(object3D); },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
@@ -580,6 +612,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             createdSprings.clear();
             createdConstraints.clear();
             collideListeners.clear();
+            endCollideListeners.clear();
             bodyToObject3D.clear();
         },
     };

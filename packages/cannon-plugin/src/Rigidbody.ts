@@ -139,8 +139,10 @@ export interface RigidbodyLogic extends BehaviourLogic
      * 施加**瞬时冲量**（一次调用即改变动量，不需要每帧调用）。
      *
      * @param impulse 世界坐标下的冲量
+     * @param relativePoint 相对刚体质心的施力点（缺失时按质心处理 = 只平动）；
+     *   给一个偏移就会产生**角动量**（原版 `trigger.html` 就靠它让球一边前进一边转）
      */
-    applyImpulse(impulse: Vector3Like): void;
+    applyImpulse(impulse: Vector3Like, relativePoint?: Vector3Like): void;
 }
 
 /**
@@ -180,7 +182,12 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
         get materialName() { return data.materialName; },
         applyForce(force) { body.applyForce(new Vec3(force.x, force.y, force.z)); },
         applyTorque(torque) { body.applyTorque(new Vec3(torque.x, torque.y, torque.z)); },
-        applyImpulse(impulse) { body.applyImpulse(new Vec3(impulse.x, impulse.y, impulse.z)); },
+        applyImpulse(impulse, relativePoint)
+        {
+            body.applyImpulse(
+                new Vec3(impulse.x, impulse.y, impulse.z),
+                relativePoint === undefined ? undefined : new Vec3(relativePoint.x, relativePoint.y, relativePoint.z));
+        },
         init(object3D)
         {
             members.init(object3D);
