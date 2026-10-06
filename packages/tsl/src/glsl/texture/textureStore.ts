@@ -6,6 +6,8 @@ import { IVec2 } from '../../types/vector/ivec2';
 import { Uvec2 } from '../../types/vector/uvec2';
 import { Vec4 } from '../../types/vector/vec4';
 import { StorageTexture2D } from './storageTexture2D';
+import { StorageTexture3D } from './storageTexture3D';
+import { Uvec3 } from '../../types/vector/uvec3';
 
 /**
  * 写入存储纹理：`textureStore(<tex>, <coord>, <value>)`
@@ -16,7 +18,9 @@ import { StorageTexture2D } from './storageTexture2D';
  * @param coord 坐标（ivec2 / uvec2）
  * @param value 写入值（vec4）
  */
-export function textureStore(texture: StorageTexture2D, coord: IVec2 | Uvec2, value: Vec4): void
+export function textureStore(texture: StorageTexture2D, coord: IVec2 | Uvec2, value: Vec4): void;
+export function textureStore(texture: StorageTexture3D, coord: Uvec3, value: Vec4): void;
+export function textureStore(texture: StorageTexture2D | StorageTexture3D, coord: IVec2 | Uvec2 | Uvec3, value: Vec4): void
 {
     const statement: IStatement = {
         toGLSL: () => `imageStore(${texture.name}, ${coord.toGLSL()}, ${value.toGLSL()});`,

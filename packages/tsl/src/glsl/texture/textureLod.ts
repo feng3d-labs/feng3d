@@ -3,6 +3,8 @@ import { Float } from '../../types/scalar/float';
 import { Vec2 } from '../../types/vector/vec2';
 import { Vec4 } from '../../types/vector/vec4';
 import { Sampler2D } from '../sampler/sampler2D';
+import { Sampler3D } from '../sampler/sampler3D';
+import { Vec3 } from '../../types/vector/vec3';
 
 /**
  * textureLod 函数，使用显式 LOD 进行纹理查找
@@ -16,7 +18,8 @@ import { Sampler2D } from '../sampler/sampler2D';
  */
 export function textureLod(sampler: Sampler2D, coord: Vec2, lod: Float): Vec4;
 export function textureLod(sampler: Sampler2D, coord: Vec2, lod: number): Vec4;
-export function textureLod(sampler: Sampler2D, coord: Vec2, lod: Float | number): Vec4
+export function textureLod(sampler: Sampler3D, coord: Vec3, lod: Float | number): Vec4;
+export function textureLod(sampler: Sampler2D | Sampler3D, coord: Vec2 | Vec3, lod: Float | number): Vec4
 {
     const result = new Vec4();
 
