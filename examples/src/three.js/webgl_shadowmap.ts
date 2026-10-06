@@ -129,7 +129,9 @@ const lightObject: Object3D = {
         // three.js: renderer.shadowMap.type = THREE.PCFShadowMap
         shadowType: ShadowType.PCF_Shadows,
         // three.js: light.shadow.bias = 0.0001
-        shadowBias: 0.0001,
+        // 注意：three 的 0.0001 是针对它 RGBA packed depth 的取值；fengd3 的阴影图是精确
+        // depth32float、且按正面渲染，自遮挡需要显式 bias 才能压掉（实测 0.03 起与 three 逐像素一致）
+        shadowBias: 0.03,
         // three.js: light.shadow.radius 默认 1
         shadowRadius: 1,
         // three.js: shadow.camera.left/right/top/bottom = ∓2000/±2000、near 1200、far 2500
