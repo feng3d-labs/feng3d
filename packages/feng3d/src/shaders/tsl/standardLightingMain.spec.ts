@@ -100,7 +100,12 @@ describe('光照主体 body 片段的 TSL 生成', () =>
         expect(main).toContain('spotAngleAttenuation = spotAngleAttenuation * spotAngleAttenuation;');
         expect(main).toContain('resultColor = resultColor + ambientColor * diffuseColor.xyz;');
         expect(main).toContain('if (shadowData.u_shadowEnabled > 0.5) {');
-        expect(main).toContain('resultColor = resultColor * shadow;');
+        // 阴影**只遮蔽直射光**（three.js: directLight.color *= getShadow(...)）：
+        // 方向光项乘 shadow，环境光项不乘
+        expect(main).toContain('* lights.u_directionalLight.intensity) * shadow;');
+        expect(main).toContain('resultColor = resultColor + ambientColor * diffuseColor.xyz;');
+        // 旧的"整段乘阴影"写法不得再出现
+        expect(main).not.toContain('resultColor = resultColor * shadow;');
         expect(main).toContain('finalColor = vec4<f32>(resultColor, diffuseColor.a);');
     });
 });

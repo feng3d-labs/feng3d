@@ -12,7 +12,7 @@
  *
  * 注意 `select` 的参数顺序：**WGSL 是 `select(f, t, cond)`，TSL 是 `select(cond, t, f)`**。
  */
-import { Float, clamp, dot, forU32_, if_, length, let_, normalize, pow, sampler2D, select, texture, uint, var_, vec3, vec4 } from '@feng3d/tsl';
+import { Float, clamp, dot, float, forU32_, if_, length, let_, normalize, pow, sampler2D, select, texture, uint, var_, vec3, vec4 } from '@feng3d/tsl';
 
 type Vec2Value = ReturnType<typeof import('@feng3d/tsl').vec2>;
 type Vec3Value = ReturnType<typeof vec3>;
@@ -108,6 +108,16 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
     const viewDir = let_('viewDir', normalize(ctx.camera.u_cameraPos.subtract(ctx.worldPosition)));
     const resultColor = var_('resultColor', vec3(0.0, 0.0, 0.0));
 
+    // 阴影因子：**只遮蔽直射光**（对应 three.js 在 lights_fragment_begin 里的
+    // `directLight.color *= getShadow(...)`），环境光与自发光不受阴影影响。
+    // 条件来自 uniform，满足 textureSampleCompare 的 uniform control flow 要求。
+    const shadow = var_('shadow', float(1.0));
+
+    if_(ctx.shadowData.u_shadowEnabled.greaterThan(0.5), () =>
+    {
+        shadow.assign(ctx.getShadow(ctx.shadowPos));
+    });
+
     // 方向光
     // 注：手写这里是 `let dirLight = lights.u_directionalLight`。TSL 的 let_ 只接受 ShaderValue，
     // 结构体实例不能包，所以直接引用（生成的访问路径相同，只少一行 let；WGSL 语义等价）。
@@ -119,7 +129,7 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
         const specular = let_('specular', ctx.calculateLightSpecular(ctx.normal, lightDir, viewDir, glossiness));
         resultColor.assign(resultColor.add(
             diffuse.multiply(ctx.diffuseColor.xyz).add(specular.multiply(specularColor))
-                .multiply(dirLight.color).multiply(dirLight.intensity),
+                .multiply(dirLight.color).multiply(dirLight.intensity).multiply(shadow),
         ));
     });
 
@@ -169,13 +179,6 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
 
     // 环境光
     resultColor.assign(resultColor.add(ambientColor.multiply(ctx.diffuseColor.xyz)));
-
-    // 阴影因子
-    if_(ctx.shadowData.u_shadowEnabled.greaterThan(0.5), () =>
-    {
-        const shadow = let_('shadow', ctx.getShadow(ctx.shadowPos));
-        resultColor.assign(resultColor.multiply(shadow));
-    });
 
     // 自发光（three.js：outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance）。
     // - 线性光照模式：调用方已在线性空间计算，直接相加（与 three 完全同域）。
