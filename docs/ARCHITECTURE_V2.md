@@ -365,7 +365,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | `packages/tsl` 收进主仓（与其它 21 个包同等待遇） | ✅ 已达成（#709）：workspace 成员（第 22 个包）；R1 分层（Layer 0）与 R6 strict 清单已登记；lint 0 问题；320 用例随根 `vitest run`；纳入 `types:packages` / `build:packages` / `release:dry-run`（公共包 20 → 21） | workspace 识别、`tsc` 通过、纳入 lint/测试 |
 | 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | ✅ 已达成（#711 试点批） | 试点材质改用 TSL 生成，**渲染像素级一致**（见下方实测结论） |
 | 逐个材质迁移（7 个材质 + shadow/common 模块） | ✅ **已达成**（#711）：7 个材质全部迁完，**`packages/feng3d/src/**/*.wgsl.ts` 归零**（0 个残留） | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
-| GLSL 源文件降级为"参考样本"并从构建路径移除 | ⬜ 未开始（#713）：`packages/feng3d/src/shaders` 下仍有 65 个 `.glsl` | 仓库不再有"必须人工保持同步的两份着色器" |
+| GLSL 源文件降级为"参考样本"并从构建路径移除 | 🔶 **部分达成**（#713）：**全仓 79 个 `.glsl`**（65 个在 `shaders/`、14 个在 `materials/` 等）实测**无任何代码 import / `readFileSync`**；并已在 `packages/feng3d/package.json` 的 `files` 里加 `!src/**/*.glsl` 排除——**发布包不再包含它们**（实测 267 → 188 个文件、341.0 → 315.8 KB）。整体归档到 `docs/archive/` 是**独立的一批**（另开 issue）。 | 仓库不再有"必须人工保持同步的两份着色器"（✅ 已达成）；发布包不再含 `.glsl`（✅ 本批达成） |
 | TSL 能力扩展：compute / storage buffer / 原子操作（examples 迁移前置） | 🔶 **部分达成**（#710 / #785）：compute、storage buffer、存储纹理、`while_`/`switch_`、位运算、override 等**已落地**；**原子操作未做**（examples 范围调整后不再是前置） | examples 里 12 个 compute 着色器可用 TSL 编写 |
 | `packages/webgpu/examples` 的 71 个 `.wgsl` 全部 TSL 化 | ⏹️ **范围调整**（#712）：已迁出 **47 个**（`*.tsl.ts`，与原 `.wgsl` 同目录同名）；**余 24 个经负责人决定不再迁移**，与 TSL 版**双轨并存**（约定见 `AGENTS.md` §9） | 仓内手写 WGSL 归零（**本条已按范围调整改写**） |
 
