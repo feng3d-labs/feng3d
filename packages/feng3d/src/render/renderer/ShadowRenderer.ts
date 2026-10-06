@@ -343,7 +343,7 @@ export class ShadowRenderer
             // three 对 FrontSide 材质在阴影 Pass 里渲染**背面**（shadowSide[FrontSide] = BackSide），
             // 记录的深度是物体背面，能显著减少自遮挡（shadow acne）。
             // 这里按材质的 cullFace 取反：back→front、front→back、none→none。
-            const materialCullFace = renderable.material?.cullFace;
+            const materialCullFace = (renderable.material as { cullFace?: 'back' | 'front' | 'none' } | undefined)?.cullFace;
             const shadowCullFace = materialCullFace === 'none' ? 'none'
                 : materialCullFace === 'front' ? 'back' : 'front';
 
