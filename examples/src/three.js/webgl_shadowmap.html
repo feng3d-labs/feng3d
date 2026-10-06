@@ -7,11 +7,19 @@
     <style>
         html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
         body { background-color: #000; }
-        #info { position: absolute; top: 10px; left: 10px; color: #fff; font: 14px sans-serif; }
+        #info { position: absolute; top: 0; width: 100%; padding: 5px; color: #fff; font: 13px monospace; text-align: center; }
+        #info a { color: #ffcc00; text-decoration: none; }
     </style>
 </head>
 <body>
-    <div id="info">OrbitControls: drag=rotate, wheel=zoom, right=pan</div>
+    <!-- 说明文字对齐原示例：three.js examples/webgl_shadowmap.html 的 #info -->
+    <div id="info">
+        <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - shadowmap - models by
+        <a href="https://mirada.com/" target="_blank" rel="noopener">mirada</a> from
+        <a href="http://www.ro.me" target="_blank" rel="noopener">rome</a><br />
+        move camera with WASD / RF + mouse<br />
+        t: toggle HUD
+    </div>
     <canvas id="webgpu" style="width: 100%; height: 100%;"></canvas>
     <script type="module" src="./webgl_shadowmap.ts"></script>
 </body>
