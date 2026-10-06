@@ -39,7 +39,7 @@ const PARTICLESYSTEM_EXAMPLES = [
  */
 const KNOWN_NOISE = [
     /Failed to load resource: the server responded with a status of 404/i,
-    /Device lost/i,
+    /device[^.]*lost/i,
     /Instance dropped error in getCompilationInfo/i,
 ];
 
