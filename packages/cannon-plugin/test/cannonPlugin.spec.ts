@@ -1,7 +1,7 @@
 // 副作用导入：各碰撞体 / 刚体 / 物理世界都是纯数据类型，只用作类型标注的 import
 // 会被转译器整条擦除，于是 registerLogic 不执行、logic() 返回 null（与 ui 包测试同款坑）。
 import 'feng3d';
-import { Object3D } from 'feng3d';
+import { Object3D, reactive } from 'feng3d';
 import { logic } from '@feng3d/reactivity';
 import { Box, ConvexPolyhedron, Cylinder, Heightfield, Plane, Sphere, Trimesh } from 'cannon-es';
 import { describe, expect, it } from 'vitest';
@@ -543,6 +543,54 @@ describe('cannon-plugin：物理世界', () =>
         expect(vehicle.engineForce).toBe(200);
         // 底盘被悬挂托住：两秒自由落体会掉到地面以下，这里必须还在半空
         expect(object3D.children![1].position!.y).toBeGreaterThan(1);
+    });
+
+    it('运行时往 children push 新刚体会进世界，splice 掉会从世界移除（动态场景对账）', () =>
+    {
+        const root: Object3D = {
+            __type__: 'Object3D',
+            components: [{ __type__: 'PhysicsWorld' }],
+            children: [],
+        };
+        logic(root);
+        const physicsWorldLogic = logic(root.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+
+        physicsWorldLogic.update(1000 / 60);
+        expect(physicsWorldLogic.world.bodies.length).toBe(0);
+
+        const r_root = reactive(root) as unknown as { children: Object3D[] };
+        r_root.children.push({
+            __type__: 'Object3D',
+            name: 'Dynamic',
+            position: { x: 0, y: 5, z: 0 },
+            components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1 }],
+        });
+
+        physicsWorldLogic.update(1000 / 60);
+        expect(physicsWorldLogic.world.bodies.length).toBe(1);
+
+        r_root.children.splice(0, 1);
+        physicsWorldLogic.update(1000 / 60);
+        expect(physicsWorldLogic.world.bodies.length).toBe(0);
+    });
+
+    it('PhysicsWorld 的求解器与接触方程参数按声明生效', () =>
+    {
+        const data = {
+            __type__: 'PhysicsWorld',
+            solverIterations: 5,
+            contactEquationStiffness: 5e6,
+            contactEquationRelaxation: 10,
+            quatNormalizeFast: true,
+            quatNormalizeSkip: 3,
+        } as PhysicsWorld;
+        const physicsWorldLogic = logic(data) as PhysicsWorldLogic;
+
+        expect((physicsWorldLogic.world.solver as unknown as { iterations: number }).iterations).toBe(5);
+        expect(physicsWorldLogic.world.defaultContactMaterial.contactEquationStiffness).toBe(5e6);
+        expect(physicsWorldLogic.world.defaultContactMaterial.contactEquationRelaxation).toBe(10);
+        expect(physicsWorldLogic.world.quatNormalizeFast).toBe(true);
+        expect(physicsWorldLogic.world.quatNormalizeSkip).toBe(3);
     });
 
     it('SPHSystem / SPHParticle 接入求解器与刚体表，缺省参数由工厂补齐', () =>
