@@ -80,6 +80,24 @@ export class Varying implements IElement
     }
 
     /**
+     * 按当前着色器阶段给出引用文本（{@link VariableHost.getStageReference} 的约定）。
+     *
+     * vertex 侧是 `output.<name>`、fragment 侧是 `input.<name>`。
+     *
+     * 存在的理由：`float(varying('x', 0))` 这类调用创建的是**独立的新值**，
+     * 它只经 `bindToVariableHost` 拿到裸名——原先会丢掉阶段前缀
+     * （实测生成裸 `mipLevel` 而非 `input.mipLevel`）。实现本方法后，
+     * 这条路径也能拿到正确前缀。
+     *
+     * @param stage 当前阶段（'vertex' / 'fragment'）
+     * @returns 引用文本
+     */
+    getStageReference(stage: string): string
+    {
+        return stage === 'fragment' ? `input.${this.name}` : `output.${this.name}`;
+    }
+
+    /**
      * 设置自动分配的 location（内部使用）
      */
     setAutoLocation(location: number): void
