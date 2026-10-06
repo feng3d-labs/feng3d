@@ -1,9 +1,10 @@
 import { WebGPU } from '@feng3d/webgpu';
-import { createTextureFromCanvas, FogMode, logic, ShadowType, StandardMaterial, ticker, View } from 'feng3d';
-import type { FirstPersonControls, Object3D } from 'feng3d';
+import { createTextureFromCanvas, FogMode, logic, reactive, ShadowType, StandardMaterial, ticker, View } from 'feng3d';
+import type { DebugShadowMapMaterial, DirectionalLight, FirstPersonControls, Object3D, PlaneGeometry } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_shadowmap.html（1:1 复刻，分阶段推进）。
+ *
  *
  * 原示例的"罗马场景"：大地面 + 两个大盒子 + THREE.JS 立体字 + 8 只带骨骼动画的动物，
  * PCF 阴影 + FirstPersonControls 漫游，按 t 切换阴影图 HUD。
@@ -35,6 +36,9 @@ const FLOOR = -250;
 /** three.js: NEAR = 10, FAR = 3000 */
 const NEAR = 10;
 const FAR = 3000;
+
+/** three.js: PerspectiveCamera(23, ...) */
+const CAMERA_FOV = 23;
 
 /** three.js: scene.background = scene.fog = 0x59472b */
 const FOG_COLOR = 0x59472b;
@@ -118,7 +122,7 @@ const cameraObject: Object3D = {
     position: { x: 700, y: 50, z: 1900 },
     components: [{
         __type__: 'PerspectiveCamera',
-        fov: 23,
+        fov: CAMERA_FOV,
         aspect: webgpuCanvas.width / webgpuCanvas.height,
         near: NEAR,
         far: FAR,
@@ -156,6 +160,94 @@ const lightObject: Object3D = {
         debugShadowMap: false,
     }],
 };
+
+/** 方向光组件（HUD 每帧要读它的 shadowDepthTexture 与 shadowMapSize） */
+const lightComponent = lightObject.components![0] as unknown as DirectionalLight;
+
+// ---- ShadowMapViewer HUD（three.js: new ShadowMapViewer(light)，按 t 切换）----
+//
+// three 的 HUD 是"独立正交场景 + clearDepth 后叠加渲染"在窗口左下角、尺寸为阴影图的 1/4；
+// 这里用「挂在相机下的世界空间平面 + DebugShadowMapMaterial」达到同样的屏幕效果：
+// 平面放在相机前方 HUD_DISTANCE 处，尺寸/位置按该处视锥截面从**画布像素**换算——
+// 屏幕上恒为 SHADOW_MAP_WIDTH/4 × SHADOW_MAP_HEIGHT/4 像素，边距与原示例一致。
+//
+// 换算必须等画布尺寸确定（脚本执行时 canvas 还是 HTML 的默认 300×150），所以放到每帧的
+// layout 里做，只在尺寸变化时写入。
+
+/** three.js: lightShadowMapViewer.position.x = 10（左上角为原点的像素边距） */
+const HUD_MARGIN = 10;
+/** three.js: size.width = SHADOW_MAP_WIDTH / 4、size.height = SHADOW_MAP_HEIGHT / 4 */
+const HUD_WIDTH = SHADOW_MAP_WIDTH / 4;
+const HUD_HEIGHT = SHADOW_MAP_HEIGHT / 4;
+
+/**
+ * 平面到相机的距离（世界单位）。
+ *
+ * 必须大于相机的 `near`（10），否则整个平面落在近平面之内被裁掉；取 20 留出余量。
+ * 它不会被场景遮挡——DebugShadowMapMaterial 的 pipeline 是 `depthCompare: 'always'`。
+ */
+const HUD_DISTANCE = 20;
+
+/**
+ * HUD 材质：把方向光的 shadowDepthTexture 用 textureLoad 可视化（等价 three 的
+ * UnpackDepthRGBAShader；fengd3 的阴影图是 depth32float，不能当普通颜色纹理采）。
+ */
+const hudMaterial = { __type__: 'DebugShadowMapMaterial' } as DebugShadowMapMaterial;
+
+/** HUD 平面几何（尺寸在 layout 里按画布像素换算后写入） */
+const hudGeometry: PlaneGeometry = { __type__: 'PlaneGeometry', width: 1, height: 1, yUp: false };
+
+/** HUD 平面：作为相机的子对象，位置/朝向都在相机空间里（相机移动/转向时自动跟随） */
+const hudPlane: Object3D = {
+    __type__: 'Object3D',
+    name: 'shadowMapViewer',
+    position: { x: 0, y: 0, z: -HUD_DISTANCE },
+    // fengd3 的 PlaneGeometry 在 yUp: false 时法线朝 -Z，而相机前方正是 -Z；
+    // 绕 Y 轴转 180° 让正面朝向相机（否则看到的是镜像的背面）
+    rotation: { x: 0, y: Math.PI, z: 0 },
+    components: [{
+        __type__: 'MeshRenderer',
+        geometry: hudGeometry,
+        material: hudMaterial,
+        castShadows: false,
+        receiveShadows: false,
+    }],
+    // three.js: showHUD 默认 false
+    activeSelf: false,
+};
+reactive(cameraObject).children = [hudPlane];
+
+/** 上次换算用的画布尺寸（只在变化时重算，避免每帧写响应式数据） */
+let hudLayoutWidth = 0;
+let hudLayoutHeight = 0;
+
+/**
+ * 按当前画布像素尺寸把 HUD 换算到相机空间（每帧调用；尺寸未变时直接返回）。
+ */
+function updateHudLayout(): void
+{
+    const width = webgpuCanvas.width;
+    const height = webgpuCanvas.height;
+    if (width <= 0 || height <= 0 || (width === hudLayoutWidth && height === hudLayoutHeight)) return;
+    hudLayoutWidth = width;
+    hudLayoutHeight = height;
+
+    // z = -HUD_DISTANCE 处视锥截面的世界尺寸
+    const viewHeight = 2 * HUD_DISTANCE * Math.tan(CAMERA_FOV * Math.PI / 180 / 2);
+    const viewWidth = viewHeight * (width / height);
+    // three.js: position.y = SCREEN_HEIGHT - (SHADOW_MAP_HEIGHT / 4) - 10（y 从顶部算）
+    const centerX = HUD_MARGIN + HUD_WIDTH / 2;
+    const centerY = height - HUD_HEIGHT - HUD_MARGIN + HUD_HEIGHT / 2;
+
+    reactive(hudPlane).position = {
+        x: (centerX / width - 0.5) * viewWidth,
+        y: (0.5 - centerY / height) * viewHeight,
+        z: -HUD_DISTANCE,
+    };
+    const r_geometry = reactive(hudGeometry);
+    r_geometry.width = (HUD_WIDTH / width) * viewWidth;
+    r_geometry.height = (HUD_HEIGHT / height) * viewHeight;
+}
 
 const view: View = {
     __type__: 'View',
@@ -226,5 +318,26 @@ const viewLogic = logic(view);
 logic(lightObject).lookAt({ x: 0, y: 0, z: 0 });
 // three.js: controls.lookAt( scene.position )——第一人称控制器的初始朝向
 logic(firstPersonControls).lookAt({ x: 0, y: 0, z: 0 });
+
+// three.js: 每帧 lightShadowMapViewer.render(renderer) 把当前阴影图与尺寸送进 shader
+ticker.onframe(() =>
+{
+    updateHudLayout();
+    const lightLogic = logic(lightComponent);
+    const size = lightLogic.shadowMapSize;
+
+    // u_invert: 1 —— three 的 ShadowMapViewer 输出的是 1 - depth（黑=无遮挡）
+    reactive(hudMaterial).uniforms = { u_texSize: { x: size.x, y: size.y }, u_invert: 1 };
+    reactive(hudMaterial).s_texture = lightLogic.shadowDepthTexture;
+});
+
+// three.js: window.addEventListener('keydown', onKeyDown) 里 case 84 /*t*/ 切换 showHUD
+window.addEventListener('keydown', (event) =>
+{
+    if (event.code === 'KeyT')
+    {
+        reactive(hudPlane).activeSelf = !logic(hudPlane).activeSelf;
+    }
+});
 
 ticker.onframe(() => { webgpu.submit(viewLogic.submit); });
