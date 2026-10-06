@@ -35,11 +35,11 @@ export interface Entity
  * 上层扩展包登记 `{ baseTypes: ['Component3D'] }` 时靠它上溯到 `Component`。
  */
 const _typeHierarchy: Record<string, Set<string>> = {
-    'Component': new Set(['Component', 'Component3D', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script', 'Skeleton', 'Camera', 'PerspectiveCamera', 'OrthographicCamera', 'Scene', 'SkyBox', 'TransformLayout', 'Billboard', 'Cartoon', 'OutLine', 'Wireframe', 'HoldSize', 'Graphics', 'Terrain']),
+    'Component': new Set(['Component', 'Component3D', 'Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script', 'Skeleton', 'Camera', 'PerspectiveCamera', 'OrthographicCamera', 'Scene', 'SkyBox', 'TransformLayout', 'Billboard', 'Cartoon', 'OutLine', 'Wireframe', 'HoldSize', 'Graphics', 'Terrain']),
     'Component3D': new Set(['Component3D']),
-    'Behaviour': new Set(['Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script']),
-    'RayCastable': new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem']),
-    'Renderable': new Set(['Renderable', 'MeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Terrain']),
+    'Behaviour': new Set(['Behaviour', 'RayCastable', 'Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Light', 'DirectionalLight', 'PointLight', 'SpotLight', 'Animation', 'AudioListener', 'AudioSource', 'FPSController', 'OrbitControls', 'Script']),
+    'RayCastable': new Set(['RayCastable', 'Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem']),
+    'Renderable': new Set(['Renderable', 'MeshRenderer', 'MorphMeshRenderer', 'SkinnedMeshRenderer', 'ParticleSystem', 'Terrain']),
     'Light': new Set(['Light', 'DirectionalLight', 'PointLight', 'SpotLight']),
     'Camera': new Set(['Camera', 'PerspectiveCamera', 'OrthographicCamera']),
 };
