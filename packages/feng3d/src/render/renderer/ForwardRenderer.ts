@@ -75,8 +75,12 @@ export interface ShadowDataUniform
     u_shadowCameraFar: number;
     u_shadowBias: number;
     u_shadowEnabled: number;
-    _pad0: number;
-    _pad1: number;
+    /** 阴影类型（ShadowType：1=硬、2=PCF、3=PCF_SOFT） */
+    u_shadowType: number;
+    /** 阴影贴图尺寸（宽 × 高，像素）：PCF 用它换算纹素步长 */
+    u_shadowMapSize: { x: number; y: number };
+    /** 阴影采样半径（three.js 的 shadow.radius，缺省 1） */
+    u_shadowRadius: number;
 }
 
 /**
@@ -306,8 +310,9 @@ export class ForwardRenderer
                     u_shadowCameraFar: sLightLogic.shadowCameraFar,
                     u_shadowBias: shadowLight.shadowBias ?? 0,
                     u_shadowEnabled: 1,
-                    _pad0: 0,
-                    _pad1: 0,
+                    u_shadowType: shadowLight.shadowType ?? ShadowType.No_Shadows,
+                    u_shadowMapSize: sLightLogic.shadowMapSize,
+                    u_shadowRadius: shadowLight.shadowRadius ?? 1,
                 };
                 // 阴影采样纹理：方向光用 depth24plus 深度纹理（ShadowRenderer 的 depth-only Pass 写入）
                 shadowMapTexture = sLightLogic.shadowDepthTexture;
@@ -321,8 +326,9 @@ export class ForwardRenderer
                     u_shadowCameraFar: 1,
                     u_shadowBias: 0,
                     u_shadowEnabled: 0,
-                    _pad0: 0,
-                    _pad1: 0,
+                    u_shadowType: ShadowType.No_Shadows,
+                    u_shadowMapSize: { x: 1, y: 1 },
+                    u_shadowRadius: 1,
                 };
             }
 

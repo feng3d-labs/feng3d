@@ -21,7 +21,7 @@ describe('光照主体 body 片段的 TSL 生成', () =>
             u_directionalLight: DirectionalLightData, u_pointLightCount: float, _pad0: float, _pad1: float, _pad2: float,
             u_pointLights: array(PointLightData, 8), u_spotLight: SpotLightData,
         });
-        const ShadowUniforms = struct('ShadowUniforms', { u_shadowVP: mat4, u_lightPosition: vec3, u_shadowCameraNear: float, u_shadowCameraFar: float, u_shadowBias: float, u_shadowEnabled: float, _pad0: float, _pad1: float });
+        const ShadowUniforms = struct('ShadowUniforms', { u_shadowVP: mat4, u_lightPosition: vec3, u_shadowCameraNear: float, u_shadowCameraFar: float, u_shadowBias: float, u_shadowEnabled: float, u_shadowType: float, u_shadowMapSize: vec2, u_shadowRadius: float });
         const StandardUniforms = struct('StandardUniforms', {
             u_specular: vec4, u_glossiness: float, u_ambient: vec4,
             // 自发光（StandardMaterial 的 u_emissive；缺它会在 applyStandardLighting 里读 undefined.xyz）
