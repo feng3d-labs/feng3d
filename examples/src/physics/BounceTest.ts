@@ -1,98 +1,88 @@
-import { WebGPU } from '@feng3d/webgpu';
-import { logic, ticker } from 'feng3d';
-import type { View } from 'feng3d';
-import '@feng3d/cannon-plugin';
+import { reactive } from 'feng3d';
+import type { Object3D } from 'feng3d';
+import { createPhysicsDemo } from './PhysicsDemo';
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
-const webgpu = await new WebGPU().init(); // 初始化 WebGPU
+const demo = createPhysicsDemo(webgpuCanvas);
 
 /**
- * 弹性对比示例（对应 cannon-es 的 `bounce.html`）。
+ * 弹性示例 —— 1:1 对应 cannon-es 的 `examples/bounce.html`。
  *
- * 三个一模一样的球从同一高度落下，只有**弹性系数**不同（0.1 / 0.5 / 0.9），
- * 于是弹起的高度截然不同。
+ * 原版场景（逐项对齐）：
+ * - 一个无限大的 Plane 地面（mass 0）
+ * - 三个半径 1、质量 10 的球，从同一个高度 y=5 落下，x 分别是 -3 / 0 / 3，z 都是 1
+ * - 三个球各自一种材质，与地面之间的 ContactMaterial 弹性分别是 0.0 / 0.7 / 0.9，摩擦都是 0
+ * - 线性阻尼 0.01，重力 (0, -10, 0)
  *
- * 关于 restitution 的用法有个坑值得说明：cannon-es 的摩擦/弹性是**接触对**属性，
- * 它存在两种材质之间的 ContactMaterial 上，而不是单个物体上。
- * 所以这里给球声明 restitution 之后，PhysicsWorld 会自动为「球的材质 × 世界默认材质」
- * 注册 ContactMaterial（弹性取较大者），球才真的会弹。
+ * 视觉与原版的 shapeToGeometry 规则一致：球用 `SphereGeometry(radius, 8, 8)`，
+ * 地面用 `PlaneGeometry(500, 500)`。
  */
-const BALLS = [
-    { restitution: 0.1, color: { r: 0.55, g: 0.58, b: 0.64 }, label: 'restitution 0.1' },
-    { restitution: 0.5, color: { r: 0.35, g: 0.75, b: 0.40 }, label: 'restitution 0.5' },
-    { restitution: 0.9, color: { r: 0.90, g: 0.45, b: 0.30 }, label: 'restitution 0.9' },
+const SIZE = 1;
+const MASS = 10;
+const HEIGHT = 5;
+const DAMPING = 0.01;
+
+const colors = [
+    { r: 0.85, g: 0.85, b: 0.85 },
+    { r: 0.60, g: 0.75, b: 0.95 },
+    { r: 0.95, g: 0.70, b: 0.45 },
 ];
 
-const balls = BALLS.map((ball, i) => ({
-    __type__: 'Object3D',
-    name: 'Ball-' + (i + 1),
-    position: { x: (i - 1) * 4, y: 9, z: 0 },
-    components: [{
-        __type__: 'MeshRenderer',
-        geometry: { __type__: 'SphereGeometry', radius: 1 },
-        material: {
-            __type__: 'ColorMaterial',
-            uniforms: {
-                u_diffuseInput: { __type__: 'Color4', r: ball.color.r, g: ball.color.g, b: ball.color.b, a: 1 },
-            },
-        },
-    }, {
-        __type__: 'SphereCollider',
-        radius: 1,
-    }, {
-        __type__: 'Rigidbody',
-        mass: 1,
-        restitution: ball.restitution,
-    }],
-}));
+demo.addScene('Bounce', (world) =>
+{
+    // 原版里球与地面是显式的 ContactMaterial（friction 0），所以世界默认也给 0，
+    // 这样「球材质 × 世界默认材质」平均出来才是 0，而不是 cannon-es 默认的 0.3
+    reactive(world).friction = 0;
 
-const view: View = {
-    __type__: 'View',
-    canvas: webgpuCanvas,
-    root: {
+    const ground: Object3D = {
         __type__: 'Object3D',
-        name: 'PhysicsBounce',
+        name: 'Ground',
+        // Plane 默认法线朝 +Z，绕 X 转 -90° 让法线朝上（与原版 quaternion.setFromEuler(-PI/2, 0, 0) 一致）
+        rotation: { x: -Math.PI / 2, y: 0, z: 0 },
         components: [{
-            __type__: 'Scene',
-            background: { __type__: 'Color4', r: 0.09, g: 0.10, b: 0.13, a: 1 },
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'PlaneGeometry', width: 500, height: 500, segmentsW: 4, segmentsH: 4 },
+            material: {
+                __type__: 'ColorMaterial',
+                uniforms: { u_diffuseInput: { __type__: 'Color4', r: 0.5, g: 0.5, b: 0.5, a: 1 } },
+            },
         }, {
-            __type__: 'PhysicsWorld',
-            gravity: { x: 0, y: -9.82, z: 0 },
+            __type__: 'PlaneCollider',
+        }, {
+            __type__: 'Rigidbody',
+            mass: 0,
+            friction: 0,
+            restitution: 0,
         }],
-        children: [{
-            __type__: 'Object3D',
-            name: 'Main Camera',
-            position: { x: 0, y: 8, z: 26 },
-            rotation: { x: -0.28, y: 0, z: 0 },
-            components: [{ __type__: 'PerspectiveCamera' }],
-        }, {
-            __type__: 'Object3D',
-            name: 'Ground',
-            components: [{
-                __type__: 'MeshRenderer',
-                geometry: { __type__: 'CubeGeometry' },
-                material: {
-                    __type__: 'ColorMaterial',
-                    uniforms: {
-                        u_diffuseInput: { __type__: 'Color4', r: 0.24, g: 0.27, b: 0.32, a: 1 },
+    };
+
+    const spheres = [0.0, 0.7, 0.9].map((restitution, i): Object3D => ({
+        __type__: 'Object3D',
+        name: 'Sphere-' + (i + 1),
+        position: { x: (i - 1) * 3, y: HEIGHT, z: SIZE },
+        components: [{
+            __type__: 'MeshRenderer',
+            geometry: { __type__: 'SphereGeometry', radius: SIZE, segmentsW: 8, segmentsH: 8 },
+            material: {
+                __type__: 'ColorMaterial',
+                uniforms: {
+                    u_diffuseInput: {
+                        __type__: 'Color4',
+                        r: colors[i].r, g: colors[i].g, b: colors[i].b, a: 1,
                     },
                 },
-            }, {
-                __type__: 'BoxCollider',
-                width: 30,
-                height: 1,
-                depth: 30,
-            }, {
-                __type__: 'Rigidbody',
-                mass: 0,
-            }],
-            scale: { x: 30, y: 1, z: 30 },
-        }, ...balls],
-    },
-};
-const viewLogic = logic(view);
+            },
+        }, {
+            __type__: 'SphereCollider',
+            radius: SIZE,
+        }, {
+            __type__: 'Rigidbody',
+            mass: MASS,
+            linearDamping: DAMPING,
+            friction: 0,
+            restitution,
+        }],
+    }));
 
-ticker.onframe(() =>
-{
-    webgpu.submit(viewLogic.submit);
+    return [ground, ...spheres];
 });
