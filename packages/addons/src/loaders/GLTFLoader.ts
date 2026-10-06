@@ -1528,6 +1528,14 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         r_geo.indices = indices;
         r_geo.colors = colors;
 
+        // morph target（形变目标）：delta 不走顶点属性，落到几何数据上由渲染层转成 storage buffer
+        const morphTargets = readMorphTargets(prim.targets, vertexCount, worldMatrix);
+
+        if (morphTargets.length > 0)
+        {
+            r_geo.morphTargets = morphTargets;
+        }
+
         // 蒙皮顶点属性（issue #337 第一步）：解析落盘到几何数据，字段名与主库着色器约定一致。
         // 无蒙皮属性的 glTF 两个分组都为 undefined，几何上不会多出任何字段。
         const skinGroup0 = readSkinAttributeGroup(prim.attributes, 'JOINTS_0', 'WEIGHTS_0', vertexCount);
@@ -1544,7 +1552,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             r_geo.a_skinWeights1 = skinGroup1.weights;
         }
 
-        return { geometry: geo, mode: expanded.mode, morphTargets: readMorphTargets(prim.targets, vertexCount, worldMatrix) };
+        return { geometry: geo, mode: expanded.mode, morphTargets };
     }
 
     /**

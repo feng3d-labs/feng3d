@@ -50,4 +50,14 @@ describe('glTF morph target 的解析', () =>
         expect(prim.morphTargets).toEqual([]);
         expect(prim.morphWeights).toEqual([]);
     });
+
+    it('morph 数据同时落到几何上（供渲染层转成 storage buffer）', () =>
+    {
+        const prim = load('Horse').primitives[0];
+
+        expect(prim.geometry.morphTargets).toHaveLength(15);
+        expect(prim.geometry.morphTargets![0]).toHaveLength(prim.vertexCount * 3);
+        // 无 targets 的资源不多出这个字段
+        expect(load('collision-world').primitives[0].geometry.morphTargets).toBeUndefined();
+    });
 });
