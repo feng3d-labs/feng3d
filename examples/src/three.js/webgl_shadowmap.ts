@@ -41,25 +41,7 @@ const FOG_COLOR = 0x59472b;
 /** three.js 的 BRDF_Lambert 带 1/π；fengd3 的漫反射没有该因子 */
 const INV_PI = 1 / Math.PI;
 
-/** sRGB 分量 → 线性（three 的 colorManagement 工作空间） */
-function srgbToLinear(value: number): number
-{
-    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
-}
-
-/** 0xRRGGBB → **线性** Color4（linearLighting 材质的 uniform） */
-function linearColor4(hex: number, alpha = 1)
-{
-    return {
-        __type__: 'Color4' as const,
-        r: srgbToLinear(((hex >> 16) & 0xff) / 255),
-        g: srgbToLinear(((hex >> 8) & 0xff) / 255),
-        b: srgbToLinear((hex & 0xff) / 255),
-        a: alpha,
-    };
-}
-
-/** 0xRRGGBB → **sRGB** Color4（不做色彩管理的字段，如场景背景） */
+/** 0xRRGGBB → sRGB Color4（背景与雾色都不做色彩管理；雾在输出空间混合） */
 function srgbColor4(hex: number, alpha = 1)
 {
     return {
