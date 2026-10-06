@@ -439,6 +439,59 @@ describe('cannon-plugin：物理世界', () =>
         }
     });
 
+    it('contactMaterials 按材质名成对注册 ContactMaterial（接触参数原样写入）', () =>
+    {
+        const data = {
+            __type__: 'PhysicsWorld',
+            contactMaterials: [
+                { a: 'ground', b: 'ground', friction: 0.4, restitution: 0.3, contactEquationStiffness: 1e8, contactEquationRelaxation: 3 },
+                { a: 'ground', b: 'slippery', friction: 0, restitution: 0.3 },
+            ],
+        } as PhysicsWorld;
+        const physicsWorldLogic = logic(data) as PhysicsWorldLogic;
+
+        expect(physicsWorldLogic.world.contactmaterials.length).toBe(2);
+        const first = physicsWorldLogic.world.contactmaterials[0];
+        expect(first.friction).toBe(0.4);
+        expect(first.contactEquationStiffness).toBe(1e8);
+        const second = physicsWorldLogic.world.contactmaterials[1];
+        expect(second.friction).toBe(0);
+    });
+
+    it('刚体声明 materialName 时拿到对应的具名材质，且材质参数按 materials 写入', () =>
+    {
+        const world = {
+            __type__: 'PhysicsWorld',
+            materials: [{ name: 'ground', friction: 0.3 }, { name: 'slippery', friction: 0 }],
+        } as PhysicsWorld;
+        const root: Object3D = {
+            __type__: 'Object3D',
+            components: [world],
+            children: [{
+                __type__: 'Object3D',
+                name: 'A',
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1, materialName: 'ground' }],
+            }, {
+                __type__: 'Object3D',
+                name: 'B',
+                components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1, materialName: 'slippery' }],
+            }],
+        };
+        logic(root);
+        const physicsWorldLogic = logic(world) as PhysicsWorldLogic;
+        physicsWorldLogic.update(1000 / 60);
+
+        const bodyA = (logic(root.children![0].components![1] as Rigidbody) as RigidbodyLogic).body;
+        const bodyB = (logic(root.children![1].components![1] as Rigidbody) as RigidbodyLogic).body;
+
+        // 两个刚体拿到不同的具名材质，各自带上声明的摩擦
+        expect(bodyA.material).not.toBe(bodyB.material);
+        expect(bodyA.material?.friction).toBe(0.3);
+        expect(bodyB.material?.friction).toBe(0);
+        // 同名的复用同一个材质实例
+        expect(bodyA.material?.name).toBe('ground');
+    });
+
     it('ConeTwistConstraint 与其它约束同构地连接两端刚体', () =>
     {
         const object3D: Object3D = {

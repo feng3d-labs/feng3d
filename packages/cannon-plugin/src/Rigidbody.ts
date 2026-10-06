@@ -73,6 +73,15 @@ export interface Rigidbody extends Behaviour
     /** 是否固定旋转（只平动、不转动） */
     readonly fixedRotation?: boolean;
 
+    /**
+     * 该刚体的**材质名**（对应原版 `new CANNON.Material('slippery')`）。
+     *
+     * 与 {@link Rigidbody.friction} 的区别：那个是"按摩擦值自动建材质"，适合单个物体的粗略对比；
+     * 材质名是**成对**描述接触的（原版 `friction.html` 就是给地面与箱子各起名，
+     * 再用 {@link PhysicsWorld.contactMaterials} 声明"这两者相遇时摩擦是多少"）。
+     */
+    readonly materialName?: string;
+
     /** 是否触发器（照常报告接触，但不产生碰撞响应——用于"穿过并触发"） */
     readonly isTrigger?: boolean;
 
@@ -108,6 +117,9 @@ export interface RigidbodyLogic extends BehaviourLogic
 
     /** 该刚体声明的弹性系数（未声明时 undefined） */
     readonly restitution: number | undefined;
+
+    /** 该刚体声明的材质名（未声明时 undefined） */
+    readonly materialName: string | undefined;
 
     /**
      * 施加**持续的力**（cannon-es 每次 step 后会把力清零，所以要持续就得每帧调用）。
@@ -165,6 +177,7 @@ export function rigidbodyLogic(data: Rigidbody): RigidbodyLogic
         get body() { return body; },
         get friction() { return data.friction; },
         get restitution() { return data.restitution; },
+        get materialName() { return data.materialName; },
         applyForce(force) { body.applyForce(new Vec3(force.x, force.y, force.z)); },
         applyTorque(torque) { body.applyTorque(new Vec3(torque.x, torque.y, torque.z)); },
         applyImpulse(impulse) { body.applyImpulse(new Vec3(impulse.x, impulse.y, impulse.z)); },
