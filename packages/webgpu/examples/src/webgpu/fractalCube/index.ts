@@ -5,8 +5,8 @@ import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
 
-import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
-import { getFractalCubeSampleSelfWGSL } from '../../shaders-tsl/fractalCubeSampleSelf';
+import { getBasicVertWGSL } from '../../shaders/basic.vert.tsl';
+import { getFractalCubeSampleSelfWGSL } from './sampleSelf.frag.tsl';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {

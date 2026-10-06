@@ -1,7 +1,7 @@
 import { reactive } from '@feng3d/reactivity';
 import { BindingResources, CommandEncoder, RenderPassDescriptor } from '@feng3d/webgpu';
 
-import { getBitonicDisplayFragWGSL } from '../../shaders-tsl/bitonicDisplayFrag';
+import { getBitonicDisplayFragWGSL } from './bitonicDisplay.frag.tsl';
 import { Base2DRendererClass } from './utils';
 
 interface BitonicDisplayRenderArgs

@@ -4,7 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import { getSolidColorLitWGSL } from '../../shaders-tsl/solidColorLit';
+import { getSolidColorLitWGSL } from '../../shaders/solidColorLit.tsl';
 
 const info = document.querySelector('#info');
 

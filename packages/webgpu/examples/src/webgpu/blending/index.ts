@@ -4,7 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import { getBlendingTexturedQuadWGSL } from '../../shaders-tsl/blendingTexturedQuad';
+import { getBlendingTexturedQuadWGSL } from './texturedQuad.tsl';
 
 const texturedQuadShader = getBlendingTexturedQuadWGSL();
 

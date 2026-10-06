@@ -7,7 +7,7 @@ import { mat4, vec3 } from 'wgpu-matrix';
 import { mesh } from '../../meshes/teapot';
 
 import compositeWGSL from './composite.wgsl';
-import { getABufferOpaqueWGSL } from '../../shaders-tsl/aBufferOpaque';
+import { getABufferOpaqueWGSL } from './opaque.tsl';
 import translucentWGSL from './translucent.wgsl';
 
 const init = async (canvas: HTMLCanvasElement, gui: GUI) =>

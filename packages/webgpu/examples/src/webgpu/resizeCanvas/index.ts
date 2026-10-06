@@ -2,8 +2,8 @@ import { reactive } from '@feng3d/reactivity';
 import { RenderObject, RenderPassDescriptor, Submit } from '@feng3d/webgpu';
 import { WebGPU } from '@feng3d/webgpu';
 
-import { getRedFragWGSL } from '../../shaders-tsl/redFrag';
-import { getTriangleVertWGSL } from '../../shaders-tsl/triangleVert';
+import { getRedFragWGSL } from '../../shaders/red.frag.tsl';
+import { getTriangleVertWGSL } from '../../shaders/triangle.vert.tsl';
 
 import styles from './animatedCanvasSize.module.css';
 

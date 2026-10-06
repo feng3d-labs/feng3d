@@ -4,7 +4,7 @@ import { WebGPU } from '@feng3d/webgpu';
 import { mat3, mat4 } from 'wgpu-matrix';
 
 import { modelData } from './models';
-import { getMultipleCanvasesWGSL } from '../../shaders-tsl/multipleCanvases';
+import { getMultipleCanvasesWGSL } from './multipleCanvases.tsl';
 
 type Model = {
     vertices: Float32Array;

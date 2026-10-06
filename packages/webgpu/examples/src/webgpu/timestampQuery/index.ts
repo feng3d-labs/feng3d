@@ -6,8 +6,8 @@ import { mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
 
-import { getBasicVertWGSL } from '../../shaders-tsl/basicVert';
-import { getBlackFragWGSL } from '../../shaders-tsl/blackFrag';
+import { getBasicVertWGSL } from '../../shaders/basic.vert.tsl';
+import { getBlackFragWGSL } from '../../shaders/black.frag.tsl';
 
 import PerfCounter from './PerfCounter';
 

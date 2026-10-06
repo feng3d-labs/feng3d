@@ -1,7 +1,7 @@
 import { GUI } from 'dat.gui';
 
-import { getGameOfLifeComputeWGSL } from '../../shaders-tsl/gameOfLifeCompute';
-import { getGameOfLifeRenderWGSL } from '../../shaders-tsl/gameOfLifeRender';
+import { getGameOfLifeComputeWGSL } from './compute.tsl';
+import { getGameOfLifeRenderWGSL } from './render.tsl';
 
 import { BindingResources, RenderPass, RenderPassDescriptor, RenderPipeline, Submit, VertexAttributes } from '@feng3d/webgpu';
 import { ComputePass, ComputePipeline, WebGPU } from '@feng3d/webgpu';

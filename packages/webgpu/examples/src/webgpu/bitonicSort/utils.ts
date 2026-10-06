@@ -1,5 +1,5 @@
 import { BindingResources, CommandEncoder, RenderPass, RenderPassDescriptor, RenderPipeline } from '@feng3d/webgpu';
-import { getFullscreenTexturedQuadWGSL } from '../../shaders-tsl/fullscreenTexturedQuad';
+import { getFullscreenTexturedQuadWGSL } from '../../shaders/fullscreenTexturedQuad.tsl';
 
 export abstract class Base2DRendererClass
 {

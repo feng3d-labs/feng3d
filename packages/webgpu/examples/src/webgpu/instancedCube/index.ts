@@ -4,8 +4,8 @@ import { WebGPU } from '@feng3d/webgpu';
 import { Mat4, mat4, vec3 } from 'wgpu-matrix';
 
 import { cubePositionOffset, cubeUVOffset, cubeVertexArray, cubeVertexCount, cubeVertexSize } from '../../meshes/cube';
-import { getInstancedVertWGSL } from '../../shaders-tsl/instancedVert';
-import { getVertexPositionColorFragWGSL } from '../../shaders-tsl/vertexPositionColorFrag';
+import { getInstancedVertWGSL } from '../../shaders/instanced.vert.tsl';
+import { getVertexPositionColorFragWGSL } from '../../shaders/vertexPositionColor.frag.tsl';
 
 const init = async (canvas: HTMLCanvasElement) =>
 {

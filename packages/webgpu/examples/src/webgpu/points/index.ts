@@ -4,10 +4,10 @@ import { WebGPU } from '@feng3d/webgpu';
 import { GUI } from 'dat.gui';
 import { mat4 } from 'wgpu-matrix';
 
-import { getPointsDistanceSizedVertWGSL } from '../../shaders-tsl/pointsDistanceSizedVert';
-import { getPointsFixedSizeVertWGSL } from '../../shaders-tsl/pointsFixedSizeVert';
-import { getPointsOrangeFragWGSL } from '../../shaders-tsl/pointsOrangeFrag';
-import { getPointsTexturedFragWGSL } from '../../shaders-tsl/pointsTexturedFrag';
+import { getPointsDistanceSizedVertWGSL } from './distance-sized-points.vert.tsl';
+import { getPointsFixedSizeVertWGSL } from './fixed-size-points.vert.tsl';
+import { getPointsOrangeFragWGSL } from './orange.frag.tsl';
+import { getPointsTexturedFragWGSL } from './textured.frag.tsl';
 
 // See: https://www.google.com/search?q=fibonacci+sphere
 function createFibonacciSphereVertices({
