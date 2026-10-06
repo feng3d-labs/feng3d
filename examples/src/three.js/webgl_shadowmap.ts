@@ -1,5 +1,6 @@
 import { WebGPU } from '@feng3d/webgpu';
 import { loadGLFFromUrl } from '@feng3d/addons';
+import { Font } from '@feng3d/math';
 import { createTextureFromCanvas, FogMode, logic, reactive, ShadowType, StandardMaterial, ticker, View } from 'feng3d';
 import type { Animation, AnimationClipData, DebugShadowMapMaterial, DirectionalLight, FirstPersonControls, Object3D, PlaneGeometry } from 'feng3d';
 
@@ -450,6 +451,52 @@ addMorph(flamingoMesh, flamingo.animationClips[0], 500, 1, 500 - Math.random() *
 addMorph(storkMesh, stork.animationClips[0], 350, 1, 500 - Math.random() * 500, FLOOR + 350, 340);
 addMorph(parrotMesh, parrot.animationClips[0], 450, 0.5, 500 - Math.random() * 500, FLOOR + 300, 700);
 
+// ---- 阶段 D：THREE.JS 立体字（three.js 的 TEXT 段）----
+//
+// three 的写法是 `new FontLoader().load('fonts/helvetiker_bold.typeface.json', font => …)`，
+// 再用 `new TextGeometry('THREE.JS', { size: 200, depth: 50, curveSegments: 12, bevelThickness: 2,
+// bevelSize: 5, bevelEnabled: true })`。
+//
+// 本仓自带 `Font`（@feng3d/math 的 shape/core/Font.ts，`generateShapes` 与 three 同构）与
+// `ExtrudeGeometry`（@feng3d/addons）——所以文字几何不需要新写：
+//
+// ⚠️ **已知差异**：本仓的 `ExtrudeGeometry` 是「简化版（无 bevel 倒角）」，它的 `bevelEnabled` 字段
+// 实际不产生倒角。原示例的 `bevelThickness: 2 / bevelSize: 5` 在 `size: 200` 的尺度下只有 2/5 个单位，
+// 视觉影响很小（主要影响字缘的高光细节），因此这一步**先不实现 bevel**，等它作为独立一批补上。
+const fontJson = await (await fetch('/helvetiker_bold.typeface.json')).json();
+const textFont = new Font(fontJson);
+const textShapes = textFont.generateShapes('THREE.JS', 200);
+
+/** three.js: textMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, specular: 0xffffff }) */
+const textMaterial: StandardMaterial = {
+    __type__: 'StandardMaterial',
+    uniforms: {
+        u_diffuse: { __type__: 'Color4', r: 1, g: 0, b: 0, a: 1 },
+        // MeshPhongMaterial 的 specular 0xffffff → 本仓的高光色 + 适度光泽
+        u_specular: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
+        u_glossiness: 32,
+    },
+};
+
+/** three.js: mesh.position.y = FLOOR + 67；x 在拿到包围盒后再居中 */
+const textObject: Object3D = {
+    __type__: 'Object3D',
+    name: 'THREE.JS',
+    position: { x: 0, y: FLOOR + 67, z: 0 },
+    components: [{
+        __type__: 'MeshRenderer',
+        geometry: {
+            __type__: 'ExtrudeGeometry',
+            shapes: textShapes,
+            depth: 50,
+            curveSegments: 12,
+        },
+        material: textMaterial,
+        castShadows: true,
+        receiveShadows: true,
+    }],
+};
+
 const view: View = {
     __type__: 'View',
     canvas: webgpuCanvas,
@@ -511,11 +558,22 @@ const view: View = {
             },
             // 阶段 C 的 9 只动物（three.js 里直接 add 到 scene）
             animalRoot,
+            // 阶段 D 的 THREE.JS 立体字
+            textObject,
         ],
     },
 };
 
 const viewLogic = logic(view);
+
+// three.js: textGeo.computeBoundingBox(); centerOffset = -0.5 * (max.x - min.x); mesh.position.x = centerOffset
+{
+    const textGeometry = (textObject.components![0] as unknown as { geometry: unknown }).geometry;
+    const bounds = (logic(textGeometry as never) as unknown as { bounding: { min: { x: number }; max: { x: number } } }).bounding;
+    const centerOffset = -0.5 * (bounds.max.x - bounds.min.x);
+
+    reactive(textObject).position = { x: centerOffset, y: FLOOR + 67, z: 0 };
+}
 
 // three.js 的 light.target 默认在原点：让方向光的本地 -Z 指向原点
 logic(lightObject).lookAt({ x: 0, y: 0, z: 0 });

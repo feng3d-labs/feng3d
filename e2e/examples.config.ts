@@ -226,7 +226,9 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     { category: "three.js", name: "webgl_scene_solar", warmupFrames: 60, freezeFrames: 30 },
     { category: "three.js", name: "webgl_scene_spring", warmupFrames: 60, freezeFrames: 30 },
     { category: "three.js", name: "webgl_scene_terrain_heightmap", warmupFrames: 60, freezeFrames: 30 },
-    { category: "three.js", name: "webgl_shadowmap", warmupFrames: 60, freezeFrames: 30 },
+    // 动物（glTF 的 morph 动画）沿用原示例的 `Math.random()` 初始位置，画面本就不逐像素稳定；
+    // 文字与场景是固定的，故只放宽到 0.2 容纳「动物出现在哪一条泳道」的差异。
+    { category: "three.js", name: "webgl_shadowmap", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.2 },
     { category: "three.js", name: "webgl_shadowmap_pointlight", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
     { category: "three.js", name: "webgl_shadowmesh", warmupFrames: 60, freezeFrames: 30 },
     { category: "three.js", name: "webgl_sprites", warmupFrames: 60, freezeFrames: 30 },
