@@ -18,7 +18,7 @@ import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleM
  * 粒子系统形状模块（纯数据接口 + 模块级行为函数）。
  *
  * 与原 class 的三点结构差异：
- * 1. **`shapeType` 是唯一权威**——原来的 `shape`（`ParticleSystemShapeType1` 镜像枚举）与
+ * 1. **`shapeType` 是唯一权威**——原来的 `shape`（`ParticleSystemShapeType1` 镜像枚举，已随本批删除）与
  *    `activeShape`（策略实例）都是它的派生物，watcher 双向同步整段删除；
  * 2. **策略类删除**：六个 shape 的 `calcParticlePosDir` 变成 `particleSystemShape*CalcParticlePosDir(module, ...)`
  *    纯函数，原来挂在策略上的开关（`emitFromShell` / `emitFrom` / `emitFromEdge`）全部由 `shapeType` 推导；

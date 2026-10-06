@@ -2,6 +2,8 @@
 // feng3d barrel 在 particlesystem 之后才 re-export reactivity，node/vitest 下
 // barrel 模块求值顺序会取到未初始化的绑定（浏览器/vite 不受影响）
 import { createRenderableLogicBase, Object3D, ParticleMaterial, QuadGeometry, registerComponentType, Renderable, RenderableLogic, RunEnvironment } from 'feng3d';
+import { ParticleSystemSubEmitterProperties } from './enums/ParticleSystemSubEmitterProperties';
+import { ParticleSystemSubEmitterType } from './enums/ParticleSystemSubEmitterType';
 import { logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { Buffer, BufferBinding, BindingResources, IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
@@ -27,10 +29,10 @@ import type { WritableParticleModuleLike } from './modules/ParticleModule';
 import { particleNoiseModuleDefault, particleNoiseModuleInitParticleState, particleNoiseModuleUpdate, particleNoiseModuleUpdateParticleState, type ParticleNoiseModule, type ParticleNoiseModuleLike } from './modules/ParticleNoiseModule';
 import { particleRotationBySpeedModuleDefault, particleRotationBySpeedModuleInitParticleState, particleRotationBySpeedModuleUpdateParticleState, type ParticleRotationBySpeedModule, type ParticleRotationBySpeedModuleLike } from './modules/ParticleRotationBySpeedModule';
 import { particleRotationOverLifetimeModuleDefault, particleRotationOverLifetimeModuleInitParticleState, particleRotationOverLifetimeModuleUpdateParticleState, type ParticleRotationOverLifetimeModule, type ParticleRotationOverLifetimeModuleLike } from './modules/ParticleRotationOverLifetimeModule';
-import { particleShapeModuleDefault, particleShapeModuleInitParticleState, type ParticleShapeModule, type ParticleShapeModuleLike } from './modules/ParticleShapeModule';
+import { particleShapeModuleDefault, particleShapeModuleInitParticleState, type ParticleShapeModule, type ParticleShapeModuleLike, type WritableParticleShapeModuleLike } from './modules/ParticleShapeModule';
 import { particleSizeBySpeedModuleDefault, particleSizeBySpeedModuleInitParticleState, particleSizeBySpeedModuleUpdateParticleState, type ParticleSizeBySpeedModule, type ParticleSizeBySpeedModuleLike } from './modules/ParticleSizeBySpeedModule';
 import { particleSizeOverLifetimeModuleDefault, particleSizeOverLifetimeModuleInitParticleState, particleSizeOverLifetimeModuleUpdateParticleState, type ParticleSizeOverLifetimeModule, type ParticleSizeOverLifetimeModuleLike } from './modules/ParticleSizeOverLifetimeModule';
-import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule, type ParticleSubEmittersModuleLike } from './modules/ParticleSubEmittersModule';
+import { particleSubEmittersModuleDefault, particleSubEmittersModuleGetSubEmitterEmitProbability, particleSubEmittersModuleGetSubEmitterProperties, particleSubEmittersModuleGetSubEmitterSystem, particleSubEmittersModuleGetSubEmitterType, particleSubEmittersModuleUpdateParticleState, type ParticleSubEmittersModule, type ParticleSubEmittersModuleLike , type WritableParticleSubEmittersModuleLike } from './modules/ParticleSubEmittersModule';
 import { particleTextureSheetAnimationModuleDefault, particleTextureSheetAnimationModuleInitParticleState, particleTextureSheetAnimationModuleUpdateParticleState, type ParticleTextureSheetAnimationModule, type ParticleTextureSheetAnimationModuleLike } from './modules/ParticleTextureSheetAnimationModule';
 import { particleVelocityOverLifetimeModuleDefault, particleVelocityOverLifetimeModuleInitParticleState, particleVelocityOverLifetimeModuleUpdateParticleState, type ParticleVelocityOverLifetimeModule, type ParticleVelocityOverLifetimeModuleLike } from './modules/ParticleVelocityOverLifetimeModule';
 import { Particle } from './Particle';
@@ -339,6 +341,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     /** 数据侧的可写视图（纯数据接口字段只读，这里集中做写侧断言） */
     const w_data = data as UnReadonly<ParticleSystem>;
 
+    // 补默认**之前**先抓住「对象引用」字段的用户值：withDefaults 走深合并、会把这些引用拷成副本，
+    // 补默认之后再从 data 上读就只能读到副本（见下方「引用恢复」段）。
+    const userSubEmitterEntries = (data.subEmitters as ParticleSubEmittersModuleLike | undefined)?.subEmitters;
+    const userShapeModule = data.shape;
+
     // ---- 缺省字段补全（纯数据字面量只需写关心的字段，其余用各自默认工厂补齐）----
     const main: ParticleMainModule = withDefaults({ __type__: 'ParticleMainModule', ...particleMainModuleDefault() } as ParticleMainModule, data.main) as ParticleMainModule;
     w_data.main = main;
@@ -376,6 +383,31 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     w_data.material ??= { __type__: 'ParticleMaterial' } as unknown as ParticleMaterial;
     w_data.castShadows ??= true;
     w_data.receiveShadows ??= true;
+
+    // ---- 「对象引用」字段的引用恢复 ----
+    //
+    // withDefaults 走的是 serialization.setValue 的**深合并**，它会递归进对象字段并造出**副本**。
+    // 对「值」字段这是对的（曲线、颜色、渐变都要按字段补默认），但对「引用」字段是错的：
+    // 子发射器的 subEmitter、形状的 mesh/meshRenderer 是运行时对象引用，被拷成副本后就与已挂载的
+    // logic 失联（副本没有 object3D，触发子发射器时会崩在 getLogic(null) 上）。
+    // 所以这里把用户传入的引用恢复回去，只对这些条目**自身缺失**的字段补默认。
+    if (userSubEmitterEntries)
+    {
+        (w_data.subEmitters as WritableParticleSubEmittersModuleLike).subEmitters = userSubEmitterEntries.map((entry) => ({
+            subEmitter: entry.subEmitter,
+            type: entry.type ?? ParticleSystemSubEmitterType.Birth,
+            properties: entry.properties ?? ParticleSystemSubEmitterProperties.InheritNothing,
+            emitProbability: entry.emitProbability ?? 1,
+        }));
+    }
+
+    if (userShapeModule)
+    {
+        const writableShape = w_data.shape as WritableParticleShapeModuleLike;
+        if (userShapeModule.mesh !== undefined) writableShape.mesh = userShapeModule.mesh;
+        if (userShapeModule.meshRenderer !== undefined) writableShape.meshRenderer = userShapeModule.meshRenderer;
+        if (userShapeModule.skinnedMeshRenderer !== undefined) writableShape.skinnedMeshRenderer = userShapeModule.skinnedMeshRenderer;
+    }
 
     lastSimulationSpace = main.simulationSpace;
 

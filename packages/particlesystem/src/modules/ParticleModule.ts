@@ -15,7 +15,7 @@ export interface ParticleModuleLike
     /** 是否开启 */
     readonly enabled?: boolean;
 
-    /** 粒子系统（由 ParticleSystem 的 setter 注入） */
+    /** 粒子系统（由 `particleSystemLogic` 工厂在装配时注入） */
     readonly particleSystem?: ParticleSystemLogic;
 }
 

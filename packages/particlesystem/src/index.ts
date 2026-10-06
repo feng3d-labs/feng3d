@@ -8,7 +8,6 @@ export * from './enums/ParticleSystemScalingMode';
 export * from './enums/ParticleSystemShapeConeEmitFrom';
 export * from './enums/ParticleSystemShapeMultiModeValue';
 export * from './enums/ParticleSystemShapeType';
-export * from './enums/ParticleSystemShapeType1';
 export * from './enums/ParticleSystemSimulationSpace';
 export * from './enums/ParticleSystemSortMode';
 export * from './enums/ParticleSystemSubEmitterProperties';
