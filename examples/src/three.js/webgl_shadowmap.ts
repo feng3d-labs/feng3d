@@ -1,6 +1,7 @@
 import { WebGPU } from '@feng3d/webgpu';
+import { loadGLFFromUrl } from '@feng3d/addons';
 import { createTextureFromCanvas, FogMode, logic, reactive, ShadowType, StandardMaterial, ticker, View } from 'feng3d';
-import type { DebugShadowMapMaterial, DirectionalLight, FirstPersonControls, Object3D, PlaneGeometry } from 'feng3d';
+import type { Animation, AnimationClipData, DebugShadowMapMaterial, DirectionalLight, FirstPersonControls, Object3D, PlaneGeometry } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_shadowmap.html（1:1 复刻，分阶段推进）。
@@ -249,6 +250,206 @@ function updateHudLayout(): void
     r_geometry.height = (HUD_HEIGHT / height) * viewHeight;
 }
 
+// ---- 阶段 C：4 个 GLB 的 9 只动物（three.js 的 MORPHS 段）----
+//
+// 原示例对每个模型 `mesh.clone()`，各自 `clipAction(clip, mesh).setDuration(d).startAt(-d * rand).play()`，
+// 并（对马）做一次随机的 `color.offsetHSL(0, ±0.25, ±0.25)` 让每只颜色略有不同。
+
+/**
+ * three.js `Color.offsetHSL(h, s, l)` 的等价实现（RGB ↔ HSL）。
+ *
+ * 原示例只传 `h = 0`（色相不动），s/l 各偏移 `Math.random() * 0.5 - 0.25`，
+ * 并按 three 的 `setHSL` 把 s/l 夹到 [0, 1]。
+ */
+function offsetHSL(color: { r: number; g: number; b: number }, h: number, s: number, l: number): void
+{
+    const max = Math.max(color.r, color.g, color.b);
+    const min = Math.min(color.r, color.g, color.b);
+    const lightness = (max + min) / 2;
+    const d = max - min;
+    let hue = 0;
+    let saturation = 0;
+
+    if (d !== 0)
+    {
+        saturation = lightness > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === color.r) hue = (color.g - color.b) / d + (color.g < color.b ? 6 : 0);
+        else if (max === color.g) hue = (color.b - color.r) / d + 2;
+        else hue = (color.r - color.g) / d + 4;
+        hue /= 6;
+    }
+
+    const newHue = ((hue + h) % 1 + 1) % 1;
+    const newSaturation = Math.min(1, Math.max(0, saturation + s));
+    const newLightness = Math.min(1, Math.max(0, lightness + l));
+
+    if (newSaturation === 0)
+    {
+        color.r = newLightness;
+        color.g = newLightness;
+        color.b = newLightness;
+
+        return;
+    }
+
+    const q = newLightness < 0.5 ? newLightness * (1 + newSaturation) : newLightness + newSaturation - newLightness * newSaturation;
+    const p = 2 * newLightness - q;
+    const hue2rgb = (t: number): number =>
+    {
+        let value = t;
+        if (value < 0) value += 1;
+        if (value > 1) value -= 1;
+        if (value < 1 / 6) return p + (q - p) * 6 * value;
+        if (value < 1 / 2) return q;
+        if (value < 2 / 3) return p + (q - p) * (2 / 3 - value) * 6;
+
+        return p;
+    };
+
+    color.r = hue2rgb(newHue + 1 / 3);
+    color.g = hue2rgb(newHue);
+    color.b = hue2rgb(newHue - 1 / 3);
+}
+
+/** 组件的宽松视图：示例只为几个字段取值/赋值，不必引入精确类型 */
+type LooseComponent = { __type__?: string } & Record<string, unknown>;
+
+/**
+ * three.js `mesh.clone()` 的等价：深拷贝 Object3D 树，但**几何与骨骼数据复用**、
+ * **材质独立**——各动物要自己的色相偏移，three 也是 `mesh.material = mesh.material.clone()`。
+ */
+function cloneMorph(source: Object3D): Object3D
+{
+    const clone = { ...source } as unknown as Record<string, unknown>;
+
+    if (source.children)
+    {
+        clone.children = source.children.map(cloneMorph);
+    }
+
+    if (source.components)
+    {
+        clone.components = (source.components as unknown as LooseComponent[]).map((component) =>
+        {
+            const copy: LooseComponent = { ...component };
+            const uniforms = copy.uniforms as Record<string, unknown> | undefined;
+
+            if (uniforms)
+            {
+                // 只深一层：`u_diffuse` 这类值是对象，浅拷贝会让 9 只动物共享同一个扩散色
+                const next: Record<string, unknown> = {};
+                for (const key of Object.keys(uniforms))
+                {
+                    const value = uniforms[key];
+                    next[key] = value !== null && typeof value === 'object' ? { ...(value as object) } : value;
+                }
+                copy.uniforms = next;
+            }
+
+            return copy;
+        });
+    }
+
+    return clone as unknown as Object3D;
+}
+
+/** 一只动物（three 的 `morphs` 数组元素） */
+interface Morph
+{
+    readonly mesh: Object3D;
+    readonly animation: Animation;
+    readonly speed: number;
+}
+
+const morphs: Morph[] = [];
+/** 所有动物的公共父节点（three 直接 add 到 scene，这里挂同一个容器便于组织） */
+const animalRoot: Object3D = { __type__: 'Object3D', name: 'morphs', children: [] };
+
+/**
+ * three.js 的 `addMorph`。
+ *
+ * `setDuration(duration)` / `startAt(-duration * Math.random())` 的等价：
+ * - 本仓 `Animation` 的 `time`/`length` 都是**毫秒**，`update` 每帧加 `interval * playspeed`，
+ *   所以「用 duration 秒播完整段」就是 `playspeed = clip.length / (duration * 1000)`；
+ * - `startAt` 是相位偏移，直接给 `time` 一个负初值（`updateAni` 对负数取模是安全的）。
+ *
+ * 渲染组件换成 `MorphMeshRenderer`：几何带 `morphTargets` 时它会把 delta 落成 storage buffer、
+ * 把 `morphWeights` 写进 uniform，并把顶点着色器换成 morph 变体。
+ * 动画由 `Scene.update` 自动驱动（`Animation` 在内置类型层次表里），示例不必手动调 update。
+ */
+function addMorph(source: Object3D, clip: AnimationClipData, speed: number, duration: number, x: number, y: number, z: number, fudgeColor = false): void
+{
+    const mesh = cloneMorph(source);
+    const components = (mesh.components ?? null) as unknown as LooseComponent[] | null;
+
+    // 渲染组件换成 MorphMeshRenderer（其余的组件保持原样）
+    if (components)
+    {
+        for (const component of components)
+        {
+            if (component.__type__ === 'MeshRenderer') component.__type__ = 'MorphMeshRenderer';
+        }
+    }
+
+    if (fudgeColor)
+    {
+        // three.js: mesh.material.color.offsetHSL( 0, Math.random() * 0.5 - 0.25, Math.random() * 0.5 - 0.25 )
+        const offsetS = Math.random() * 0.5 - 0.25;
+        const offsetL = Math.random() * 0.5 - 0.25;
+
+        for (const component of components ?? [])
+        {
+            const uniforms = component.uniforms as Record<string, unknown> | undefined;
+            const diffuse = uniforms?.u_diffuse as { r: number; g: number; b: number } | undefined;
+
+            if (diffuse) offsetHSL(diffuse, 0, offsetS, offsetL);
+        }
+    }
+
+    // three.js: mesh.castShadow = true; mesh.receiveShadow = true
+    for (const component of components ?? [])
+    {
+        if ('castShadows' in component) component.castShadows = true;
+        if ('receiveShadows' in component) component.receiveShadows = true;
+    }
+
+    const animation: Animation = {
+        __type__: 'Animation',
+        animation: clip,
+        time: -duration * 1000 * Math.random(),
+        isplaying: true,
+        playspeed: clip.length / (duration * 1000),
+    };
+
+    reactive(mesh).components = [...(mesh.components ?? []), animation];
+    reactive(mesh).position = { x, y, z };
+    reactive(mesh).rotation = { x: 0, y: Math.PI / 2, z: 0 };
+
+    morphs.push({ mesh, animation, speed });
+    reactive(animalRoot).children = [...(animalRoot.children ?? []), mesh];
+}
+
+// three.js: gltfloader.load( 'models/gltf/Horse.glb', ... ) 等四段
+const horse = await loadGLFFromUrl('/Horse.glb');
+const flamingo = await loadGLFFromUrl('/Flamingo.glb');
+const stork = await loadGLFFromUrl('/Stork.glb');
+const parrot = await loadGLFFromUrl('/Parrot.glb');
+
+// three.js: const mesh = gltf.scene.children[ 0 ]; const clip = gltf.animations[ 0 ];
+const horseMesh = horse.root.children![0];
+const flamingoMesh = flamingo.root.children![0];
+const storkMesh = stork.root.children![0];
+const parrotMesh = parrot.root.children![0];
+
+// three.js 的 6 只马（z = ±300 / ±450 / ±600）
+for (const z of [300, 450, 600, -300, -450, -600])
+{
+    addMorph(horseMesh, horse.animationClips[0], 550, 1, 100 - Math.random() * 1000, FLOOR, z, true);
+}
+addMorph(flamingoMesh, flamingo.animationClips[0], 500, 1, 500 - Math.random() * 500, FLOOR + 350, 40);
+addMorph(storkMesh, stork.animationClips[0], 350, 1, 500 - Math.random() * 500, FLOOR + 350, 340);
+addMorph(parrotMesh, parrot.animationClips[0], 450, 0.5, 500 - Math.random() * 500, FLOOR + 300, 700);
+
 const view: View = {
     __type__: 'View',
     canvas: webgpuCanvas,
@@ -308,6 +509,8 @@ const view: View = {
                     receiveShadows: true,
                 }],
             },
+            // 阶段 C 的 9 只动物（three.js 里直接 add 到 scene）
+            animalRoot,
         ],
     },
 };
@@ -337,6 +540,29 @@ window.addEventListener('keydown', (event) =>
     if (event.code === 'KeyT')
     {
         reactive(hudPlane).activeSelf = !logic(hudPlane).activeSelf;
+    }
+});
+
+// three.js 的 animate：`mixer.update( delta )` 与 morphs 的位移/循环。
+//
+// `Animation` 由 `Scene.update` 自动驱动（它在内置类型层次表里、会被按 'Behaviour' 收集到），
+// 所以这里只做原示例的位移与循环。
+ticker.onframe((interval) =>
+{
+    const delta = interval / 1000;   // three 的 clock.getDelta() 是秒
+
+    for (const morph of morphs)
+    {
+        // three.js: mesh.position.x += mesh.speed * delta;
+        //           if ( position.x > 2000 ) position.x = - 1000 - Math.random() * 500;
+        const position = logic(morph.mesh).position;
+        const x = position.x + morph.speed * delta;
+
+        reactive(morph.mesh).position = {
+            x: x > 2000 ? -1000 - Math.random() * 500 : x,
+            y: position.y,
+            z: position.z,
+        };
     }
 });
 
