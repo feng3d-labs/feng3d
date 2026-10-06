@@ -128,11 +128,10 @@ async function runExample(page: Page, spec: {
  * bug 修复后应将对应条目从本表删除。
  */
 const KNOWN_ENGINE_BUGS: Record<string, string> = {
-    // 崩溃已修复（材质注册缺失 + getPickByDirectionalLight 空值 + 阴影 Pass 矩阵 undefined）。
-    // 绑定层的键名 bug 也已修：TSL 的深度采样器展开名是 `s_texture_texture`，而数据侧原先写 `s_texture`，
-    // 表现为抛「没有找到纹理绑定 's_texture_texture'」；修后不再抛错、调试平面有输出。
-    // 但示例画面仍不完整（地面与全屏调试平面不可见），因此继续标 fixme，待专项排查。
-    DebugShadowMap: '示例画面不完整：地面与全屏调试平面不可见（绑定键名 bug 已修，不再抛错）',
+    // 目前为空。曾记录 DebugShadowMap「地面与全屏调试平面不可见」：
+    // 绑定层的键名 bug（TSL 的深度采样器展开名是 `s_texture_texture`、数据侧原先写 `s_texture`）
+    // 此前已修；剩下的"不可见"是相机太近——8×8 的调试平面铺满视口，把地面整个挡住了。
+    // 相机后移后地面与调试平面同框，该条目已移除、恢复为普通视觉回归。
 };
 
 // 数据驱动：为每个示例生成一个 describe + test。

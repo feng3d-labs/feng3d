@@ -33,7 +33,7 @@ const view: View = {
         children: [camera = {
             __type__: 'Object3D',
             name: 'Main Camera',
-            position: { x: 0, y: 8, z: -12 },
+            position: { x: 0, y: 5, z: -20 },
             components: [{
                 __type__: 'PerspectiveCamera',
             }],
@@ -96,8 +96,8 @@ const view: View = {
 };
 const viewLogic = logic(view);
 
-// 相机正对 debug 平面
-reactive(camera).position = { x: 0, y: 2, z: -12 };
+// 相机正对 debug 平面（后移，让地面与调试平面同框——平面太大时会把地面整个挡住）
+reactive(camera).position = { x: 0, y: 5, z: -20 };
 logic(camera).lookAt({ x: 0, y: 2, z: -5 });
 
 // 每帧更新调试材质的纹理（阴影图在 ShadowRenderer 每帧渲染后更新）
