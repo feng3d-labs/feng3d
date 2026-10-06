@@ -40,6 +40,7 @@ import { getDeferredFragmentDeferredRenderingWGSL } from '../packages/webgpu/exa
 import { getABufferOpaqueWGSL } from '../packages/webgpu/examples/src/webgpu/a-buffer/opaque.tsl';
 import { getAnimometerWGSL } from '../packages/webgpu/examples/src/webgpu/animometer/animometer.tsl';
 import { getBitonicDisplayFragWGSL } from '../packages/webgpu/examples/src/webgpu/bitonicSort/bitonicDisplay.frag.tsl';
+import { NaiveBitonicCompute } from '../packages/webgpu/examples/src/webgpu/bitonicSort/bitonicCompute';
 import { getShadowMappingFragmentWGSL } from '../packages/webgpu/examples/src/webgpu/shadowMapping/fragment.tsl';
 import { getFragmentGBuffersDebugViewWGSL } from '../packages/webgpu/examples/src/webgpu/deferredRendering/fragmentGBuffersDebugView.tsl';
 import { getVolumeWGSL } from '../packages/webgpu/examples/src/webgpu/volumeRenderingTexture3D/volume.tsl';
@@ -995,4 +996,72 @@ describe('cornell 色调映射 compute', () =>
         expect(mix).toContain('* input.fragPosition');
     });
 
+});
+
+describe('bitonicCompute.ts 内联手写 compute 的 TSL 迁移（#710 / #712 新发现项）', () =>
+{
+    const wgsl = NaiveBitonicCompute(8);
+
+    it('签名与手写一致：NaiveBitonicCompute(n) 返回 WGSL 字符串', () =>
+    {
+        expect(typeof wgsl).toBe('string');
+        expect(wgsl).toContain('@compute @workgroup_size(8, 1, 1)');
+    });
+
+    it('struct Uniforms 与 4 个资源声明（含共享内存与原子）', () =>
+    {
+        expect(wgsl).toContain('struct Uniforms');
+        expect(wgsl).toContain('algo: u32,');
+        // 工作组共享内存：无 @group/@binding
+        expect(wgsl).toContain('var<workgroup> local_data: array<u32, 16>;');
+        expect(wgsl).not.toMatch(/@(group|binding)\(\d+\)[^\n]*local_data/);
+        // storage 数组 + 原子计数器
+        expect(wgsl).toContain('var<storage, read> input_data: array<u32>;');
+        expect(wgsl).toContain('var<storage, read_write> output_data: array<u32>;');
+        expect(wgsl).toContain('var<storage, read_write> counter: atomic<u32>;');
+        expect(wgsl).toContain('var<uniform> uniforms : Uniforms;');
+    });
+
+    it('4 个辅助函数：3 个无返回值（省略 -> T）、1 个返回 vec2<u32>', () =>
+    {
+        expect(wgsl).toContain('fn local_compare_and_swap(idx_before: u32, idx_after: u32) {');
+        expect(wgsl).toContain('fn global_compare_and_swap(idx_before: u32, idx_after: u32) {');
+        expect(wgsl).toContain('fn get_flip_indices(invoke_id: u32, block_height: u32) -> vec2<u32> {');
+        expect(wgsl).toContain('fn get_disperse_indices(invoke_id: u32, block_height: u32) -> vec2<u32> {');
+        expect(wgsl).not.toContain('-> void');
+    });
+
+    it('辅助函数内部：原子加取地址、共享内存读写、分量自增', () =>
+    {
+        expect(wgsl).toContain('atomicAdd(&counter, 1u);');
+        expect(wgsl).toContain('local_data[idx_before] = local_data[idx_after];');
+        expect(wgsl).toContain('idx.x = (idx.x + block_offset);');
+    });
+
+    it('入口：3 个 invocation builtin + 两处 barrier + 5 个 switch 分支', () =>
+    {
+        expect(wgsl).toContain('@builtin(global_invocation_id) globalInvocationId: vec3<u32>');
+        expect(wgsl).toContain('@builtin(local_invocation_id) localInvocationId: vec3<u32>');
+        expect(wgsl).toContain('@builtin(workgroup_id) workgroupId: vec3<u32>');
+        expect(wgsl.match(/workgroupBarrier\(\);/g)?.length).toBe(2);
+        for (const n of [1, 2, 3, 4]) expect(wgsl).toContain(`case ${n}: {`);
+        expect(wgsl).toContain('default: {');
+    });
+
+    it('有意的等价改写：algo <= 2 写成 algo < 3u（UInt 没有 lessThanOrEqual）', () =>
+    {
+        expect(wgsl.match(/uniforms\.algo < 3u/g)?.length).toBe(2);
+    });
+
+    it('非法的 workgroupSize 回退到 256（与手写一致）', () =>
+    {
+        expect(NaiveBitonicCompute(3)).toBe(NaiveBitonicCompute(256));
+        expect(NaiveBitonicCompute(512)).toBe(NaiveBitonicCompute(256));
+    });
+
+    it('按尺寸缓存：同一尺寸两次调用返回同一字符串', () =>
+    {
+        expect(NaiveBitonicCompute(8)).toBe(NaiveBitonicCompute(8));
+        expect(NaiveBitonicCompute(16)).not.toBe(NaiveBitonicCompute(8));
+    });
 });
