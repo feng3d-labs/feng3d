@@ -1,6 +1,6 @@
 import { mat4Append, mat4FromPosition, mat4FromQuaternion, mat4FromScale, mat4Identity, mat4Invert, mat4TransformPoints, mat4TransformVector3, mat4Transpose, Matrix4x4, quatSet } from '@feng3d/math';
-import { CustomGeometry, Object3D, reactive, StandardMaterial } from 'feng3d';
-import type { Components, Skeleton } from 'feng3d';
+import { AssetType, CustomGeometry, Object3D, PropertyClip, PropertyClipPathItemType, reactive, StandardMaterial } from 'feng3d';
+import type { AnimationClipData, Components, Skeleton } from 'feng3d';
 
 /**
  * glTF 2.0 加载器（做深而非做多）。
@@ -45,8 +45,12 @@ import type { Components, Skeleton } from 'feng3d';
  * 处理 MTL 贴图的口径一致（只给出文件名/来源，由调用方自行加载，见 `MTLMaterialRecord.textureFiles`）；
  * `metallicFactor` / `roughnessFactor` / `emissiveFactor`（StandardMaterial 是 Phong 风格，
  * 没有对应字段，不做臆造的等价映射）、`alphaMode: 'BLEND'` 的透明混合（无可用开关）、
- * 动画、形变目标、Draco 压缩、外部文件 URI
+ * 形变目标（`weights`）、Draco 压缩、外部文件 URI
  * （`buffers[].uri` 指向外部文件需网络/文件读取，暂不实现）。
+ *
+ * **动画可播放（本批）**：`animations` 除索引链外，另产出 {@link GLTFResult.animationClips}——
+ * 已读好关键帧、换算成毫秒、`path` 为场景根起的名称链，可直接挂到 `Animation` 组件播放。
+ * 只覆盖节点变换（translation/rotation/scale）；`STEP`/`CUBICSPLINE` 降级为线性插值。
  *
  * **非三角形图元显式抛错**（不静默当三角形画）：`POINTS(0)` / `LINES(1)` / `LINE_LOOP(2)` /
  * `LINE_STRIP(3)` 以及未知 `mode` 一律 `throw`，错误信息带上 `mode` 值。转换它们需要点/线材质，
@@ -554,8 +558,22 @@ export interface GLTFResult
     readonly meshes: GLTFMesh[];
     /** 全部 skin 的平铺列表（无 `skins` 的文档为空数组） */
     readonly skins: GLTFSkin[];
-    /** 全部动画（无 `animations` 的文档为空数组）。**只解析结构与时长，未接运行时播放** */
+    /** 全部动画（无 `animations` 的文档为空数组）。**只解析结构与时长**；可播放数据见 {@link GLTFResult.animationClips} */
     readonly animations: GLTFAnimation[];
+    /**
+     * 可直接挂到 `Animation` 组件播放的动画片段（与 `animations` 同序，无 `animations` 时为空数组）。
+     *
+     * 由 {@link GLTFResult} 的解析过程顺带产出：把 glTF 的
+     * `channel → sampler → accessor` 索引链读成关键帧数据，生成 feng3d 的
+     * `PropertyClip`（时间单位换算成**毫秒**，`path` 是从 glTF 场景根到目标节点的**名称链**）。
+     * 把 `Animation` 组件挂在 {@link GLTFResult.root} 上、`animation` 指向其中一项即可播放。
+     *
+     * 只覆盖**节点变换**（`translation` / `rotation` / `scale`）；
+     * `weights`（形变目标）不产出。插值一律按 `PropertyClip` 的线性/四元数插值处理——
+     * glTF 的 `STEP` 与 `CUBICSPLINE` 会**降级为线性**（`CUBICSPLINE` 取每段的中间值，
+     * 丢弃切线），如需精确复现需另做。
+     */
+    readonly animationClips: AnimationClipData[];
     /**
      * 全部纹理的解析结果（与 `json.textures` **下标一一对应**，无 `textures` 的文档为空数组）。
      *
@@ -1176,6 +1194,137 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
     }
 
     /**
+     * 计算「glTF 场景根 → 该节点」的名称路径。
+     *
+     * `PropertyClip.path` 的语义是：从 `Animation` 组件所在节点出发，逐级用名称找**子**节点，
+     * 所以这里给出从场景根开始的完整名称链（把 Animation 组件挂在 {@link GLTFResult.root} 上即可）。
+     * glTF 规范不允许一个 node 有多个父，从 `scenes[json.scene].nodes` 做一次 DFS 就够；
+     * 未被当前场景引用的节点（channel 仍可能指向它们）单独作为一条链的根补上。
+     */
+    function buildNodeNamePaths(): Map<number, string[]>
+    {
+        const paths = new Map<number, string[]>();
+
+        const visit = (index: number, parentPath: string[]): void =>
+        {
+            // 防御异常文档里的环：已经在链上就不再往下走
+            if (paths.has(index)) return;
+            const path = [...parentPath, getNodeName(index)];
+
+            paths.set(index, path);
+
+            const children = nodes[index]?.children || [];
+            for (let i = 0; i < children.length; i++) visit(children[i], path);
+        };
+
+        const sceneNodes = scenes[json.scene ?? 0]?.nodes || [];
+        for (let i = 0; i < sceneNodes.length; i++) visit(sceneNodes[i], []);
+        for (let i = 0; i < nodes.length; i++) if (!paths.has(i)) visit(i, []);
+
+        return paths;
+    }
+
+    /** glTF 的 `target.path` → fengd3 的属性名与曲线类型（`weights` 不产出） */
+    function animationTarget(path: string): { propertyName: string; type: 'Number' | 'Vector3' | 'Quaternion'; components: number } | null
+    {
+        switch (path)
+        {
+            case 'translation': return { propertyName: 'position', type: 'Vector3', components: 3 };
+            case 'rotation': return { propertyName: 'rotation', type: 'Quaternion', components: 4 };
+            case 'scale': return { propertyName: 'scale', type: 'Vector3', components: 3 };
+            default: return null;
+        }
+    }
+
+    /**
+     * 读出关键帧值。
+     *
+     * `CUBICSPLINE` 的每组是 `[inTangent, value, outTangent]`，这里只取中间的 `value`
+     * （切线丢弃、降级为线性）——与 {@link GLTFResult.animationClips} 的说明一致。
+     */
+    function readAnimationValues(outputAccessor: number, components: number, interpolation: string): number[]
+    {
+        const raw = readAccessor(outputAccessor);
+        if (interpolation !== 'CUBICSPLINE') return raw;
+
+        const keyCount = Math.floor(raw.length / (components * 3));
+        const values = new Array<number>(keyCount * components);
+        for (let k = 0; k < keyCount; k++)
+        {
+            const base = (k * 3 + 1) * components;
+            for (let c = 0; c < components; c++) values[k * components + c] = raw[base + c];
+        }
+
+        return values;
+    }
+
+    /**
+     * 把 glTF 的 animations 读成可播放的 `AnimationClipData`（见 {@link GLTFResult.animationClips}）。
+     *
+     * 时间单位要换算：glTF 的关键帧时间是**秒**，而 `Animation` 组件的 `time`/`length`/
+     * `PropertyClip.times` 都是**毫秒**（见 packages/feng3d/src/animation/Animation.spec.ts）。
+     */
+    function buildAnimationClips(): AnimationClipData[]
+    {
+        const animationsDef = json.animations || [];
+        if (animationsDef.length === 0) return [];
+
+        const namePaths = buildNodeNamePaths();
+        const clips: AnimationClipData[] = [];
+
+        for (let ai = 0; ai < animationsDef.length; ai++)
+        {
+            const animationDef = animationsDef[ai];
+            const propertyClips: PropertyClip[] = [];
+            let length = 0;
+
+            const channels = animationDef.channels || [];
+            for (let ci = 0; ci < channels.length; ci++)
+            {
+                const channelDef = channels[ci];
+                const targetPath = channelDef.target?.path;
+                const targetNode = channelDef.target?.node;
+                if (targetPath === undefined || targetNode === undefined) continue;
+
+                const target = animationTarget(targetPath);
+                if (!target) continue;
+
+                const samplerDef = (animationDef.samplers || [])[channelDef.sampler];
+                if (!samplerDef) continue;
+
+                const namePath = namePaths.get(targetNode);
+                if (!namePath || namePath.length === 0) continue;
+
+                const times = readAccessor(samplerDef.input).map((seconds) => seconds * 1000);
+                if (times.length === 0) continue;
+
+                const propertyClip = new PropertyClip();
+
+                propertyClip.path = namePath.map((name) => [PropertyClipPathItemType.Object3D, name] as [PropertyClipPathItemType, string]);
+                propertyClip.propertyName = target.propertyName;
+                propertyClip.type = target.type;
+                propertyClip.times = times;
+                propertyClip.values = readAnimationValues(samplerDef.output, target.components, samplerDef.interpolation ?? 'LINEAR');
+                propertyClips.push(propertyClip);
+
+                length = Math.max(length, times[times.length - 1]);
+            }
+
+            if (propertyClips.length === 0) continue;
+
+            clips.push({
+                assetType: AssetType.anim,
+                name: animationDef.name || `animation_${ai}`,
+                length,
+                loop: true,
+                propertyClips,
+            });
+        }
+
+        return clips;
+    }
+
+    /**
      * 解析一个 skin：`joints`（node 下标）→ 骨骼名，`inverseBindMatrices` accessor → 逆绑定矩阵。
      *
      * 列主序依据：glTF 规范（3.6.2.4）规定 MAT4 accessor 的 16 个元素按**列主序**排列
@@ -1573,5 +1722,6 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         skins: allSkins,
         textures: textureInfos,
         animations: parseAnimations(json),
+        animationClips: buildAnimationClips(),
     };
 }
