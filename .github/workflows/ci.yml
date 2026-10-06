@@ -267,6 +267,13 @@ jobs:
         # 用例内部会先构建编辑器产物，再起包内静态服务器（等价于用户 npx feng3d-editor）。
         run: npm run test:e2e:editor
 
+      - name: 粒子示例端到端（particlesystem 分类）
+        # 行为层门禁（issue #369 的 examples 侧补充）：9 个粒子示例逐个校验
+        # 「运行期无错误」（页面抛错 / WebGPU 校验失败 / 着色器编译失败都会落到前端日志）；
+        # 有 GPU 的环境再加一层「渲染循环在提交帧」。**像素基线回归仍不在 CI**——
+        # runner 只有软件渲染，基线与真实 GPU 不可比，见 docs/CI.md 的 R8 说明。
+        run: npx playwright test e2e/particlesystem.spec.ts
+
       - name: 启动编辑器宿主（AI 桥接需要）
         # **决策 ① 之后必须起宿主、而不是 vite dev server**：编辑器不再有"页面内副本"可退，
         # 文件系统的初值就是 `HostFS` —— 页面得有宿主才能读到项目（否则主界面读不到默认场景，
