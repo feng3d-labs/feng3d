@@ -48,6 +48,23 @@ const FOG_COLOR = 0x59472b;
 /** three.js 的 BRDF_Lambert 带 1/π；fengd3 的漫反射没有该因子 */
 const INV_PI = 1 / Math.PI;
 
+/**
+ * 随机数来源——原示例用 `random()` 决定动物的初始 x、动画相位与色相偏移。
+ *
+ * 为了 1:1 复刻，默认**保持与 three 完全相同**（直接用 `random()`）；
+ * 但像素回归需要可复现的画面，所以留了一个全局钩子：把 `globalThis.__feng3dRandom`
+ * 设成一个确定性函数后，本示例的全部随机取值都走它。
+ *
+ * e2e 的 `e2e/freeze.ts` 会在冻结前注入一个固定种子的伪随机序列，这样同一构建的截图可复现；
+ * 平时打开页面（不注入）时行为与原示例一致。
+ */
+function random(): number
+{
+    const injected = (globalThis as { __feng3dRandom?: () => number }).__feng3dRandom;
+
+    return injected ? injected() : Math.random();
+}
+
 /** 0xRRGGBB → sRGB Color4（背景与雾色都不做色彩管理；雾在输出空间混合） */
 function srgbColor4(hex: number, alpha = 1)
 {
@@ -259,7 +276,7 @@ function updateHudLayout(): void
 /**
  * three.js `Color.offsetHSL(h, s, l)` 的等价实现（RGB ↔ HSL）。
  *
- * 原示例只传 `h = 0`（色相不动），s/l 各偏移 `Math.random() * 0.5 - 0.25`，
+ * 原示例只传 `h = 0`（色相不动），s/l 各偏移 `random() * 0.5 - 0.25`，
  * 并按 three 的 `setHSL` 把 s/l 夹到 [0, 1]。
  */
 function offsetHSL(color: { r: number; g: number; b: number }, h: number, s: number, l: number): void
@@ -369,7 +386,7 @@ const animalRoot: Object3D = { __type__: 'Object3D', name: 'morphs', children: [
 /**
  * three.js 的 `addMorph`。
  *
- * `setDuration(duration)` / `startAt(-duration * Math.random())` 的等价：
+ * `setDuration(duration)` / `startAt(-duration * random())` 的等价：
  * - 本仓 `Animation` 的 `time`/`length` 都是**毫秒**，`update` 每帧加 `interval * playspeed`，
  *   所以「用 duration 秒播完整段」就是 `playspeed = clip.length / (duration * 1000)`；
  * - `startAt` 是相位偏移，直接给 `time` 一个负初值（`updateAni` 对负数取模是安全的）。
@@ -394,9 +411,9 @@ function addMorph(source: Object3D, clip: AnimationClipData, speed: number, dura
 
     if (fudgeColor)
     {
-        // three.js: mesh.material.color.offsetHSL( 0, Math.random() * 0.5 - 0.25, Math.random() * 0.5 - 0.25 )
-        const offsetS = Math.random() * 0.5 - 0.25;
-        const offsetL = Math.random() * 0.5 - 0.25;
+        // three.js: mesh.material.color.offsetHSL( 0, random() * 0.5 - 0.25, random() * 0.5 - 0.25 )
+        const offsetS = random() * 0.5 - 0.25;
+        const offsetL = random() * 0.5 - 0.25;
 
         for (const component of components ?? [])
         {
@@ -417,7 +434,7 @@ function addMorph(source: Object3D, clip: AnimationClipData, speed: number, dura
     const animation: Animation = {
         __type__: 'Animation',
         animation: clip,
-        time: -duration * 1000 * Math.random(),
+        time: -duration * 1000 * random(),
         isplaying: true,
         playspeed: clip.length / (duration * 1000),
     };
@@ -445,11 +462,11 @@ const parrotMesh = parrot.root.children![0];
 // three.js 的 6 只马（z = ±300 / ±450 / ±600）
 for (const z of [300, 450, 600, -300, -450, -600])
 {
-    addMorph(horseMesh, horse.animationClips[0], 550, 1, 100 - Math.random() * 1000, FLOOR, z, true);
+    addMorph(horseMesh, horse.animationClips[0], 550, 1, 100 - random() * 1000, FLOOR, z, true);
 }
-addMorph(flamingoMesh, flamingo.animationClips[0], 500, 1, 500 - Math.random() * 500, FLOOR + 350, 40);
-addMorph(storkMesh, stork.animationClips[0], 350, 1, 500 - Math.random() * 500, FLOOR + 350, 340);
-addMorph(parrotMesh, parrot.animationClips[0], 450, 0.5, 500 - Math.random() * 500, FLOOR + 300, 700);
+addMorph(flamingoMesh, flamingo.animationClips[0], 500, 1, 500 - random() * 500, FLOOR + 350, 40);
+addMorph(storkMesh, stork.animationClips[0], 350, 1, 500 - random() * 500, FLOOR + 350, 340);
+addMorph(parrotMesh, parrot.animationClips[0], 450, 0.5, 500 - random() * 500, FLOOR + 300, 700);
 
 // ---- 阶段 D：THREE.JS 立体字（three.js 的 TEXT 段）----
 //
@@ -631,12 +648,12 @@ ticker.onframe((interval) =>
     for (const morph of morphs)
     {
         // three.js: mesh.position.x += mesh.speed * delta;
-        //           if ( position.x > 2000 ) position.x = - 1000 - Math.random() * 500;
+        //           if ( position.x > 2000 ) position.x = - 1000 - random() * 500;
         const position = logic(morph.mesh).position;
         const x = position.x + morph.speed * delta;
 
         reactive(morph.mesh).position = {
-            x: x > 2000 ? -1000 - Math.random() * 500 : x,
+            x: x > 2000 ? -1000 - random() * 500 : x,
             y: position.y,
             z: position.z,
         };
