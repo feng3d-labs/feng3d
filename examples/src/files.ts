@@ -59,6 +59,7 @@ export default {
         "TriggerTest",
         "TrimeshTest",
         "ConvexTest",
+        "StacksTest",
         "HeightfieldTest",
         "VehicleTest",
         "SPHTest",
