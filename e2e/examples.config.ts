@@ -232,8 +232,14 @@ export const EXAMPLES: readonly ExampleSpec[] = [
     {
         category: "three.js", name: "webgl_shadowmap", warmupFrames: 60, freezeFrames: 30,
         // 原示例的 #info 文案（`three.js - shadowmap - models by mirada from rome`）——
-        // 这段文字不参与像素比对（已 mask），在此单独守住，防止它又被写回别的内容。
+        // 这段文字不参与像素比对（已 mask），在此单独守住，防止它又写回别的内容。
         infoContains: "three.js - shadowmap - models by mirada from rome",
+        // 该示例含**时间驱动的动画**（9 只 morph 动物的位移与形变），定格帧数无法保证动画相位完全一致：
+        // `freeze.ts` 数的是 rAF 调用次数，而动画由 `Ticker` 驱动、二者并非一一对应
+        // （实测：90 帧 rAF 只对应约 44 次 `Ticker` 回调，且首次调度相位会让它在 43/44 之间漂）。
+        // 实测像素差全部落在动物身上（mean≈4.9、`>10` 占 7.03%），文字与地面完全稳定，
+        // 所以这里按「容纳一两帧动画差」放宽到 0.1，而不是把不稳定的基线硬钉死。
+        maxDiffPixelRatio: 0.1,
     },
     { category: "three.js", name: "webgl_shadowmap_pointlight", warmupFrames: 60, freezeFrames: 30, maxDiffPixelRatio: 0.05 },
     { category: "three.js", name: "webgl_shadowmesh", warmupFrames: 60, freezeFrames: 30 },
