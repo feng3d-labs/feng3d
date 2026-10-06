@@ -50,6 +50,7 @@ const files = {
         'ParticleExplosionTest',
         'ParticleSnowTest',
         'ParticlePortalTest',
+        'ParticleTrailTest',
     ],
 };
 

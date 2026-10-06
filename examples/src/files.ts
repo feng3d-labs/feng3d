@@ -74,6 +74,7 @@ export default {
         "ParticleExplosionTest",
         "ParticleSnowTest",
         "ParticlePortalTest",
+        "ParticleTrailTest",
     ],
     "animator": [
         "SceneLoadTest",
