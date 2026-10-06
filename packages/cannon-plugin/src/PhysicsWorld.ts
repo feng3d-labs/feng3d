@@ -4,7 +4,7 @@ import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVec
 // 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
 // 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
 // 直接写 new Material() 会被判为「对纯数据类的 new」——与 Plane / Sphere 同一类误报。
-import { Body, ContactMaterial, Material as CannonMaterial, World, type GSSolver, type RaycastVehicle as CannonRaycastVehicle, type SPHSystem as CannonSPHSystem, type Spring as CannonSpring } from 'cannon-es';
+import { Body, ContactMaterial, Material as CannonMaterial, RaycastResult, Vec3, World, type GSSolver, type RaycastVehicle as CannonRaycastVehicle, type SPHSystem as CannonSPHSystem, type Spring as CannonSpring } from 'cannon-es';
 import type { ConstraintLogic } from './Constraint';
 import type { RigidbodyLogic } from './Rigidbody';
 import type { SpringLogic } from './Spring';
@@ -97,6 +97,23 @@ export interface PhysicsMaterial
     readonly restitution?: number;
 }
 
+/**
+ * 射线检测的命中结果（对应 cannon-es 的 RaycastResult，只保留常用字段）。
+ */
+export interface PhysicsRaycastResult
+{
+    /** 是否命中 */
+    readonly hasHit: boolean;
+    /** 命中点（世界坐标） */
+    readonly hitPoint: Vector3Like;
+    /** 命中处的法线（世界坐标） */
+    readonly hitNormal: Vector3Like;
+    /** 起点到命中点的距离（未命中时为 -1） */
+    readonly distance: number;
+    /** 命中的刚体对应的 Object3D（没登记时 null） */
+    readonly object: Object3D | null;
+}
+
 /** 一对材质之间的接触参数（对应 cannon-es 的 ContactMaterial） */
 export interface PhysicsContactMaterial
 {
@@ -163,6 +180,26 @@ export interface PhysicsWorldLogic extends BehaviourLogic
      * @returns 退订函数
      */
     onEndCollide(listener: (event: CollideEvent) => void): () => void;
+
+    /**
+     * 订阅「物理步进完成后」的回调（对应 cannon-es 的 `postStep` 事件），返回退订函数。
+     *
+     * 需要"每步之后根据刚体状态做事"的场景用它——原版 `trimesh.html` 的 "Raycasting" 幕
+     * 就是在 postStep 里发 100 条射线、把命中点写到标记点上。
+     *
+     * @param listener 回调
+     * @returns 退订函数
+     */
+    onAfterStep(listener: () => void): () => void;
+
+    /**
+     * 从 `from` 到 `to` 做一次「最近命中」射线检测（对应 cannon-es 的 `raycastClosest`）。
+     *
+     * @param from 起点（世界坐标）
+     * @param to 终点（世界坐标）
+     * @returns 命中结果（未命中时 hasHit 为 false）
+     */
+    raycastClosest(from: Vector3Like, to: Vector3Like): PhysicsRaycastResult;
 }
 
 /**
@@ -260,6 +297,8 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
     const collideListeners = new Set<(event: CollideEvent) => void>();
     /** 「结束接触」的订阅者 */
     const endCollideListeners = new Set<(event: CollideEvent) => void>();
+    /** 「步进完成」的订阅者 */
+    const afterStepListeners = new Set<() => void>();
     /**
      * 刚体 → 所属 Object3D（每帧重建）。
      *
@@ -293,6 +332,12 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             bodyB: event.bodyB,
         };
         for (const listener of endCollideListeners) listener(collideEvent);
+    });
+
+    // postStep：每步之后统一转发（原版用它做"每帧根据物理状态更新外部状态"）
+    world.addEventListener('postStep', () =>
+    {
+        for (const listener of afterStepListeners) listener();
     });
 
     // ---- 求解器与接触方程（堆叠很多刚体时这些参数决定稳不稳） ----
@@ -411,6 +456,29 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
 
             return () => { endCollideListeners.delete(listener); };
         },
+        onAfterStep(listener)
+        {
+            afterStepListeners.add(listener);
+
+            return () => { afterStepListeners.delete(listener); };
+        },
+        raycastClosest(from, to)
+        {
+            const result = new RaycastResult();
+            world.raycastClosest(
+                new Vec3(from.x, from.y, from.z),
+                new Vec3(to.x, to.y, to.z),
+                {},
+                result);
+
+            return {
+                hasHit: result.hasHit,
+                hitPoint: { x: result.hitPointWorld.x, y: result.hitPointWorld.y, z: result.hitPointWorld.z },
+                hitNormal: { x: result.hitNormalWorld.x, y: result.hitNormalWorld.y, z: result.hitNormalWorld.z },
+                distance: result.distance,
+                object: result.body === null ? null : (bodyToObject3D.get(result.body as Body) ?? null),
+            };
+        },
         init(object3D) { members.init(object3D); },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
         update(interval)
@@ -437,6 +505,9 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
                     world.addBody(body);
                     registered.add(body);
                 }
+
+                // 是否参与碰撞响应（原版 trimesh.html 的"标记点"设为 false）
+                if (rigidbodyLogic.collisionResponse !== undefined) body.collisionResponse = rigidbodyLogic.collisionResponse;
 
                 // 声明了材质名就直接用它（对应原版的 material 字段，配合 contactMaterials 成对生效）
                 if (rigidbodyLogic.materialName !== undefined)
@@ -514,6 +585,9 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
                     const body = particleLogic.createBody();
                     const position = owner.position ?? { x: 0, y: 0, z: 0 };
                     body.position.set(position.x, position.y, position.z);
+
+                    // 声明了材质名就套上（原版 sph.html 的流体与容器共用同一个材质）
+                    if (particleLogic.materialName !== undefined) body.material = getNamedMaterial(particleLogic.materialName);
 
                     world.addBody(body);
                     sphSystem.add(body);
@@ -613,6 +687,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             createdConstraints.clear();
             collideListeners.clear();
             endCollideListeners.clear();
+            afterStepListeners.clear();
             bodyToObject3D.clear();
         },
     };

@@ -51,6 +51,27 @@ export interface VehicleWheel
 
     /** 悬挂静止长度（缺失时用 cannon-es 默认） */
     readonly suspensionRestLength?: number;
+
+    /** 悬挂回弹阻尼（缺失时用 cannon-es 默认） */
+    readonly dampingRelaxation?: number;
+
+    /** 悬挂压缩阻尼（缺失时用 cannon-es 默认） */
+    readonly dampingCompression?: number;
+
+    /** 悬挂最大受力（缺失时用 cannon-es 默认） */
+    readonly maxSuspensionForce?: number;
+
+    /** 侧倾影响（0 = 不侧倾，缺失时用 cannon-es 默认） */
+    readonly rollInfluence?: number;
+
+    /** 悬挂最大行程（缺失时用 cannon-es 默认） */
+    readonly maxSuspensionTravel?: number;
+
+    /** 自定义滑动转速（缺失时用 cannon-es 默认） */
+    readonly customSlidingRotationalSpeed?: number;
+
+    /** 是否启用自定义滑动转速（缺失时用 cannon-es 默认） */
+    readonly useCustomSlidingRotationalSpeed?: boolean;
 }
 
 /**
@@ -98,6 +119,14 @@ export interface VehicleLogic extends Component3DLogic
 
     /** 用底盘刚体创建 cannon-es 车辆（由 PhysicsWorld 调用；基座为 null，工厂装配） */
     readonly createVehicle: ((body: Body) => CannonRaycastVehicle) | null;
+
+    /**
+     * cannon-es 的 `RaycastVehicle` 实例（还没装配时 null）。
+     *
+     * 需要读车轮实际姿态的场景用它——原版 `raycast_vehicle.html` 就是每步之后
+     * 用 `wheelInfos[i].worldTransform` 把车轮**视觉**摆到物理计算出的位置上。
+     */
+    readonly raycastVehicle: CannonRaycastVehicle | null;
 }
 
 /**
@@ -107,6 +136,9 @@ export interface VehicleLogicState extends ComponentLogicState
 {
     /** 车辆工厂（工厂装配） */
     createVehicle: ((body: Body) => CannonRaycastVehicle) | null;
+
+    /** 已创建的 cannon-es 车辆实例（创建前 null） */
+    raycastVehicle: CannonRaycastVehicle | null;
 }
 
 /**
@@ -138,6 +170,7 @@ export function vehicleLogic(data: Vehicle): VehicleLogic
 
     const { state: componentState, members: componentMembers } = createComponentLogicBase(data);
     const state = componentState as VehicleLogicState;
+    state.raycastVehicle = null;
 
     state.createVehicle = (body) =>
     {
@@ -160,9 +193,19 @@ export function vehicleLogic(data: Vehicle): VehicleLogic
             if (wheel.suspensionStiffness !== undefined) options.suspensionStiffness = wheel.suspensionStiffness;
             if (wheel.frictionSlip !== undefined) options.frictionSlip = wheel.frictionSlip;
             if (wheel.suspensionRestLength !== undefined) options.suspensionRestLength = wheel.suspensionRestLength;
+            if (wheel.dampingRelaxation !== undefined) options.dampingRelaxation = wheel.dampingRelaxation;
+            if (wheel.dampingCompression !== undefined) options.dampingCompression = wheel.dampingCompression;
+            if (wheel.maxSuspensionForce !== undefined) options.maxSuspensionForce = wheel.maxSuspensionForce;
+            if (wheel.rollInfluence !== undefined) options.rollInfluence = wheel.rollInfluence;
+            if (wheel.maxSuspensionTravel !== undefined) options.maxSuspensionTravel = wheel.maxSuspensionTravel;
+            if (wheel.customSlidingRotationalSpeed !== undefined) options.customSlidingRotationalSpeed = wheel.customSlidingRotationalSpeed;
+            if (wheel.useCustomSlidingRotationalSpeed !== undefined) options.useCustomSlidingRotationalSpeed = wheel.useCustomSlidingRotationalSpeed;
 
             vehicle.addWheel(options);
         }
+
+        // 记下实例，供场景读车轮姿态（原版用它同步车轮视觉）
+        state.raycastVehicle = vehicle;
 
         return vehicle;
     };
@@ -175,6 +218,7 @@ export function vehicleLogic(data: Vehicle): VehicleLogic
         get steering() { return data.steering ?? 0; },
         get brake() { return data.brake ?? 0; },
         get createVehicle() { return state.createVehicle; },
+        get raycastVehicle() { return state.raycastVehicle; },
         init(object3D) { componentMembers.init(object3D); },
         beforeRender(renderObject) { componentMembers.beforeRender(renderObject); },
         get isLoaded() { return componentMembers.isLoaded; },
