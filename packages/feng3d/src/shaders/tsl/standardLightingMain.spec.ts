@@ -24,6 +24,8 @@ describe('光照主体 body 片段的 TSL 生成', () =>
         const ShadowUniforms = struct('ShadowUniforms', { u_shadowVP: mat4, u_lightPosition: vec3, u_shadowCameraNear: float, u_shadowCameraFar: float, u_shadowBias: float, u_shadowEnabled: float, _pad0: float, _pad1: float });
         const StandardUniforms = struct('StandardUniforms', {
             u_specular: vec4, u_glossiness: float, u_ambient: vec4,
+            // 自发光（StandardMaterial 的 u_emissive；缺它会在 applyStandardLighting 里读 undefined.xyz）
+            u_emissive: vec4,
             u_fogMode: float, u_fogDensity: float, u_fogMinDistance: float, u_fogMaxDistance: float, u_fogColor: vec4,
         });
         const GlobalUniforms = struct('GlobalUniforms', { u_sceneAmbientColor: vec4 });

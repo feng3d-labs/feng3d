@@ -68,3 +68,35 @@ describe('标准片段着色器的 TSL 生成', () =>
         expect(getStandardFragmentWGSL()).toBe(wgsl);
     });
 });
+
+/**
+ * 线性光照变体（StandardMaterial.linearLighting）的生成验收。
+ *
+ * 该变体把 sRGB 材质值解码到线性空间做光照、输出前再编码回 sRGB，
+ * 用于与 three.js 的色彩管理对齐（示例 webgl_shadowmesh 使用）。
+ */
+describe('标准片段着色器的线性光照变体', () =>
+{
+    const linear = getStandardFragmentWGSL(true);
+
+    it('diffuse 先解码到线性空间、输出前编码回 sRGB', () =>
+    {
+        expect(linear).toContain('let linearDiffuse = pow(diffuseColor.xyz, vec3<f32>(2.2));');
+        expect(linear).toContain('diffuseColor = vec4<f32>(linearDiffuse.x, linearDiffuse.y, linearDiffuse.z, diffuseColor.a);');
+        expect(linear).toContain('let encodedColor = pow(finalColor.xyz, vec3<f32>(0.45454545454545453));');
+    });
+
+    it('默认（γ）变体保持历史行为：不做解码与输出编码', () =>
+    {
+        const srgb = getStandardFragmentWGSL();
+
+        expect(srgb).not.toContain('let linearDiffuse =');
+        expect(srgb).not.toContain('let encodedColor =');
+    });
+
+    it('两种变体的自发光合成不同：线性变体直接相加、默认变体在 γ 空间做等效合成', () =>
+    {
+        expect(linear).toContain('resultColor = resultColor + material_uniforms.u_emissive.xyz;');
+        expect(getStandardFragmentWGSL()).toContain('resultColor = pow(pow(resultColor, vec3<f32>(2.2)) + material_uniforms.u_emissive.xyz,');
+    });
+});

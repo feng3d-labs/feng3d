@@ -87,6 +87,8 @@ export interface TerrainUniforms
     readonly u_ambient?: Color4;
     /** 反射率 */
     readonly u_reflectivity?: number;
+    /** 自发光颜色（与 {@link StandardUniforms.u_emissive} 同域：线性值；缺省黑） */
+    readonly u_emissive?: Color4;
     /** 雾起始距离 */
     readonly u_fogMinDistance?: number;
     /** 雾结束距离 */
@@ -149,6 +151,7 @@ export function createTerrainMaterial(): TerrainMaterial
             u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_fogDensity: 0.1,
             u_fogMode: FogMode.NONE,
+            u_emissive: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
             u_splatRepeats: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         },
         s_diffuse: defaultTexture,

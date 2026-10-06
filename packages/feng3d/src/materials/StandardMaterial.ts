@@ -92,6 +92,12 @@ export interface StandardUniforms
     readonly u_ambient?: Color4;
     /** 反射率 */
     readonly u_reflectivity?: number;
+    /**
+     * 自发光颜色（对应 three.js MeshLambertMaterial/MeshPhongMaterial 的 emissive）。
+     *
+     * 加在光照结果之上：背光面因此保留自发光色。缺省黑（不影响既有示例）。
+     */
+    readonly u_emissive?: Color4;
     /** 雾起始距离 */
     readonly u_fogMinDistance?: number;
     /** 雾结束距离 */
@@ -143,6 +149,18 @@ export interface StandardMaterial extends Material
      * （见 issue #157）。
      */
     readonly depthWrite?: boolean;
+
+    /**
+     * 是否按**线性色彩空间**做光照并编码输出（缺省 `false`，即历史行为）。
+     *
+     * - `false`：材质色 / 顶点色 / 纹理采样值直接参与光照并直接输出（feng3d 不做色彩管理）。
+     * - `true`：先把上述 sRGB 值解码到线性空间 → 光照 → 输出前编码回 sRGB，与 three.js 的
+     *   色彩管理一致。对照 three.js 移植示例时按此设置，intensity 可直接用 three 的取值
+     *   （feng3d 漫反射无 1/π 因子，需要时自行补上），暗面亮度则来自 u_emissive（线性值）。
+     *
+     * 该字段在 Logic 创建时读取一次以选择着色器变体（创建后修改不会重建管线）。
+     */
+    readonly linearLighting?: boolean;
 }
 
 /**
@@ -157,6 +175,7 @@ const STANDARD_DEFAULT_UNIFORMS = {
     u_glossiness: 50,
     u_ambient: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
     u_reflectivity: 1,
+    u_emissive: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
     u_fogMinDistance: 0,
     u_fogMaxDistance: 100,
     u_fogColor: { __type__: 'Color4', r: 0, g: 0, b: 0, a: 1 },
@@ -213,9 +232,12 @@ export function standardMaterialLogic(data: StandardMaterial): StandardMaterialL
         return result as unknown as StandardUniforms;
     });
 
+    // 线性光照是**着色器变体**：创建时选定（与 three.js 的色彩管理对齐，见数据接口注释）
+    const linearLighting = r_material.linearLighting === true;
+
     const renderPipeline = reactive({
         vertex: { wgsl: standardVertexWGSL },
-        fragment: { wgsl: getStandardFragmentWGSL(), targets: [{}] },
+        fragment: { wgsl: getStandardFragmentWGSL(linearLighting), targets: [{}] },
         primitive: { topology: 'triangle-list', cullFace: 'back', frontFace: 'ccw' },
         depthStencil: { depthWriteEnabled: depthWrite(), depthCompare: 'less' },
     }) as RenderPipeline;

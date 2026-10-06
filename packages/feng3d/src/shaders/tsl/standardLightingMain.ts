@@ -12,7 +12,7 @@
  *
  * 注意 `select` 的参数顺序：**WGSL 是 `select(f, t, cond)`，TSL 是 `select(cond, t, f)`**。
  */
-import { Float, clamp, dot, forU32_, if_, length, let_, normalize, sampler2D, select, texture, uint, var_, vec3, vec4 } from '@feng3d/tsl';
+import { Float, clamp, dot, forU32_, if_, length, let_, normalize, pow, sampler2D, select, texture, uint, var_, vec3, vec4 } from '@feng3d/tsl';
 
 type Vec2Value = ReturnType<typeof import('@feng3d/tsl').vec2>;
 type Vec3Value = ReturnType<typeof vec3>;
@@ -41,7 +41,7 @@ export interface StandardLightsContext
 export interface StandardLightingContext
 {
     /** 材质 uniform */
-    material: { u_specular: Vec4Value; u_glossiness: Float; u_ambient: Vec4Value };
+    material: { u_specular: Vec4Value; u_glossiness: Float; u_ambient: Vec4Value; u_emissive: Vec4Value };
     /** 光照 uniform */
     lights: StandardLightsContext;
     /** 阴影 uniform */
@@ -72,6 +72,13 @@ export interface StandardLightingContext
     computeDistanceLightFalloff(lightDistance: Float, range: Float): Float;
     /** 阴影因子 */
     getShadow(shadowPos: Vec3Value): Float;
+    /**
+     * 是否处于线性光照模式（{@link StandardFragmentOptions.linearLighting}）。
+     *
+     * true 时调用方已把 diffuse 解码到线性空间、并会在输出前编码回 sRGB，
+     * 因此自发光直接在线性空间相加（three 的 outgoingLight 语义）。
+     */
+    linearLighting?: boolean;
 }
 
 /**
@@ -169,6 +176,25 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
         const shadow = let_('shadow', ctx.getShadow(ctx.shadowPos));
         resultColor.assign(resultColor.multiply(shadow));
     });
+
+    // 自发光（three.js：outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance）。
+    // - 线性光照模式：调用方已在线性空间计算，直接相加（与 three 完全同域）。
+    // - 默认（γ）模式：feng3d 不做输出色彩编码（光照结果就是输出），因此做等效合成
+    //     out = (out_linear + emissive_linear)^(1/2.2)
+    //   u_emissive 仍是**线性**值（与 three 的 material.emissive 同域），
+    //   暗面（无光照）的输出恰为 (emissive_linear)^(1/2.2) = 该颜色的 sRGB 分量。
+    // 注：WGSL 的 pow 只接受 (vecN, vecN) 或 (标量, 标量)，不能 vec3 配标量，故逐分量给指数
+    if (ctx.linearLighting === true)
+    {
+        resultColor.assign(resultColor.add(ctx.material.u_emissive.xyz as unknown as Vec3Value));
+    }
+    else
+    {
+        resultColor.assign(pow(
+            pow(resultColor, vec3(2.2, 2.2, 2.2)).add(ctx.material.u_emissive.xyz as unknown as Vec3Value),
+            vec3(1 / 2.2, 1 / 2.2, 1 / 2.2),
+        ));
+    }
 
     // 覆盖判定：有任意光源时才用光照结果覆盖 finalColor
     if_(dirLight.intensity.greaterThan(0.0)

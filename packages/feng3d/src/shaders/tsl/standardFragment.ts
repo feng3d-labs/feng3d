@@ -12,7 +12,7 @@
  * 采样器沿用 TSL 的展开约定（`sampler2D(uniform('s_diffuse', 1, 0))` →
  * `s_diffuse_texture` + `s_diffuse`），数据侧的键名需要与之一致。
  */
-import { discard, float, fragment, func, if_, let_, normalize, reflect, return_, sampler2D, samplerCube, struct, texture, uniform, var_, varying, vec2, vec3, vec4 } from '@feng3d/tsl';
+import { discard, float, fragment, func, if_, let_, normalize, pow, reflect, return_, sampler2D, samplerCube, struct, texture, uniform, var_, varying, vec2, vec3, vec4 } from '@feng3d/tsl';
 import { StandardLightsContext, applyStandardLighting } from './standardLightingMain';
 import { applyStandardFog } from './standardFogMain';
 import { getStandardLightingPars } from './standardLightingPars';
@@ -36,6 +36,7 @@ interface MaterialLike
     u_glossiness: FloatValue;
     u_ambient: Vec4Value;
     u_reflectivity: FloatValue;
+    u_emissive: Vec4Value;
     u_fogMinDistance: FloatValue;
     u_fogMaxDistance: FloatValue;
     u_fogColor: Vec4Value;
@@ -64,18 +65,41 @@ export interface StandardFragmentOptions
     afterDiffuse?: (ctx: { diffuseColor: Vec4Value; uv: Vec2Value; material: Record<string, unknown> }) => void;
     /** 是否包含环境反射步骤（默认 true；terrain 无 envmap） */
     withEnvMap?: boolean;
+    /**
+     * 是否按**线性色彩空间**做光照并编码输出（默认 false，即历史行为）。
+     *
+     * false（默认）：feng3d 不做色彩管理——材质颜色 / 顶点色 / 纹理采样值直接参与光照，
+     *   结果直接输出（与 three.js 的 linear→sRGB 编码相比，亮面会偏暗，见示例 webgl_shadowmesh）。
+     * true：把 diffuse（顶点色 × 颜色 × 纹理）解码到线性空间 → 光照 → 输出前编码回 sRGB，
+     *   与 three.js 的色彩管理一致（intensity 因此可直接用 three 的取值并按需补 1/π）。
+     */
+    linearLighting?: boolean;
 }
 
 /** 懒构建缓存（StandardMaterial 的默认变体） */
 let cachedStandardFragment: string | null = null;
 
+/** 懒构建缓存（线性光照变体） */
+let cachedLinearStandardFragment: string | null = null;
+
 /**
  * 获取标准片段着色器的 WGSL（首次调用时构建并缓存）。
  *
+ * @param linearLighting 是否取线性光照变体（见 {@link StandardFragmentOptions.linearLighting}），默认 false
  * @returns WGSL 文本
  */
-export function getStandardFragmentWGSL(): string
+export function getStandardFragmentWGSL(linearLighting = false): string
 {
+    if (linearLighting)
+    {
+        if (cachedLinearStandardFragment === null)
+        {
+            cachedLinearStandardFragment = buildStandardFragment({ linearLighting: true });
+        }
+
+        return cachedLinearStandardFragment;
+    }
+
     if (cachedStandardFragment === null)
     {
         cachedStandardFragment = buildStandardFragment({});
@@ -93,6 +117,7 @@ export function getStandardFragmentWGSL(): string
 export function buildStandardFragment(options: StandardFragmentOptions): string
 {
     const withEnvMap = options.withEnvMap !== false;
+    const linearLighting = options.linearLighting === true;
 
     // ---- varying ----
     // **必须显式指定 location**：TSL 自动分配是按"使用顺序"来的，而这里必须与顶点着色器的
@@ -122,6 +147,8 @@ export function buildStandardFragment(options: StandardFragmentOptions): string
         u_fogColor: vec4,
         u_fogDensity: float,
         u_fogMode: float,
+        // 自发光颜色（three.js MeshLambertMaterial/MeshPhongMaterial 的 emissive）
+        u_emissive: vec4,
         ...(options.extraMaterialMembers ?? {}),
     });
     const material = StandardUniforms(uniform('material_uniforms', 0, 3)) as unknown as MaterialLike;
@@ -174,6 +201,14 @@ export function buildStandardFragment(options: StandardFragmentOptions): string
         const diffuseColor = var_('diffuseColor', material.u_diffuse);
         diffuseColor.assign(finalColor.multiply(diffuseColor).multiply(texture(s_diffuse, v_uv)));
 
+        // 线性光照模式：顶点色 / 材质色 / 纹理采样都是 sRGB 编码值，先解码到线性空间再参与光照
+        if (linearLighting)
+        {
+            const linearDiffuse = let_('linearDiffuse', pow(diffuseColor.xyz, vec3(2.2, 2.2, 2.2)));
+
+            diffuseColor.assign(vec4(linearDiffuse.x, linearDiffuse.y, linearDiffuse.z, diffuseColor.a));
+        }
+
         // ---- 可选的额外步骤 ----
         // **必须在 alphatest 之前**：手写的数据流是 diffuse → terrain_frag(splat) → alphatest
         options.afterDiffuse?.({ diffuseColor, uv: v_uv, material: material as unknown as Record<string, unknown> });
@@ -205,6 +240,7 @@ export function buildStandardFragment(options: StandardFragmentOptions): string
             calculateLightSpecular: pars.calculateLightSpecular,
             computeDistanceLightFalloff: pars.computeDistanceLightFalloff,
             getShadow: pars.getShadow,
+            linearLighting,
         });
 
         // ---- envmap_frag（u_reflectivity > 0 时生效；terrain 无此步）----
@@ -218,6 +254,14 @@ export function buildStandardFragment(options: StandardFragmentOptions): string
 
         // ---- fog_frag ----
         applyStandardFog({ material, camera, worldPosition, finalColor });
+
+        // 线性光照模式：输出前编码回 sRGB（对应 three.js 的 linearToOutputTexel）
+        if (linearLighting)
+        {
+            const encodedColor = let_('encodedColor', pow(finalColor.xyz, vec3(1 / 2.2, 1 / 2.2, 1 / 2.2)));
+
+            finalColor.assign(vec4(encodedColor.x, encodedColor.y, encodedColor.z, finalColor.a));
+        }
 
         return_(finalColor);
     });
