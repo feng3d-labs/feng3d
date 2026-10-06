@@ -27,9 +27,20 @@ const PARTICLESYSTEM_EXAMPLES = [
     'ParticleTrailTest',
 ];
 
-/** 与渲染无关的既有噪声（示例页都有的 favicon 404） */
+/**
+ * 已知噪声：这些错误与粒子系统无关，出现时不算失败（每一条都写明判据与出现环境）。
+ *
+ * 1. favicon 404——所有示例页共有；
+ * 2. `Device lost` / `Instance dropped error in getCompilationInfo`——CI runner 只有**软件 WebGPU**
+ *    （SwiftShader），设备在几秒空闲后会被回收，引擎的 `device.lost` 回调
+ *    （`packages/webgpu/src/utils/quitIfWebGPUNotAvailable.ts`）把它抛成未捕获错误。
+ *    **本机真实 GPU 上不出现**（实测 18/18 全绿），因此按环境噪声处理；
+ *    但**其它任何错误**仍然会让这一层红——这正是它能抓住「子发射器引用被拷成副本」这类崩溃的原因。
+ */
 const KNOWN_NOISE = [
     /Failed to load resource: the server responded with a status of 404/i,
+    /Device lost/i,
+    /Instance dropped error in getCompilationInfo/i,
 ];
 
 /** 把 WebGPU 画布画到 2D 画布上，统计「亮像素」数量（大于阈值即认为画面有内容） */
