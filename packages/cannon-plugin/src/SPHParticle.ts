@@ -38,6 +38,9 @@ export interface SPHParticle extends Component3D
 
     /** 线性阻尼（缺失时 0.9——SPH 粒子靠它稳下来） */
     readonly linearDamping?: number;
+
+    /** 材质名（缺失时不设材质；原版 sph.html 给流体粒子与容器共用同一个材质） */
+    readonly materialName?: string;
 }
 
 /**
@@ -47,6 +50,9 @@ export interface SPHParticleLogic extends Component3DLogic
 {
     /** 创建粒子刚体（位置由 PhysicsWorld 从所属对象读入；子类无需处理） */
     readonly createBody: (() => Body) | null;
+
+    /** 该粒子声明的材质名（未声明时 undefined） */
+    readonly materialName: string | undefined;
 }
 
 /**
@@ -84,6 +90,7 @@ export function sphParticleLogic(data: SPHParticle): SPHParticleLogic
         get component() { return componentMembers.component; },
         get entity() { return state.entity as Object3D | null; },
         get createBody() { return state.createBody; },
+        get materialName() { return data.materialName; },
         init(object3D) { componentMembers.init(object3D); },
         beforeRender(renderObject) { componentMembers.beforeRender(renderObject); },
         get isLoaded() { return componentMembers.isLoaded; },
