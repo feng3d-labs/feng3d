@@ -1,4 +1,5 @@
 import { buildShader } from '../core/buildShader';
+import { buildOverrideLines, Overrides } from './overrides';
 import { Func } from './func';
 import { Vertex } from './vertex';
 
@@ -20,7 +21,7 @@ export interface ComputeOptions
      * 生成 `override <name> = <value>;`，可由 WebGPU 的 pipeline `constants` 在运行期替换。
      * 需要在 {@link WorkgroupSize} 里用变量名的场景（如 `@workgroup_size(blockSize, blockSize)`）就靠它。
      */
-    overrides?: Record<string, number | string | { type: string; value?: number | string }>;
+    overrides?: Overrides;
 }
 
 /**
@@ -59,20 +60,8 @@ export class Compute extends Func
         {
             const lines: string[] = [];
 
-            // override 声明（可由 pipeline constants 在运行期替换）
-            for (const [name, value] of Object.entries(this.options.overrides ?? {}))
-            {
-                if (typeof value === 'object' && value !== null)
-                {
-                    // 与 Fragment 对齐：{ type, value? }——没有 value 时只声明类型
-                    lines.push(value.value === undefined
-                        ? `override ${name}: ${value.type};`
-                        : `override ${name}: ${value.type} = ${value.value};`);
-
-                    continue;
-                }
-                lines.push(`override ${name} = ${value};`);
-            }
+            // override 声明（与 vertex / compute 共用同一份生成逻辑）
+            lines.push(...buildOverrideLines(this.options.overrides));
 
             // 执行 body 收集依赖
             this.executeBodyIfNeeded();

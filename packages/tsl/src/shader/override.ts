@@ -1,3 +1,4 @@
+import { Bool } from '../types/scalar/bool';
 import { Float } from '../types/scalar/float';
 import { Int } from '../types/scalar/int';
 import { UInt } from '../types/scalar/uint';
@@ -14,6 +15,22 @@ import { UInt } from '../types/scalar/uint';
 export function overrideF32(name: string): Float
 {
     const result = new Float();
+    result.toGLSL = () => name;
+    result.toWGSL = () => name;
+    result.dependencies = [];
+
+    return result;
+}
+
+/**
+ * 创建一个可被表达式引用的 bool override 变量（如 `if (invertY)`）。
+ *
+ * @param name override 变量名
+ * @returns 可直接参与条件判断的 bool 值
+ */
+export function overrideBool(name: string): Bool
+{
+    const result = new Bool();
     result.toGLSL = () => name;
     result.toWGSL = () => name;
     result.dependencies = [];

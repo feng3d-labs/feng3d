@@ -1,4 +1,5 @@
 import { buildShader } from '../core/buildShader';
+import { buildOverrideLines, Overrides } from './overrides';
 import { Array as TSLArray } from '../variables/array';
 import { Func } from './func';
 import { IElement, ShaderValue } from '../core/IElement';
@@ -23,7 +24,7 @@ export interface FragmentOptions
      * 生成 `override <name> = <value>;`，可由 WebGPU 的 pipeline `constants` 在运行期替换
      * （与 compute 的做法一致）。
      */
-    overrides?: Record<string, number | string | { type: string; value?: number | string }>;
+    overrides?: Overrides;
 }
 
 export class Fragment extends Func
@@ -290,20 +291,8 @@ export class Fragment extends Func
 
             const lines: string[] = [];
 
-            // override 声明（可由 pipeline constants 在运行期替换）
-            for (const [name, value] of Object.entries(this.options.overrides ?? {}))
-            {
-                if (typeof value === 'object' && value !== null)
-                {
-                    // { type, value? }：没有 value 时生成"只声明类型"的形式（必须由 pipeline 提供）
-                    lines.push(value.value === undefined
-                        ? `override ${name}: ${value.type};`
-                        : `override ${name}: ${value.type} = ${value.value};`);
-
-                    continue;
-                }
-                lines.push(`override ${name} = ${value};`);
-            }
+            // override 声明（与 vertex / compute 共用同一份生成逻辑）
+            lines.push(...buildOverrideLines(this.options.overrides));
 
             // 先执行 body 收集依赖（只收集依赖，不生成代码）
             this.executeBodyIfNeeded();
