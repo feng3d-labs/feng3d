@@ -72,7 +72,7 @@ export class Font
         {
             lineHeight = fontSize * 1.25;
         }
-        lineHeight = lineHeight / fontSize * this.data.unitsPerEm;
+        lineHeight = lineHeight / fontSize * this.data.resolution;
 
         const textInfo = calculateTextInfo(this, text, tabCharWidth);
         const { vertices, indices } = calculateTextStyle(textInfo, fontSize, lineHeight, align, textBaseline);
@@ -84,7 +84,7 @@ export class Font
 
 function createPaths(text: string, size: number, lineHeight: number, data: FontData, align: 'left' | 'center' | 'right' = 'left'): ShapePath2[]
 {
-    const scale = size / data.unitsPerEm;
+    const scale = size / data.resolution;
     const paths: ShapePath2[] = [];
     let offsetX = 0;
     let offsetY = 0;
@@ -254,7 +254,14 @@ export interface Glyph
 interface FontData
 {
     glyphs: { [index: string]: Glyph },
-    unitsPerEm: number,
+    /**
+     * 每个 em 的坐标分辨率。
+     *
+     * typeface.json 里的字段名就是 `resolution`（three 的 `Font.js` 也读它）。
+     * 这里原先写作 `unitsPerEm`——**字体数据里没有这个字段**，于是 `scale = size / undefined = NaN`，
+     * 生成出来的轮廓点全是 NaN（表现为文字画不出来、几何包围盒是 ±Infinity）。
+     */
+    resolution: number,
     ascender: number,
     descender: number,
     underlinePosition: number,
@@ -322,8 +329,8 @@ function calculateTextInfo(font: Font, text: string, tabCharWidth: number)
 
 function calculateTextStyle(textInfo: TextInfo, fontSize: number, lineHeight: number, align: string, textBaseline: string)
 {
-    const { unitsPerEm, ascender, descender } = textInfo.font.data;
-    const scale = fontSize / unitsPerEm;
+    const { resolution, ascender, descender } = textInfo.font.data;
+    const scale = fontSize / resolution;
     const vertices = new Float32Array(textInfo.numVertices / 2 * 3);
     const indices = new Uint32Array(textInfo.numIndices);
 
