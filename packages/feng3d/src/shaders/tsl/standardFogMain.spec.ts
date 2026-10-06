@@ -33,12 +33,16 @@ describe('雾 body 片段的 TSL 生成', () =>
     it('三种雾模式的公式与手写一致', () =>
     {
         expect(wgsl).toContain('if (material_uniforms.u_fogMode > 0.0) {');
-        expect(wgsl).toContain('let dist = distance(cameraUniforms.u_cameraPos, input.worldPosition);');
+        // 雾深度 = 视图空间深度（three.js 的 vFogDepth = -mvPosition.z），不是欧氏距离
+        expect(wgsl).toContain('let viewPosition = cameraUniforms.u_viewMatrix * vec4<f32>(input.worldPosition, 1.0);');
+        expect(wgsl).toContain('let dist = viewPosition.z * -1.0;');
         expect(wgsl).toContain('var fogFactor: f32;');
         expect(wgsl).toContain('fogFactor = 1.0 - exp(material_uniforms.u_fogDensity * dist * -1.0);');
-        expect(wgsl).toContain('fogFactor = 1.0 - exp(material_uniforms.u_fogDensity * material_uniforms.u_fogDensity * dist * dist * -1.0);');
+        expect(wgsl).toContain('material_uniforms.u_fogDensity * material_uniforms.u_fogDensity * dist * dist *');
+        // 线性雾是 smoothstep（three.js 的 fog_fragment），不是线性 clamp
         expect(wgsl).toContain('let range = max(material_uniforms.u_fogMaxDistance - material_uniforms.u_fogMinDistance, 0.0001);');
-        expect(wgsl).toContain('fogFactor = clamp((dist - material_uniforms.u_fogMinDistance) / range, 0.0, 1.0);');
+        expect(wgsl).toContain('let fogT = clamp((dist - material_uniforms.u_fogMinDistance) / range, 0.0, 1.0);');
+        expect(wgsl).toContain('fogFactor = fogT * fogT * (3.0 - fogT * 2.0);');
         expect(wgsl).toContain('finalColor = vec4<f32>(mix(finalColor.xyz, material_uniforms.u_fogColor.xyz, fogFactor), finalColor.a);');
     });
 
