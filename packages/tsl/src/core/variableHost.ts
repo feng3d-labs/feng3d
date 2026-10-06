@@ -1,3 +1,4 @@
+import { getBuildParam } from './buildShader';
 import { IElement, ShaderValue } from './IElement';
 
 /**
@@ -11,6 +12,19 @@ export interface VariableHost extends IElement
     readonly name: string;
     /** 关联的类型值（由 vec2/vec3/float 等类型构造函数设置） */
     value?: ShaderValue;
+    /**
+     * 可选：按**当前着色器阶段**给出引用文本。
+     *
+     * 存在的理由：`varying` 在 vertex 里要写成 `output.x`、在 fragment 里写成 `input.x`。
+     * 但 `float(varying('x', 0))` 这类调用会创建**独立的新值**（不是宿主的 `value`），
+     * 它只经 {@link bindToVariableHost} 拿到裸名——于是丢掉阶段前缀
+     * （实测生成裸 `mipLevel` 而非 `input.mipLevel`）。
+     * 实现了本方法的宿主（目前是 Varying）即可让这条路径也带上正确前缀。
+     *
+     * @param stage 当前阶段（'vertex' / 'fragment'）
+     * @returns 引用文本
+     */
+    getStageReference?(stage: string): string;
 }
 
 /**
@@ -46,7 +60,15 @@ export function bindToVariableHost(instance: { toGLSL: () => string; toWGSL: () 
 {
     const name = host.name;
     instance.toGLSL = () => name;
-    instance.toWGSL = () => name;
+    instance.toWGSL = () =>
+    {
+        // varying 需要阶段前缀（output. / input.）——见 VariableHost.getStageReference 的说明
+        const stage = getBuildParam()?.stage;
+
+        if (stage && host.getStageReference) return host.getStageReference(stage);
+
+        return name;
+    };
     instance.dependencies = [host];
     host.value = instance as unknown as ShaderValue;
 

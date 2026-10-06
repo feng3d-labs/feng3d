@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Float, abs, array, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
+import { Float, abs, array, vertex, arrayLength, assign, builtin, compute, continue_, depthSampler, discard, float, floor, forRange_, forU32_, fragment, gl_Position, if_, int, ivec2, let_, mat4, max, return_, sampler2D, samplerComparison, saturate, storageBuffer, storageTexture2D, struct, switch_, texelFetch, textureDimensions, textureSampleCompare, textureStore, uint, uniform, varying, uvec2, uvec3, var_, vec2, vec3, vec4, while_ } from '../src/index';
 
 /**
  * 本批为 TSL 补齐的三项能力（#710 / #711）：for 循环、向量动态索引、f32→i32 转换。
@@ -716,5 +716,52 @@ describe('override 的三个入口共用一份生成逻辑（#712）', () =>
         }, { overrides: { flag: false } });
 
         expect(c.toWGSL()).toContain('override flag = false;');
+    });
+});
+
+describe('varying 的阶段前缀（#834 补记的 bug）', () =>
+{
+    it('回归：fragment 里 float(varying(...)) 生成 input.<name>（原先丢前缀、生成裸名）', () =>
+    {
+        const f = fragment('main', () =>
+        {
+            const vin = float(varying('mipLevel', 0));
+
+            return_(vec4(vin, 0.0, 0.0, 1.0));
+        });
+        const w = f.toWGSL();
+
+        expect(w).toContain('input.mipLevel');
+        expect(w).not.toMatch(/[^.]\bmipLevel\b(?!:)/);
+    });
+
+    it('回归：int(varying(...)) 同理（这是最初发现的形态）', () =>
+    {
+        const f = fragment('main', () =>
+        {
+            const vin = int(varying('level', 0));
+
+            return_(vec4(float(vin), 0.0, 0.0, 1.0));
+        });
+        const w = f.toWGSL();
+
+        // varying 自身就声明为 i32，引用时不再包 i32()——关键是**带 input. 前缀**
+        expect(w).toContain('@location(0) level: i32');
+        expect(w).toContain('f32(input.level)');
+        expect(w).not.toContain('f32(level)');
+    });
+
+    it('vertex 里 float(varying(...)) 生成 output.<name>', () =>
+    {
+        const v = vertex('vs', () =>
+        {
+            const vout = float(varying('foo', 0));
+
+            gl_Position.assign(vec4(vout, 0.0, 0.0, 1.0));
+        });
+        const w = v.toWGSL();
+
+        expect(w).toContain('output.foo');
+        expect(w).not.toContain('vec4<f32>(foo, 0.0, 0.0, 1.0)');
     });
 });
