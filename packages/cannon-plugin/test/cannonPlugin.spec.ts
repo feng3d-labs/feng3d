@@ -3,7 +3,7 @@
 import 'feng3d';
 import { Object3D, reactive } from 'feng3d';
 import { logic } from '@feng3d/reactivity';
-import { Box, ConvexPolyhedron, Cylinder, Heightfield, Plane, Sphere, Trimesh } from 'cannon-es';
+import { Box, ConvexPolyhedron, Cylinder, Heightfield, Particle, Plane, Sphere, Trimesh } from 'cannon-es';
 import { describe, expect, it } from 'vitest';
 import '../src/index';
 import type { BoxCollider } from '../src/BoxCollider';
@@ -17,6 +17,7 @@ import type { SphereCollider } from '../src/SphereCollider';
 import type { TrimeshCollider } from '../src/TrimeshCollider';
 import type { ConvexCollider } from '../src/ConvexCollider';
 import type { HeightfieldCollider } from '../src/HeightfieldCollider';
+import type { ParticleCollider } from '../src/ParticleCollider';
 import type { Vehicle } from '../src/Vehicle';
 import type { SPHParticle } from '../src/SPHParticle';
 import type { SPHSystem } from '../src/SPHSystem';
@@ -76,6 +77,28 @@ describe('cannon-plugin：碰撞体', () =>
         expect(shape).toBeInstanceOf(ConvexPolyhedron);
         expect(shape.vertices.length).toBeGreaterThan(0);
         expect(shape.faces.length).toBeGreaterThan(0);
+    });
+
+    it('ConvexCollider 支持显式顶点与面（四面体这类没有现成几何的形状）', () =>
+    {
+        const data = {
+            __type__: 'ConvexCollider',
+            vertices: [{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: 1 }],
+            faces: [[0, 1, 2], [0, 2, 3], [0, 3, 1], [1, 3, 2]],
+        } as ConvexCollider;
+        const shape = (logic(data) as ColliderLogic).shape as ConvexPolyhedron;
+
+        expect(shape).toBeInstanceOf(ConvexPolyhedron);
+        expect(shape.vertices.length).toBe(4);
+        expect(shape.faces.length).toBe(4);
+    });
+
+    it('ParticleCollider 的 shape 是 Particle（点状、无体积）', () =>
+    {
+        const data = { __type__: 'ParticleCollider' } as ParticleCollider;
+        const shape = (logic(data) as ColliderLogic).shape;
+
+        expect(shape).toBeInstanceOf(Particle);
     });
 
     it('HeightfieldCollider 缺省 elementSize 补成 1，shape 是 Heightfield', () =>
