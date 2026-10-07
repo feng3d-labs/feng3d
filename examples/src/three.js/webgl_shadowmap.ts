@@ -446,6 +446,19 @@ function addMorph(source: Object3D, clip: AnimationClipData, speed: number, dura
         }
     }
 
+    // 雾：three 的 `scene.fog` 是**场景级**的，作用于所有材质；本仓的雾是逐材质 uniform，
+    // 而 glTF 导入的材质默认 `u_fogMode: FogMode.NONE`。示例里地面与文字都显式设了雾，**动物漏了**
+    // （与文字那一处是同类问题，见 textMaterial 的注释）。
+    for (const component of components ?? [])
+    {
+        const uniforms = component.uniforms as Record<string, unknown> | undefined;
+        if (!uniforms || uniforms.u_diffuse === undefined) continue;
+        uniforms.u_fogMode = FogMode.LINEAR;
+        uniforms.u_fogColor = srgbColor4(FOG_COLOR);
+        uniforms.u_fogMinDistance = 1000;
+        uniforms.u_fogMaxDistance = FAR;
+    }
+
     // three.js: mesh.castShadow = true; mesh.receiveShadow = true
     for (const component of components ?? [])
     {
