@@ -518,6 +518,17 @@ const textMaterial: StandardMaterial = {
         // MeshPhongMaterial 的 specular 0xffffff → 本仓的高光色 + 适度光泽
         u_specular: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         u_glossiness: 32,
+        //
+        // three 的 `scene.fog` 是**场景级**的，作用于所有材质；本仓的雾是逐材质 uniform，
+        // 每个材质要自己带上——早先只有地面材质设了，**文字与动物材质的雾全丢了**。
+        //
+        // 实测证据：three 的红色文字像素里 **96.5% 的 G > 30**（中位数 47），
+        // 那是雾色 `0x59472b`（G = 71）按约 0.42 的因子混进来的（文字距相机约 1900，
+        // 落在 Fog(1000, 3000) 内）；而本仓文字 G 的中位数是 **0**——完全没有雾。
+        u_fogMode: FogMode.LINEAR,
+        u_fogColor: srgbColor4(FOG_COLOR),
+        u_fogMinDistance: 1000,
+        u_fogMaxDistance: FAR,
     },
 };
 
