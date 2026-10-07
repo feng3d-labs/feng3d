@@ -128,7 +128,11 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
         const diffuse = let_('diffuse', ctx.calculateLightDiffuse(ctx.normal, lightDir));
         const specular = let_('specular', ctx.calculateLightSpecular(ctx.normal, lightDir, viewDir, glossiness));
         resultColor.assign(resultColor.add(
-            diffuse.multiply(ctx.diffuseColor.xyz).add(specular.multiply(specularColor))
+            // 高光也要乘 `dotNL`（即这里的 `diffuse`）：three 的 `irradiance = lightColor * dotNL` 会同时
+            // 调制漫反射与高光（`directSpecular += irradiance * BRDF_BlinnPhong(...)`）。
+            // 早先高光没有这一项，导致高光相对过弱——实测文字纯红像素的 G/B 只有 1.5/1.2，
+            // 而 three 是 47/32（文字材质的 specular 是白色，G/B 全部来自高光）。
+            diffuse.multiply(ctx.diffuseColor.xyz).add(specular.multiply(specularColor).multiply(diffuse))
                 .multiply(dirLight.color).multiply(dirLight.intensity).multiply(shadow),
         ));
     });
