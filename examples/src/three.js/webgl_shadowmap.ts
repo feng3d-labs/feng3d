@@ -118,6 +118,15 @@ const planeMaterial: StandardMaterial = {
 };
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
+//
+// three.js 的 `renderer.setSize(w, h)` 会把 `domElement.width/height` 一起设上；本仓的 WebGPU 封装只有
+// `configure`（它按 `canvas.width/height` 决定渲染分辨率），没有人负责这一步。
+// 于是 `<canvas>` 保持 HTML 默认的 300×150 属性尺寸、而 CSS 把它显示成整屏（如 800×600），
+// 浏览器把渲染结果**非等比拉伸**——实测地平线因此比 three 低 59px（本仓 284 / 47.3%，three 225 / 37.5%），
+// 整个场景看起来整体下移；并且相机 aspect 无论用哪一边都只能对齐一个。
+// 这里补上 three 的那一步：让属性尺寸与显示尺寸一致。
+webgpuCanvas.width = window.innerWidth;
+webgpuCanvas.height = window.innerHeight;
 const webgpu = await new WebGPU().init();
 
 /**
@@ -142,7 +151,13 @@ const cameraObject: Object3D = {
     components: [{
         __type__: 'PerspectiveCamera',
         fov: CAMERA_FOV,
-        aspect: webgpuCanvas.width / webgpuCanvas.height,
+        // three.js: `new PerspectiveCamera(23, window.innerWidth / window.innerHeight, 10, 3000)`。
+        //
+        // **不能用 `webgpuCanvas.width / height`**：`<canvas>` 的默认尺寸是 300×150，而实际显示尺寸是
+        // 之后由 CSS/引擎设定的，于是相机 aspect 会被永久固定成 2.0，与实际画布（如 800×600 = 1.333）不符。
+        // 投影矩阵按 2.0 算、却显示在 1.333 的画布上 ⇒ 画面被**非等比缩放**。
+        // 实测：地平线因此比 three 低 59px（本仓 284 / 47.3%，three 225 / 37.5%），整个场景看起来整体下移。
+        aspect: window.innerWidth / window.innerHeight,
         near: NEAR,
         far: FAR,
     }, firstPersonControls],
