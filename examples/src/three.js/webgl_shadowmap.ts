@@ -2,14 +2,14 @@ import { WebGPU } from '@feng3d/webgpu';
 import { loadGLFFromUrl } from '@feng3d/addons';
 import { Font } from '@feng3d/math';
 import { createTextureFromCanvas, FogMode, logic, reactive, ShadowType, StandardMaterial, ticker, View } from 'feng3d';
-import type { Animation, AnimationClipData, DebugShadowMapMaterial, DirectionalLight, FirstPersonControls, Object3D, PlaneGeometry } from 'feng3d';
+import type { Animation, AnimationClipData, DebugShadowMapMaterial, DirectionalLight, Object3D, OrbitControls, PlaneGeometry } from 'feng3d';
 
 /**
  * 移植自 three.js examples/webgl_shadowmap.html（1:1 复刻，分阶段推进）。
  *
  *
  * 原示例的"罗马场景"：大地面 + 两个大盒子 + THREE.JS 立体字 + 8 只带骨骼动画的动物，
- * PCF 阴影 + FirstPersonControls 漫游，按 t 切换阴影图 HUD。
+ * PCF 阴影 + OrbitControls 轨道控制，按 t 切换阴影图 HUD。
  *
  * 当前进度（阶段 B：静态场景）：
  * - 相机 PerspectiveCamera(23, aspect, 10, 3000)，位置 (700, 50, 1900)
@@ -133,15 +133,39 @@ webgpuCanvas.height = webgpuCanvas.clientHeight || window.innerHeight;
 const webgpu = await new WebGPU().init();
 
 /**
- * 第一人称控制器（three.js: `new FirstPersonControls(camera, renderer.domElement)`）。
+ * 轨道控制器（three.js 现版本：`new OrbitControls(camera, renderer.domElement)`）。
  *
- * 参数逐项对齐原示例：`lookSpeed = 0.0125`、`movementSpeed = 500`、`lookVertical = true`。
+ * ⚠️ 该示例**早年用的是 `FirstPersonControls`**（WASD 漫游），后来换成了 `OrbitControls`。
+ * 本仓此前一直按旧版复刻，导致：
+ * - **初始朝向不同**——旧版靠 `controls.lookAt(scene.position)` 看向原点，
+ *   而 `OrbitControls` 是围绕 `target` 转，目标点是 `(0, -75, 25)`（**不是原点**）。
+ *   这一条已先单独修过（见下方 `lookAt` 处的说明与 PR #919），本次补齐交互本身。
+ * - 操作方式不同：轨道拖拽/滚轮缩放 vs 第一人称漫游。
+ *
+ * 配置逐项对齐 three：`enablePan = false`、`maxPolarAngle = Math.PI / 2`、
+ * `minDistance = 200`、`maxDistance = 2200`。
+ * 本仓的 `tiltAngle` 语义与 three 的 `polarAngle` 相同（都是从 +Y 轴起算的极角），
+ * 所以 `maxPolarAngle` 对应这里的 `maxTiltAngle`。
  */
-const firstPersonControls: FirstPersonControls = {
-    __type__: 'FirstPersonControls',
-    lookSpeed: 0.0125,
-    movementSpeed: 500,
-    lookVertical: true,
+//
+// 球坐标必须**显式给全**：本仓的 `OrbitControls` 只从当前 `position` 推断 `tiltAngle`，
+// `panAngle` 缺省为 0 ⇒ 相机会被放到 `(0, ?, targetZ + distance)`（绕到 z 轴上），
+// 与 three 的 `(700, 50, 1900)` 完全不同（实测整屏变成文字内壁的红色）。
+// 下面三个值由「相机 − target」精确换算：
+//   dx, dy, dz = 700, 125, 1875
+//   distance  = |(dx, dy, dz)|      = 2005.305463
+//   tiltAngle = acos(dy / distance) = 1.508421
+//   panAngle  = atan2(dx, dz)       = 0.357309
+const orbitControls: OrbitControls = {
+    __type__: 'OrbitControls',
+    target: { x: 0, y: -75, z: 25 },
+    distance: 2005.305463,
+    tiltAngle: 1.508421,
+    panAngle: 0.357309,
+    enablePan: false,
+    maxTiltAngle: Math.PI / 2,
+    minDistance: 200,
+    maxDistance: 2200,
 };
 
 /**
@@ -163,7 +187,7 @@ const cameraObject: Object3D = {
         aspect: window.innerWidth / window.innerHeight,
         near: NEAR,
         far: FAR,
-    }, firstPersonControls],
+    }, orbitControls],
 };
 
 /** 方向光物体（three 的 light 挂在 scene 下，target 默认在原点 → 需要 lookAt 原点） */
@@ -666,17 +690,16 @@ const viewLogic = logic(view);
 
 // three.js 的 light.target 默认在原点：让方向光的本地 -Z 指向原点
 logic(lightObject).lookAt({ x: 0, y: 0, z: 0 });
-// three.js 的 OrbitControls 初始朝向：`controls.target.set( 0, - 75, 25 ); controls.update();`
+// three.js：`controls.target.set( 0, - 75, 25 ); controls.update();` —— `OrbitControls` 的 `update()` 会把相机
+// `lookAt(target)`，所以初始朝向由 `orbitControls.target` 决定，这里不需要再手工 `lookAt`。
 //
-// ⚠️ **不是原点**。这一点是逐像素对齐的关键：
+// ⚠️ **目标点不是原点**，这一点是逐像素对齐的关键（旧版代码看着原点，差了 45px）：
 //   相机 (700, 50, 1900) 看向 (0, -75, 25) ⇒ dir = (-700, -125, -1875)、|dir| = 2005.3
 //   ⇒ 俯角 = asin(125 / 2005.3) = **3.5738°**；
-//   而看向原点只有 asin(50 / 2025.5) = 1.414°。两者差 2.16°，`fov=23°`、视口 600px 下约合 45px 的垂直偏移。
+//   而看向原点只有 asin(50 / 2025.5) = 1.414°，两者差 2.16°（`fov=23°`、视口 600px 下约 45px）。
 //
 // 实测对照（用 page.route 在 three 页面上捕获相机实例读出的地面真值）：
 //   three 的 camera.forward = (-0.349074, -0.062335, -0.93502)、pitch = -3.5738°
-//   而看向原点应为 (-0.3456, -0.0247, -0.9381)、pitch = -1.414°
-logic(firstPersonControls).lookAt({ x: 0, y: -75, z: 25 });
 
 // three.js: 每帧 lightShadowMapViewer.render(renderer) 把当前阴影图与尺寸送进 shader
 ticker.onframe(() =>

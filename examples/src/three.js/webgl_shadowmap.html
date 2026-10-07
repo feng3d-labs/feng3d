@@ -12,12 +12,19 @@
     </style>
 </head>
 <body>
-    <!-- 说明文字对齐原示例：three.js examples/webgl_shadowmap.html 的 #info -->
+    <!--
+        说明文字逐行对齐原示例 three.js examples/webgl_shadowmap.html 的 #info：
+
+            <a ...>three.js</a> - shadowmap - models by <a ...>mirada</a> from <a ...>rome</a><br>
+            t: toggle HUD
+
+        注意**只有两行**——该示例早年那行「move camera with WASD / RF + mouse」已经不在原示例里了
+        （它现在用 OrbitControls 而非 FirstPersonControls，操作提示不再适用），这里同步删掉。
+    -->
     <div id="info">
         <a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - shadowmap - models by
         <a href="https://mirada.com/" target="_blank" rel="noopener">mirada</a> from
-        <a href="http://www.ro.me" target="_blank" rel="noopener">rome</a><br />
-        move camera with WASD / RF + mouse<br />
+        <a href="https://rome.mrdoob.com" target="_blank" rel="noopener">rome</a><br />
         t: toggle HUD
     </div>
     <canvas id="webgpu" style="width: 100%; height: 100%;"></canvas>
