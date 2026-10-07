@@ -639,8 +639,17 @@ const viewLogic = logic(view);
 
 // three.js 的 light.target 默认在原点：让方向光的本地 -Z 指向原点
 logic(lightObject).lookAt({ x: 0, y: 0, z: 0 });
-// three.js: controls.lookAt( scene.position )——第一人称控制器的初始朝向
-logic(firstPersonControls).lookAt({ x: 0, y: 0, z: 0 });
+// three.js 的 OrbitControls 初始朝向：`controls.target.set( 0, - 75, 25 ); controls.update();`
+//
+// ⚠️ **不是原点**。这一点是逐像素对齐的关键：
+//   相机 (700, 50, 1900) 看向 (0, -75, 25) ⇒ dir = (-700, -125, -1875)、|dir| = 2005.3
+//   ⇒ 俯角 = asin(125 / 2005.3) = **3.5738°**；
+//   而看向原点只有 asin(50 / 2025.5) = 1.414°。两者差 2.16°，`fov=23°`、视口 600px 下约合 45px 的垂直偏移。
+//
+// 实测对照（用 page.route 在 three 页面上捕获相机实例读出的地面真值）：
+//   three 的 camera.forward = (-0.349074, -0.062335, -0.93502)、pitch = -3.5738°
+//   而看向原点应为 (-0.3456, -0.0247, -0.9381)、pitch = -1.414°
+logic(firstPersonControls).lookAt({ x: 0, y: -75, z: 25 });
 
 // three.js: 每帧 lightShadowMapViewer.render(renderer) 把当前阴影图与尺寸送进 shader
 ticker.onframe(() =>
