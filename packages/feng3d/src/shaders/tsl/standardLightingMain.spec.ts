@@ -98,12 +98,16 @@ describe('光照主体 body 片段的 TSL 生成', () =>
         // TSL 是 select(cond, t, f)，生成结果应与之等价
         expect(main).toContain('/ select(cosRange, 0.0001, cosRange < 0.0001)');
         expect(main).toContain('spotAngleAttenuation = spotAngleAttenuation * spotAngleAttenuation;');
-        expect(main).toContain('resultColor = resultColor + ambientColor * diffuseColor.xyz;');
+        //
+        // 环境光同样要乘 1/π：three 的间接光走 `BRDF_Lambert`（`RE_IndirectDiffuse`），
+        //    indirectDiffuse += irradiance * BRDF_Lambert( diffuseColor )
+        // 少这一项会让环境光增强 π 倍（实测地面过曝到 (+12.8, +35.6, +31.8)）。
+        expect(main).toContain('resultColor = resultColor + ambientColor * diffuseColor.xyz * 0.3183098861837907;');
         expect(main).toContain('if (shadowData.u_shadowEnabled > 0.5) {');
         // 阴影**只遮蔽直射光**（three.js: directLight.color *= getShadow(...)）：
         // 方向光项乘 shadow，环境光项不乘
         expect(main).toContain('* lights.u_directionalLight.intensity) * shadow;');
-        expect(main).toContain('resultColor = resultColor + ambientColor * diffuseColor.xyz;');
+        expect(main).toContain('resultColor = resultColor + ambientColor * diffuseColor.xyz * 0.3183098861837907;');
         // 旧的"整段乘阴影"写法不得再出现
         expect(main).not.toContain('resultColor = resultColor * shadow;');
         expect(main).toContain('finalColor = vec4<f32>(resultColor, diffuseColor.a);');

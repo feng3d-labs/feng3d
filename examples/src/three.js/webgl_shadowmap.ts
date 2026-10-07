@@ -45,8 +45,8 @@ const CAMERA_FOV = 23;
 /** three.js: scene.background = scene.fog = 0x59472b */
 const FOG_COLOR = 0x59472b;
 
-/** three.js 的 BRDF_Lambert 带 1/π；fengd3 的漫反射没有该因子 */
-const INV_PI = 1 / Math.PI;
+// 注：three 的 `BRDF_Lambert` 带 1/π 因子，本仓已把它放进引擎的漫反射项
+// （`standardLightingMain.ts`），所以示例里的 `intensity` 与 `ambientColor` 都用**原值**，不再手工折入 1/π。
 
 /**
  * 随机数来源——原示例用 `random()` 决定动物的初始 x、动画相位与色相偏移。
@@ -200,7 +200,12 @@ const lightObject: Object3D = {
         __type__: 'DirectionalLight',
         // three.js: DirectionalLight(0xffffff, 3)；补 1/π 因子
         color: { __type__: 'Color3', r: 1, g: 1, b: 1 },
-        intensity: 3 * INV_PI,
+        // three.js: DirectionalLight(0xffffff, 3)——**不含 1/π**。
+        //
+        // 早先这里写的是 `3 * INV_PI`，因为本仓的漫反射当时没有 `BRDF_Lambert` 的 1/π 因子。
+        // 现在那 1/π 已经放进引擎的漫反射项（`standardLightingMain.ts`，与 three 的 BRDF 逐项对应），
+        // 所以这里改回原值。留着的代价是**高光被额外压低 π 倍**——实测文字 G/B 因此只有 three 的 1/5~1/9。
+        intensity: 3,
         // three.js: renderer.shadowMap.type = THREE.PCFShadowMap
         shadowType: ShadowType.PCF_Shadows,
         // three.js: light.shadow.bias = 0.0001
@@ -621,7 +626,8 @@ const view: View = {
             // 反例（曾经改错过的版本）：只给方向光除 π、环境项留 1.0 → 辐照度 = 1.795，
             // 地面算出 (1.795, 1.283, 0.571)，编码后 G 直接饱和 —— 实测地面中位色 (255,255,255)、
             // 98.9% 的像素过曝（three 是 (255,228,158)、33%），这就是「地面偏亮」的真正原因。
-            ambientColor: { __type__: 'Color4', r: INV_PI, g: INV_PI, b: INV_PI, a: 1 },
+            // three.js: AmbientLight(0xffffff) 默认强度 1，**不含 1/π**——理由同方向光处（1/π 现在在引擎的漫反射项里）
+    ambientColor: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 },
         }],
         children: [
             // CAMERA（three.js: PerspectiveCamera(23, w/h, 10, 3000).position.set(700, 50, 1900)）

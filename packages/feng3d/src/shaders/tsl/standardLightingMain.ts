@@ -132,7 +132,17 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
             // 调制漫反射与高光（`directSpecular += irradiance * BRDF_BlinnPhong(...)`）。
             // 早先高光没有这一项，导致高光相对过弱——实测文字纯红像素的 G/B 只有 1.5/1.2，
             // 而 three 是 47/32（文字材质的 specular 是白色，G/B 全部来自高光）。
-            diffuse.multiply(ctx.diffuseColor.xyz).add(specular.multiply(specularColor).multiply(diffuse))
+            //
+            // `1/π` 的位置：three 的 `1/π` **只属于 `BRDF_Lambert`（漫反射）**——
+            //   directDiffuse  += irradiance * BRDF_Lambert( diffuseColor )        // 含 1/π
+            //   directSpecular += irradiance * BRDF_BlinnPhong( specularColor, … ) // 不含 1/π
+            // 而本仓此前把它折进了 `intensity`（示例写 `3 * INV_PI`），于是**高光被额外压低了 π 倍**。
+            //
+            // 实测证据（文字材质 `u_diffuse = (1,0,0)`、`u_specular` 是白 ⇒ G/B 只可能来自高光）：
+            // 逆推雾前线性亮度后，G/B 与 three 差 5~9 倍，而 R（含漫反射大项）只差 2.76 倍。
+            // 现在把 1/π 显式放在漫反射项上，与 three 的 BRDF 逐项对应；示例的 `intensity`/`ambientColor`
+            // 也相应改回不带 1/π 的原值。
+            diffuse.multiply(ctx.diffuseColor.xyz).multiply(float(1 / Math.PI)).add(specular.multiply(specularColor).multiply(diffuse))
                 .multiply(dirLight.color).multiply(dirLight.intensity).multiply(shadow),
         ));
     });
@@ -149,7 +159,8 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
         const diffuse = let_('diffuse', ctx.calculateLightDiffuse(ctx.normal, lightDir));
         const specular = let_('specular', ctx.calculateLightSpecular(ctx.normal, lightDir, viewDir, glossiness));
         resultColor.assign(resultColor.add(
-            diffuse.multiply(ctx.diffuseColor.xyz).add(specular.multiply(specularColor))
+            // `1/π` 只加在漫反射项上，理由见方向光处
+            diffuse.multiply(ctx.diffuseColor.xyz).multiply(float(1 / Math.PI)).add(specular.multiply(specularColor))
                 .multiply(light.color).multiply(light.intensity).multiply(falloff),
         ));
     });
@@ -176,13 +187,20 @@ export function applyStandardLighting(ctx: StandardLightingContext): void
         const spotDiffuse = let_('spotDiffuse', ctx.calculateLightDiffuse(ctx.normal, spotLightDir));
         const spotSpecular = let_('spotSpecular', ctx.calculateLightSpecular(ctx.normal, spotLightDir, viewDir, glossiness));
         resultColor.assign(resultColor.add(
-            spotDiffuse.multiply(ctx.diffuseColor.xyz).add(spotSpecular.multiply(specularColor))
+            // `1/π` 只加在漫反射项上，理由见方向光处
+            spotDiffuse.multiply(ctx.diffuseColor.xyz).multiply(float(1 / Math.PI)).add(spotSpecular.multiply(specularColor))
                 .multiply(spot.color).multiply(spot.intensity).multiply(spotFalloff).multiply(spotAngleAttenuation),
         ));
     });
 
     // 环境光
-    resultColor.assign(resultColor.add(ambientColor.multiply(ctx.diffuseColor.xyz)));
+    //
+    // 与直射光的漫反射同理，three 的间接光也走 `BRDF_Lambert`（`RE_IndirectDiffuse`）：
+    //   indirectDiffuse += irradiance * BRDF_Lambert( diffuseColor )   // 含 1/π
+    // 所以这里同样要乘 1/π。早先示例把 1/π 折进了 `ambientColor`，本批统一移进引擎后，
+    // 若漏掉这一处，环境光会**增强 π 倍**——实测地面（`u_diffuse` 是 sRGB 的 0xffdd99、
+    // 且该材质未开 `linearLighting`）会过曝到 (+12.8, +35.6, +31.8)。
+    resultColor.assign(resultColor.add(ambientColor.multiply(ctx.diffuseColor.xyz).multiply(float(1 / Math.PI))));
 
     // 自发光（three.js：outgoingLight = totalDiffuse + totalSpecular + totalEmissiveRadiance）。
     // - 线性光照模式：调用方已在线性空间计算，直接相加（与 three 完全同域）。
