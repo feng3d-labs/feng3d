@@ -119,14 +119,17 @@ const planeMaterial: StandardMaterial = {
 
 const webgpuCanvas = document.getElementById('webgpu') as HTMLCanvasElement;
 //
-// three.js 的 `renderer.setSize(w, h)` 会把 `domElement.width/height` 一起设上；本仓的 WebGPU 封装只有
-// `configure`（它按 `canvas.width/height` 决定渲染分辨率），没有人负责这一步。
+// three.js 的 `renderer.setSize(w, h)` 会把 `domElement.width/height` 一起设上；本仓的 WebGPU 封装
+// 只有监听、没有设置（`WGPUCanvasContext` 里只有 `watcher.watch(canvas, 'width')`），
 // 于是 `<canvas>` 保持 HTML 默认的 300×150 属性尺寸、而 CSS 把它显示成整屏（如 800×600），
 // 浏览器把渲染结果**非等比拉伸**——实测地平线因此比 three 低 59px（本仓 284 / 47.3%，three 225 / 37.5%），
 // 整个场景看起来整体下移；并且相机 aspect 无论用哪一边都只能对齐一个。
-// 这里补上 three 的那一步：让属性尺寸与显示尺寸一致。
-webgpuCanvas.width = window.innerWidth;
-webgpuCanvas.height = window.innerHeight;
+//
+// 注意用 `clientWidth/clientHeight`（内容区，**不含 border**）：用 `getBoundingClientRect()`
+// 会把尺寸算大 2×border，而引擎内部按内容区创建深度纹理，于是 WebGPU 报
+// 「depth stencil attachment (320,240) does not match ... (324,244)」并让整帧失效。
+webgpuCanvas.width = webgpuCanvas.clientWidth || window.innerWidth;
+webgpuCanvas.height = webgpuCanvas.clientHeight || window.innerHeight;
 const webgpu = await new WebGPU().init();
 
 /**
