@@ -56,12 +56,12 @@ jobs:
       - name: 代码检查（eslint，零警告）
         run: npm run lint:ci
 
-      - name: 文档相对链接（坏链会 404，但不报错也不让测试失败）
-        # 文档移动/改名/归档后，正文里的旧路径是最容易被漏掉的东西——本次实测出 6 条：
-        # FRAMEWORK_REFACTOR_PLAN.md 归档到 docs/archive/ 后 3 处仍用旧路径、
-        # editor 的 AGENTS.md 少写 .ts 后缀、objectview 两处指向并不存在的包内 LICENSE。
-        # 只查仓库内相对链接（外链不查），vendored 的 packages/editor/libs/ 已排除。
-        run: node scripts/check-docs-links.mjs
+      - name: 文档引用（md 相对链接 + 代码内文档路径）
+        # 文档移动/改名/归档后，旧路径最容易被漏掉——本次实测出 6 条：FRAMEWORK_REFACTOR_PLAN.md
+        # 归档后 3 处仍用旧路径、editor 的 AGENTS.md 少写 .ts 后缀、objectview 两处指向不存在的
+        # 包内 LICENSE。只查仓库内相对链接（外链不查），vendored 的 packages/editor/libs/ 已排除。
+        # 后半条补「代码里的文档路径」：.md 之外的 .ts/.mjs/.json 里有 140+ 处，此前无执行者、失效静默。
+        run: node scripts/check-docs-links.mjs && node scripts/check-doc-refs-in-code.mjs
 
       - name: effect 盘点与代码一致性（R5，issue #79）
         # 清单一旦与实际调用点脱节就会静默腐化：读者按清单判断「effect 已清零」，
