@@ -4,7 +4,7 @@ import type { Color3Like, WritableColor3Like } from './color3';
 import type { WritableVector4Like } from '../geom/vector4';
 
 /**
- * `Color4` 的数据定义与**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Color4` 的数据定义与**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * 与 `color3.ts` 同构：入参用最小形状 `Color4Like`，只读入参、结果写 `out`
  * （`out` 传自己即就地运算）。**阶段 C-b 起 `packages/math/src/Color4.ts` 的 class 已删除**，

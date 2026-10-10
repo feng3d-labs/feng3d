@@ -45,7 +45,7 @@ describe('serialization 往返（保存 → 加载 → 等价）', () =>
 
     it('★ 纯数据 math 字段不走 `obj.constructor` 分支（issue #134 阶段 C-a 专项验证）', () =>
     {
-        // 为什么专项验证这一条：`docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.7 的 P3 / §11.7.8 的 N4
+        // 为什么专项验证这一条：`docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.7 的 P3 / §11.7.8 的 N4
         // 登记了「`Serialization.ts:720/919/949/1058` 用 `obj.constructor` 与默认实例比对——
         // class 变字面量后 `constructor` 从 `Vector3` 变成 `Object`，`new ctor()` 从 `(0,0,0)` 变成 `{}`」，
         // 并注明「§5.6 只验证了反序列化侧，**序列化侧没测过**」。本用例补上序列化侧的实测。

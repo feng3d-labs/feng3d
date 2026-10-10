@@ -1,7 +1,7 @@
 /**
  * math 去 class 化（issue #134）：禁止 `packages/math` 里新增目标类型的 `export class`。
  *
- * 规范：`docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §7 阶段 C 第 7 条——
+ * 规范：`docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §7 阶段 C 第 7 条——
  * `packages/math/src` 内除白名单外不得出现 `export class`。
  *
  * ## 范围已扩大（用户明确要求）：math **全树**去 class，分批收敛
@@ -105,7 +105,7 @@ const SKIP_DIRS = new Set(['node_modules', 'dist', 'lib', '.git', 'tmp']);
  *
  * **这是有意的硬编码**——不要改成「扫出所有 `export class`」，理由见文件头。
  *
- * - 第一批（阶段 C1，19 个）：与 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「第一批」逐字一致；
+ * - 第一批（阶段 C1，19 个）：与 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「第一批」逐字一致；
  * - 渐变族（issue #134 收尾批，2 个）：与同文 §8 的「渐变（2）」一致——
  *   该组的改造性质与数值类型相同（数据容器 + 取值函数，无继承），所以不随「曲线 / 形状」
  *   那一批押后；加进名单后它们不能再变回 class；

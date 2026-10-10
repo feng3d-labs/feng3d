@@ -9,7 +9,7 @@
 //   Color3 → Color4、`components` 中的 null 占位清除；
 // - 主仓已不存在的组件（AudioListener / *Collider / Rigidbody / PhysicsWorld）被丢弃并打印清单。
 //
-// 设计依据见 docs/SERIALIZATION_MIGRATION.md 的 S3。
+// 设计依据见 docs/migrations/SERIALIZATION_MIGRATION.md 的 S3。
 import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 

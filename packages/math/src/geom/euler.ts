@@ -9,7 +9,7 @@ import type { Vector3Like, WritableVector3Like } from './vector3';
 import { vec3From } from './vector3';
 
 /**
- * `Euler` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2l）。
+ * `Euler` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2l）。
  *
  * 与 `vector3.ts` / `quaternion.ts` / `line3.ts` 同构：入参用最小形状 `EulerLike`（只读），
  * 结果写 `out`（`out` 传自己即就地运算）；原 class 的同名方法曾转发到这里（class 已在阶段 C-a 删除）。

@@ -12,7 +12,7 @@ import { vec3Copy, vec3DistanceSquared, vec3Dot, vec3Equals, vec3Sub } from './v
 
 /**
  * `TriangleGeometry` 运算的**纯函数**形式（issue #134 阶段 C-a，
- * 方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.6 的 C-a 行与 §11.7.7 的 `TriangleGeometry` 行）。
+ * 方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.6 的 C-a 行与 §11.7.7 的 `TriangleGeometry` 行）。
  *
  * ## 这是什么类型的容器
  *

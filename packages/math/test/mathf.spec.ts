@@ -16,7 +16,7 @@ import { MATHF_DEG2RAD, MATHF_INFINITY, MATHF_NEGATIVE_INFINITY, MATHF_PI, MATHF
  * ⚠️ 原文件里「三角函数按弧度」「Ceil / Floor / Round / Pow / Exp / Log 与 `Math.*` 一致」
  * 两组用例已随 19 个**纯转发函数**一并删除（它们只在测 `Math.*` 本身，不覆盖本包任何实现）；
  * 同一批改动留下了文件末尾的**不回退守卫**。依据见
- * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。
+ * `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。
  */
 
 describe('Mathf（math）', () =>

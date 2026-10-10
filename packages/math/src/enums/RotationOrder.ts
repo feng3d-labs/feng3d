@@ -50,6 +50,6 @@ export enum RotationOrder
  *
  * 若将来确实需要「可配置的默认旋转序」，请改成显式的 `getDefaultRotationOrder()` /
  * `setDefaultRotationOrder()`（而不是恢复可写导出），并同步更新本注释与
- * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`。
+ * `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`。
  */
 export const DEFAULT_ROTATION_ORDER = RotationOrder.XYZ;

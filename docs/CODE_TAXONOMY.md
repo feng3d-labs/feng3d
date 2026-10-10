@@ -8,8 +8,8 @@
 > 关联：[AGENTS.md](../AGENTS.md) §2 / §3 / §8 / §11 / §15；
 > [FRAMEWORK_DESIGN.md](../FRAMEWORK_DESIGN.md)（G1 数据即应用 / G2 最小计算 / G3 计算图）；
 > [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) §2.1 分层蓝图 / §3.1 规范与执行者；
-> [MATH_PURE_FUNCTIONS_MIGRATION.md](./MATH_PURE_FUNCTIONS_MIGRATION.md)（第 ② 类最大的落地案例）；
-> [READONLY_SHAPES_MIGRATION.md](./READONLY_SHAPES_MIGRATION.md)（第 ① 类的只读口径）；
+> [MATH_PURE_FUNCTIONS_MIGRATION.md](./migrations/MATH_PURE_FUNCTIONS_MIGRATION.md)（第 ② 类最大的落地案例）；
+> [READONLY_SHAPES_MIGRATION.md](./migrations/READONLY_SHAPES_MIGRATION.md)（第 ① 类的只读口径）；
 > [CI.md](./CI.md) §2.1（门禁登记）。
 
 ---
@@ -87,7 +87,7 @@
 **明确的排除项**（"readonly 接口"≠"纯数据接口"，硬套会天天误报）：
 `packages/webgpu` 的 WebGPU 描述符（§10：不要靠删 `readonly` 修，用 `TypeConvert.ts` 转换）、
 `packages/addons` 的 GLTF / OBJ 解析中间类型、`packages/editor` 的 UI 类型。
-它们在 [READONLY_SHAPES_MIGRATION.md §2.2](./READONLY_SHAPES_MIGRATION.md) 里被明确列为"只统计、不失败"。
+它们在 [READONLY_SHAPES_MIGRATION.md §2.2](./migrations/READONLY_SHAPES_MIGRATION.md) 里被明确列为"只统计、不失败"。
 
 **可机器执行的判据**：
 
@@ -338,5 +338,5 @@ const s_radius = computed(() =>
 | [AGENTS.md](../AGENTS.md) §11 | 纯数据接口与逻辑的**具体写法**（可选字段补默认、数组只读、基接口不构造……） |
 | [AGENTS.md](../AGENTS.md) §15 / [ARCHITECTURE_V2.md](./ARCHITECTURE_V2.md) §3.1 | R1–R13 **规范与执行者**的权威状态表 |
 | [FRAMEWORK_DESIGN.md](../FRAMEWORK_DESIGN.md) | **目标架构**（G1 数据即应用 / G2 最小计算 / G3 计算图 / 单 JSON 模型） |
-| [MATH_PURE_FUNCTIONS_MIGRATION.md](./MATH_PURE_FUNCTIONS_MIGRATION.md) | 第 ② 类的**最大落地案例**（math 去 class 化全流程） |
+| [MATH_PURE_FUNCTIONS_MIGRATION.md](./migrations/MATH_PURE_FUNCTIONS_MIGRATION.md) | 第 ② 类的**最大落地案例**（math 去 class 化全流程） |
 | [CI.md](./CI.md) §2.1 | 每条门禁**在 quality job 的哪一步跑、跑什么命令** |

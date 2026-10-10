@@ -128,7 +128,7 @@ export const VEC3_POSITIVE_INFINITY: Vector3Like = Object.freeze({ x: Infinity, 
 export const VEC3_NEGATIVE_INFINITY: Vector3Like = Object.freeze({ x: -Infinity, y: -Infinity, z: -Infinity });
 
 /**
- * `Vector3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A1）。
+ * `Vector3` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A1）。
  *
  * ## 约定
  *

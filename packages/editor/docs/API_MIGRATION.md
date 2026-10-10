@@ -521,7 +521,7 @@ export * from '@feng3d/math';                  // ← math 的同名 interface�
 > **issue #134 之后的口径已经反转**：原先这张表的重点是「math 侧还是 class、`new` 合法」，
 > 而**math 的 19 个数值 / 几何 class（阶段 C）与 2 个渐变 class（第二批）现已全部删除**，
 > 所以表里凡是来自 `@feng3d/math` 的类型**都不可构造**。剩下的可构造类型只有**曲线 / 形状 / 字体 /
-> 贝塞尔 / `Mathf` / `Noise` / `Time`** 那批（见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8）。
+> 贝塞尔 / `Mathf` / `Noise` / `Time`** 那批（见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §8）。
 >
 > **时效性**：下表「形态 / `new` 是否合法」是**当时实测的断言**，随 math 各批推进而变化（issue #604）。
 > 复核请跑 `node scripts/check-math-no-class.mjs --stats` 看全树 `export class` 计数，不要仅凭本表文字。

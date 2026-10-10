@@ -3,15 +3,15 @@
 > 本文是 issue **#605** 的落地记录：口径已定（**属性与数组都只读**）、机器执行者已落地
 > （`scripts/check-readonly-array-fields.mjs`），存量按「**先约束新代码、存量分批**」推进。
 >
-> 关联：[../AGENTS.md](../AGENTS.md) §8.5（响应式属性只读）/ §10（WebGPU readonly 边界）/
+> 关联：[../AGENTS.md](../../AGENTS.md) §8.5（响应式属性只读）/ §10（WebGPU readonly 边界）/
 > §11.1（纯数据接口只声明 readonly 字段）/ §11.3（修改走纯数据接口）/ §11.6（本文的规范条文）/
 > §15（元规则：每条规范必须有机器执行者）；
-> [check-readonly-array-fields.mjs](../scripts/check-readonly-array-fields.mjs)、
-> [readonly-array-fields-baseline.json](../scripts/readonly-array-fields-baseline.json)。
+> [check-readonly-array-fields.mjs](../../scripts/check-readonly-array-fields.mjs)、
+> [readonly-array-fields-baseline.json](../../scripts/readonly-array-fields-baseline.json)。
 
 ## 1. 口径
 
-> 现状：✅ 已定并写进规范（证据：[../AGENTS.md](../AGENTS.md) §11.6；issue #605）
+> 现状：✅ 已定并写进规范（证据：[../AGENTS.md](../../AGENTS.md) §11.6；issue #605）
 
 **读侧纯数据接口的数组字段一律 `readonly T[]`——属性 `readonly`、数组本身也 `readonly`。**
 
@@ -40,10 +40,10 @@ export interface FooLike { items: Item[]; }
 
 ## 2. 机器执行者
 
-> 现状：✅ 已落地并进 CI（证据：[check-readonly-array-fields.mjs](../scripts/check-readonly-array-fields.mjs)、根 `package.json` 的 `prelint:ci`）
+> 现状：✅ 已落地并进 CI（证据：[check-readonly-array-fields.mjs](../../scripts/check-readonly-array-fields.mjs)、根 `package.json` 的 `prelint:ci`）
 
-- 脚本：[scripts/check-readonly-array-fields.mjs](../scripts/check-readonly-array-fields.mjs)
-- 基线：[scripts/readonly-array-fields-baseline.json](../scripts/readonly-array-fields-baseline.json)
+- 脚本：[scripts/check-readonly-array-fields.mjs](../../scripts/check-readonly-array-fields.mjs)
+- 基线：[scripts/readonly-array-fields-baseline.json](../../scripts/readonly-array-fields-baseline.json)
 - 进 CI 的方式：挂在根 `package.json` 的 **`prelint:ci`** 钩子上（`npm run lint:ci` 会先跑它，
   CI 的「代码检查（eslint，零警告）」步骤因此覆盖到它）——本仓惯例：**推送 workflow 需要额外
   scope**，所以门禁优先走 `prelint:ci` 而不是改 `.github/workflows/`。
