@@ -63,7 +63,9 @@ const SELF_CHECK = [
     ['packages/editor/docs/__no_such_file__.md', '/scripts/x.mjs', false],
 ];
 for (const [token, fake, expected] of SELF_CHECK) {
-    if (resolves(token, ROOT + fake.split('/').join('\\')) !== expected) {
+    // 必须用 path.join 构造：手工把 / 换成 \ 只在 Windows 上成立——
+    // 在 Linux 上反斜杠是普通文件名字符，dirname 会退到上一层（CI 实测踩过这个坑）
+    if (resolves(token, join(ROOT, fake)) !== expected) {
         console.error(`❌ 判据自证失败：「${token}」在 ${fake} 下应解析为 ${expected}`);
         process.exit(1);
     }
