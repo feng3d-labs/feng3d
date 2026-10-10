@@ -160,18 +160,17 @@ npm run release:dry-run -- --force   # 发布预演（构建 + 打包校验，�
 
 ## 📄 文档索引
 
+> **完整清单与「我是谁 → 读哪几份」的阅读路径见 [docs/README.md](./docs/README.md)**——
+> 它是文档导航的唯一真相源；下表只放最常用的入口。
+
 | 文档 | 内容 |
 |------|------|
-| [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md) | 目标架构设计：纯数据驱动 + 响应式计算管线 |
+| [AGENTS.md](./AGENTS.md) | **开发规范唯一权威**——改代码前先看它（含 R1–R13 架构执行规范） |
 | [docs/POSITIONING.md](./docs/POSITIONING.md) | 定位与竞争优势：目标场景、护城河分类、非目标 |
-| [docs/ARCHITECTURE_V2.md](./docs/ARCHITECTURE_V2.md) | 架构演进规划 V2：分层蓝图、规范 R1–R12、实施路径 P0–P4 |
-| [AGENTS.md](./AGENTS.md) | 开发规范（提交、代码风格、响应式规则等） |
-| [docs/CI.md](./docs/CI.md) | **CI 与发布**：测试覆盖范围、质量门禁、推 tag 发 npm 包、打包内容校验、已知缺口 |
-| [docs/EDITOR_AI_BRIDGE.md](./docs/EDITOR_AI_BRIDGE.md) | **编辑器 AI 桥接**：让 AI（DSH 的 MCP 工具 / CLI）用语义化方法查询与操作编辑器场景——协议、方法表、AI 工作流建议、已知限制 |
+| [docs/ARCHITECTURE_V2.md](./docs/ARCHITECTURE_V2.md) | 架构演进规划：分层蓝图、规范 R1–R13、实施路径 P0–P4 |
+| [FRAMEWORK_DESIGN.md](./FRAMEWORK_DESIGN.md) | 目标架构设计：纯数据驱动 + 响应式计算管线（**写的是目标态**，每章带现状标签） |
+| [docs/CI.md](./docs/CI.md) | **CI 与发布**：质量门禁、推 tag 发 npm 包、打包内容校验、已知缺口 |
 | [packages/webgpu/README.md](packages/webgpu/README.md) | webgpu 库文档（架构速览 + 用法示例） |
-| [BENCHMARK_BASELINE.md](./BENCHMARK_BASELINE.md) | 静态场景性能基线（三档规模） |
-| [EFFECT_INVENTORY.md](./EFFECT_INVENTORY.md) | effect 使用点盘点（边界 / 过渡 / 违规） |
-| [docs/archive/](./docs/archive/) | 历史文档归档（上一轮改造计划等，不再作为执行依据） |
 
 ---
 
