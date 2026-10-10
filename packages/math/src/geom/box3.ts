@@ -29,7 +29,7 @@ import { vec3Random } from './vector3';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
- * `Box3` 运算的**纯函数**形式（issue #134 阶段 A2i，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Box3` 运算的**纯函数**形式（issue #134 阶段 A2i，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * ## 几何类型的嵌套结构
  *

@@ -183,7 +183,7 @@ check('★ 每个检查器都能从某个 workflow 出发**走到**（不只是�
 // 既没人跑、文档也没提的，就是"写了却谁也不跑"。
 //
 // ⚠️ **这条判据的第一版给出了假结论**（"1 个孤儿 `migrate-scene-json.mjs`"）——
-// 根因是我把文档集合**写死成 5 份**，而它记在 `docs/SERIALIZATION_MIGRATION.md` 里。
+// 根因是我把文档集合**写死成 5 份**，而它记在 `docs/migrations/SERIALIZATION_MIGRATION.md` 里。
 // 加上上一轮"24 个不可达"，**连续两轮的否定性结论都是假的**，根因都是扫描器没扫全。
 // 所以：**"某某没人跑/没被提到"这类结论，必须自证"我扫全了"** —— 下面两条空转自证就是干这个的。
 function collectDocs(dir, out = [])

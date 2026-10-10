@@ -10,7 +10,7 @@ import { serialization } from '@feng3d/serialization';
  * 背景：场景/资源数据已迁移为**纯数据格式**（`__type__` 字面量 + Logic），旧格式
  * （`__class__` + `GameObject` / `Transform` / 外挂 lens）只能靠 `classUtils.getInstanceByName()`
  * 反射构造，而主仓的数据类型**已经没有构造器**——旧格式资源必然加载失败
- * （详见 docs/SERIALIZATION_MIGRATION.md）。
+ * （详见 docs/migrations/SERIALIZATION_MIGRATION.md）。
  *
  * 迁移已完成（S1–S4），本用例守住三件事：
  * 1. 仓库里**不再有**旧格式资源（防止回潮：再有人提交一份 `__class__` 的 scene/gameobject，

@@ -6,7 +6,7 @@ import { MinMaxGradientMode } from './MinMaxGradientMode';
 
 /**
  * `MinMaxGradient` 的数据定义与**纯函数**形式（issue #134 第二批「渐变族」，方案见
- * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「渐变（2）」）。
+ * `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §8 的「渐变（2）」）。
  *
  * 与原 class 的逐条对应：
  *

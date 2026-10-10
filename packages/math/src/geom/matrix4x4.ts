@@ -17,7 +17,7 @@ import {
 } from './vector3';
 
 /**
- * `Matrix4x4` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2d）。
+ * `Matrix4x4` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2d）。
  *
  * 与 `vector3.ts` / `quaternion.ts` / `color4.ts` 同构：数据形状 + 纯函数同文件，
  * 入参只读、结果写 `out`（`out` 传自己即就地运算），class 的同名方法转发到这里。

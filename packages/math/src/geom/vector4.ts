@@ -3,7 +3,7 @@ import { mathfClamp01, mathfMax, mathfMin } from '../mathf';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
- * `Vector4` 运算的**纯函数**形式（issue #134 阶段 A2f，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Vector4` 运算的**纯函数**形式（issue #134 阶段 A2f，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * 与 `vector3.ts` / `quaternion.ts` / `color4.ts` 同构：入参用最小形状 `Vector4Like`
  * （class 实例与纯数据字面量都满足），只读入参、结果写 `out`（`out` 传自己即就地运算），

@@ -4,7 +4,31 @@
 
 ---
 
-## 1. 改代码后必须检查运行日志
+## 1. 反馈回路：改前先红，改后看日志
+
+### 1.1 改 bug 前：先建一个能红的复现
+
+第一步不是读代码，是**让这个 bug 在一个可重跑的命令里红给你看**。
+这一步是 [packages/editor/AGENTS.md](packages/editor/AGENTS.md) 里 Bug 修复流程「理解」阶段的落地判据——
+**理解完成的标志是复现红了**，不是「我看懂了」。三条全中才算建好：
+
+1. 你能**指名一条命令**（脚本路径 / 测试调用 / curl / 桥接调用如 `view.probe`）；
+2. 你**已经至少跑过一次**，并把调用与输出展示出来（脱敏后再贴）；
+3. 它在**当前代码**上必定失败，且打到**用户报告的那个症状**（不是相邻症状）。
+
+- **最小化**：一次砍掉一个输入 / 调用方 / 配置 / 数据 / 步骤，砍到再砍任何一个环节它就不红了——
+  剩下的每个元素都必须是承重的。
+- **没有 loop 就不要开始猜**：拿不到可复现的环境时**停下并说明**——列出试过什么，
+  然后向用户要三样之一：(a) 能复现的环境访问，(b) 脱敏的捕获物（HAR / 日志 / 录屏），(c) 允许加临时埋点。
+- **先列假设再动手**：插桩前先写下 3–5 个**排好序**的假设并展示给用户（不阻塞，用户可以在你继续时回话）。
+  说不出预测的假设只是感觉——丢掉，或写到能说出预测为止。
+- **一次只改一个变量**：每个探针都要对应上面某个假设的预测。调试日志打**唯一前缀**
+  （如 `[DEBUG-a4f2]`），收尾用**一次 grep** 清干净——没打标记的会活下来，打了标记的必死。
+- **有正确 seam 时先写回归测试再修**。没有正确 seam，这件事本身就是发现——记下来，不要硬造 seam。
+- **收尾**：原复现不再复现、回归测试通过（或记明「无 seam」）、`[DEBUG-` 全摘、
+  一次性原型删除或移入带标记的目录、把**最终正确的假设**写进 commit message。
+
+### 1.2 改完代码后：检查运行日志
 - 路径：`examples/logs/frontend_*.log`（按时间排序，取最新的）
 - 上下文压缩后也不能忘记
 - 有报错必须修复后才能结束
@@ -200,7 +224,7 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 > **读侧纯数据接口的数组字段一律 `readonly T[]`**——属性 `readonly`、数组本身也 `readonly`。
 > 执行者：`scripts/check-readonly-array-fields.mjs`（新增即失败，存量冻结在
 > `scripts/readonly-array-fields-baseline.json`；本地等价命令 `node scripts/check-readonly-array-fields.mjs`，
-> 随 `prelint:ci` 进 CI）。存量清单与分批策略见 [docs/READONLY_SHAPES_MIGRATION.md](docs/READONLY_SHAPES_MIGRATION.md)。
+> 随 `prelint:ci` 进 CI）。存量清单与分批策略见 [docs/migrations/READONLY_SHAPES_MIGRATION.md](docs/migrations/READONLY_SHAPES_MIGRATION.md)。
 
 - **适用对象**（两类，都可机械判定）：名字以 `Like` 结尾且不以 `Writable` 开头的接口；声明了 `__type__` 属性的纯数据接口
 - 正例 / 反例：
@@ -256,6 +280,12 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 - 文档相对链接必须有效：移动/重命名文件或归档文档后，正文里的旧路径不会报错、不会让测试失败，
   只有读者点进去 404 才发现。本地跑 `node scripts/check-docs-links.mjs`（已进 CI 门禁）；
   只查仓库内相对链接，`http(s)` 外链与页内锚点不查（外链有效性受网络与对方站点影响）
+- **代码里引用文档，优先用稳定标识**：`issue #NNN` / 规范编号（`R2` / `D12`）/ `AGENTS.md §N`——
+  它们描述「哪件事」，不随目录调整失效。**文件路径会变，而且变了是静默失效**：`.md` 里的链接由
+  `scripts/check-docs-links.mjs` 守，而 `.ts` / `.mjs` / `.json` 里的路径引用长期无人守
+  （实测 140+ 处 / 85 个文件）。现由 `scripts/check-doc-refs-in-code.mjs` 补上（按「仓库根 /
+  所属包根 / 文件所在目录」三种基准解析，解析不到即失败）。代价先例：3 份迁移文档移入
+  `docs/migrations/` 时 **39 处引用失效**，散在 **26 个源码文件**的注释里，只能靠手工全仓扫描才发现
 - **文档里引用 workflow 行号**（如 `ci.yml:107`）同样会被门禁查：`scripts/check-doc-workflow-refs.mjs`
   要求它指向**真实存在的行**。行号是最脆的引用形式——上面插一行、下面全部漂一格，而读者点进去会看到
   **另一条命令**，于是形成"以为某条门禁在 CI 上跑、其实没有"的假象（这正是 §15 元规则要防的"门禁空转"）。
@@ -304,6 +334,19 @@ R1 的分层依据另见 **§2.1 分层蓝图**，该节只含依赖方向一项
 | R2 | ✅ **已进 CI 门禁（两条脚本，职责互补，issue #606 明确；判据 AST 化见 issue #614）**：① `node scripts/check-module-side-effects.mjs --strict`（ci.yml:76）——**import 时执行**的缓存创建（内置的 `new Map/WeakMap/Set/WeakSet()` + **项目自有**的 `new ChainMap()`，**泛型实参不影响判定**；`ChainMap` 不套空参限制）、启动型调用（定时器 / rAF / ticker 启动）、`globalThis` 写入一律拦下；② `node scripts/check-toplevel-new.mjs`（ci.yml:131）——**其余**模块级 `new`（`export const x = new X()` 这类声明形式，含 `new Set([...])` 常量集合 / 库代码单例）按「文件::构造器」存量冻结在 `scripts/toplevel-new-baseline.json`（现 **94** 个组合；#614 的空参缓存欠账清掉 7 个键、#624 批次清掉 terrain 的 1 个键、ChainMap 批再清掉 29 个键），**新增即失败**、减少只提示。两条判据现在是**同一份 AST 实现**（`scripts/r2-module-scope.mjs`），覆盖类 `static` 字段 / `static` 块、顶层 IIFE、多行声明、模块级块 / 对象字面量 / 回调——原先的「行首无空白 = 模块顶层」行级判据实测漏掉 **62 处**（**这是 #614 立项时的口径**；当前读数是漏 **24 处**，见 `docs/CI.md` §2.1 的「再复测」——引用这类数字必须说清是哪一刻的口径，本仓已因此误判过多次，issue #604 / #652）。重叠处**有意重复报告**（去重比漏网好，避免"我以为你管了"）。**判据自身有三层回归保护（issue #652）**：判据层单测 `test/r2ModuleScope.spec.ts`（46 条，含"带括号 IIFE 必须算模块级"这条破坏性验证用例）+ 两条脚本内的合成样例自检（各 13 / 12 条，**启动时先跑、失败即 exit 1**，`--update` 之前就拦下）+ 三份缓存容器名单的集合一致性断言（不一致即 exit 1）；自研规则的候选名单本批补齐了 `WeakSet`（原先只在脚本侧，属漏改而非有意，依据见 `docs/CI.md` §2.1.1 边界 4）。**应用入口按路径整类豁免**，清单集中在 `r2-module-scope.mjs` 的 `ENTRY_FILES`（两条脚本共用）：入口页 import 即执行是固有语义，**真副作用因此有意放行**（实测一处 `vue-app/main.ts:93` 的模块级 `setTimeout`），风险边界与收紧路径见 `docs/CI.md` §2.1.1。全仓 19 处模块级缓存已 lazy-init、`Ticker` 启动改惰性（#88），三处模块级 `new WeakSet()`（`Entity` / `WGPUBindGroupEntry` / `generate-mipmap`）已在 #606 改为 lazy-init；顶层 `registerLogic` / `setAssetTypeClass` 注册（65 处）属注册模型改造，`check-module-side-effects` 只统计 |
 | R3 | ✅ **已进 CI 门禁**：`node scripts/check-imperative-construction.mjs`（**基线 `entries` 已为空**——0 处存量、新增即失败）。**issue #134 阶段 C 收尾已收回两处 math 豁免**——脚本原先整包跳过 `packages/math`、并把 `@feng3d/math` 当作「同名 class 的合法提供方」；math 的 19 个数值 / 几何 class 删完后这两处再无对象，属纯死代码（留着会把 `new Vector3()` 这类真违规放过去）。同批按实测把基线从 13 处收紧到 1 处：旧基线里 `examples/src` 的 12 处在 HEAD 上早已不存在。最后 1 处 `packages/webgpu/examples/src/webgpu/cornell/index.ts::Scene` 经核实**不是**真违规：它是示例**本地 class**（`import Scene from './scene'`，目标是同目录 `scene.ts` 的 `export default class Scene`，constructor 里构建顶点 / 索引 / quad 数据、无 `__type__`），而门禁判据是「名字有导入 + 名字在纯数据类名单里」、**不看导入来源**，因此误报——已重命名 `Scene` → `CornellScene` 消除同名歧义，判据与严格性未动。`addons` 与 `editor` 的**可执行代码是 0 处**——issue #353 正文统计的 36 处把注释里的旧写法示例（`editor` 22 处、`examples` 1 处）也算进去了，本门禁只统计可执行代码（核对了每一处）。**已知局限**：判据不看导入来源，任何「本地类型与纯数据类同名」的位置都会被误报，更精确的判据需单开 issue |
 | R6 | ✅ **23/23 个包已清零**（`packages/ui` 为收尾批第 21 个，`packages/tsl` 为 #709 收编批第 22 个，`packages/editor-plugin-rotate` 为 #276 阶段 3 新增的第 23 个）。两条路线并存：① `feng3d` 与 `editor` 走**独立 strict 配置**（`packages/{feng3d,editor}/tsconfig.strict.json`）+ `scripts/check-strict-dirs.mjs`（这两个包的 `tsconfig.json` 一开 strict，TS 就会连带用它们的检查上下文去看依赖包源码并报出并不属于本包的问题）；② 其余 20 个包直接开各自的 `tsconfig.json`。清单在 `scripts/strict-packages.json`（`packages` + `exempted`），由 `scripts/check-strict-packages.mjs` 双向守住（漏登记与误关闭都失败）——**"开到哪一步"以该脚本输出为准，本表不写死数字**。**存量**：① `feng3d` / `editor` 的 `tsconfig.json` **自身**仍关 4 项（走独立配置）；② `logic()` 声明非空却返回 `null` 未动 |
+
+### 15.1 主观判断区（机器查不到的部分）
+
+§15 的元规则把「无执行者」的内容排除在规范之外，这留下一块**空白**：
+模块够不够深、抽象放得对不对、diff 是否忠实实现了 issue 的意图——这些**注定写不成脚本**。
+空白不该等于「没人负责」，这一块由 **review 承担**：
+
+- **审查走 [docs/CODE_REVIEW.md](docs/CODE_REVIEW.md)**：两轴（**规范** / **规格**）分开报告，
+  用坏味道基线过一遍机器查不到的部分。
+- **先跳过机器已强制的**：`scripts/check-*.mjs`、eslint、`tsc`、覆盖率门禁覆盖到的不重复报——
+  重复会推高它的层级，并造成两处维护。
+- **两轴不合并、不重排**：全部合规但做错了事，与完全照 issue 做但破坏了约定，是**两种**失败；
+  结尾给每轴各自的发现数与最严重的一条，不跨轴挑总冠军。
 
 ---
 

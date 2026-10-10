@@ -11,7 +11,7 @@
         "feng3d-editor": "编辑器包名（与 @feng3d/editor 同一物，两处都列以防说明符写法不一致）"
     },
     "modules": {
-        "packages/math": "整包：Layer 0 的纯数值 / 几何运算层。issue #134 阶段 C 已把 19 个数值 / 几何 class 全部删除，改为「纯数据接口 + 纯函数」（585 个导出函数），class 基线已归零，详见 docs/MATH_PURE_FUNCTIONS_MIGRATION.md",
+        "packages/math": "整包：Layer 0 的纯数值 / 几何运算层。issue #134 阶段 C 已把 19 个数值 / 几何 class 全部删除，改为「纯数据接口 + 纯函数」（585 个导出函数），class 基线已归零，详见 docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md",
         "packages/feng3d/src/core/eyeRelative.ts": "单文件：眼相对（eye-relative）变换纯函数（issue #99），只依赖 @feng3d/math 的矩阵 / 向量纯函数，零响应式依赖"
     }
 }

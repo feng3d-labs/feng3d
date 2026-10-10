@@ -9,7 +9,7 @@ import { MATHF_DEG2RAD, MATHF_RAD2DEG, mathfClamp01, mathfGamma, mathfLerpAngle,
  *
  * 本文件补的是：**`LerpAngle` / `MoveTowardsAngle`**、**`Gamma`**。
  * （原先还有 **`Tan` / `Atan`** 一组——它们是 `Math.tan` / `Math.atan` 的纯转发，
- * 已随 19 个纯转发函数一并删除，见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。）
+ * 已随 19 个纯转发函数一并删除，见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。）
  *
  * ★★ **这些函数的实现都用「度」还是「弧度」我没有去确认**，所以断言刻意做成
  * **与角度单位无关**的形式：

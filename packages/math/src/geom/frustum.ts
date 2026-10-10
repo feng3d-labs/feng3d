@@ -7,7 +7,7 @@ import type { SphereLike } from './sphere';
 import type { Vector3Like } from './vector3';
 
 /**
- * `Frustum` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Frustum` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * 它持有 6 个 `PlaneLike`（数组），实现复用已就绪的 `plane*` 纯函数。
  *

@@ -16,7 +16,7 @@ import {
 } from './vector3';
 
 /**
- * `Plane` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Plane` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * ## 数据表示：`a` / `b` / `c` / `d`，不是 `normal` + `constant`
  *

@@ -5,7 +5,7 @@
  *
  * 原 `MathF.ts` 的 `Mathf` 是**纯静态工具容器**：全部成员都是 `static`，没有实例字段、
  * 没有构造函数、没有继承、没有 `this`。按项目「数据定义 + 纯函数」的定案形态
- * （`AGENTS.md` §11.1 / `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §3.1），
+ * （`AGENTS.md` §11.1 / `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §3.1），
  * 这种容器拆成模块级函数即可，不需要 tagged union + 分发。
  *
  * 操作数全是 `number` 这类**值类型**，所以没有 `XxxLike` / `WritableXxxLike` 形状问题，
@@ -34,7 +34,7 @@
  * `mathfCeilToInt` / `mathfFloorToInt` / `mathfRoundToInt`）——它们**不承载任何语义**，
  * 消费点一律改调 `Math.*`。判断依据是逐样本实调对比（源码层抽表达式 + 21 个边界值 × 21 个的
  * 441 组样本 + `Object.is` 比较），三者俱全才删；核对方法与保留理由见
- * `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。
+ * `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.18.9。
  *
  * ⚠️ 注意 `*ToInt` 三个名字里的 `ToInt` 是**误导**：实现就是 `Math.ceil/floor/round`，
  * 返回值仍是 `number`，没有取整成 int 的转换——所以它们是纯转发、可以删。

@@ -25,7 +25,7 @@ function degreesToRadians(degrees: number): number
  *
  * 该兜底现为**回退路径**：`resource/template/default.scene.json` 已由
  * `scripts/migrate-scene-json.mjs` 迁移为纯数据格式，`EditorAsset.readScene` 可直接读取
- * （见 docs/SERIALIZATION_MIGRATION.md 的 S2/S3）；仅当场景文件缺失或反序列化失败时使用本兜底。
+ * （见 docs/migrations/SERIALIZATION_MIGRATION.md 的 S2/S3）；仅当场景文件缺失或反序列化失败时使用本兜底。
  *
  * 结构与对象参照 `resource/template/default.scene.json`：
  * - 根对象 `Untitled`（挂 `Scene` 组件，Scene 是**组件**不是 Object3D 字段）

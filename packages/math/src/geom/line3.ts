@@ -11,7 +11,7 @@ import {
 } from './vector3';
 
 /**
- * `Line3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Line3` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * 与 `Segment3` 一样是**嵌套结构**（`{ origin, direction }`，两个 `Vector3`），
  * 实现复用 A1 的 `vec3*` 纯函数。

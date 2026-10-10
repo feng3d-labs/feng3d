@@ -8,7 +8,7 @@ import type { Vector3Like, WritableVector3Like } from './vector3';
 import { vec3Copy, vec3DistanceSquared, vec3NormalizeThickness } from './vector3';
 
 /**
- * `Sphere` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
+ * `Sphere` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`）。
  *
  * 与其它几何类型一样是**嵌套结构**（`{ center, radius }`），实现复用已就绪的
  * `vec3*` / `box3*` / `plane*` / `mat4*` 纯函数。

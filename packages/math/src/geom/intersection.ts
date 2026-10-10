@@ -10,7 +10,7 @@ import { vec3Equals, vec3IsParallel } from './vector3';
 
 /**
  * 「联合类型 + `instanceof` 判别」这一族相交运算的**纯函数**形式
- * （issue #134 阶段 C-a，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.7 的 P5）。
+ * （issue #134 阶段 C-a，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §11.7.7 的 P5）。
  *
  * ## 为什么单独一个文件（而不是塞进 `line3.ts`）
  *

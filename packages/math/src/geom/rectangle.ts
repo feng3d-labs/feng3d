@@ -2,7 +2,7 @@ import { vec2Clamp } from './vector2';
 import type { Vector2Like, WritableVector2Like } from './vector2';
 
 /**
- * `Rectangle` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2m）。
+ * `Rectangle` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2m）。
  *
  * ## 约定（方案 §3.3）
  *
@@ -43,7 +43,7 @@ import type { Vector2Like, WritableVector2Like } from './vector2';
  * - `rect2SetRight` / `rect2GetRight` 是**仓库既有惯例**——`matrix4x4.ts` 里
  *   `mat4GetPosition` / `mat4SetPosition`、`mat4GetAxisX` / `mat4SetAxisX`、`mat4GetScale` / `mat4SetScale`
  *   就是「getter / setter 成对」的写法，本文件与本批任务（阶段 A2m）都按它命名；
- * - `rect2Right` / `rect2Bottom` 是 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` §3.2 的**紧凑前缀**风格
+ * - `rect2Right` / `rect2Bottom` 是 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` §3.2 的**紧凑前缀**风格
  *   （「动作取 PascalCase、前缀与动作之间不加下划线」），`vec2Add` / `line3GetPoint` 都是这个风格。
  *
  * 两者实现**只有一份**（别名是转发入口，与 `vec2Scale` → `vec2Multiply` 同构），

@@ -3,7 +3,7 @@ import { mathfMax, mathfMin, mathfSign } from '../mathf';
 import type { Vector3Like } from './vector3';
 
 /**
- * 二维向量运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2e）。
+ * 二维向量运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2e）。
  *
  * ## 约定（方案 §3.3）
  *

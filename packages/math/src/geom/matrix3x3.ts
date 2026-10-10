@@ -5,7 +5,7 @@ import { vec3ToString } from './vector3';
 import type { Vector3Like, WritableVector3Like } from './vector3';
 
 /**
- * `Matrix3x3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2c）。
+ * `Matrix3x3` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2c）。
  *
  * ## 约定
  *

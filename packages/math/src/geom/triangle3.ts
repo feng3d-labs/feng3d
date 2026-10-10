@@ -26,7 +26,7 @@ import type { WritableSegment3Like } from './segment3';
 import { seg3ClosestPointWithPoint, seg3FromPoints, seg3OnWithPoint } from './segment3';
 
 /**
- * `Triangle3` 运算的**纯函数**形式（issue #134，方案见 `docs/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2k）。
+ * `Triangle3` 运算的**纯函数**形式（issue #134，方案见 `docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md` 阶段 A2k）。
  *
  * ## 与数值类型的不同
  *

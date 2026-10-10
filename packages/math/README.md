@@ -30,4 +30,4 @@ console.log(vec3ToArray(vec3Cross(v, u))); // [ -3, 6, -3 ]
 同一族里 `vec3` 前缀的函数（`vec3Add` / `vec3Lerp` / `vec3Normalized` …）都遵循 `out` 约定：
 末位可选参数既是结果容器也是就地运算目标，省略时新建字面量。完整清单见
 [`src/geom/vector3.ts`](./src/geom/vector3.ts)，迁移口径见
-[`docs/MATH_PURE_FUNCTIONS_MIGRATION.md`](../../docs/MATH_PURE_FUNCTIONS_MIGRATION.md)。
+[`docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md`](../../docs/migrations/MATH_PURE_FUNCTIONS_MIGRATION.md)。
