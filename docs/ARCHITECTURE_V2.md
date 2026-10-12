@@ -351,12 +351,10 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 文档现状标签（R11） | ✅ **已落地**（#78） | `FRAMEWORK_DESIGN.md` 10 章全部标注现状，CI 校验标签存在 |
 | `EFFECT_INVENTORY.md` 与实际调用点一致性校验（R5） | ✅ **已落地**（#79） | `node scripts/check-effect-inventory.mjs` 进质量门禁；清单已重盘为 54 处 / 31 文件，不一致即失败 |
 
-### P2 — 收编 TSL：消除双份着色器维护（预计 2–4 周）
+### P2 — 收编 TSL：消除双份着色器维护
 
-> **这是全规划中性价比最高的一步**。`@feng3d/tsl` 已有 **320 个单元测试全绿**（最后提交
-> `c5612c0a`，2026-07-23），src 分层完整（`core`/`glsl`/`shader`/`types`/`variables`/`vector`/
-> `math`/`control`），且已实现深度区间转换（WebGL `[-1,1]` → WebGPU `[0,1]`）。
-> 它解决的是 feng3d 当前最大的架构欠账（§2.2 #4），且**不需要从零重写**。
+> ✅ **已完成（2026-10-06）**。`@feng3d/tsl` 已收回主仓 `packages/tsl`，320 个测试在主仓通过；
+> feng3d 引擎着色器已迁移，示例按负责人确认的范围保留 TSL / WGSL 双轨。着色器双份人工维护的架构欠账已消除。
 
 | 任务 | 状态 | 验收 |
 |---|---|---|
@@ -365,9 +363,11 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | `packages/tsl` 收进主仓（与其它 21 个包同等待遇） | ✅ 已达成（#709）：workspace 成员（第 22 个包）；R1 分层（Layer 0）与 R6 strict 清单已登记；lint 0 问题；320 用例随根 `vitest run`；纳入 `types:packages` / `build:packages` / `release:dry-run`（公共包 20 → 21） | workspace 识别、`tsc` 通过、纳入 lint/测试 |
 | 选 1 个材质试点（建议 `NormalMaterial`，着色器最短） | ✅ 已达成（#711 试点批） | 试点材质改用 TSL 生成，**渲染像素级一致**（见下方实测结论） |
 | 逐个材质迁移（7 个材质 + shadow/common 模块） | ✅ **已达成**（#711）：7 个材质全部迁完，**`packages/feng3d/src/**/*.wgsl.ts` 归零**（0 个残留） | 每迁移一个，e2e 基线验证 + 删除对应的手写 WGSL |
-| GLSL 源文件降级为"参考样本"并从构建路径移除 | 🔶 **部分达成**（#713）：**全仓 79 个 `.glsl`**（65 个在 `shaders/`、14 个在 `materials/` 等）实测**无任何代码 import / `readFileSync`**；并已在 `packages/feng3d/package.json` 的 `files` 里加 `!src/**/*.glsl` 排除——**发布包不再包含它们**（实测 267 → 188 个文件、341.0 → 315.8 KB）。整体归档到 `docs/archive/` 是**独立的一批**（另开 issue）。 | 仓库不再有"必须人工保持同步的两份着色器"（✅ 已达成）；发布包不再含 `.glsl`（✅ 本批达成） |
-| TSL 能力扩展：compute / storage buffer / 原子操作（examples 迁移前置） | 🔶 **部分达成**（#710 / #785）：compute、storage buffer、存储纹理、`while_`/`switch_`、位运算、override 等**已落地**；**原子操作未做**（examples 范围调整后不再是前置） | examples 里 12 个 compute 着色器可用 TSL 编写 |
-| `packages/webgpu/examples` 的 71 个 `.wgsl` 全部 TSL 化 | ⏹️ **范围调整**（#712）：已迁出 **47 个**（`*.tsl.ts`，与原 `.wgsl` 同目录同名）；**余 24 个经负责人决定不再迁移**，与 TSL 版**双轨并存**（约定见 `AGENTS.md` §9） | 仓内手写 WGSL 归零（**本条已按范围调整改写**） |
+| GLSL 源文件降级为"参考样本"并从构建路径移除 | ✅ **发布排除已完成**（#713）：全仓 79 个 `.glsl` 无代码读取，已从 feng3d 发布包排除；归档到 `docs/archive/` 是独立的后续工作（#885） | 仓库不再有必须人工保持同步的两份着色器；发布包不含 `.glsl` |
+| TSL 能力扩展：compute / storage buffer / 原子操作 | ✅ **已完成**（#710）：入口、storage、内置变量、同步、工作组共享内存、原子操作及迁移所需语句形式均已实现，并用于 bitonic compute 着色器迁移 | 所需 TSL 能力有实现及消费者 |
+| `packages/webgpu/examples` 的 71 个 `.wgsl` 全部 TSL 化 | ⏹️ **范围调整**（#712）：47 个已迁为 `*.tsl.ts`；余 24 个经负责人决定不迁，与 TSL 版双轨并存（约定见 `AGENTS.md` §9） | 按确认后的范围验收，不要求手写 WGSL 归零 |
+
+> 外仓 examples 未随 TSL 收编迁入，因依赖主仓不存在的包而留作低优先级技术债（#715）；不阻塞 P2 完成。
 
 > ✅ **试点实测结论（#711 试点批，2026-10-05）**：`NormalMaterial` 的 vertex / fragment 已改为 TSL 构建
 > （`packages/feng3d/src/shaders/tsl/`），**渲染像素级一致**——改动前后同一示例（`webgl_materials_normal`）
