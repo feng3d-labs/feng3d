@@ -169,7 +169,7 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 - **示例着色器**：`packages/webgpu/examples/src/**/*.tsl.ts`——**与原 `.wgsl` 同目录、同名**，后缀固定 `.tsl.ts`（`basic.vert.wgsl` → `basic.vert.tsl.ts`）
 - **examples 有意保持 wgsl 与 tsl 双轨并存**（issue #712 范围调整后定稿）：已迁出的走 TSL，未迁的仍是 `.wgsl`。新写着色器**优先 TSL**，但**不要**为了「统一」而批量改写尚未迁移的示例
 - **运行时工具着色器**：`packages/webgpu/src/utils/*WGSL.ts`（`copyDepthTextureWGSL` / `generateMipmapWGSL` 等），同样由 TSL 生成
-- **GLSL 原始文件保留为参考样本**（`packages/feng3d/src/shaders/*.glsl`、`modules/*.glsl`）；「从构建路径移除」是单独一步（issue #713，未开始）
+- **GLSL 原始文件保留为参考样本**（`packages/feng3d/src/shaders/*.glsl`、`modules/*.glsl`）；已从发布包排除（#713），归档到 `docs/archive/` 另由 #885 跟踪
 - **TSL 生成结果与手写 WGSL 不要求逐字节一致**：TSL 有自己的生成风格（结构体大括号换行、`vec4<f32>` 而非 `vec4f`、成员名小写、`let`/`var` 选择、常量折叠、广播折叠等）。回归保护由 `test/tslWgslParity.spec.ts` + `scripts/tsl-parity-baseline.json`（**规范化基线**，生成结果意外变化即失败）承担；浮点结合顺序一类的改写用本地审计模式逐条核对：`TSL_PARITY_CHECK_ORIGINAL=1 npx vitest run test/tslWgslParity.spec.ts`
 - WGSL 与 GLSL 差异注意：
   - 不支持 swizzle 赋值
