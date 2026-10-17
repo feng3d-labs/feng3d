@@ -1,4 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
+import type { Components } from '../component/Component';
 import { mat4GetPosition, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, vec3Equals, vec3Normalized, Vector3Like } from '@feng3d/math';
 import { logicOrThrow, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
@@ -143,7 +144,7 @@ describe('object3DLogic - 组件管理', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logicOrThrow(obj); // 先 logic 触发 components pre-fill
         const camera = { __type__: 'Camera' };
-        reactive(obj).components!.push(camera);
+        (reactive(obj).components! as Components[]).push(camera);
 
         // 从响应式数组取出的元素是代理，用 toRaw 还原后比较原始引用
         expect(toRaw(l.getComponent('Camera'))).toBe(camera);
@@ -154,7 +155,7 @@ describe('object3DLogic - 组件管理', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logicOrThrow(obj);
         const camera = { __type__: 'Camera' };
-        reactive(obj).components!.push(camera);
+        (reactive(obj).components! as Components[]).push(camera);
 
         // Camera 在 _typeHierarchy['Component'] 集合中
         expect(toRaw(l.getComponent('Component'))).toBe(camera);
@@ -174,7 +175,7 @@ describe('object3DLogic - 组件管理', () =>
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
         const c3 = { __type__: 'Light' };
-        reactive(obj).components!.push(c1, c2, c3);
+        (reactive(obj).components! as Components[]).push(c1, c2, c3);
 
         const result = l.getComponents('Camera').map(toRaw);
 
@@ -187,7 +188,7 @@ describe('object3DLogic - 组件管理', () =>
         const l = logicOrThrow(obj);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
-        reactive(obj).components!.push(c1, c2);
+        (reactive(obj).components! as Components[]).push(c1, c2);
 
         const result = l.getComponents('').map(toRaw);
 
@@ -199,7 +200,7 @@ describe('object3DLogic - 组件管理', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logicOrThrow(obj);
         const cam = { __type__: 'Camera' };
-        reactive(obj).components!.push(cam);
+        (reactive(obj).components! as Components[]).push(cam);
 
         const results: any[] = ['seed'];
         const ret = l.getComponents('Camera', results);
@@ -219,7 +220,7 @@ describe('object3DLogic - 组件管理', () =>
         // 触发 components computed 求值，建立自动 init effect 的依赖
         objLogic.getComponents('');
         const comp = createInitSpyComp();
-        reactive(obj).components!.push(comp);
+        (reactive(obj).components! as Components[]).push(comp);
 
         expect(initSpy.callCount).toBe(1);
         expect(initSpy.lastOwner).toBe(obj);
@@ -232,11 +233,11 @@ describe('object3DLogic - 组件管理', () =>
         const objLogic = logicOrThrow(obj);
         objLogic.getComponents('');
         const comp = createInitSpyComp();
-        reactive(obj).components!.push(comp);
+        (reactive(obj).components! as Components[]).push(comp);
         const countAfterFirst = initSpy.callCount;
 
         // 同一实例再次进入 components 数组（模拟重复 push 或再次同步）
-        reactive(obj).components!.push(comp);
+        (reactive(obj).components! as Components[]).push(comp);
 
         expect(initSpy.callCount).toBe(countAfterFirst);
     });
@@ -369,7 +370,7 @@ describe('object3DLogic - scene 派生', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         logicOrThrow(obj);
         const sceneComp = { __type__: 'Scene' };
-        reactive(obj).components!.push(sceneComp);
+        (reactive(obj).components! as Components[]).push(sceneComp);
 
         expect(toRaw(logicOrThrow(obj).scene)).toBe(sceneComp);
     });
@@ -380,7 +381,7 @@ describe('object3DLogic - scene 派生', () =>
         const parentLogic = logicOrThrow(parent);
         void parentLogic.children.length;
         const sceneComp = { __type__: 'Scene' };
-        reactive(parent).components!.push(sceneComp);
+        (reactive(parent).components! as Components[]).push(sceneComp);
 
         const child = ({ __type__: 'Object3D' } as Object3D);
         reactive(parent).children!.push(child);
@@ -609,7 +610,7 @@ describe('object3DLogic - dispose', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const l = logicOrThrow(obj);
         const comp = createInitSpyComp();
-        reactive(obj).components!.push(comp);
+        (reactive(obj).components! as Components[]).push(comp);
 
         // dispose 前 components 非空
         expect(toRaw(obj).components!.length).toBe(1);

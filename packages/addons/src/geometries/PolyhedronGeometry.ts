@@ -32,9 +32,9 @@ export interface PolyhedronGeometry extends Geometry
 {
     readonly __type__: 'PolyhedronGeometry';
     /** 基底顶点表 [x,y,z, x,y,z, ...]（不可序列化，运行时通过 __vertices 读取） */
-    readonly vertices?: number[];
+    readonly vertices?: readonly number[];
     /** 基底索引表 [i0,i1,i2, ...]（不可序列化，运行时通过 __indices 读取） */
-    readonly indices?: number[];
+    readonly indices?: readonly number[];
     /** 外接球半径（缺失时由工厂填充默认值） */
     readonly radius?: number;
     /** 细分等级（0 = 不细分，缺失时由工厂填充默认值） */

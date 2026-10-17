@@ -32,7 +32,7 @@ export interface ExtrudeGeometry extends Geometry
 {
     readonly __type__: 'ExtrudeGeometry';
     /** 2D 形状（含轮廓 + 孔洞） */
-    readonly shapes: Shape2 | Shape2[];
+    readonly shapes: Shape2 | readonly Shape2[];
     /** 挤出深度 */
     readonly depth?: number;
     /** 曲线细分数 */
@@ -89,7 +89,7 @@ export function extrudeGeometryLogic(data: ExtrudeGeometry): ExtrudeGeometryLogi
     if (data.bevelOffset === undefined) writable.bevelOffset = 0;
 
     // 响应式参数访问器（默认值已填充，直接读取）
-    const shapes = (): Shape2 | Shape2[] => reactive(data).shapes;
+    const shapes = (): Shape2 | readonly Shape2[] => reactive(data).shapes;
     const depth = (): number => reactive(data).depth ?? 1;
     const curveSegments = (): number => reactive(data).curveSegments ?? 12;
     const bevelThickness = (): number => reactive(data).bevelThickness ?? 0;

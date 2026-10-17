@@ -38,7 +38,7 @@ export interface PointGeometry extends Geometry
 {
     readonly __type__: 'PointGeometry';
     /** 点数据列表 */
-    readonly points: PointInfo[];
+    readonly points: readonly PointInfo[];
 }
 
 /**
@@ -64,7 +64,7 @@ const CORNERS: ReadonlyArray<readonly [number, number]> = [
 export function pointGeometryLogic(data: PointGeometry): PointGeometryLogic
 {
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    const points = (): PointInfo[] => reactive(data).points ?? [];
+    const points = (): readonly PointInfo[] => reactive(data).points ?? [];
 
     // ---- 顶点构建（直接返回 Float32Array，内部 reactive 建立依赖） ----
     //

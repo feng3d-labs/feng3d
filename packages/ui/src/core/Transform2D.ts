@@ -1,4 +1,5 @@
 import { Component3D, Component3DLogic, createComponentLogicBase, Object3D, registerComponentType, TransformLayout } from 'feng3d';
+import type { Components } from 'feng3d';
 import { computed, effect, reactive, ref, registerLogic, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import type { Reactive } from '@feng3d/reactivity';
 import { Vector2Like, Vector4, Vector4Like } from '@feng3d/math';
@@ -187,7 +188,8 @@ export function transform2DLogic(data: Transform2D): Transform2DLogic
                     anchorMax: { x: 0.5, y: 0.5, z: 0.5 },
                     pivot: { x: 0.5, y: 0.5, z: 0.5 },
                 };
-                components.push(transformLayout);
+                // 写侧断言：读侧 components 是 readonly（§11.6），这里挂新建的 TransformLayout
+                (components as Components[]).push(transformLayout);
             }
             layoutRef.value = transformLayout;
 

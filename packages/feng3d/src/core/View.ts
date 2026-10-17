@@ -2,6 +2,7 @@ import { ErrorCode, reportDegradation } from './CodedError';
 import { computed, getMutationCount, logicOrThrow as getLogicOrThrow, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderObject, RenderPass, RenderPassDescriptor, RenderPassObject, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { Camera } from "../cameras/Camera";
+import type { Components } from '../component/Component';
 import { ShadowType } from '../light/shadow/ShadowType';
 // 内置 renderer 在各自模块里注册渲染贡献者（issue #93），这里只需要「被加载」：
 // 具体排第几由 `View.passes` / `View.renderObjects` 决定，编排代码不再直接调用它们。
@@ -280,7 +281,8 @@ export function viewLogic(view: View): ViewLogic
         if (!scene)
         {
             scene = { __type__: 'Scene' } as Scene;
-            reactive(view).root.components!.push(scene);
+            // 写侧断言：读侧 components 是 readonly（§11.6），这里挂默认 Scene 属于装配写入
+            (reactive(view).root.components! as Components[]).push(scene);
         }
 
         return scene;
@@ -298,7 +300,7 @@ export function viewLogic(view: View): ViewLogic
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
             getLogicOrThrow(defaultCamObj);
             camera = { __type__: 'PerspectiveCamera' } as Camera;
-            reactive(defaultCamObj).components!.push(camera);
+            (reactive(defaultCamObj).components! as Components[]).push(camera);
             r_root.children!.push(getLogicOrThrow(camera).entity as Object3D);
         }
 

@@ -42,7 +42,7 @@ export interface ConvexGeometry extends Geometry
 {
     readonly __type__: 'ConvexGeometry';
     /** 输入点集（凸包将包含这些点） */
-    readonly points: Vector3Like[];
+    readonly points: readonly Vector3Like[];
 }
 
 /**
@@ -61,7 +61,7 @@ interface HullFace
     outside: number[];
 }
 
-function quickHull(points: Vector3Like[]): { positions: number[]; normals: number[]; indices: number[] }
+function quickHull(points: readonly Vector3Like[]): { positions: number[]; normals: number[]; indices: number[] }
 {
     const n = points.length;
     if (n < 4)
@@ -234,7 +234,7 @@ export function convexGeometryLogic(data: ConvexGeometry): ConvexGeometryLogic
     if (data.points === undefined) writable.points = [];
 
     // 响应式参数访问器（默认值已填充，直接读取）
-    const points = (): Vector3Like[] => reactive(data).points;
+    const points = (): readonly Vector3Like[] => reactive(data).points;
 
     // computed：points 变化时重算凸包
     const hullComputed = computed(() => quickHull(points()));

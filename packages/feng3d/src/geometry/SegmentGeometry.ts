@@ -50,7 +50,7 @@ export interface SegmentGeometry extends Geometry
 {
     readonly __type__: 'SegmentGeometry';
     /** 线段列表 */
-    readonly segments: Segment[];
+    readonly segments: readonly Segment[];
 }
 
 /**
@@ -71,7 +71,7 @@ export interface SegmentGeometryLogic extends GeometryLogic
 export function segmentGeometryLogic(data: SegmentGeometry): SegmentGeometryLogic
 {
     // 响应式参数（不修改原始数据，缺失字段通过 ?? 提供默认值）
-    const segments = (): Segment[] => reactive(data).segments ?? [];
+    const segments = (): readonly Segment[] => reactive(data).segments ?? [];
 
     function buildPositions(): Float32Array
     {

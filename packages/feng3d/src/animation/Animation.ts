@@ -25,7 +25,7 @@ export interface Animation extends Behaviour
     readonly __type__: 'Animation';
     // 可选：dispose 时会被清空（AGENTS §11.5 子接口字段可选，工厂补默认）
     readonly animation?: AnimationClipData;
-    readonly animations?: AnimationClipData[];
+    readonly animations?: readonly AnimationClipData[];
     readonly time: number;
     readonly isplaying: boolean;
     readonly playspeed: number;

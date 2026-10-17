@@ -20,7 +20,7 @@ export interface Entity
     /**
      * 组件列表（缺失时由 EntityLogic 构造时自动填充为空数组）
      */
-    readonly components?: Components[];
+    readonly components?: readonly Components[];
 }
 
 // ---- 类型继承关系表（用于 matchType 快速查找） ----
@@ -209,7 +209,8 @@ export function createEntityLogicBase(data: Entity): { state: EntityLogicState; 
     // ---- pre-fill：components 必须存在数组（push/splice 写入路径依赖） ----
     if (data.components === undefined)
     {
-        (data as { components: Components[] }).components = [];
+        // 写侧：components 是读侧 `readonly Components[]`（§11.6），pre-fill 经断言写入原始数据
+        (data as unknown as { components: Components[] }).components = [];
     }
 
     const state: EntityLogicState = {
