@@ -17,26 +17,26 @@ export interface TextureDataSource
     /**
      * 纹理数据。
      */
-    data: ArrayBufferView;
+    readonly data: ArrayBufferView;
 
     /**
      * Layout of the content in `data`.
      *
      * 纹理数据布局。
      */
-    dataLayout?: TextureDataLayout;
+    readonly dataLayout?: TextureDataLayout;
 
     /**
      * 读取数据图片上的像素坐标。
      */
-    dataImageOrigin?: DataImageOrigin;
+    readonly dataImageOrigin?: DataImageOrigin;
 
     /**
      * 写入mipmap级别。
      *
      * 默认为 0。
      */
-    mipLevel?: number;
+    readonly mipLevel?: number;
 
     /**
      * Defines the origin of the copy - the minimum corner of the texture sub-region to copy to/from.
@@ -44,14 +44,14 @@ export interface TextureDataSource
      *
      * 写入纹理的位置。
      */
-    textureOrigin?: TextureOrigin;
+    readonly textureOrigin?: TextureOrigin;
 
     /**
      * Extents of the content to write from `source` to `destination`.
      *
      * 写入尺寸。
      */
-    size?: TextureSize
+    readonly size?: TextureSize
 
     /**
      * Defines which aspects of the texture to copy to/from.
@@ -60,5 +60,5 @@ export interface TextureDataSource
      *
      * @see GPUImageCopyTexture
      */
-    aspect?: GPUTextureAspect;
+    readonly aspect?: GPUTextureAspect;
 }

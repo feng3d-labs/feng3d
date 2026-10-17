@@ -16,15 +16,15 @@ export interface CopyTextureToTexture
     /**
      * Combined with `copySize`, defines the region of the source texture subresources.
      */
-    source: ImageCopyTexture;
+    readonly source: ImageCopyTexture;
 
     /**
      * Combined with `copySize`, defines the region of the destination texture subresources.
      */
-    destination: ImageCopyTexture;
+    readonly destination: ImageCopyTexture;
 
     /**
      * 拷贝的尺寸。
      */
-    copySize: TextureSize;
+    readonly copySize: TextureSize;
 }

@@ -13,7 +13,7 @@ export interface OcclusionQuery
     /**
      * GPU渲染对象列表。
      */
-    renderObjects: RenderObject[];
+    readonly renderObjects: readonly RenderObject[];
 
     /**
      * 查询结束回调。

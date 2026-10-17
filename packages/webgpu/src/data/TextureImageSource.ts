@@ -18,17 +18,17 @@ export interface TextureImageSource
     /**
      * 图片资源。
      */
-    image: TexImageSource;
+    readonly image: TexImageSource;
 
     /**
      * 读取图片上的像素坐标。
      */
-    imageOrigin?: ImageOrigin;
+    readonly imageOrigin?: ImageOrigin;
 
     /**
      * 写入纹理的mipmap层级索引。
      */
-    mipLevel?: number;
+    readonly mipLevel?: number;
 
     /**
      * Defines the origin of the copy - the minimum corner of the texture sub-region to copy to/from.
@@ -36,26 +36,26 @@ export interface TextureImageSource
      *
      * 写入纹理的位置。
      */
-    textureOrigin?: TextureOrigin;
+    readonly textureOrigin?: TextureOrigin;
 
     /**
      * Extents of the content to write from `source` to `destination`.
      *
      * 写入尺寸。
      */
-    size?: TextureSize
+    readonly size?: TextureSize
 
     /**
      * 是否Y轴翻转图片。
      *
      * 默认 false。
      */
-    flipY?: boolean;
+    readonly flipY?: boolean;
 
     /**
      * 是否需要预乘透明度。
      */
-    premultipliedAlpha?: boolean;
+    readonly premultipliedAlpha?: boolean;
 
     /**
      * Defines which aspects of the texture to copy to/from.
@@ -64,7 +64,7 @@ export interface TextureImageSource
      *
      * @see GPUImageCopyTexture
      */
-    aspect?: GPUTextureAspect;
+    readonly aspect?: GPUTextureAspect;
 
     /**
      * Describes the color space and encoding used to encode data into the destination texture.
@@ -75,7 +75,7 @@ export interface TextureImageSource
      *
      * @see GPUImageCopyTextureTagged
      */
-    colorSpace?: PredefinedColorSpace;
+    readonly colorSpace?: PredefinedColorSpace;
 }
 
 export class TextureImageSource
