@@ -49,7 +49,7 @@ export class WGPURenderPass extends ReactiveObject
         // 排序/增删对象）时重录，成本 ≈ 原逐帧直编，不劣化。
         // uniform 更新（相机/动画/材质参数）走 buffer 内容写入，不经过本 computed，
         // 不触发重录——这正是声明式绑定与 RenderBundle 契合的前提。
-        let _plan: { src: readonly RenderPassObject[]; items: readonly RenderPassObject[] } | null = null;
+        let _plan: { src: readonly RenderPassObject[]; items: readonly RenderPassObject[]; revisions: readonly number[] } | null = null;
         const sameElements = (a: readonly RenderPassObject[], b: readonly RenderPassObject[]): boolean =>
         {
             // 元素身份序列指纹：上游重建数组但元素复用（如相机移动触发 forward 重算、
@@ -61,6 +61,30 @@ export class WGPURenderPass extends ReactiveObject
             }
 
             return true;
+        };
+        const sameRevisions = (a: readonly number[], b: readonly number[]): boolean =>
+        {
+            if (a.length !== b.length) return false;
+            for (let i = 0; i < a.length; i++)
+            {
+                if (a[i] !== b[i]) return false;
+            }
+
+            return true;
+        };
+        /**
+         * 元素的内容修订号（issue #947）：元素身份不变但材质/纹理/管线变了时必须重录。
+         *
+         * 读取是响应式的——修订号变化会让本 computed 失效。
+         */
+        const revisionOf = (element: RenderPassObject): number =>
+        {
+            if (!element.__type__ || element.__type__ === 'RenderObject')
+            {
+                return (reactive(element as RenderObject) as { revision?: number }).revision ?? 0;
+            }
+
+            return 0;
         };
         const buildPlan = (src: readonly RenderPassObject[]): readonly RenderPassObject[] =>
         {
@@ -97,7 +121,6 @@ export class WGPURenderPass extends ReactiveObject
                 items.push(element);
             });
             flushRun(src.length);
-            _plan = { src, items };
 
             return items;
         };
@@ -123,18 +146,21 @@ export class WGPURenderPass extends ReactiveObject
             const src = renderPass.renderPassObjects!;
             let items: readonly RenderPassObject[];
 
-            // 取本地引用：_plan 会被 buildPlan 闭包赋值，直接读会让控制流收窄失效。
+            // 取本地引用：_plan 会被下面的赋值更新，直接读会让控制流收窄失效。
             const plan = _plan;
+            // 内容修订号快照（响应式读取：材质/纹理/管线变化会让本 computed 失效，issue #947）
+            const revisions = src.map(revisionOf);
 
-            if (plan && (plan.src === src || sameElements(plan.src, src)))
+            if (plan && (plan.src === src || sameElements(plan.src, src)) && sameRevisions(plan.revisions, revisions))
             {
-                // 数组身份相同或元素序列一致：复用分段与 bundle（源引用同步为新数组）
-                if (plan.src !== src) _plan = { src, items: plan.items };
+                // 数组身份相同、元素序列一致且内容未变：复用分段与 bundle
+                _plan = { src, items: plan.items, revisions };
                 items = plan.items;
             }
             else
             {
                 items = buildPlan(src);
+                _plan = { src, items, revisions };
             }
             items.forEach((element) =>
             {

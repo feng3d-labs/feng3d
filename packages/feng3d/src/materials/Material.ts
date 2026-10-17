@@ -1,5 +1,5 @@
 import { registerLogic } from '@feng3d/reactivity';
-import { reactive, UnReadonly } from '@feng3d/reactivity';
+import { reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
 import type { BindingResource, BufferBinding, RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { BindingResources } from '@feng3d/webgpu';
 
@@ -130,9 +130,20 @@ export function writeMaterialBase(renderObject: RenderObject, pipeline: RenderPi
     // 上一行刚保证存在（strictNullChecks 下显式断言）
     const bindingResources = renderObject.bindingResources!;
 
-    (renderObject as UnReadonly<RenderObject>).pipeline = pipeline;
+    let changed = false;
+
+    if ((renderObject as { pipeline?: RenderPipeline }).pipeline !== pipeline)
+    {
+        (renderObject as UnReadonly<RenderObject>).pipeline = pipeline;
+        changed = true;
+    }
+
+    // uniforms 的内容变化走 buffer 写入（WGPUBufferBinding 的 computed），不改变命令编码，
+    // 因此**不**递增 revision——否则每次材质 uniform 变动都会让 RenderBundle 重录。
     bindingResources.material_uniforms ||= { value: uniformsValue() };
     reactive(bindingResources.material_uniforms).value = uniformsValue();
+
+    if (changed) bumpRenderObjectRevision(renderObject);
 }
 
 /**
@@ -142,11 +153,32 @@ export function writeTextureBindings(renderObject: RenderObject, bindings: Recor
 {
     if (!renderObject.bindingResources) return;
     const r_bindingResources = reactive(renderObject.bindingResources);
+    let changed = false;
 
     for (const key in bindings)
     {
-        r_bindingResources[key] = bindings[key];
+        // 响应式深代理：读回来的是代理，写入的是原始对象——必须先 toRaw 再比较，
+        // 否则引用恒不相等 → 每帧都写、每帧都递增 revision → bundle 每帧重录（issue #947）
+        if (toRaw(r_bindingResources[key] as object) !== bindings[key])
+        {
+            r_bindingResources[key] = bindings[key];
+            changed = true;
+        }
     }
+
+    if (changed) bumpRenderObjectRevision(renderObject);
+}
+
+/**
+ * 递增渲染对象的内容修订号（RenderBundle 缓存据此失效，issue #947）。
+ *
+ * 只在**实际写入**时调用：相同引用重复写入不会递增，否则 bundle 会每帧重录、失去缓存意义。
+ */
+export function bumpRenderObjectRevision(renderObject: RenderObject): void
+{
+    const current = (renderObject as { revision?: number }).revision ?? 0;
+
+    (reactive(renderObject) as { revision?: number }).revision = current + 1;
 }
 
 registerLogic('Material', materialLogic);
