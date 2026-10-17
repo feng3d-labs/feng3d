@@ -246,7 +246,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 3 | **循环依赖**：`feng3d` ↔ `particlesystem`/`terrain`；`math` → `objectview` | 依赖方向铁律 + 把交叉依赖的类型/工具下沉到 Layer 0；`oav` 元数据改由对象自身声明 | **Babylon Lite**（One-Way Data Ownership）/ **PlayCanvas**（目录约束） |
 | 4 | **着色器双份人工维护**：79 个 `.glsl` 作为"翻译源" + WGSL 手写内联在 7 个材质类 | **收编 `@feng3d/tsl`**（v0.2.0，320 单测全绿），实现单源生成 GLSL + WGSL | 同 three.js TSL / Babylon 自动转换链 |
 | 5 | **类型安全被削弱**：`feng3d/tsconfig.json` 关闭 `strictNullChecks`/`noImplicitAny`/`strictFunctionTypes`/`noImplicitThis`；~~`logic()` 声明非空却返回 `null`~~ **已修（#92）** | 先修 `logic()` 的可空语义（返回 `Logic \| null` + 调用方显式处理），再分模块开启 `strictNullChecks` | 三家均严格类型（Babylon Lite 强制 strict） |
-| 6 | **资源生命周期**：refcount 未实现；仅 `WGPUTexture` 真 `destroy()`，其余只删缓存；无释放时机保证 | 显式 refcount + **deferred release**（等 `queue.submit()` 之后统一销毁） | **Babylon.js** |
+| 6 | **资源生命周期**：~~refcount 未实现；仅 `WGPUTexture` 真 `destroy()`，其余只删缓存；无释放时机保证~~ **已修（#89）** | 显式 refcount + **deferred release**（等 `queue.submit()` 之后统一销毁） | **Babylon.js** |
 | 7 | **文档漂移**：DESIGN 写目标态、PLAN 混历史与现状、`webgpu/docs/` 未同步、AGENTS 第 7 章记录了已废弃的 submodule 时代 | 现状/目标分离 + 每章 status 标签 + 脚本校验（§5） | **Babylon Lite**（GUIDANCE 不可变 + parity 强制） |
 
 ### 2.3 五项新增能力（吸取三家之长，且适配 feng3d 的战场）
@@ -733,7 +733,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 解开 `feng3d` ↔ `particlesystem`/`terrain` 环 | Babylon Lite（单向所有权） | `npm ls` 无环；依赖方向 lint 通过 |
 | `math → objectview` 倒置修复（`oav` 元数据下沉或对象自声明） | PlayCanvas（core 不依赖上层） | Layer 0 零上层依赖 |
 | 零模块级副作用改造（`logic.ts` 缓存 lazy-init、`Ticker` 自启动移出模块顶层） | Babylon Lite | `sideEffects` 可安全声明；tree-shake 测试通过 |
-| 资源 refcount + deferred release | Babylon.js | `GPUDeviceStats` 的 `created == freed + 存活` 恒等式成立（当前不成立） |
+| 资源 refcount + deferred release | Babylon.js | ✅ **已完成（#89）**：`RefCountedReactiveObject`（`retain` / `release` / `hold`）+ 按 device 分桶的 deferred 队列，`runSubmit` 在 `queue.submit()` 后 `flushDeferredReleases(device)`；归零立刻摘缓存条目、销毁推迟到提交后。已接线：entry → bufferBinding / textureView / sampler / external、bufferBinding → buffer、textureView → texture。验收回归 `packages/webgpu/test/GpuResourceRef.spec.ts`（共享释放 / deferred / 归零重建 / churn 后计数收敛 / `created == freed + 存活`）。**留账**：`WGPUBindGroup` → entry、`WGPURenderPass` → pipeline / bindGroup 两层持有待接（需真实 GPU 验证） |
 | 修复 `GPUDeviceStats.totalMemory` 双计 delta | — | 显存读数正确（当前每次 `addMemory` 多计一个 delta） |
 | `strictNullChecks` 收敛（全仓 23 个包） | Babylon Lite | ✅ **已完成**：`feng3d`（#251 / #253 / #269）与 `editor`（#303 / #305）走独立 `tsconfig.strict.json` + `scripts/check-strict-dirs.mjs`；其余 21 个包直接开各自的 `tsconfig.json`（#282 / #284 / #288 / #290 / #293 / #295 / #297 / #299 / #301；`ui` 为收尾批补登记的第 19 个；`editor-plugin-rotate` 为 #276 阶段 3 新增）。进度与豁免清单在 `scripts/strict-packages.json`，由 `scripts/check-strict-packages.mjs` 双向守住（漏登记 / 误关闭都失败）。**存量**：`feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项；`editor` 的 test/ 未纳入 |
 | pass 编排声明化 | Babylon FrameGraph | ✅ **已完成（#93）**：`render/renderer/ViewSequence.ts` 提供贡献者注册表 + 序列解析；`View.passes` / `View.renderObjects` 是数据入口，`submitComputed` / `canvasRenderPassComputed` 只按序列拼装。5 个 renderer 的落点：Forward / Outline / Wireframe 是主 pass 内对象贡献者，Shadow 是 `beforeMain` 的 pass 贡献者，**Mouse 不占位**（GPU 拾取已由 CPU 射线取代、`draw()` 恒返回 null——「不占位」由「不注册贡献者」表达，不再是编排代码里的特例）。回归：`render/renderer/ViewSequence.spec.ts` + `ViewSequence.builtin.spec.ts` |
@@ -801,7 +801,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 类型严格度 | **23/23 个包已开 `strictNullChecks`**（21 个走各自 tsconfig，`feng3d` / `editor` 走独立 strict 配置；另 3 项 strict 仍关） | 其余 3 项 strict 选项、`feng3d` / `editor` 的 `tsconfig.json` 直接开启、editor 的 test/ 纳入 | Babylon Lite（strict + noUncheckedIndexedAccess） |
 | 测试覆盖率 | ✅ **已有门禁**（`vitest.config.ts` `coverage.thresholds`：52/42/49/52，随 `npm run test:coverage` 进 CI；阈值是"防下降"口径而非达标线，见 §3.1 R10） | ≥60% → 80% | three.js（有覆盖率检查） |
 | 包体 | ✅ **已有基线 + byte 天花板**（`scripts/check-bundle-size.mjs`：3 档引用面 × raw/gzip，超出 +2% 即失败；#73） | 按真实场景分档的预算表 + chunk 预算 | Babylon Lite |
-| 资源释放 | 仅 1 类真 destroy | `created == freed + 存活` 成立 | Babylon（deferred release） |
+| 资源释放 | 仅 1 类真 destroy | ✅ `created == freed + 存活` 成立（#89，含 deferred release） |
 | **错误可观测性** | `console.error` + 静默降级（浏览器下 `NODE_ENV` 判断失效） | 编码错误 + 按需解码 | **Babylon Lite（Coded Errors）** |
 | **模块级副作用** | ✅ 0 违规（CI 门禁 `check-module-side-effects --strict`，issue #88） | 0 违规（lint 强制） | **Babylon Lite（明令禁止）** |
 | **重场景能力** | 缺 CSM / VAT / Resource Pool / 大坐标 | 按客户需求定向补（§1.4.5） | Babylon Lite 已有（诚实差距） |

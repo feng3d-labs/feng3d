@@ -382,7 +382,7 @@ computed 链把派生开销降到零之后，剩余的每帧规模成本在**命
 - RenderBundle 不支持 pass 起止与 compute pass；仅用于 render pass 的 draw 命令段。
 
 ## 7. 生命周期与资源回收
-> 现状：🔶 部分（两级回收未做全：GPU 资源引用计数 + deferred release 见 issue #89）
+> 现状：🔶 部分（数据层两级回收已按本节执行；**GPU 层的引用计数 + deferred release 已落地（issue #89）**，接线面见 7.2 末段）
 
 ### 7.1 数据节点生命周期
 
@@ -410,11 +410,13 @@ computed 链把派生开销降到零之后，剩余的每帧规模成本在**命
 **GPU 层：显式引用计数 + 显式 `destroy()`。** WebGPU 资源（GPUBuffer/GPUTexture/GPUBindGroup 等）不能只靠 GC——`GPUDeviceStats` 的 created/freed 统计与显存都要求确定性释放。规则：
 
 - WGPU 缓存层（`WGPUBufferBinding` / `WGPUTextureView` 等，现基于 ChainMap + WeakMap）增加 **refcount**：消费者（RenderPass / BindingResources）开始使用某资源时 `retain()`，不再使用时 `release()`。
-- refcount 归零 → 立即调用对应的 `destroy()` 并移除缓存条目，保证 `created == freed + 存活` 恒成立。
+- refcount 归零 → **立刻**摘掉缓存条目（避免归零到提交之间又被 `getInstance` 取到待销毁实例），**销毁本身推迟到 `queue.submit()` 之后**执行（本帧命令缓冲可能仍在引用它）。两者合起来满足 `created == freed + 存活`。
 - 占位符换装、url 替换、对象从场景移除等所有"旧资源下岗"路径（3.2.4）都经由该机制回收。
 - 数据从树移除后，其 GPU 资源经"派生链失效 → 消费者 release"确定性释放，不依赖 GC 时机。
 
-**现状差距**：WGPU 缓存目前无 refcount（GPU 资源随代理/缓存对象 GC，`destroy` 不保证调用），为本章最大待实现项，已列入改造计划阶段 3。
+**实现（issue #89）**：`packages/webgpu/src/utils/GpuResourceRef.ts` 提供 `RefCountedReactiveObject`（`retain` / `release` / `refCount` / `isReleased` + 消费侧的 `hold()`）与按 device 分桶的 deferred 队列；`runSubmit` 在 `queue.submit()` 之后调 `flushDeferredReleases(device)`，级联销毁在同一次 flush 内循环处理。`WGPUBuffer` / `WGPUTexture` / `WGPUTextureView` / `WGPUSampler` / `WGPUBindGroup` / `WGPURenderPipeline` 已换到该基类；消费关系按「持有」接线：`WGPUBindGroupEntry` →（bufferBinding / textureView / sampler / external）、`WGPUBufferBinding` → buffer、`WGPUTextureView` → texture。
+
+**留账**：`WGPUBindGroup` → entry、`WGPURenderPass` → pipeline / bindGroup 两层持有尚未接线——它们数量少、生命周期跟随 pass，接入需要真实 GPU 场景验证「不提前销毁」，见 issue #89 的后续批。
 
 ## 8. 错误处理与数据校验
 > 现状：🔶 部分（编码错误 + 按需解码未做，见 issue #94；数据校验见 packages/feng3d/src/core/Validate.ts）
