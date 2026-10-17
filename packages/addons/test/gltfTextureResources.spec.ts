@@ -192,3 +192,53 @@ describe('GLTFLoader 纹理映射：真实资源 collision-world.glb', () =>
         expect(result.primitives[0].geometry.indices!.length).toBe(5262);
     });
 });
+
+
+describe('GLTFLoader 纹理 baseUri 解析（issue #96）', () =>
+{
+    const BASE = 'https://example.com/models/x.gltf';
+
+    it('传 baseUri 时相对 uri 解析为绝对地址', () =>
+    {
+        const result = parseGLTF(makeTextureGltf(), undefined, BASE);
+        const material = result.primitives[0].material as StandardMaterial;
+
+        expect(asResource(material.s_diffuse).url).toBe('https://example.com/models/albedo.png');
+    });
+
+    it('data: URI 不受 baseUri 影响（内嵌数据与基准无关）', () =>
+    {
+        const result = parseGLTF(makeTextureGltf(), undefined, BASE);
+        const material = result.primitives[1].material as StandardMaterial;
+
+        expect(asResource(material.s_diffuse).url).toBe('data:image/png;base64,iVBORw0KGgo=');
+    });
+
+    it('绝对 uri 不受 baseUri 影响', () =>
+    {
+        const json = JSON.parse(makeTextureGltf());
+
+        json.images[0].uri = 'https://cdn.example.com/a.png';
+
+        const result = parseGLTF(JSON.stringify(json), undefined, BASE);
+        const material = result.primitives[0].material as StandardMaterial;
+
+        expect(asResource(material.s_diffuse).url).toBe('https://cdn.example.com/a.png');
+    });
+
+    it('baseUri 本身是相对地址时原样降级（不猜基准）', () =>
+    {
+        const result = parseGLTF(makeTextureGltf(), undefined, 'models/x.gltf');
+        const material = result.primitives[0].material as StandardMaterial;
+
+        expect(asResource(material.s_diffuse).url).toBe('albedo.png');
+    });
+
+    it('不传 baseUri 时保持原有语义（uri 原样）', () =>
+    {
+        const result = parseGLTF(makeTextureGltf());
+        const material = result.primitives[0].material as StandardMaterial;
+
+        expect(asResource(material.s_diffuse).url).toBe('albedo.png');
+    });
+});
