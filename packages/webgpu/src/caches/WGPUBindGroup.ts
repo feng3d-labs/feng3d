@@ -2,14 +2,14 @@ import { Computed, computed } from '@feng3d/reactivity';
 import { BindingResources } from '../data/BindingResources';
 import { ChainMap } from '../utils/ChainMap';
 
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { WGPUBindGroupEntry } from './WGPUBindGroupEntry';
 import { WGPUBindGroupLayout } from './WGPUBindGroupLayout';
 import { BindGroupLayoutDescriptor } from './WGPUPipelineLayout';
 import { trackCreate, trackFree } from '../utils/GPUDeviceStats';
 import { trackGpuResource } from '../utils/GpuResourceReleaser';
 
-export class WGPUBindGroup extends ReactiveObject
+export class WGPUBindGroup extends RefCountedReactiveObject
 {
     get gpuBindGroup()
     {
@@ -20,11 +20,13 @@ export class WGPUBindGroup extends ReactiveObject
 
     constructor(device: GPUDevice, bindGroupLayout: BindGroupLayoutDescriptor, bindingResources: BindingResources)
     {
-        super();
+        super(device);
 
         this._onCreate(device, bindGroupLayout, bindingResources);
         //
         WGPUBindGroup.map.set([device, bindGroupLayout, bindingResources], this);
+        // 归零即摘缓存（issue #89）：归零到提交之间有窗口，getInstance 不能再取到待销毁实例
+        this.setZeroRefCall(() => WGPUBindGroup.map.delete([device, bindGroupLayout, bindingResources]));
         trackCreate(device, 'bindGroup');
         // 确定性释放索引（设计 7.2）：bindingResources 为数据侧键，dispose 时批量销毁
         const untrack = trackGpuResource(bindingResources, this);

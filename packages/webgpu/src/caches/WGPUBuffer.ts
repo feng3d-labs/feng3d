@@ -1,7 +1,7 @@
 import { Computed, computed, reactive } from '@feng3d/reactivity';
 import { Buffer } from '../data/Buffer';
 import { ChainMap } from '../utils/ChainMap';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { trackCreate, trackFree, addMemory } from '../utils/GPUDeviceStats';
 import { createResourcePool, ResourcePool, ResourcePoolStats } from '../utils/ResourcePool';
 
@@ -10,7 +10,7 @@ import { createResourcePool, ResourcePool, ResourcePoolStats } from '../utils/Re
  * 负责管理GPU缓冲区的创建、数据写入和生命周期管理。
  * 使用响应式系统自动处理缓冲区更新和数据同步。
  */
-export class WGPUBuffer extends ReactiveObject
+export class WGPUBuffer extends RefCountedReactiveObject
 {
     get gpuBuffer()
     {
@@ -30,7 +30,7 @@ export class WGPUBuffer extends ReactiveObject
      */
     constructor(device: GPUDevice, buffer: Buffer)
     {
-        super();
+        super(device);
         this._device = device;
 
         this._onCreate(device, buffer);
@@ -38,6 +38,9 @@ export class WGPUBuffer extends ReactiveObject
         //
         WGPUBuffer.map.set([device, buffer], this);
         trackCreate(device, 'buffer');
+        // refcount 归零：**立刻**摘掉缓存条目（否则提交前 getInstance 还会取到待销毁实例），
+        // 真销毁（GPU destroy / 统计 freed / 显存扣减）由 deferred 队列在提交后执行
+        this.setZeroRefCall(() => WGPUBuffer.map.delete([device, buffer]));
         this.destroyCall(() =>
         {
             WGPUBuffer.map.delete([device, buffer]);

@@ -1,6 +1,7 @@
 import { noMutationCount, reactive } from '@feng3d/reactivity';
 import { CanvasContext } from '../data/CanvasContext';
 import { Submit } from '../data/Submit';
+import { flushDeferredReleases } from '../utils/GpuResourceRef';
 import { pullUploads } from '../utils/GpuUploadRegistry';
 import { runCommandEncoder } from './runCommandEncoder';
 
@@ -23,6 +24,13 @@ export function runSubmit(device: GPUDevice, submit: Submit, canvasContext?: Can
         pullUploads(device);
 
         device.queue.submit(commandBuffers);
+
+        // 引用计数归零的资源在这里才真正销毁（issue #89：deferred release）。
+        // 放在 submit 之后：归零可能发生在本帧编码期间，而命令缓冲仍在引用该资源——
+        // 立即销毁会让 GPU 侧读到已销毁的 buffer / texture（参考 Babylon.js 的
+        // destroyDeferredBuffers）。销毁写入的统计变化属于"数据变化的结果"，
+        // 因此仍留在 noMutationCount 内，不推高按需呈现的脏标记。
+        flushDeferredReleases(device);
 
         reactive(device.queue).afterSubmit = ~~device.queue.afterSubmit + 1;
     });

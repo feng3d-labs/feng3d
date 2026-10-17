@@ -2,7 +2,7 @@ import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { ChainMap } from '../utils/ChainMap';
 import { Texture } from '../data/Texture';
 import { TextureView } from '../data/TextureView';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { WGPUTextureLike } from './WGPUTextureLike';
 import { trackCreate, trackFree } from '../utils/GPUDeviceStats';
 
@@ -28,7 +28,7 @@ import { trackCreate, trackFree } from '../utils/GPUDeviceStats';
  * - 纹理数组和立方体贴图的不同视图
  * - 多级纹理的不同mip级别访问
  */
-export class WGPUTextureView extends ReactiveObject
+export class WGPUTextureView extends RefCountedReactiveObject
 {
     /**
      * WebGPU纹理视图对象
@@ -53,12 +53,14 @@ export class WGPUTextureView extends ReactiveObject
      */
     constructor(device: GPUDevice, view: TextureView)
     {
-        super();
+        super(device);
 
         // 设置纹理视图创建和更新逻辑
         this._onCreate(device, view);
         //
         WGPUTextureView.map.set([device, view], this);
+        // 归零即摘缓存（issue #89）：归零到提交之间有窗口，getInstance 不能再取到待销毁实例
+        this.setZeroRefCall(() => WGPUTextureView.map.delete([device, view]));
         trackCreate(device, 'textureView');
         this.destroyCall(() =>
         {
@@ -86,6 +88,9 @@ export class WGPUTextureView extends ReactiveObject
             // 获取底层纹理的WebGPU纹理实例
             r_view.texture;
             const wgpuTexture = WGPUTextureLike.getInstance(device, view.texture);
+
+            // 持有底层纹理（issue #89）：视图活着，纹理就不能被销毁
+            this.hold(wgpuTexture);
             const gpuTexture = wgpuTexture.gpuTexture;
 
             // 生成纹理视图标签，如果没有指定则使用纹理标签

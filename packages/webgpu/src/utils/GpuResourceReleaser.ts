@@ -1,4 +1,5 @@
 import type { ReactiveObject } from '../ReactiveObject';
+import type { GpuResourceRef } from './GpuResourceRef';
 
 /**
  * GPU 资源确定性释放索引（框架设计文档 7.2）。
@@ -48,7 +49,22 @@ export function trackGpuResource(key: object, instance: ReactiveObject): () => v
 
     set.add(ref);
 
-    return () => set.delete(ref);
+    // 登记即持有：引用计数 +1（issue #89）。同一实例被多处登记时各持一份，
+    // 于是「一处释放」不会销毁别人还在用的资源；全部释放后归零 → 提交后销毁。
+    // 未登记的实例计数保持 0，行为与引入计数前一致（不会被提前销毁）。
+    if (isRefCounted(instance)) instance.retain();
+
+    return () =>
+    {
+        set.delete(ref);
+    };
+}
+
+/** 实例是否实现了引用计数（{@link GpuResourceRef}） */
+function isRefCounted(instance: unknown): instance is ReactiveObject & GpuResourceRef
+{
+    return !!instance && typeof (instance as GpuResourceRef).retain === 'function'
+        && typeof (instance as GpuResourceRef).release === 'function';
 }
 
 /**
@@ -64,10 +80,12 @@ export function destroyGpuResourcesOf(key: object): void
     {
         const instance = ref.deref();
 
-        if (instance)
-        {
-            instance.destroy();   // 执行 destroyCall 链：GPU 资源销毁、统计、缓存清理
-        }
+        if (!instance) continue;
+        // 引用计数：release 一次（对应 trackGpuResource 时的一次 retain）。
+        // 归零才排队销毁，且销毁推迟到 queue.submit() 之后（issue #89）。
+        // 非计数实例保持原语义：立即销毁。
+        if (isRefCounted(instance)) instance.release();
+        else instance.destroy();   // 执行 destroyCall 链：GPU 资源销毁、统计、缓存清理
     }
     set.clear();
 }

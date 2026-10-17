@@ -13,6 +13,7 @@ import { installGPUTextureCreateViewPatch } from './caches/WGPUTextureView';
 import './data/RenderObject';
 import './data/RenderPass';
 import { runSubmit } from './internal/runSubmit';
+import { flushDeferredReleases } from './utils/GpuResourceRef';
 import { copyDepthTexture } from './utils/copyDepthTexture';
 import { getGPUDevice } from './utils/getGPUDevice';
 import { readPixels } from './utils/readPixels';
@@ -205,6 +206,9 @@ export class WebGPU
         commandEncoder.copyBufferToBuffer(source, actualOffset, destination, 0, actualLength);
 
         this.device.queue.submit([commandEncoder.finish()]);
+
+        // 与 runSubmit 同一口径：提交之后统一销毁归零资源（issue #89）
+        flushDeferredReleases(this.device);
 
         await destination.mapAsync(GPUMapMode.READ);
 

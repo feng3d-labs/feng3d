@@ -4,7 +4,7 @@ import { RenderPipeline } from '../data/RenderPipeline';
 import { VertexAttributes } from '../data/VertexAttributes';
 
 import { RenderPassFormat } from '../internal/RenderPassFormat';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { WGPUDepthStencilState } from './WGPUDepthStencilState';
 import { WGPUFragmentState } from './WGPUFragmentState';
 import { WGPUMultisampleState } from './WGPUMultisampleState';
@@ -26,7 +26,7 @@ import { trackCreate, trackFree } from '../utils/GPUDeviceStats';
  * - 深度和模板测试
  * - 多重采样设置
  */
-export class WGPURenderPipeline extends ReactiveObject
+export class WGPURenderPipeline extends RefCountedReactiveObject
 {
     /**
      * 对应的WebGPU渲染管线对象
@@ -49,10 +49,12 @@ export class WGPURenderPipeline extends ReactiveObject
      */
     constructor(device: GPUDevice, renderPipeline: RenderPipeline, renderPassFormat: RenderPassFormat, vertices: VertexAttributes, indexFormat: GPUIndexFormat)
     {
-        super();
+        super(device);
         this._onCreate(device, renderPipeline, renderPassFormat, vertices, indexFormat);
 
         WGPURenderPipeline.map.set([device, renderPipeline, renderPassFormat, vertices, indexFormat], this);
+        // 归零即摘缓存（issue #89）：归零到提交之间有窗口，getInstance 不能再取到待销毁实例
+        this.setZeroRefCall(() => WGPURenderPipeline.map.delete([device, renderPipeline, renderPassFormat, vertices, indexFormat]));
         trackCreate(device, 'renderPipeline');
         this.destroyCall(() =>
         {
