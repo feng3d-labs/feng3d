@@ -8,9 +8,9 @@ import { toRaw } from './shared/general';
  *
  * 用法：
  * ```ts
- * logic(object3D)         // 等价于原 logic(object3D)
- * logic(camera)           // 等价于原 cameraLogic(camera)
- * logic(transform)        // 等价于原 transformLogic(transform)
+ * logicOrThrow(object3D)         // 等价于原 logicOrThrow(object3D)
+ * logicOrThrow(camera)           // 等价于原 cameraLogic(camera)
+ * logicOrThrow(transform)        // 等价于原 transformLogic(transform)
  * ```
  *
  * 注册（第二参数只能是**工厂函数**，issue #653）：
@@ -42,7 +42,7 @@ import { toRaw } from './shared/general';
  */
 export interface LogicMap
 {
-    // 必要 any: 开放注册表，未注册类型通过 logic() 调用时需保持可调用性
+    // 必要 any: 开放注册表，未注册类型通过 logicOrThrow() 调用时需保持可调用性
     [type: string]: any;
 }
 
@@ -55,7 +55,7 @@ export interface LogicMap
  * `class XxxLogic` 已由门禁 `scripts/check-register-logic-factory.mjs` 禁止。
  *
  * 参数用**双变（bivariant）方法签名**而不是普通函数类型：各创建入口的签名是具体数据接口
- * （如 `(data: Camera) => CameraLogic`），而 `logic()` 传给工厂的是运行期弱类型对象
+ * （如 `(data: Camera) => CameraLogic`），而 `logicOrThrow()` 传给工厂的是运行期弱类型对象
  * `{ readonly __type__: K }`。普通函数类型在 `strictFunctionTypes` 下参数逆变，二者互不相容，
  * 会迫使每个注册点写 `as` 断言；双变签名接受任一方向的兼容（各具体接口都带 `__type__` 字段，
  * 可赋给 `{ readonly __type__: K }`），于是既去掉 `any`、又保留「class 不可注册」。
@@ -104,7 +104,7 @@ function getLogicMap(): WeakMap<object, unknown>
  * 写法就是注册那个工厂函数：
  * `registerLogic('Camera', cameraLogic)`。
  * class 构造函数（LogicConstructor）不再支持，`class XxxLogic` 也已被门禁禁止——
- * `logic()` 内部直接调用工厂，不再用 `new`（普通函数能被 `new` 只是 ES [[Construct]] 的副作用，箭头函数则不行）。
+ * `logicOrThrow()` 内部直接调用工厂，不再用 `new`（普通函数能被 `new` 只是 ES [[Construct]] 的副作用，箭头函数则不行）。
  *
  * factory 为必填：每个 `__type__` 注册时必须提供对应的 Logic 工厂。
  * 默认值由各 Logic 自行处理：在工厂函数顶部对 raw 缺失字段单独赋值。
@@ -125,7 +125,7 @@ export function registerLogic<K extends keyof LogicMap>(
  * 注销一个类型的 logic 工厂。
  *
  * 供**插件被关掉**时回收贡献（issue #169）：关掉一个插件后，它声明的类型应当立刻
- * 从分发表里消失，`logic()` 回到"未注册"的表现，而不是留着一份只在运行期才看得见的残留。
+ * 从分发表里消失，`logicOrThrow()` 回到"未注册"的表现，而不是留着一份只在运行期才看得见的残留。
  *
  * 两处**刻意不清**，如实写在文档里而不是假装彻底：
  * - `_logicMap` 里**已经创建过**的实例不回收——它们被场景对象持有着，
@@ -145,7 +145,7 @@ export function unregisterLogic(__type__: string): boolean
 /**
  * 某个类型名是否已注册。
  *
- * 存在的意义是**让调用方在"问"与"试"之间有个选择**：`logic()` 对未注册类型会打一条
+ * 存在的意义是**让调用方在"问"与"试"之间有个选择**：`logicOrThrow()` 对未注册类型会打一条
  * `console.error`，于是"想知道能不能取出 logic"只能靠调用一次并观察副作用——
  * 那正是"数据不合法"与"类型没注册"混在一起、报错只剩一句
  * `未注册的 __type__ 'undefined'` 的原因（issue #174 的排查现场）。
@@ -164,21 +164,39 @@ export function isLogicRegistered(__type__: string): boolean
 const _pending = {};
 
 /**
- * 获取数据的 logic。
+ * 未注册类型时的诊断消息。
  *
- * 按 `data.__type__` 查找工厂创建 logic，WeakMap 缓存同一 data 的 logic 实例。
- * 内部使用 toRaw 统一 key，确保响应式代理与原始对象共享同一 logic。
+ * `logicOrThrow()` 的 dev 报错与 `logicOrThrow()` 抛出的错误共用这一份措辞——两处各写一套时，
+ * 同一件事会有两种说法，排查的人得先猜自己走的是哪条路径。
  *
- * 默认值填充由各 Logic 自行处理：工厂调用前不再做任何数据预处理，
- * 各 Logic 构造函数 / 工厂函数顶部自行对 raw 缺失字段赋默认值。
- *
- * 调用方可显式指定返回类型：`const l = logic<CameraLogic>(camera)`。
- * 若 `LogicMap` 中注册了 `__type__` 对应的类型，也可省略泛型自动推断。
+ * @param raw 数据对象（须含 __type__ 字段）
+ * @returns 可直接展示给开发者的中文诊断
+ */
+function unregisteredMessage(raw: { readonly __type__?: unknown }): string
+{
+    // 报错必须**能照着修**，所以除了类型名还给出数据的键：
+    //   · `__type__` 是 undefined 时（旧格式 / 手写字面量漏字段），
+    //     "未注册的 __type__ 'undefined'" 等于没说——给出键才看得出这是"缺字段"而不是"类型名写错"；
+    //   · 类型名拼错时，键里能看到它本来想写什么。
+    // 提示里刻意**不提 import 顺序**：注册应当来自插件清单的显式安装
+    // （见 packages/editor/docs/PLUGINS.md），依赖"import 到就注册"
+    // 会让漏注册变成只有跑起来才知道的问题（issue #170）
+    const keys = raw && typeof raw === 'object' ? Object.keys(raw) : [];
+    const keysText = keys.length > 0 ? keys.join(', ') : '(空对象)';
+
+    return `[logic] 未注册的 __type__ '${String(raw?.__type__)}'（该对象的键：${keysText}）——`
+        + '需要先经 registerLogic 注册（编辑器侧由插件清单安装，见 packages/editor/docs/PLUGINS.md）；'
+        + '若 __type__ 是 undefined，说明这份数据缺该字段（旧格式数据或手写字面量漏写）';
+}
+
+/**
+ * 把数据解析成 logic 实例（`logicOrThrow()` / `logicOrThrow()` 的共同实现）。
  *
  * @param data 数据对象（须含 __type__ 字段）
- * @returns logic 对象（未注册的类型返回 null）
+ * @param throwOnMissing 未注册时抛错还是返回 null
+ * @returns logic 实例；`throwOnMissing` 为 false 且类型未注册时返回 null
  */
-export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap[K]
+function resolveLogic<K extends keyof LogicMap>(data: { __type__: K }, throwOnMissing: boolean): LogicMap[K] | null
 {
     // 使用 toRaw 统一 key，避免响应式代理与原始对象创建不同 logic 实例
     const raw = toRaw(data);
@@ -190,30 +208,22 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
 
     if (!factory)
     {
+        // 期望非空的调用方走这里：立刻抛出**能照着修**的错误，
+        // 而不是返回 null 让它在几层之外的属性访问处炸成一句 "Cannot read properties of null"
+        if (throwOnMissing) throw new Error(unregisteredMessage(raw));
+
         // 错误处理（框架设计文档 8.2）：dev 报错指出类型名；prod 静默返回 null（消费方跳过该节点）
         if ((globalThis as { process?: { env?: { NODE_ENV?: string } } }).process?.env?.NODE_ENV !== 'production')
         {
-            // 报错必须**能照着修**，所以除了类型名还给出数据的键：
-            //   · `__type__` 是 undefined 时（旧格式 / 手写字面量漏字段），
-            //     "未注册的 __type__ 'undefined'" 等于没说——给出键才看得出这是"缺字段"而不是"类型名写错"；
-            //   · 类型名拼错时，键里能看到它本来想写什么。
-            // 提示里刻意**不提 import 顺序**：注册应当来自插件清单的显式安装
-            // （见 packages/editor/src/plugins/install.ts），依赖"import 到就注册"
-            // 会让漏注册变成只有跑起来才知道的问题（issue #170）
-            const keys = raw && typeof raw === 'object' ? Object.keys(raw) : [];
-            const keysText = keys.length > 0 ? keys.join(', ') : '(空对象)';
-
-            console.error(`[logic] 未注册的 __type__ '${String(raw?.__type__)}'（该对象的键：${keysText}）——`
-                + '需要先经 registerLogic 注册（编辑器侧由插件清单安装，见 packages/editor/docs/PLUGINS.md）；'
-                + '若 __type__ 是 undefined，说明这份数据缺该字段（旧格式数据或手写字面量漏写）');
+            console.error(unregisteredMessage(raw));
         }
         // 注意：不缓存 null。若把 null 写入缓存，事后再 registerLogic 也不再生效，
         // 「漏 import 模块」会变成永久性静默失败（仅 import 顺序恰好正确才安全）。
 
-        return null as LogicMap[K];
+        return null;
     }
 
-    // 先缓存占位（防止工厂内部递归调用 logic() 导致栈溢出）
+    // 先缓存占位（防止工厂内部递归调用 logicOrThrow() 导致栈溢出）
     getLogicMap().set(raw, _pending);
     // 直接调用工厂函数（issue #653：注册值只能是函数，不再用 new 调用）
     const l = factory(raw);
@@ -223,3 +233,50 @@ export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap
     return l;
 }
 
+/**
+ * 获取数据的 logic（**可空**）。
+ *
+ * 按 `data.__type__` 查找工厂创建 logic，WeakMap 缓存同一 data 的 logic 实例。
+ * 内部使用 toRaw 统一 key，确保响应式代理与原始对象共享同一 logic。
+ *
+ * 未注册的类型返回 `null`，签名如实声明了这一点（issue #92：原先声明非空、运行期却返回 null，
+ * 调用方按非空使用，于是"类型没注册"要到几层之外的属性访问才炸）。
+ *
+ * 什么时候用 `logicOrThrow()`、什么时候用 {@link logicOrThrow}：
+ * - **可选查找**：数据来源不确定（插件没装 / 外部数据 / 遍历未知类型的集合），
+ *   "这个类型没有行为"是**合法状态**——用 `logicOrThrow()` 并显式判空（`if (!l) continue;` / `l?.x`）；
+ * - **已知注册**：数据是本包场景树的一部分（类型由本包或依赖包 `registerLogic` 登记），
+ *   缺了就是**程序错误**——用 `logicOrThrow()`，让错误在发生处带着类型名抛出来。
+ *
+ * 默认值填充由各 Logic 自行处理：工厂调用前不再做任何数据预处理，
+ * 各 Logic 构造函数 / 工厂函数顶部自行对 raw 缺失字段赋默认值。
+ *
+ * 调用方可显式指定返回类型：`const l = logic<CameraLogic>(camera)`。
+ * 若 `LogicMap` 中注册了 `__type__` 对应的类型，也可省略泛型自动推断。
+ *
+ * @param data 数据对象（须含 __type__ 字段）
+ * @returns logic 对象（未注册的类型返回 null）
+ */
+export function logic<K extends keyof LogicMap>(data: { __type__: K }): LogicMap[K] | null
+{
+    return resolveLogic(data, false);
+}
+
+/**
+ * 获取数据的 logic（**非空**版本）。
+ *
+ * 与 {@link logic} 的唯一区别是未注册类型直接抛错：错误消息里带 `__type__` 与数据的键，
+ * 指向「需要 `registerLogic` 注册」这一真实原因（issue #92）。
+ *
+ * 用它是**显式处理了空值**：把"这里必须存在 logic"这个前提写成运行期断言，
+ * 而不是让 `null` 流到下一层变成 `Cannot read properties of null (reading 'xxx')`。
+ *
+ * @param data 数据对象（须含 __type__ 字段）
+ * @returns logic 对象（不会为 null）
+ * @throws 类型未注册时抛错
+ */
+export function logicOrThrow<K extends keyof LogicMap>(data: { __type__: K }): LogicMap[K]
+{
+    // resolveLogic 在 throwOnMissing = true 时不会返回 null，这里的断言只是把这一点告诉类型系统
+    return resolveLogic(data, true) as LogicMap[K];
+}
