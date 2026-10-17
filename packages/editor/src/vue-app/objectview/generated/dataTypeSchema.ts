@@ -100,7 +100,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'ColorMaterial': [
         { name: 'uniforms', type: 'ColorUniforms', control: 'Object', readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'ConeGeometry': [
         { name: 'topRadius', type: 'number', control: 'number', optional: true, readonly: true },
@@ -167,7 +167,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'uniforms', type: 'DebugShadowMapUniforms', control: 'Object', readonly: true },
         { name: 's_texture', type: 'Texture', control: 'Object', readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'DirectionalLight': [
         { name: 'scutoff', type: 'number', control: 'number', optional: true, readonly: true },
@@ -321,7 +321,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'position', type: 'Vector3Like', control: 'Vector3', readonly: true },
     ],
     'Material': [
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'Matrix3x3': [
         { name: 'elements', type: 'Matrix3x3Elements', control: 'Object', readonly: true },
@@ -376,7 +376,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     ],
     'NormalMaterial': [
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'Object3D': [
         { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
@@ -508,7 +508,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'sampler', type: 'Sampler', control: 'Object', optional: true, readonly: true },
         { name: 'blend', type: 'BlendState', control: 'Object', optional: true, readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'ParticleNoiseModule': [
         { name: 'separateAxes', type: 'boolean', control: 'Boolean', readonly: true },
@@ -704,11 +704,11 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'PointMaterial': [
         { name: 'uniforms', type: 'PointUniforms', control: 'Object', readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'ProjectedShadowMaterial': [
         { name: 'uniforms', type: 'ProjectedShadowUniforms', control: 'Object', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'PureDataAssetData': [
     ],
@@ -764,7 +764,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
     'SegmentMaterial': [
         { name: 'uniforms', type: 'SegmentUniforms', control: 'Object', readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'Skeleton': [
         { name: 'boneInverses', type: 'Matrix4x4[]', control: 'Array', readonly: true, itemControl: 'Object' },
@@ -820,7 +820,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'cullFace', type: '"back" | "front" | "none"', control: 'Enum', optional: true, readonly: true, values: ['back', 'front', 'none'] },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
         { name: 'linearLighting', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'TerrainGeometry': [
         { name: 'heightMap', type: 'Texture', control: 'Object', readonly: true },
@@ -855,7 +855,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 's_splatTexture1', type: 'Texture', control: 'Object', optional: true, readonly: true },
         { name: 's_splatTexture2', type: 'Texture', control: 'Object', optional: true, readonly: true },
         { name: 's_splatTexture3', type: 'Texture', control: 'Object', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'Texture': [
         { name: 'url', type: 'string', control: 'String', readonly: true },
@@ -866,7 +866,7 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'sampler', type: 'Sampler', control: 'Object', optional: true, readonly: true },
         { name: 'blend', type: 'BlendState', control: 'Object', optional: true, readonly: true },
         { name: 'depthWrite', type: 'boolean', control: 'Boolean', optional: true, readonly: true },
-        { name: 'name', type: 'string', control: 'String', optional: true },
+        { name: 'name', type: 'string', control: 'String', optional: true, readonly: true },
     ],
     'TorusGeometry': [
         { name: 'radius', type: 'number', control: 'number', optional: true, readonly: true },
