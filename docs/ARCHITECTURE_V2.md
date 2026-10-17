@@ -163,9 +163,11 @@ Lite 领先的 CSM、VAT、Resource Pool、Floating Origin、High-Precision Matr
 > **进展（issue #98）**：Resource Pool 的**缓冲区池**已落地，分两层：
 > `packages/webgpu/src/utils/ResourcePool.ts`（按「规格键 → 闲置资源」分桶、单键 + 单 device 两级容量、
 > 最旧优先淘汰、`reused/released/destroyed/idle` 读数）与 `WGPUBuffer` 的可选接入
-> （归还点入池、按 `size|usage` 规格复用，新数据走 `queue.writeBuffer`）。开关
-> `setGpuBufferPoolEnabled()` **默认关闭**——池化会改变「显存驻留」与「销毁时机」，
-> 未在有 GPU 的真机上验证画面前不应默认开启（与 #99 同一条理由）。**纹理池化与真机验收未做**。
+> （归还点入池、按 `size|usage` 规格复用，新数据走 `queue.writeBuffer`），以及 **`WGPUTexture` 的纹理池**
+> （按描述符规格复用，但前提更严：mip 链只有一层、不生成 mipmap、sources 完整覆盖整张纹理——
+> 复用后必须把内容整体重写，否则会把上一份内容泄漏进新纹理）。两个开关 `setGpuBufferPoolEnabled()` /
+> `setGpuTexturePoolEnabled()` 都**默认关闭**——池化会改变「显存驻留」与「销毁时机」，
+> 未在有 GPU 的真机上验证画面前不应默认开启（与 #99 同一条理由）。**真机画面验收未做**。
 
 **② Coded Errors 是"静默失效"的正解**
 Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDecoding`（常开）与 `decodeError`
