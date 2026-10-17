@@ -3,6 +3,7 @@ import { Buffer } from '../data/Buffer';
 import { ChainMap } from '../utils/ChainMap';
 import { ReactiveObject } from '../ReactiveObject';
 import { trackCreate, trackFree, addMemory } from '../utils/GPUDeviceStats';
+import { createResourcePool, ResourcePool, ResourcePoolStats } from '../utils/ResourcePool';
 
 /**
  * WebGPU缓冲区管理器。
@@ -19,8 +20,6 @@ export class WGPUBuffer extends ReactiveObject
 
     private _computed: Computed<GPUBuffer> | null;
 
-    /** 当前 GPU 缓冲区占用的字节数（用于销毁/重建时从统计中减去） */
-    private _currentBytes = 0;
     /** 关联的 device（销毁时减统计用） */
     private _device: GPUDevice;
 
@@ -43,11 +42,6 @@ export class WGPUBuffer extends ReactiveObject
         {
             WGPUBuffer.map.delete([device, buffer]);
             trackFree(device, 'buffer');
-            if (this._currentBytes > 0)
-            {
-                addMemory(device, 'bufferMemory', -this._currentBytes);
-                this._currentBytes = 0;
-            }
         });
     }
 
@@ -60,6 +54,8 @@ export class WGPUBuffer extends ReactiveObject
         const r_buffer = reactive(buffer);
 
         let gpuBuffer: GPUBuffer;
+        /** 当前 GPU 缓冲区对应的池键（归还时按它入池；池化关闭或未入池时为 null） */
+        let gpuBufferKey: string | null = null;
 
         // 监听缓冲区配置变化，自动重新创建GPU缓冲区
         this._computed = computed(() =>
@@ -72,36 +68,58 @@ export class WGPUBuffer extends ReactiveObject
             // 验证缓冲区尺寸必须为4的倍数（WebGPU要求）
             console.assert(!!size && size % 4 === 0, `初始化缓冲区时必须设置缓冲区尺寸且必须为4的倍数！`);
 
-            // 如果初始化时存在数据，则使用mappedAtCreation方式上传数据
-            const mappedAtCreation = data !== undefined;
+            const usage = WGPUBuffer.defaultGPUBufferUsage;
+            const poolKey = `${size}|${usage}`;
 
-            // 销毁旧的GPU缓冲区
-            gpuBuffer?.destroy();
-
-            // 创建GPU缓冲区
-            gpuBuffer = device.createBuffer({
-                label,
-                size,
-                usage: WGPUBuffer.defaultGPUBufferUsage,
-                mappedAtCreation,
-            });
-
-            // 统计显存：先减旧 size 再加新 size（缓冲区重建时 size 可能变化）
-            if (this._currentBytes > 0)
+            // 归还旧的GPU缓冲区：池化开启时入池复用，否则按原行为销毁并扣减显存
+            if (gpuBuffer)
             {
-                addMemory(device, 'bufferMemory', -this._currentBytes);
+                WGPUBuffer._disposeGpuBuffer(device, gpuBufferKey, gpuBuffer);
             }
-            this._currentBytes = size;
-            addMemory(device, 'bufferMemory', size);
+            gpuBufferKey = null;
 
-            // 如果初始化时存在数据，使用map方式上传数据
-            if (mappedAtCreation)
+            // 池化复用前提：初始数据完整覆盖整个缓冲区（byteLength === size）。
+            // size 是 byteLength 向上 4 字节对齐的结果，两者不等只差 1–3 字节，而 writeBuffer
+            // 的 offset/size 都要求 4 字节对齐，无法单独清理这几个字节，故这类数据不复用。
+            const pool = WGPUBuffer._pool;
+            const reusable = pool && data !== undefined && data.byteLength === size
+                ? pool.take(device, poolKey)
+                : undefined;
+
+            if (reusable)
             {
-                // 将数据写入映射的内存区域
-                new Int8Array(gpuBuffer.getMappedRange()).set(new Int8Array(data));
+                gpuBuffer = reusable;
+                gpuBufferKey = poolKey;
+                if (label !== undefined) gpuBuffer.label = label;
+                // 复用路径不能再 mappedAtCreation：改用队列写入（排在已提交命令之后）
+                device.queue.writeBuffer(gpuBuffer, 0, data as unknown as GPUAllowSharedBufferSource);
+            }
+            else
+            {
+                // 如果初始化时存在数据，则使用mappedAtCreation方式上传数据
+                const mappedAtCreation = data !== undefined;
 
-                // 取消映射，使数据生效
-                gpuBuffer.unmap();
+                // 创建GPU缓冲区
+                gpuBuffer = device.createBuffer({
+                    label,
+                    size,
+                    usage,
+                    mappedAtCreation,
+                });
+                gpuBufferKey = poolKey;
+
+                // 统计显存：只有真正新建才计一次（复用不重复计，池中驻留的早已计入）
+                addMemory(device, 'bufferMemory', size);
+
+                // 如果初始化时存在数据，使用map方式上传数据
+                if (mappedAtCreation)
+                {
+                    // 将数据写入映射的内存区域
+                    new Int8Array(gpuBuffer.getMappedRange()).set(new Int8Array(data));
+
+                    // 取消映射，使数据生效
+                    gpuBuffer.unmap();
+                }
             }
 
             WGPUBuffer._writeBuffers(device, gpuBuffer, buffer);
@@ -141,12 +159,31 @@ export class WGPUBuffer extends ReactiveObject
             WGPUBuffer._writeBuffers(device, gpuBuffer, buffer);
         });
 
-        // 注册销毁回调，确保在对象销毁时清理GPU缓冲区
+        // 注册销毁回调，确保在对象销毁时清理GPU缓冲区（池化开启时归还入池）
         this.destroyCall(() =>
         {
-            gpuBuffer?.destroy();
+            if (gpuBuffer) WGPUBuffer._disposeGpuBuffer(device, gpuBufferKey, gpuBuffer);
+            gpuBufferKey = null;
             this._computed = null;
         });
+    }
+
+    /**
+     * 归还 GPU 缓冲区：池化开启且拿到池键时入池复用，否则立即销毁。
+     *
+     * 显存读数只在**真正销毁**时扣减（池中驻留仍占用显存），新建时已加过。
+     */
+    private static _disposeGpuBuffer(device: GPUDevice, key: string | null, gpuBuffer: GPUBuffer): void
+    {
+        if (WGPUBuffer._pool && key)
+        {
+            WGPUBuffer._pool.put(device, key, gpuBuffer);
+
+            return;
+        }
+
+        gpuBuffer.destroy();
+        addMemory(device, 'bufferMemory', -gpuBuffer.size);
     }
 
     private static _writeBuffers(device: GPUDevice, gpuBuffer: GPUBuffer, buffer: Buffer)
@@ -236,4 +273,59 @@ export class WGPUBuffer extends ReactiveObject
 
         return WGPUBuffer._map;
     }
+
+    /**
+     * GPU 缓冲区池（issue #98）。
+     *
+     * **默认关闭**（null）：关闭时每个归还点都直接 destroy，运行时行为与池化前一致。
+     * 池化会改变「显存驻留」与「销毁时机」，未在有 GPU 的真机上验证画面前不应默认开启。
+     */
+    static _pool: ResourcePool<GPUBuffer> | null = null;
+}
+
+/**
+ * 打开 / 关闭 GPU 缓冲区池化（issue #98）。
+ *
+ * 默认关闭。开启后 `WGPUBuffer` 的 GPU 缓冲区在归还点进入池，按 `size|usage`
+ * 规格复用同规格闲置缓冲区，减少换装 churn 下的 `createBuffer()` 分配次数。
+ *
+ * @param enabled 是否开启
+ * @param maxIdleTotal 每个 device 允许闲置的缓冲区条数上限（默认 32；置 0 等价于关闭）
+ */
+export function setGpuBufferPoolEnabled(enabled: boolean, maxIdleTotal = 32): void
+{
+    if (!enabled || maxIdleTotal <= 0)
+    {
+        WGPUBuffer._pool = null;
+
+        return;
+    }
+
+    WGPUBuffer._pool = createResourcePool<GPUBuffer>({
+        maxIdleTotal,
+        onDestroy: (device, gpuBuffer) =>
+        {
+            gpuBuffer.destroy();
+            // 池中驻留同样占显存：只有真正销毁才扣减
+            addMemory(device, 'bufferMemory', -gpuBuffer.size);
+        },
+    });
+}
+
+/** 当前是否开启 GPU 缓冲区池化 */
+export function isGpuBufferPoolEnabled(): boolean
+{
+    return WGPUBuffer._pool !== null;
+}
+
+/** 取 GPU 缓冲区池读数（未开启时返回全 0） */
+export function getGpuBufferPoolStats(device: GPUDevice): ResourcePoolStats
+{
+    return WGPUBuffer._pool ? WGPUBuffer._pool.getStats(device) : { reused: 0, released: 0, destroyed: 0, idle: 0 };
+}
+
+/** 清空 GPU 缓冲区池（销毁全部闲置缓冲区；测试与设备丢失时用） */
+export function clearGpuBufferPool(device: GPUDevice): void
+{
+    WGPUBuffer._pool?.clear(device);
 }

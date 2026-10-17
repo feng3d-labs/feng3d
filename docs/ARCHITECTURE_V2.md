@@ -160,6 +160,13 @@ Lite 领先的 CSM、VAT、Resource Pool、Floating Origin、High-Precision Matr
 > **接入渲染链与"抖动消失"的验收需要在有 GPU 的真机上做**（本仓 CI 无 GPU），
 > 故本轮只交付纯函数与证据；接入路径写在那个文件的头部注释里。
 
+> **进展（issue #98）**：Resource Pool 的**缓冲区池**已落地，分两层：
+> `packages/webgpu/src/utils/ResourcePool.ts`（按「规格键 → 闲置资源」分桶、单键 + 单 device 两级容量、
+> 最旧优先淘汰、`reused/released/destroyed/idle` 读数）与 `WGPUBuffer` 的可选接入
+> （归还点入池、按 `size|usage` 规格复用，新数据走 `queue.writeBuffer`）。开关
+> `setGpuBufferPoolEnabled()` **默认关闭**——池化会改变「显存驻留」与「销毁时机」，
+> 未在有 GPU 的真机上验证画面前不应默认开启（与 #99 同一条理由）。**纹理池化与真机验收未做**。
+
 **② Coded Errors 是"静默失效"的正解**
 Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDecoding`（常开）与 `decodeError`
 （按需解码）分离，兼顾包体与可调试性。对照 feng3d 现状——`console.error` + 静默降级，
