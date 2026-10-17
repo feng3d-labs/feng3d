@@ -1,9 +1,10 @@
 /**
  * 只读形状（属性与数组都只读）的机器执行者（对齐 AGENTS.md §8.5 / §10 / §11.1 / §15）。
  *
- * ## 口径（2026-10 定，issue #605 收口）
+ * ## 口径（2026-10 定，issue #605 收口；2026-10-17 扩维度，issue #625）
  *
- * 读侧纯数据接口的数组字段一律 `readonly T[]`——**属性与数组都只读**：
+ * 读侧纯数据接口的**每个 property signature** 都必须 `readonly`（属性维度，§11.1）；
+ * 其中数组字段还要求数组本身只读（数组维度，§11.6）——**属性与数组都只读**：
  *
  * ```ts
  * // ✓ 合口径
@@ -193,8 +194,6 @@ for (const file of scannedFiles)
 
             const kind = arrayKind(member.type);
 
-            if (!kind) continue;
-
             const fieldName = member.name.getText(sf).replace(/^'|'$/g, '');
             const propReadonly = !!member.modifiers?.some((m) => m.kind === ts.SyntaxKind.ReadonlyKeyword);
             const key = `${rel}::${ifaceName}.${fieldName}`;
@@ -207,12 +206,17 @@ for (const file of scannedFiles)
 
             if (!guarded)
             {
+                // 判据外：**只统计数组字段**（保持原有误报面；非数组字段既不判也不统计）
+                if (!kind) continue;
                 statistics.push({ key, kind, propReadonly });
 
                 continue;
             }
 
-            // 「属性与数组都只读」：属性缺 readonly、或数组外层可变，都算违规
+            // 判据内两个维度都判（issue #625）：
+            //   属性维度——**每个** property signature 都必须 readonly（§11.1）；
+            //   数组维度——数组字段还要求数组本身只读（§11.6）。
+            // 只判数组维度时，26 处非数组字段的属性可写完全没人管（「看起来管了、其实只覆盖一个维度」）。
             if (!propReadonly || kind === 'mutable-array') violations.push({ key, kind, propReadonly });
             else compliant.push(key);
         }
@@ -242,7 +246,8 @@ if (stats)
         onlyReadonly: compliant.length,
         propOnly: violations.filter((v) => v.kind === 'mutable-array' && v.propReadonly).length,
         both: violations.filter((v) => v.kind === 'mutable-array' && !v.propReadonly).length,
-        arrayOnly: violations.filter((v) => v.kind === 'readonly-array' && !v.propReadonly).length,
+        // 属性可写、数组维度没问题（含非数组字段）——扩维度后才看得见的那一类
+        arrayOnly: violations.filter((v) => v.kind !== 'mutable-array' && !v.propReadonly).length,
     };
 
     /** 按包（`packages/<pkg>`）分组计数 */
@@ -261,8 +266,8 @@ if (stats)
     };
 
     console.log('判据范围：`*Like`（非 Writable）接口 + 声明了 `__type__` 的纯数据接口');
-    console.log(`判据范围内数组字段：${total + compliant.length} 处——合口径 ${compliant.length} 处、违规存量 ${total} 处（*Like ${byKind.like} 处、纯数据接口 ${byKind.pure} 处）`);
-    console.log(`  判据内四态：① 属性只读 + 只读数组 ${inScope.onlyReadonly} 处；② 属性只读 + 数组可变 ${inScope.propOnly} 处；③ 属性与数组都可变 ${inScope.both} 处；④ 属性可写 + 只读数组 ${inScope.arrayOnly} 处`);
+    console.log(`判据范围内字段：${total + compliant.length} 处——合口径 ${compliant.length} 处、违规存量 ${total} 处（*Like ${byKind.like} 处、纯数据接口 ${byKind.pure} 处）`);
+    console.log(`  判据内四态：① 属性只读 + 数组合法 ${inScope.onlyReadonly} 处；② 属性只读 + 数组可变 ${inScope.propOnly} 处；③ 属性与数组都可变 ${inScope.both} 处；④ 属性可写 + 数组合法（含非数组字段）${inScope.arrayOnly} 处`);
     console.log(`  违规存量按包：${groupByPackage([...counts.keys()])}`);
 
     if (inScope.both > 0)
@@ -345,7 +350,7 @@ if (increased.length > 0)
 {
     const addCount = increased.reduce((a, v) => a + (v.after - v.before), 0);
 
-    console.error(`❌ 读侧纯数据接口里新增了可变数组字段（属性与数组都要只读）：${addCount} 处`);
+    console.error(`❌ 读侧纯数据接口里新增了不合口径的字段（属性必须只读；数组字段还要求数组本身只读）：${addCount} 处`);
     increased.forEach((v) => console.error(`  + ${v.key}  ${v.before} → ${v.after} 次`));
     console.error('\n修法：数组字段写成 `readonly n: readonly T[]`；要就地改数组就改走写侧形状');
     console.error('     `WritableXxxLike`（AGENTS.md §11.3），不要改读侧接口的类型。');
@@ -354,11 +359,11 @@ if (increased.length > 0)
 
 if (knownTotal === 0 && total === 0)
 {
-    console.log('✅ 只读形状：判据范围内无可变数组字段（基线为空，新增即失败）');
+    console.log('✅ 只读形状：判据范围内所有字段合口径（基线为空，新增即失败）');
 }
 else
 {
-    console.log(`✅ 只读形状：判据范围内无新增可变数组字段（存量 ${knownTotal} 处冻结在基线，当前 ${total} 处）`);
+    console.log(`✅ 只读形状：判据范围内无新增违规字段（存量 ${knownTotal} 处冻结在基线，当前 ${total} 处）`);
 }
 
 if (decreased.length > 0)
