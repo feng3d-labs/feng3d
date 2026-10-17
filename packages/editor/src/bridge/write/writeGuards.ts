@@ -1,6 +1,6 @@
 import { resolveObjectId } from '../EditorBridge';
 import { cloneValue, writeValue } from './writeCore';
-import { assertAssignableType, assertFiniteNumbers, deleteField, isFiniteF32, primitiveTypeOf, resolvePath } from './writePure';
+import { assertAssignableType, assertFiniteNumbers, deleteField, isFiniteF32, isReadDefaultField, primitiveTypeOf, resolvePath } from './writePure';
 import type { FieldTypeFix } from './writePure';
 
 /** 一次字段写入的准备结果（校验已通过，尚未落笔） */
@@ -38,7 +38,9 @@ export function prepareSet(objectId: string, path: string, value: unknown, creat
 
     // 防呆一：字段不存在多半是路径拼错（`postion.y` 之类）。静默新增字段会让"改完了"
     // 变成假象——画面毫无变化，AI 却以为成功，接下来基于错误前提继续操作。
-    if (!hadKey && !create)
+    // 读侧补默认值的字段（`activeSelf`）在数据里可能没有：`scene.get` 报得出、这里却拒绝，
+    // 调用方照 get 的结果拼路径必然失败。它们写入等于"补一个显式覆盖值"，直接放行（issue #931）
+    if (!hadKey && !create && !isReadDefaultField(String(key)))
     {
         const available = Object.keys(holder as object).slice(0, 30).join(', ');
 
