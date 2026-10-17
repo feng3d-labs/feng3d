@@ -20,14 +20,19 @@ import { effect, reactive, registerLogic, computed, toRaw } from '@feng3d/reacti
 const asTextureField = (value: unknown): TextureField => value as TextureField;
 
 /**
- * 默认采样器（线性过滤 + repeat 寻址）。
+ * 默认采样器（线性过滤 + repeat 寻址，**不设 `mipmapFilter`**）。
+ *
+ * 默认纹理（`defaultTexture`，1×1 白色）**不生成 mipmap**，设了 `mipmapFilter` 会让引擎每次采样
+ * 都告警"纹理没有 mipmap"（TSL 的采样器展开约定让该检查首次能拿到真实纹理，见 ARCHITECTURE_V2 §P2）。
+ * 而 `WGPUBindGroupEntry.adjustSamplerForTexture` 本就会把它忽略、并把 `lodMaxClamp` 设为 0——
+ * 去掉这一项与保留它的实际采样行为**一致**（`WGPUSampler` 两种情况下都落到
+ * `mipmapFilter: 'nearest'` + `lodMaxClamp: 0`），只是不再刷警告。口径与 `ParticleMaterial` 一致。
  */
 const DEFAULT_SAMPLER: Sampler = {
     addressModeU: 'repeat',
     addressModeV: 'repeat',
     magFilter: 'linear',
     minFilter: 'linear',
-    mipmapFilter: 'linear',
     maxAnisotropy: 1,
 };
 
