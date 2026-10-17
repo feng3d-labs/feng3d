@@ -1,7 +1,7 @@
 import { box3Clone, box3GetCenter, box3Union } from '@feng3d/math';
 // `vec3Sub` 与本文件里 wgpu-matrix 风格的本地 `vec3Sub(a: Vec3, b: Vec3)` 同名，导入时起别名
 import { Box3, Matrix4x4, Vector2, Vector2Like, vec3Add, vec3ScaleNumber, vec3Sub as mathVec3Sub } from '@feng3d/math';
-import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow, reactive, registerLogic } from '@feng3d/reactivity';
 import type { Texture } from '@feng3d/webgpu';
 import { Camera } from '../cameras/Camera';
 import { Light, LightLogic, createLightLogicBase } from './Light';
@@ -207,7 +207,7 @@ export function directionalLightLogic(data: DirectionalLight): DirectionalLightL
             const fallbackBounds: Box3 = { __type__: 'Box3', min: { x: -1, y: -1, z: -1 }, max: { x: 1, y: 1, z: 1 } };
             const worldBounds: Box3 = models.reduce((pre: Box3, i) =>
             {
-                const box = getLogic(getLogic(i).entity).boundingBox.worldBounds;
+                const box = getLogicOrThrow(getLogicOrThrow(i).entity).boundingBox.worldBounds;
                 if (!pre)
                 {
                     const first: Box3 = { __type__: 'Box3', ...box3Clone(box) };

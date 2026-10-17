@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logic, reactive, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Container', containerLogic) 注册
 import './Container';
@@ -28,7 +28,7 @@ describe('containerLogic - 基本属性', () =>
     it('logic 实例非空且 entity 指向 raw', () =>
     {
         const c = { __type__: 'Container' } as Container;
-        const l = logic(c);
+        const l = logicOrThrow(c);
 
         expect(l).not.toBeNull();
         expect(l.entity).toBe(c);
@@ -37,7 +37,7 @@ describe('containerLogic - 基本属性', () =>
     it('children 缺失时 pre-fill 为空数组', () =>
     {
         const raw = { __type__: 'Container' } as Container;
-        logic(raw);
+        logicOrThrow(raw);
 
         expect(raw.children).toEqual([]);
     });
@@ -46,7 +46,7 @@ describe('containerLogic - 基本属性', () =>
     {
         const existing = { __type__: 'Container' } as Container;
         const raw = { __type__: 'Container', children: [existing] } as Container;
-        const l = logic(raw);
+        const l = logicOrThrow(raw);
 
         expect(toRaw(l.children[0])).toBe(existing);
     });
@@ -54,7 +54,7 @@ describe('containerLogic - 基本属性', () =>
     it('components 继承自 entityLogic：缺失时 pre-fill 为空数组', () =>
     {
         const raw = { __type__: 'Container' } as Container;
-        logic(raw);
+        logicOrThrow(raw);
 
         expect(raw.components).toEqual([]);
     });
@@ -65,7 +65,7 @@ describe('containerLogic - children', () =>
     it('children getter 反映 raw.children 的变化', () =>
     {
         const c = { __type__: 'Container' } as Container;
-        const l = logic(c);
+        const l = logicOrThrow(c);
         // 触发 computed 求值建立依赖
         void l.children.length;
 
@@ -83,7 +83,7 @@ describe('containerLogic - children', () =>
         const c1 = { __type__: 'Container' } as Container;
         const c2 = { __type__: 'Container' } as Container;
         const parent = { __type__: 'Container', children: [c1, c2] } as Container;
-        const l = logic(parent);
+        const l = logicOrThrow(parent);
 
         expect(l.children.length).toBe(2);
         expect(toRaw(l.children[0])).toBe(c1);
@@ -95,7 +95,7 @@ describe('containerLogic - children', () =>
         const c1 = { __type__: 'Container' } as Container;
         const c2 = { __type__: 'Container' } as Container;
         const parent = { __type__: 'Container', children: [c1, c2] } as Container;
-        const l = logic(parent);
+        const l = logicOrThrow(parent);
         void l.children.length;
 
         reactive(parent).children!.splice(0, 1);
@@ -109,7 +109,7 @@ describe('containerLogic - parent 只读 getter', () =>
 {
     it('parent 默认为 null', () =>
     {
-        const l = logic({ __type__: 'Container' } as Container);
+        const l = logicOrThrow({ __type__: 'Container' } as Container);
 
         expect(l.parent).toBeNull();
     });
@@ -119,27 +119,27 @@ describe('containerLogic - parent 只读 getter', () =>
         const parent = { __type__: 'Container' } as Container;
         const child = { __type__: 'Container' } as Container;
         // 先 logic(parent) 让 children→parent 同步 effect 注册依赖
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         // 触发 children computed 求值建立依赖
         void parentLogic.children.length;
 
         reactive(parent).children!.push(child);
 
-        expect(toRaw(logic(child).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(parent);
     });
 
     it('初始 children 中的子对象 parent 同步为 parent', () =>
     {
         const child = { __type__: 'Container' } as Container;
         const parent = { __type__: 'Container', children: [child] } as Container;
-        logic(parent);
+        logicOrThrow(parent);
 
-        expect(toRaw(logic(child).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(parent);
     });
 
     it('parent 为只读 getter：外部直接赋值抛出 TypeError', () =>
     {
-        const l = logic({ __type__: 'Container' } as Container);
+        const l = logicOrThrow({ __type__: 'Container' } as Container);
         const parent = { __type__: 'Container' } as Container;
 
         expect(() =>
@@ -153,7 +153,7 @@ describe('containerLogic - parent 只读 getter', () =>
 
     it('parent 为只读 getter：通过 reactive 代理赋值同样抛出 TypeError', () =>
     {
-        const l = logic({ __type__: 'Container' } as Container);
+        const l = logicOrThrow({ __type__: 'Container' } as Container);
         const r_l = reactive(l);
         const parent = { __type__: 'Container' } as Container;
 
@@ -168,18 +168,18 @@ describe('containerLogic - parent 只读 getter', () =>
     {
         const parent = { __type__: 'Container' } as Container;
         const child = { __type__: 'Container' } as Container;
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         void parentLogic.children.length;
 
         reactive(parent).children!.push(child);
-        expect(toRaw(logic(child).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(parent);
 
         // 从 children 中移除 child
         reactive(parent).children!.splice(0, 1);
 
         // parent 仍是 parent（children→parent effect 只做单向添加同步，
         // 移除不自动置空；置空需 object3DLogic.dispose / setParent）
-        expect(toRaw(logic(child).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(parent);
     });
 });
 
@@ -191,16 +191,16 @@ describe('containerLogic - 多级层级', () =>
         const parent = { __type__: 'Container' } as Container;
         const child = { __type__: 'Container' } as Container;
 
-        const gpLogic = logic(grandparent);
+        const gpLogic = logicOrThrow(grandparent);
         void gpLogic.children.length;
         reactive(grandparent).children!.push(parent);
 
-        const pLogic = logic(parent);
+        const pLogic = logicOrThrow(parent);
         void pLogic.children.length;
         reactive(parent).children!.push(child);
 
-        expect(toRaw(logic(parent).parent)).toBe(grandparent);
-        expect(toRaw(logic(child).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(parent).parent)).toBe(grandparent);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(parent);
     });
 
     it('同一 parent 挂载多个 child，各自 parent 独立', () =>
@@ -209,12 +209,12 @@ describe('containerLogic - 多级层级', () =>
         const c1 = { __type__: 'Container' } as Container;
         const c2 = { __type__: 'Container' } as Container;
 
-        const pLogic = logic(parent);
+        const pLogic = logicOrThrow(parent);
         void pLogic.children.length;
         reactive(parent).children!.push(c1, c2);
 
-        expect(toRaw(logic(c1).parent)).toBe(parent);
-        expect(toRaw(logic(c2).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(c1).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(c2).parent)).toBe(parent);
     });
 
     it('child 被挂载到新 parent 后 parent 更新为新 parent', () =>
@@ -224,19 +224,19 @@ describe('containerLogic - 多级层级', () =>
         const child = { __type__: 'Container' } as Container;
 
         // 先挂到 p1
-        const p1Logic = logic(p1);
+        const p1Logic = logicOrThrow(p1);
         void p1Logic.children.length;
         reactive(p1).children!.push(child);
-        expect(toRaw(logic(child).parent)).toBe(p1);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(p1);
 
         // 从 p1 移除
         reactive(p1).children!.splice(0, 1);
 
         // 挂到 p2
-        const p2Logic = logic(p2);
+        const p2Logic = logicOrThrow(p2);
         void p2Logic.children.length;
         reactive(p2).children!.push(child);
-        expect(toRaw(logic(child).parent)).toBe(p2);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(p2);
     });
 });
 
@@ -245,7 +245,7 @@ describe('containerLogic - 组件管理（继承自 entityLogic）', () =>
     it('getComponent 按 __type__ 匹配', () =>
     {
         const c = { __type__: 'Container' } as Container;
-        const l = logic(c);
+        const l = logicOrThrow(c);
         const cam = { __type__: 'Camera' };
         reactive(c).components!.push(cam);
 
@@ -255,7 +255,7 @@ describe('containerLogic - 组件管理（继承自 entityLogic）', () =>
     it('getComponents 返回所有匹配项', () =>
     {
         const c = { __type__: 'Container' } as Container;
-        const l = logic(c);
+        const l = logicOrThrow(c);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
         reactive(c).components!.push(c1, c2);

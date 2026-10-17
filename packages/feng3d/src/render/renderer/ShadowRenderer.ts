@@ -1,5 +1,5 @@
 import { Frustum, Matrix4x4, Vector3Like, frustumFromMatrix, frustumIntersectsBox } from '@feng3d/math';
-import { Computed, computed, reactive, logic } from '@feng3d/reactivity';
+import { Computed, computed, reactive, logicOrThrow } from '@feng3d/reactivity';
 import { BindingResources, BufferBinding, releaseBindingResources, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
 import type { Renderable } from '../../core/Renderable';
 import type { DirectionalLight } from '../../light/DirectionalLight';
@@ -106,7 +106,7 @@ export class ShadowRenderer
         const self = this;
         const computedRenderPasses = computed<readonly RenderPass[]>(() =>
         {
-            const sLogic = logic(scene);
+            const sLogic = logicOrThrow(scene);
             const renderPasses: RenderPass[] = [];
 
             const pointLights = sLogic.activePointLights.filter((i) => (i.shadowType ?? ShadowType.No_Shadows) !== ShadowType.No_Shadows) as PointLight[];
@@ -152,7 +152,7 @@ export class ShadowRenderer
         let renderPass: RenderPass;
         const computedRenderPass = computed<RenderPass>(() =>
         {
-            const ll = logic(light);
+            const ll = logicOrThrow(light);
 
             if (!renderPass)
             {
@@ -209,7 +209,7 @@ export class ShadowRenderer
         const renderPasses: RenderPass[] = [];
         const computedRenderPasses = computed<readonly RenderPass[]>(() =>
         {
-            const ll = logic(light);
+            const ll = logicOrThrow(light);
             // 读取 6 面 VP（computed 求值，建立依赖）
             const shadowVPs = ll.shadowViewProjections;
             const depthTexture = ll.shadowDepthTexture;
@@ -276,8 +276,8 @@ export class ShadowRenderer
         let renderPass: RenderPass;
         const computedRenderPass = computed<RenderPass>(() =>
         {
-            const ll = logic(light);
-            const sLogic = logic(scene);
+            const ll = logicOrThrow(light);
+            const sLogic = logicOrThrow(scene);
             // 获取影响阴影图的渲染对象
             const models = sLogic.getPickByDirectionalLight(light);
             // 筛选投射阴影的渲染对象（`castShadows` 声明在 Renderable/MeshRenderer 上，不在 Object3D 上）。
@@ -370,7 +370,7 @@ export class ShadowRenderer
         // strictNullChecks：没有几何体就没有可画的（renderable.geometry 可选）
         if (!geometry) return;
 
-        logic(geometry).beforeRender(renderObject);
+        logicOrThrow(geometry).beforeRender(renderObject);
 
         // 更新 binding resources（transform + camera + shadow params）
         // 复用 binding 对象引用，仅更新 .value，避免每帧创建新对象导致 GPU 缓存膨胀。
@@ -380,7 +380,7 @@ export class ShadowRenderer
 
         // strictNullChecks：bindingResources 是可选字段，没绑定资源就没有可画的（早退）
         if (!bindingResources) return;
-        const entityLogic = logic(logic(renderable).entity);
+        const entityLogic = logicOrThrow(logicOrThrow(renderable).entity);
 
         // transform 与主 Pass 共享 Object3DLogic 的稳定 wrapper（每对象 1 个 transform
         // GPUBuffer）。历史差异（a17f5851/b016c808 曾两次复现）在 18306f6eb 阴影链路
@@ -425,7 +425,7 @@ export class ShadowRenderer
  */
 function getCastShadowsModelsByFrustum(scene: Scene, frustum: Frustum): Renderable[]
 {
-    const sLogic = logic(scene);
+    const sLogic = logicOrThrow(scene);
     const models = sLogic.visibleAndEnabledModels;
     const results: Renderable[] = [];
     for (let i = 0; i < models.length; i++)
@@ -439,7 +439,7 @@ function getCastShadowsModelsByFrustum(scene: Scene, frustum: Frustum): Renderab
         // 目前由上游（visibleAndEnabledModels / selfWorldBounds）保证，这一处不是必要条件。
         // 保留代理读是为了不把正确性寄托在上游的偶然行为上，并与方向光路径写法一致。
         if (!(reactive(renderable).castShadows ?? true)) continue;
-        const worldBounds = logic(renderable).selfWorldBounds.value;
+        const worldBounds = logicOrThrow(renderable).selfWorldBounds.value;
         if (frustumIntersectsBox(frustum, worldBounds))
         {
             results.push(renderable);

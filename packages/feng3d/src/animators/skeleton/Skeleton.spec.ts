@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mat4FromPosition, mat4Identity, Matrix4x4 } from '@feng3d/math';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 
 // 触发 registerLogic 注册（否则 logic() 返回 null）
 import '../../core/Object3D';
@@ -70,10 +70,10 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         const root = makeObject3D('root', { children: [bone] });
 
         // 先建父的 logic，让 children→parent 的同步 effect 建立（见 Object3D.spec.ts 的约定）
-        logic(root);
-        logic(bone);
+        logicOrThrow(root);
+        logicOrThrow(bone);
 
-        const skeletonLogic = logic(makeSkeleton(['bone0'], [positionMatrix(1, 0, 0)])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['bone0'], [positionMatrix(1, 0, 0)])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
         const gm = skeletonLogic.globalMatrices;
@@ -95,12 +95,12 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         const parent = makeObject3D('parent', { position: { x: 10, y: 0, z: 0 }, children: [child] });
         const root = makeObject3D('root', { children: [parent] });
 
-        logic(root);
-        logic(parent);
-        logic(child);
+        logicOrThrow(root);
+        logicOrThrow(parent);
+        logicOrThrow(child);
 
         // 逆矩阵取单位阵时，globalMatrices[0] 应等于 child 的世界矩阵 → 平移为 10 + 1
-        const skeletonLogic = logic(makeSkeleton(['child'], [identityMatrix()])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['child'], [identityMatrix()])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
 
@@ -113,12 +113,12 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         const b = makeObject3D('b', { position: { x: 2, y: 0, z: 0 } });
         const root = makeObject3D('root', { children: [a, b] });
 
-        logic(root);
-        logic(a);
-        logic(b);
+        logicOrThrow(root);
+        logicOrThrow(a);
+        logicOrThrow(b);
 
         // 故意把 b 排在前面
-        const skeletonLogic = logic(makeSkeleton(['b', 'a'], [identityMatrix(), identityMatrix()])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['b', 'a'], [identityMatrix(), identityMatrix()])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
         const gm = skeletonLogic.globalMatrices;
@@ -131,9 +131,9 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
     {
         const root = makeObject3D('root');
 
-        logic(root);
+        logicOrThrow(root);
 
-        const skeletonLogic = logic(makeSkeleton(['not-exist'], [positionMatrix(5, 0, 0)])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['not-exist'], [positionMatrix(5, 0, 0)])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
 
@@ -147,10 +147,10 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         const bone = makeObject3D('bone0', { position: { x: 3, y: 0, z: 0 } });
         const root = makeObject3D('root', { children: [bone] });
 
-        logic(root);
-        logic(bone);
+        logicOrThrow(root);
+        logicOrThrow(bone);
 
-        const skeletonLogic = logic(makeSkeleton(['bone0'], [])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['bone0'], [])) as SkeletonLogic;
 
         skeletonLogic.init(root as unknown as Entity);
         expect(() => skeletonLogic.globalMatrices).not.toThrow();
@@ -160,7 +160,7 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
 
     it('没有 entity（未 init）时返回空数组而不是抛错', () =>
     {
-        const skeletonLogic = logic(makeSkeleton(['bone0'], [identityMatrix()])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['bone0'], [identityMatrix()])) as SkeletonLogic;
 
         expect(() => skeletonLogic.globalMatrices).not.toThrow();
         expect(skeletonLogic.globalMatrices).toEqual([]);
@@ -176,11 +176,11 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         const mesh = makeObject3D('mesh');
         const root = makeObject3D('root', { children: [mesh, bone] });
 
-        logic(root);
-        logic(mesh);
-        logic(bone);
+        logicOrThrow(root);
+        logicOrThrow(mesh);
+        logicOrThrow(bone);
 
-        const skeletonLogic = logic(makeSkeleton(['Bone'], [identityMatrix()])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['Bone'], [identityMatrix()])) as SkeletonLogic;
 
         skeletonLogic.init(mesh as unknown as Entity);
 
@@ -195,12 +195,12 @@ describe('SkeletonLogic.globalMatrices（issue #333）', () =>
         const mesh = makeObject3D('mesh', { children: [inner] });
         const root = makeObject3D('root', { children: [mesh, sibling] });
 
-        logic(root);
-        logic(mesh);
-        logic(inner);
-        logic(sibling);
+        logicOrThrow(root);
+        logicOrThrow(mesh);
+        logicOrThrow(inner);
+        logicOrThrow(sibling);
 
-        const skeletonLogic = logic(makeSkeleton(['Bone'], [identityMatrix()])) as SkeletonLogic;
+        const skeletonLogic = logicOrThrow(makeSkeleton(['Bone'], [identityMatrix()])) as SkeletonLogic;
 
         skeletonLogic.init(mesh as unknown as Entity);
 

@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
+import { registerLogic, logicOrThrow as getLogicOrThrow, batchRun, reactive } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { mat4Append, mat4AppendRotation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4GetPosition, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec2Sub, vec3Add, vec3Copy, vec3Dot, vec3ScaleNumber, WritableVector2Like, WritableVector3Like } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
@@ -219,7 +219,7 @@ export function fpsControllerLogic(data: FPSController): FPSControllerLogic
                 offsetPoint.y *= radPerPixel;
 
                 // 阶段 C-e：`Matrix4x4` 的 class 已删除，实例方法换成等价纯函数（`out` 传 matrix 即就地）
-                const matrix = getLogic(members.entity!).local2world;
+                const matrix = getLogicOrThrow(members.entity!).local2world;
                 mat4AppendRotation(matrix, mat4GetAxisX(matrix), offsetPoint.y, mat4GetPosition(matrix), matrix);
                 const up = vec3Copy(VEC3_Y_AXIS);
                 const axisY = { x: 0, y: 0, z: 0 };
@@ -232,11 +232,11 @@ export function fpsControllerLogic(data: FPSController): FPSControllerLogic
                 {
                     const t = members.entity;
                     const localMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(matrix) };
-                    const r_parent = getLogic(t!).parent;
+                    const r_parent = getLogicOrThrow(t!).parent;
                     if (r_parent)
                     {
                         const parent = r_parent as unknown as Object3D;
-                        mat4Append(localMatrix, getLogic(parent).world2local, localMatrix);
+                        mat4Append(localMatrix, getLogicOrThrow(parent).world2local, localMatrix);
                     }
                     const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
                     mat4ToTRS(localMatrix, pos, rot, scl);
@@ -267,16 +267,16 @@ export function fpsControllerLogic(data: FPSController): FPSControllerLogic
             // 计算速度
             vec3Add(velocity, accelerationVec, velocity);
             const right = { x: 0, y: 0, z: 0 }; const up = { x: 0, y: 0, z: 0 }; const forward = { x: 0, y: 0, z: 0 };
-            mat4GetAxisX(getLogic(members.entity!).local2world, right);
-            mat4GetAxisY(getLogic(members.entity!).local2world, up);
-            mat4GetAxisZ(getLogic(members.entity!).local2world, forward);
+            mat4GetAxisX(getLogicOrThrow(members.entity!).local2world, right);
+            mat4GetAxisY(getLogicOrThrow(members.entity!).local2world, up);
+            mat4GetAxisZ(getLogicOrThrow(members.entity!).local2world, forward);
             vec3ScaleNumber(right, velocity.x, right);
             vec3ScaleNumber(up, velocity.y, up);
             vec3ScaleNumber(forward, velocity.z, forward);
             // 计算位移
             const displacement = vec3Add(vec3Add(right, up), forward);
             // 通过 logic().position 读取当前值（缺失字段拿到默认 {0,0,0}），整体写回 raw
-            const cur = getLogic(members.entity!).position;
+            const cur = getLogicOrThrow(members.entity!).position;
             reactive(members.entity!).position = {
                 x: cur.x + displacement.x,
                 y: cur.y + displacement.y,

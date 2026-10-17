@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import './TorusGeometry';
 import type { TorusGeometry } from './TorusGeometry';
 import type { GeometryLogic } from '../geometry/Geometry';
@@ -14,7 +14,7 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
         __type__: 'TorusGeometry',
         radius: 3, tubeRadius: 1, segmentsR: 8, segmentsT: 6,
     } as TorusGeometry;
-    const g = logic(geo) as GeometryLogic;
+    const g = logicOrThrow(geo) as GeometryLogic;
 
     return [g, reactive(geo) as unknown as Record<string, unknown>];
 }
@@ -39,7 +39,7 @@ describe('TorusGeometry 基础验证', () =>
         const geo = {
             __type__: 'TorusGeometry', radius: 3, tubeRadius: 1, segmentsR: 8, segmentsT: 6,
         } as TorusGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
 
         expect(readRenderData(g).vertices['a_position'].data.length).toBe(63 * 3);
     });

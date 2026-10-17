@@ -1,4 +1,4 @@
-import { logic as getLogic, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow, toRaw } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 import { findObject3DChild } from './Object3D';
 
@@ -56,7 +56,7 @@ export function getByPath(root: object, path: string): any
  */
 export function findByName(root: Object3D, name: string): Object3D | undefined
 {
-    if (getLogic(root).name === name) return root;
+    if (getLogicOrThrow(root).name === name) return root;
 
     // children getter 可能返回响应式代理元素，toRaw 还原为原始对象（规范 8.2）
     return toRaw(findObject3DChild(root, name)) as Object3D | undefined;

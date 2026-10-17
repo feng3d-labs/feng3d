@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { RenderObject, RenderPipeline } from '@feng3d/webgpu';
 import { standardVertexWGSL } from '../../materials/standardVertexShader';
 import { MORPH_TARGET_COUNT } from '../../shaders/tsl/morph';
@@ -32,8 +32,8 @@ describe('MorphMeshRenderer', () =>
         const component: MorphMeshRenderer = { __type__: 'MorphMeshRenderer', geometry, morphWeights };
         const root = { __type__: 'Object3D', name: 'morph-root', components: [component] } as Object3D;
 
-        logic(root);
-        const componentLogic = logic(component) as MorphMeshRendererLogic;
+        logicOrThrow(root);
+        const componentLogic = logicOrThrow(component) as MorphMeshRendererLogic;
         componentLogic.init(root);
 
         return componentLogic;

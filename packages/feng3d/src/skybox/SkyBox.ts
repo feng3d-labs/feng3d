@@ -1,4 +1,4 @@
-import { computed, logic, reactive, registerLogic } from "@feng3d/reactivity";
+import { computed, logicOrThrow, reactive, registerLogic } from "@feng3d/reactivity";
 import { RenderObject, Texture, TextureView } from "@feng3d/webgpu";
 import { Camera, CameraUniforms } from "../cameras/Camera";
 import { getSkyBoxShaderWGSL } from '../shaders/tsl/skybox';
@@ -107,7 +107,7 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         const scene = input.scene;
         const camera = input.camera;
 
-        const activeSkyBoxs = logic(scene).activeSkyBoxs;
+        const activeSkyBoxs = logicOrThrow(scene).activeSkyBoxs;
         const skybox = activeSkyBoxs[0];
 
         // 无激活天空盒：返回空数组（保持引用稳定）
@@ -116,7 +116,7 @@ export function skyboxRenderObject(input: { readonly scene: Scene, readonly came
         // 旧版 TextureCube 有嵌套 .texture 字段（Texture 类型）；改为统一 Texture 接口后，
         // s_skyboxTexture 本身就是 TextureLike，直接赋给 TextureView.texture。
         reactive(s_skyboxTexture).texture = skybox.s_skyboxTexture as unknown as TextureView['texture'];
-        reactive(cameraUniforms).value = logic(camera).uniforms;
+        reactive(cameraUniforms).value = logicOrThrow(camera).uniforms;
 
         return renderObject;
     });

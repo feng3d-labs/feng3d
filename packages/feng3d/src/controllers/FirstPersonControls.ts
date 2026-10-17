@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, reactive } from '@feng3d/reactivity';
+import { registerLogic, reactive, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, Matrix4x4Like, Vector3Like } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
@@ -177,7 +177,7 @@ export function firstPersonControlsLogic(data: FirstPersonControls): FirstPerson
     {
         const e = entity();
         if (!e) return;
-        const eLogic = getLogic(e);
+        const eLogic = getLogicOrThrow(e);
         const matrix = eLogic.local2world;
         const axisX = { x: 0, y: 0, z: 0 };
         const axisY = { x: 0, y: 0, z: 0 };
@@ -304,7 +304,7 @@ export function firstPersonControlsLogic(data: FirstPersonControls): FirstPerson
         {
             const e = entity();
             if (!e) return;
-            getLogic(e).lookAt(target);
+            getLogicOrThrow(e).lookAt(target);
             setOrientation();
         },
         init(object3D)
@@ -323,7 +323,7 @@ export function firstPersonControlsLogic(data: FirstPersonControls): FirstPerson
             ensureOrientation();
             // fengd3 的 update 间隔是毫秒，three 的 update(delta) 是秒
             const delta = (interval ?? 1000 / 60) / 1000;
-            const eLogic = getLogic(e);
+            const eLogic = getLogicOrThrow(e);
 
             const heightMin = r_d.heightMin ?? 0;
 
@@ -370,7 +370,7 @@ export function firstPersonControlsLogic(data: FirstPersonControls): FirstPerson
             const p = eLogic.position;
             // three 的 Spherical.setFromSphericalCoords(1, phi, theta)
             const sinPhiRadius = Math.sin(phi);
-            getLogic(e).lookAt({
+            getLogicOrThrow(e).lookAt({
                 x: sinPhiRadius * Math.sin(theta) + p.x,
                 y: Math.cos(phi) + p.y,
                 z: sinPhiRadius * Math.cos(theta) + p.z,

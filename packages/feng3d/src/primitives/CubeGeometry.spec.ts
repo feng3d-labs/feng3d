@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
 import '../test/webgpu-stub';
 
-import { logic, reactive, effect, type Effect } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, effect, type Effect } from '@feng3d/reactivity';
 
 // 触发 registerLogic('CubeGeometry', cubeGeometryLogic)
 import './CubeGeometry';
@@ -26,7 +26,7 @@ function makeCube(): GeometryLogic
         tile6: false,
     } as CubeGeometry;
 
-    return logic(geo) as GeometryLogic;
+    return logicOrThrow(geo) as GeometryLogic;
 }
 
 /**
@@ -283,7 +283,7 @@ describe('CubeGeometry 精细化响应式控制', () =>
             width: 2, height: 2, depth: 2,
             segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false,
         } as CubeGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
 
         // 读取初始 UV 值
         const uvBefore = Array.from(readRenderData(g).vertices.a_uv.data as unknown as number[]);
@@ -308,7 +308,7 @@ describe('CubeGeometry 精细化响应式控制', () =>
             width: 2, height: 2, depth: 2,
             segmentsW: 1, segmentsH: 1, segmentsD: 1, tile6: false,
         } as CubeGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
 
         const [stopColor, colorCount] = trackAttr(g, 'a_color');
         const baseColor = colorCount();

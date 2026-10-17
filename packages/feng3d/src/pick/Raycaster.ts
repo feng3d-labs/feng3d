@@ -1,5 +1,5 @@
 import { box3RayIntersection } from '@feng3d/math';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { isRayCastable } from "../component/Component";
 import { Box3, Ray3, Vector2Like, Vector3Like } from '@feng3d/math';
 import { CullFace } from '../render/data/enums';
@@ -25,7 +25,7 @@ export class Raycaster
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
             const model = object3D.components?.find(c => isRayCastable(c)) as RayCastable;
-            const pickingCollisionVO = model && (logic(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
+            const pickingCollisionVO = model && (logicOrThrow(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
             return pv;
@@ -45,7 +45,7 @@ export class Raycaster
             const pickingCollisionVO = pickingCollisionVOs[i];
             if (!bestCollisionVO || pickingCollisionVO.rayEntryDistance < bestCollisionVO.rayEntryDistance)
             {
-                const result = logic(pickingCollisionVO.geometry).raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
+                const result = logicOrThrow(pickingCollisionVO.geometry).raycast(pickingCollisionVO.localRay, shortestCollisionDistance, pickingCollisionVO.cullFace);
                 if (result)
                 {
                     pickingCollisionVO.rayEntryDistance = result.rayEntryDistance;
@@ -108,7 +108,7 @@ export class Raycaster
         while (current)
         {
             if (!this.#intersectsBounds(ray3D, current)) return false;
-            current = (logic(current) as { parent?: Object3D | null })?.parent ?? null;
+            current = (logicOrThrow(current) as { parent?: Object3D | null })?.parent ?? null;
         }
 
         return true;
@@ -122,7 +122,7 @@ export class Raycaster
      */
     #intersectsBounds(ray3D: Ray3, object3D: Object3D): boolean
     {
-        const bounds = (logic(object3D) as { boundingBox?: { worldBounds?: Box3 } })?.boundingBox?.worldBounds;
+        const bounds = (logicOrThrow(object3D) as { boundingBox?: { worldBounds?: Box3 } })?.boundingBox?.worldBounds;
         if (!bounds) return true;
 
         return box3RayIntersection(bounds, ray3D.origin, ray3D.direction, this.#cullNormal) !== Number.MAX_VALUE;
@@ -144,7 +144,7 @@ export class Raycaster
         const pickingCollisionVOs = object3Ds.reduce((pv: PickingCollisionVO[], object3D) =>
         {
             const model = object3D.components?.find(c => isRayCastable(c)) as RayCastable;
-            const pickingCollisionVO = model && (logic(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
+            const pickingCollisionVO = model && (logicOrThrow(model) as unknown as RenderableLogic).worldRayIntersection(ray3D);
             if (pickingCollisionVO) pv.push(pickingCollisionVO);
 
             return pv;
@@ -154,7 +154,7 @@ export class Raycaster
 
         const collisionVOs = pickingCollisionVOs.filter((v) =>
         {
-            const result = logic(v.geometry).raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
+            const result = logicOrThrow(v.geometry).raycast(v.localRay, Number.MAX_VALUE, v.cullFace);
             if (result)
             {
                 v.rayEntryDistance = result.rayEntryDistance;

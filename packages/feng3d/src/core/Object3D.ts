@@ -13,7 +13,7 @@ import {
     Vector3,
     Vector3Like,
 } from '@feng3d/math';
-import { computed, logic as getLogic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { computed, reactive, registerLogic, toRaw, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject } from '@feng3d/webgpu';
 import { Components } from '../component/Component';
 import type { Scene } from '../scene/Scene';
@@ -404,7 +404,7 @@ export function object3DLogic(data: Object3D): Object3DLogic
         const comps = members.components;
         for (let i = 0; i < comps.length; i++)
         {
-            if (!getLogic(comps[i]).isLoaded) return false;
+            if (!getLogicOrThrow(comps[i]).isLoaded) return false;
         }
 
         return true;
@@ -416,7 +416,7 @@ export function object3DLogic(data: Object3D): Object3DLogic
         const kids = members.children as unknown as Object3D[];
         for (let i = 0; i < kids.length; i++)
         {
-            if (!getLogic(kids[i]).isLoaded) return false;
+            if (!getLogicOrThrow(kids[i]).isLoaded) return false;
         }
 
         return true;
@@ -538,14 +538,14 @@ export function object3DLogic(data: Object3D): Object3DLogic
             const kids = logic.children;
             for (let i = kids.length - 1; i >= 0; i--)
             {
-                getLogic(kids[i]).dispose();
+                getLogicOrThrow(kids[i]).dispose();
             }
             const r_components = reactive(data as Object3D).components as Components[];
             for (let i = r_components.length - 1; i >= 0; i--)
             {
                 const component = toRaw(r_components[i]) as unknown as Components;
                 r_components.splice(i, 1);
-                getLogic(component).dispose();
+                getLogicOrThrow(component).dispose();
             }
         },
     };
@@ -571,7 +571,7 @@ export function findObject3DChild(object3D: Object3D, name: string): Object3D | 
     for (let i = 0; i < children.length; i++)
     {
         const child = children[i];
-        if (getLogic(child).name === name) return child;
+        if (getLogicOrThrow(child).name === name) return child;
     }
     for (let i = 0; i < children.length; i++)
     {

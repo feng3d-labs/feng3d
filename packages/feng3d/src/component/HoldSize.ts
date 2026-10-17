@@ -1,4 +1,4 @@
-import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow, reactive, registerLogic } from '@feng3d/reactivity';
 import type { Object3D } from '../core/Object3D';
 import { Component3D, Component3DLogic, createComponentLogicBase } from './Component';
 import { mat4Copy, mat4FromTRS, mat4GetAxisZ, mat4GetPosition, mat4Invert, mat4ToTRS, mat4Transpose, Matrix4x4, vec3Dot, vec3Length, vec3Sub } from '@feng3d/math';
@@ -137,7 +137,7 @@ function getDepthScale(object3D: Object3D, cameraMatrix: Matrix4x4, scaleByDepth
 {
     if (!object3D) return 0;
 
-    const worldPos = getLogic(object3D).worldPosition;
+    const worldPos = getLogicOrThrow(object3D).worldPosition;
     // 阶段 C-f：`Vector3` 的 class 已删除，`subTo` / `length` / `dot` 全部换成同义纯函数
     const cameraPos = { x: 0, y: 0, z: 0 };
     mat4GetPosition(cameraMatrix, cameraPos);

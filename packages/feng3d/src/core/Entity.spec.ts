@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeAll } from 'vitest';
-import { logic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Entity', entityLogic) 注册
 import './Entity';
@@ -64,7 +64,7 @@ describe('entityLogic - 基本属性', () =>
     it('logic 实例非空且 entity 指向 raw', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
 
         expect(l).not.toBeNull();
         expect(l.entity).toBe(e);
@@ -73,7 +73,7 @@ describe('entityLogic - 基本属性', () =>
     it('components 缺失时 pre-fill 为空数组', () =>
     {
         const raw = { __type__: 'Entity' } as Entity;
-        logic(raw);
+        logicOrThrow(raw);
 
         expect(raw.components).toEqual([]);
     });
@@ -82,7 +82,7 @@ describe('entityLogic - 基本属性', () =>
     {
         const existing = { __type__: 'Camera' };
         const raw = { __type__: 'Entity', components: [existing] } as Entity;
-        const l = logic(raw);
+        const l = logicOrThrow(raw);
 
         // pre-fill 不应创建新数组，引用保持不变
         expect(raw.components).toBe(raw.components);
@@ -92,7 +92,7 @@ describe('entityLogic - 基本属性', () =>
     it('components getter 反映 raw.components 的变化', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         // 触发 computed 求值建立依赖
         void l.components.length;
 
@@ -111,7 +111,7 @@ describe('entityLogic - getComponent', () =>
     it('按 __type__ 精确匹配', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         const cam = { __type__: 'Camera' };
         reactive(e).components!.push(cam);
 
@@ -121,7 +121,7 @@ describe('entityLogic - getComponent', () =>
     it('经类型层级表匹配父类型（Camera 属于 Component 子类型）', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         const cam = { __type__: 'Camera' };
         reactive(e).components!.push(cam);
 
@@ -130,7 +130,7 @@ describe('entityLogic - getComponent', () =>
 
     it('未命中返回 undefined', () =>
     {
-        const l = logic({ __type__: 'Entity' } as Entity);
+        const l = logicOrThrow({ __type__: 'Entity' } as Entity);
 
         expect(l.getComponent('NotExisting')).toBeUndefined();
     });
@@ -138,7 +138,7 @@ describe('entityLogic - getComponent', () =>
     it('返回第一个匹配项（多个同类组件取第一个）', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
         reactive(e).components!.push(c1, c2);
@@ -152,7 +152,7 @@ describe('entityLogic - getComponents', () =>
     it('返回所有匹配项', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
         const c3 = { __type__: 'Light' };
@@ -166,7 +166,7 @@ describe('entityLogic - getComponents', () =>
     it('空 typeName 返回全部组件', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
         reactive(e).components!.push(c1, c2);
@@ -179,7 +179,7 @@ describe('entityLogic - getComponents', () =>
     it('传入 results 数组累加结果', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         const cam = { __type__: 'Camera' };
         reactive(e).components!.push(cam);
 
@@ -194,7 +194,7 @@ describe('entityLogic - getComponents', () =>
     it('无匹配时返回空数组', () =>
     {
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         reactive(e).components!.push({ __type__: 'Camera' });
 
         expect(l.getComponents('Light')).toEqual([]);
@@ -209,7 +209,7 @@ describe('entityLogic - 组件自动初始化', () =>
         initSpy.lastOwner = null;
 
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         // 触发 components computed 求值，建立自动 init effect 的依赖
         l.getComponents('');
         const comp = createInitSpyComp();
@@ -225,7 +225,7 @@ describe('entityLogic - 组件自动初始化', () =>
 
         const comp = createInitSpyComp();
         const e = { __type__: 'Entity', components: [comp] } as Entity;
-        logic(e);
+        logicOrThrow(e);
 
         expect(initSpy.callCount).toBe(1);
     });
@@ -234,7 +234,7 @@ describe('entityLogic - 组件自动初始化', () =>
     {
         initSpy.callCount = 0;
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         l.getComponents('');
         const comp = createInitSpyComp();
         reactive(e).components!.push(comp);
@@ -250,7 +250,7 @@ describe('entityLogic - 组件自动初始化', () =>
     {
         initSpy.callCount = 0;
         const e = { __type__: 'Entity' } as Entity;
-        const l = logic(e);
+        const l = logicOrThrow(e);
         l.getComponents('');
 
         reactive(e).components!.push(createInitSpyComp());

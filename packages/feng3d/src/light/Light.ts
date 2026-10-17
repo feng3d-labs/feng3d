@@ -2,7 +2,7 @@ import { Color3Like, mat4GetAxisZ, mat4Identity, Matrix4x4, Vector2, Vector3 } f
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase, type BehaviourLogicState } from '../component/Behaviour';
 import { LightType } from './LightType';
 import { ShadowType } from './shadow/ShadowType';
-import { logic as getLogic } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import type { Color3 } from '../core/Color3';
 import type { Texture } from '@feng3d/webgpu';
@@ -167,7 +167,7 @@ export function createLightLogicBase(data: Light): { state: LightLogicState; mem
         /** 光源世界坐标（由 object3D 的 worldPosition 派生） */
         get position()
         {
-            return getLogic(state.entity as Object3D).worldPosition;
+            return getLogicOrThrow(state.entity as Object3D).worldPosition;
         },
         /** 光源方向（object3D 的 local2world Z 轴取反） */
         get direction(): Vector3
@@ -176,7 +176,7 @@ export function createLightLogicBase(data: Light): { state: LightLogicState; mem
             // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 是纯字面量（没有 Vector3 的方法），
             // 而本 getter 的返回类型是 `Vector3`，所以显式传 Vector3 实例
             const dir = { x: 0, y: 0, z: 0 };
-            mat4GetAxisZ(getLogic(state.entity as Object3D).local2world, dir);
+            mat4GetAxisZ(getLogicOrThrow(state.entity as Object3D).local2world, dir);
             dir.x = -dir.x; dir.y = -dir.y; dir.z = -dir.z;
 
             return { __type__: 'Vector3', x: dir.x, y: dir.y, z: dir.z };

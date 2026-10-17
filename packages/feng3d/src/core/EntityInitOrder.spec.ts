@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive, registerLogic } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, registerLogic } from '@feng3d/reactivity';
 import { createComponentLogicBase, type ComponentLogic } from '../component/Component';
 import type { Component } from '../component/Component';
 import type { Entity } from './Entity';
@@ -84,7 +84,7 @@ describe('组件 init() 内写宿主 children（issue #222）', () =>
         const component = { __type__: 'ChildPushing', childName: 'autoChild' } as ChildPushing;
         const host = { __type__: 'Object3D', name: 'host', components: [component] } as Object3D;
 
-        expect(() => logic(host)).not.toThrow();
+        expect(() => logicOrThrow(host)).not.toThrow();
 
         // 组件在 init 里看到的已经是数组（不是 undefined）
         expect(Array.isArray(seenChildren)).toBe(true);
@@ -99,7 +99,7 @@ describe('组件 init() 内写宿主 children（issue #222）', () =>
         const component = { __type__: 'ChildPushing', childName: 'fromContainer' } as ChildPushing;
         const host = { __type__: 'Container', name: 'host', components: [component] } as unknown as Object3D;
 
-        expect(() => logic(host)).not.toThrow();
+        expect(() => logicOrThrow(host)).not.toThrow();
         expect(host.children![0].name).toBe('fromContainer');
     });
 
@@ -109,7 +109,7 @@ describe('组件 init() 内写宿主 children（issue #222）', () =>
         const component = { __type__: 'ChildPushing', childName: 'appended' } as ChildPushing;
         const host = { __type__: 'Object3D', name: 'host', components: [component], children: [existing] } as Object3D;
 
-        logic(host);
+        logicOrThrow(host);
 
         expect(host.children).toHaveLength(2);
         expect(host.children![0]).toBe(existing);
@@ -123,7 +123,7 @@ describe('组件 init() 内写宿主 children（issue #222）', () =>
         const component = { __type__: 'ChildPushing', childName: 'probe' } as ChildPushing;
         const host = { __type__: 'Object3D', name: 'host', position: { x: 1, y: 2, z: 3 }, components: [component] } as Object3D;
 
-        expect(() => logic(host)).not.toThrow();
-        expect(logic(host).worldPosition).toBeDefined();
+        expect(() => logicOrThrow(host)).not.toThrow();
+        expect(logicOrThrow(host).worldPosition).toBeDefined();
     });
 });

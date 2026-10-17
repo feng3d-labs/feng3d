@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { Ray3 } from '@feng3d/math';
 import { line3FromPosAndDir, vec3Normalized } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
@@ -66,7 +66,7 @@ describe('Raycaster.cullByHierarchy', () =>
         } as Object3D;
 
         // 触发 logic 构建（包围盒 / 矩阵链都在 logic 上）
-        logic(root);
+        logicOrThrow(root);
 
         // 候选集：摊平所有带渲染组件的对象（与 Scene.mouseCheckObjects 同构）
         const all: Object3D[] = [];
@@ -152,7 +152,7 @@ describe('Raycaster.cullByHierarchy', () =>
         // 候选里混入一个没有渲染组件的普通对象：它的包围盒是"原点一个点"，
         // 但无论如何都不该因为"拿不到包围盒"而被丢掉
         const plainObject = { __type__: 'Object3D', name: 'NoRenderer' } as Object3D;
-        logic(plainObject);
+        logicOrThrow(plainObject);
 
         const culled = raycaster.cullByHierarchy(ray, [...all, plainObject]);
         expect(culled.length).toBeGreaterThan(0);

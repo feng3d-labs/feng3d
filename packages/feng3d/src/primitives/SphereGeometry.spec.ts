@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import './SphereGeometry';
 import type { SphereGeometry } from './SphereGeometry';
 import type { GeometryLogic } from '../geometry/Geometry';
@@ -14,7 +14,7 @@ function makeLogic(): [GeometryLogic, Record<string, unknown>]
         __type__: 'SphereGeometry',
         radius: 5, segmentsW: 8, segmentsH: 6,
     } as SphereGeometry;
-    const g = logic(geo) as GeometryLogic;
+    const g = logicOrThrow(geo) as GeometryLogic;
 
     return [g, reactive(geo) as unknown as Record<string, unknown>];
 }
@@ -37,7 +37,7 @@ describe('SphereGeometry 基础验证', () =>
     it('segmentsW=8 segmentsH=6 有 (8+1)×(6+1)=63 顶点', () =>
     {
         const geo = { __type__: 'SphereGeometry', radius: 5, segmentsW: 8, segmentsH: 6 } as SphereGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
 
         expect(readRenderData(g).vertices['a_position'].data.length).toBe(63 * 3);
     });
@@ -52,7 +52,7 @@ describe('SphereGeometry 基础验证', () =>
     it('顶点色全白、法线为单位向量且与位置同向', () =>
     {
         const geo = { __type__: 'SphereGeometry', radius: 5, segmentsW: 8, segmentsH: 6 } as SphereGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
         const data = readRenderData(g);
 
         const positions = data.vertices['a_position'].data;
@@ -99,7 +99,7 @@ describe('SphereGeometry 基础验证', () =>
     it('三角形绕序与顶点法线一致（正面朝外）', () =>
     {
         const geo = { __type__: 'SphereGeometry', radius: 5, segmentsW: 8, segmentsH: 6 } as SphereGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
         const data = readRenderData(g);
 
         const positions = data.vertices['a_position'].data;

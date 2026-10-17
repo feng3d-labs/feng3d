@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 import { findByName, getByPath } from './GetByPath';
 
@@ -38,7 +38,7 @@ describe('core/GetByPath', () =>
         const child = { __type__: 'Object3D', name: 'Cube' } as Object3D;
         const root = { __type__: 'Object3D', name: 'root' } as Object3D;
 
-        logic(root);   // 触发 containerLogic（children pre-fill）
+        logicOrThrow(root);   // 触发 containerLogic（children pre-fill）
         reactive(root).children!.push(child);
 
         expect(findByName(root, 'root')).toBe(root);

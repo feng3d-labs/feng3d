@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { MeshRenderer } from './MeshRenderer';
 import './MeshRenderer';
 import type { Object3D } from './Object3D';
@@ -32,7 +32,7 @@ describe('RenderableLogic 渲染数据解析', () =>
     {
         const renderer = component as unknown as MeshRenderer;
         const object: Object3D = { __type__: 'Object3D', name, components: [renderer] };
-        logic(object);
+        logicOrThrow(object);
 
         return renderer;
     }
@@ -68,7 +68,7 @@ describe('RenderableLogic 渲染数据解析', () =>
             geometry: { width: 1, height: 1 },
         });
 
-        const bounds = logic(renderer).selfLocalBounds.value;
+        const bounds = logicOrThrow(renderer).selfLocalBounds.value;
 
         expect(bounds.min.x).toBeCloseTo(-0.5);
         expect(bounds.max.x).toBeCloseTo(0.5);
@@ -76,7 +76,7 @@ describe('RenderableLogic 渲染数据解析', () =>
         // 换一份同样脏的几何体：computed 失效重算，也不该重复刷屏
         const r_renderer = reactive(renderer);
         r_renderer.geometry = { width: 2, height: 2 } as MeshRenderer['geometry'];
-        logic(renderer).selfLocalBounds.value;
+        logicOrThrow(renderer).selfLocalBounds.value;
 
         const reported = renderableErrors(messages);
         expect(reported).toHaveLength(1);
@@ -96,7 +96,7 @@ describe('RenderableLogic 渲染数据解析', () =>
             geometry: { __type__: 'CubeGeometory' },
         });
 
-        expect(logic(renderer).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
+        expect(logicOrThrow(renderer).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
 
         const reported = renderableErrors(messages);
         expect(reported).toHaveLength(1);
@@ -111,7 +111,7 @@ describe('RenderableLogic 渲染数据解析', () =>
             geometry: { assetId: 'Ball', __class__: 'SphereGeometry', radius: 0.25 },
         });
 
-        const bounds = logic(renderer).selfLocalBounds.value;
+        const bounds = logicOrThrow(renderer).selfLocalBounds.value;
 
         expect(bounds.min.x).toBeCloseTo(-0.25);
         expect(bounds.max.x).toBeCloseTo(0.25);
@@ -131,8 +131,8 @@ describe('RenderableLogic 渲染数据解析', () =>
         });
 
         // 回退的 StandardMaterial 没有纹理依赖，天然就绪；关键是**读取不抛异常**
-        expect(() => logic(renderer).isLoaded).not.toThrow();
-        expect(logic(renderer).isLoaded).toBe(true);
+        expect(() => logicOrThrow(renderer).isLoaded).not.toThrow();
+        expect(logicOrThrow(renderer).isLoaded).toBe(true);
 
         const reported = renderableErrors(messages);
         expect(reported).toHaveLength(1);
@@ -150,7 +150,7 @@ describe('RenderableLogic 渲染数据解析', () =>
             geometry: ' (Object)',
         });
 
-        expect(logic(renderer).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
+        expect(logicOrThrow(renderer).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
 
         const reported = renderableErrors(messages);
         expect(reported).toHaveLength(1);
@@ -168,14 +168,14 @@ describe('RenderableLogic 渲染数据解析', () =>
             geometry: { __type__: 'SphereGeometry', radius: 0.25 },
             material: { __type__: 'StandardMaterial' },
         });
-        expect(logic(explicit).selfLocalBounds.value.max.x).toBeCloseTo(0.25);
+        expect(logicOrThrow(explicit).selfLocalBounds.value.max.x).toBeCloseTo(0.25);
 
         const omitted = mountRenderer('省略几何体', { __type__: 'MeshRenderer' });
-        expect(logic(omitted).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
+        expect(logicOrThrow(omitted).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
 
         // 缺省字段（含 dispose 后写回的 null）走 fallback，但**不报错**——那不是脏数据
         const nulled = mountRenderer('显式 null', { __type__: 'MeshRenderer', geometry: null, material: null });
-        expect(logic(nulled).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
+        expect(logicOrThrow(nulled).selfLocalBounds.value.max.x).toBeCloseTo(0.5);
 
         expect(renderableErrors(messages)).toEqual([]);
     });

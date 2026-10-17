@@ -1,4 +1,4 @@
-import { effect, Effect, logic as getLogic, toRaw } from '@feng3d/reactivity';
+import { effect, Effect, logicOrThrow as getLogicOrThrow, toRaw } from '@feng3d/reactivity';
 import type { Object3D, Object3DLogic } from '../core/Object3D';
 import { getTextureLoadStatus, isTextureResource, requestTextureLoad, TextureField, TextureResource } from '../textures/TextureResource';
 import { AssetType } from './AssetType';
@@ -187,7 +187,7 @@ function collectFromObject3D(object3D: Object3D, found: Map<string, AssetReferen
     if (visited.has(raw)) return;
     visited.add(raw);
 
-    const objectLogic = getLogic(raw) as Object3DLogic | null;
+    const objectLogic = getLogicOrThrow(raw) as Object3DLogic | null;
     const components = objectLogic ? objectLogic.components : raw.components;
 
     if (components)

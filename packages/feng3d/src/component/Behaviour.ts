@@ -2,7 +2,7 @@ import { RunEnvironment } from '../core/RunEnvironment';
 import type { Component3D, Components } from './Component';
 import { createComponentLogicBase, type Component3DLogic, type ComponentLogicState } from './Component';
 import type { Object3D } from '../core/Object3D';
-import { registerLogic, logic as getLogic, computed, reactive, type Computed } from '@feng3d/reactivity';
+import { registerLogic, logicOrThrow as getLogicOrThrow, computed, reactive, type Computed } from '@feng3d/reactivity';
 
 /**
  * 行为（纯数据接口）。
@@ -100,7 +100,7 @@ export function createBehaviourLogicBase(data: Behaviour): { state: BehaviourLog
 
         const enabled = r_behaviour.enabled ?? true;
 
-        return enabled !== false && getLogic(state.entity as Object3D).activeSelf;
+        return enabled !== false && getLogicOrThrow(state.entity as Object3D).activeSelf;
     });
 
     const members: BehaviourLogic = {

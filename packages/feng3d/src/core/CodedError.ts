@@ -33,7 +33,7 @@ export enum ErrorCode
 
 /** 错误码 → 人类可读说明（只有解码时才用得到） */
 const ERROR_MESSAGES: Record<number, string> = {
-    [ErrorCode.LogicNotRegistered]: '未注册的 __type__，logic() 无法分发',
+    [ErrorCode.LogicNotRegistered]: '未注册的 __type__，logicOrThrow() 无法分发',
     [ErrorCode.RefNotRegistered]: '未注册的 $ref，共享对象未在 defs 中声明',
     [ErrorCode.PrefabNotRegistered]: '未注册的 prefabId，模板未注册',
     [ErrorCode.SubmitComputeFailed]: 'submit computed 求值异常',

@@ -4,7 +4,7 @@ import type { Camera } from '../cameras/Camera';
 import { Component3D, Component3DLogic, Components, isRenderable, createComponentLogicBase } from '../component/Component';
 import type { Color4 } from '../core/Color4';
 import { RunEnvironment } from '../core/RunEnvironment';
-import { registerLogic, logic as getLogic, reactive, computed, toRaw } from '@feng3d/reactivity';
+import { registerLogic, logicOrThrow as getLogicOrThrow, reactive, computed, toRaw } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { matchType } from '../core/Entity';
 import { Renderable } from '../core/Renderable';
@@ -85,13 +85,13 @@ function collectComponentsInChildren<T extends Components>(entity: Object3D | nu
 /** 行为的可见且启用状态（从 behaviourLogic 的 computed 读取） */
 function isVisibleAndEnabled(behaviour: Behaviour): boolean
 {
-    return getLogic(behaviour).isVisibleAndEnabled.value;
+    return getLogicOrThrow(behaviour).isVisibleAndEnabled.value;
 }
 
 /** 渲染对象对应的 RenderableLogic */
 function renderableLogicOf(renderable: Renderable): RenderableLogic
 {
-    return getLogic(renderable) as unknown as RenderableLogic;
+    return getLogicOrThrow(renderable) as unknown as RenderableLogic;
 }
 
 /**
@@ -178,16 +178,16 @@ export function sceneLogic(data: Scene): SceneLogic
     const skyBoxsC = computed(() => collectComponentsInChildren<SkyBox>(state.entity as Object3D | null, 'SkyBox'));
     const activeSkyBoxsC = computed(() => skyBoxsC.value.filter((i) =>
     {
-        const e = getLogic(i).entity;
+        const e = getLogicOrThrow(i).entity;
 
-        return e && getLogic(e as Object3D).activeInHierarchy;
+        return e && getLogicOrThrow(e as Object3D).activeInHierarchy;
     }));
     const directionalLightsC = computed(() => collectComponentsInChildren<DirectionalLight>(state.entity as Object3D | null, 'DirectionalLight'));
-    const activeDirectionalLightsC = computed(() => directionalLightsC.value.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy));
+    const activeDirectionalLightsC = computed(() => directionalLightsC.value.filter((i) => getLogicOrThrow(getLogicOrThrow(i).entity as Object3D).activeInHierarchy));
     const pointLightsC = computed(() => collectComponentsInChildren<PointLight>(state.entity as Object3D | null, 'PointLight'));
-    const activePointLightsC = computed(() => pointLightsC.value.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy));
+    const activePointLightsC = computed(() => pointLightsC.value.filter((i) => getLogicOrThrow(getLogicOrThrow(i).entity as Object3D).activeInHierarchy));
     const spotLightsC = computed(() => collectComponentsInChildren<SpotLight>(state.entity as Object3D | null, 'SpotLight'));
-    const activeSpotLightsC = computed(() => spotLightsC.value.filter((i) => getLogic(getLogic(i).entity as Object3D).activeInHierarchy));
+    const activeSpotLightsC = computed(() => spotLightsC.value.filter((i) => getLogicOrThrow(getLogicOrThrow(i).entity as Object3D).activeInHierarchy));
 
     const logic: SceneLogic = {
         get component() { return members.component; },
@@ -228,9 +228,9 @@ export function sceneLogic(data: Scene): SceneLogic
                 // isVisibleAndEnabled 由 behaviourLogic 提供（基类 computed）；
                 // update 用取实际注册的子类 logic（FPSController 等），
                 // 否则 behaviourLogic.update 是基类空实现，子类行为不会执行。
-                if (getLogic(element).isVisibleAndEnabled.value && Boolean((element.runEnvironment ?? RunEnvironment.all)))
+                if (getLogicOrThrow(element).isVisibleAndEnabled.value && Boolean((element.runEnvironment ?? RunEnvironment.all)))
                 {
-                    getLogic(element).update(interval);
+                    getLogicOrThrow(element).update(interval);
                 }
             });
         },
@@ -238,7 +238,7 @@ export function sceneLogic(data: Scene): SceneLogic
         get models()
         {
             if (!state.entity) return [];
-            return models = models || getLogic(state.entity as Object3D).getComponentsInChildren('Renderable');
+            return models = models || getLogicOrThrow(state.entity as Object3D).getComponentsInChildren('Renderable');
         },
         /** 可见且启用的渲染对象集合 */
         get visibleAndEnabledModels()
@@ -265,7 +265,7 @@ export function sceneLogic(data: Scene): SceneLogic
         get animations()
         {
             if (!state.entity) return [];
-            return animations = animations || getLogic(state.entity as Object3D).getComponentsInChildren('Animation');
+            return animations = animations || getLogicOrThrow(state.entity as Object3D).getComponentsInChildren('Animation');
         },
         /** 激活的动画集合 */
         get activeAnimations()
@@ -276,7 +276,7 @@ export function sceneLogic(data: Scene): SceneLogic
         get behaviours()
         {
             if (!state.entity) return [];
-            return behaviours = behaviours || getLogic(state.entity as Object3D).getComponentsInChildren('Behaviour');
+            return behaviours = behaviours || getLogicOrThrow(state.entity as Object3D).getComponentsInChildren('Behaviour');
         },
         /** 激活的行为集合 */
         get activeBehaviours()
@@ -299,7 +299,7 @@ export function sceneLogic(data: Scene): SceneLogic
             {
                 const checkObject = checkList[i++];
                 // 通过 logic().mouseEnabled 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
-                if (getLogic(checkObject).mouseEnabled)
+                if (getLogicOrThrow(checkObject).mouseEnabled)
                 {
                     if ((checkObject.components ?? []).some(c => isRenderable(c)))
                     {
@@ -333,10 +333,10 @@ export function sceneLogic(data: Scene): SceneLogic
             {
                 const item = openlist.shift() as Object3D;
                 // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
-                if (!getLogic(item).activeSelf) continue;
+                if (!getLogicOrThrow(item).activeSelf) continue;
                 const model = item.components?.find(c => isRenderable(c)) as Renderable;
                 // 材质缺失或材质 logic 未注册时跳过（不算投射阴影对象），避免崩溃
-                const matLogic = (model && getLogic(model.material!)) as unknown as { isTransparent: boolean; isPrimitivesTopology: boolean } | null | undefined;
+                const matLogic = (model && getLogicOrThrow(model.material!)) as unknown as { isTransparent: boolean; isPrimitivesTopology: boolean } | null | undefined;
                 if (model && matLogic
                     && ((model.castShadows ?? true) || (model.receiveShadows ?? true))
                     && !matLogic.isTransparent
@@ -356,7 +356,7 @@ export function sceneLogic(data: Scene): SceneLogic
         /** 获取视锥内可见的渲染对象 */
         getModelsByCamera(camera)
         {
-            const camLogic = getLogic(camera);
+            const camLogic = getLogicOrThrow(camera);
             const frustum = camLogic.frustum;
             const culling = camLogic.frustumCulling;
 

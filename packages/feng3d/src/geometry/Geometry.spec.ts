@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import './Geometry';
 import { interleaveSkinAttributes, type CustomGeometry } from './CustomGeometry';
 import type { GeometryLogic } from './Geometry';
@@ -31,7 +31,7 @@ describe('CustomGeometry 顶点数据响应式', () =>
     it('通过 reactive 数据接口写入 positions/indices 后 attributes（computed）反映最新值', () =>
     {
         const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
 
         // 初始：positions 为空（CustomGeometry 的 a_position computed 读 reactive(geometry).positions，初始 undefined → 空 Float32Array）
         expect(readRenderData(g).vertices.a_position.data.length).toBe(0);
@@ -49,7 +49,7 @@ describe('CustomGeometry 顶点数据响应式', () =>
     it('蒙皮顶点属性（a_skinIndices / a_skinWeights 等）进入顶点表并交错进同一缓冲（issue #337）', () =>
     {
         const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
-        const g = logic(geo) as GeometryLogic;
+        const g = logicOrThrow(geo) as GeometryLogic;
 
         reactive(geo).positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
         reactive(geo).a_skinIndices = [0, 1, 2, 3, 1, 2, 3, 0];

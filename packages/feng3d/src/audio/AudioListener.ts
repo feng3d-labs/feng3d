@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, effect, reactive } from '@feng3d/reactivity';
+import { registerLogic, logicOrThrow as getLogicOrThrow, effect, reactive } from '@feng3d/reactivity';
 import { mat4GetAxisY, mat4GetAxisZ, mat4GetPosition } from '@feng3d/math';
 
 
@@ -127,7 +127,7 @@ export function audioListenerLogic(data: AudioListener): AudioListenerLogic
 
     function onScenetransformChanged(): void
     {
-        const local2world = getLogic(members.entity!).local2world;
+        const local2world = getLogicOrThrow(members.entity!).local2world;
         const position = mat4GetPosition(local2world);
         // 相机/监听器 forward 为本地 -Z（投影矩阵 m[11]=-1 约定）
         const forward = mat4GetAxisZ(local2world); forward.x = -forward.x; forward.y = -forward.y; forward.z = -forward.z;
@@ -192,7 +192,7 @@ export function audioListenerLogic(data: AudioListener): AudioListenerLogic
             // effect 监听 local2world 变化时更新 listener
             effect(() =>
             {
-                getLogic(members.entity!).local2world;
+                getLogicOrThrow(members.entity!).local2world;
                 onScenetransformChanged();
             });
         },

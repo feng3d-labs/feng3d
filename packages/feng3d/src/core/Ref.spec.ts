@@ -1,7 +1,7 @@
 import type { Renderable } from './Renderable';
 import type { Object3D } from './Object3D';
 import { describe, expect, it } from 'vitest';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import './Object3D';   // 触发 registerLogic('Object3D', ...) 副作用
 import { getShared, liftSharedRefs, registerShared, resolveRefs } from './Ref';
 
@@ -20,7 +20,7 @@ describe('core/Ref', () =>
             components: [{ __type__: 'MeshRenderer', material: { $ref: 'diffuse' } }],
         };
 
-        logic(node);   // 触达 → resolveRefs
+        logicOrThrow(node);   // 触达 → resolveRefs
 
         expect(node.components[0].material).toBe(material);
         expect(getShared('diffuse')).toBe(material);
@@ -33,8 +33,8 @@ describe('core/Ref', () =>
 
         const nodeA: any = { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', material: { $ref: 'm' } }] };
         const nodeB: any = { __type__: 'Object3D', components: [{ __type__: 'MeshRenderer', material: { $ref: 'm' } }] };
-        logic(nodeA);
-        logic(nodeB);
+        logicOrThrow(nodeA);
+        logicOrThrow(nodeB);
 
         expect(nodeA.components[0].material).toBe(nodeB.components[0].material);
 

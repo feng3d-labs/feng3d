@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../../test/webgpu-stub';
 
-import { computed, logic, reactive } from '@feng3d/reactivity';
+import { computed, logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { PerspectiveCamera } from '../../cameras/PerspectiveCamera';
 import '../../cameras/PerspectiveCamera';
 import type { MeshRenderer } from '../../core/MeshRenderer';
@@ -65,11 +65,11 @@ describe('ForwardRenderer.renderObjects 组装', () =>
             children: [opaqueA, opaqueB, transparent],
         };
 
-        logic(root);
+        logicOrThrow(root);
 
         const camera = { __type__: 'PerspectiveCamera', aspect: 1 } as unknown as PerspectiveCamera;
 
-        logic({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 10 }, components: [camera] } as Object3D);
+        logicOrThrow({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 10 }, components: [camera] } as Object3D);
 
         return { scene, camera, opaqueA, opaqueB, transparent, root };
     }
@@ -77,7 +77,7 @@ describe('ForwardRenderer.renderObjects 组装', () =>
     /** 取某个可渲染对象的 renderObject 引用（用于判断顺序） */
     function renderObjectOf(object: Object3D)
     {
-        return logic(object.components![0] as MeshRenderer).renderObject.value;
+        return logicOrThrow(object.components![0] as MeshRenderer).renderObject.value;
     }
 
     it('不透明对象在前、半透明对象在后（顺序即绘制顺序）', () =>

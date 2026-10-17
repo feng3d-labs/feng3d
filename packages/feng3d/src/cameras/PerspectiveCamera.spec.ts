@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
 import './PerspectiveCamera';
@@ -25,9 +25,9 @@ describe('PerspectiveCameraLogic', () =>
         const cam = { __type__: 'PerspectiveCamera', ...camera } as unknown as PerspectiveCamera;
         const object: Object3D = { __type__: 'Object3D', name: 'cam', components: [cam] };
 
-        logic(object);
+        logicOrThrow(object);
 
-        return logic(cam) as PerspectiveCameraLogic;
+        return logicOrThrow(cam) as PerspectiveCameraLogic;
     }
 
     it('投影矩阵由 fov / aspect / near / far 派生', () =>
@@ -59,9 +59,9 @@ describe('PerspectiveCameraLogic', () =>
         const cam = { __type__: 'PerspectiveCamera', fov: 60, aspect: 1.5, near: 0.1, far: 100 } as unknown as PerspectiveCamera;
         const object: Object3D = { __type__: 'Object3D', name: 'cam', components: [cam] };
 
-        logic(object);
+        logicOrThrow(object);
 
-        const l = logic(cam) as PerspectiveCameraLogic;
+        const l = logicOrThrow(cam) as PerspectiveCameraLogic;
         const before = l.projectionMatrix.elements[5];
 
         reactive(cam as { fov: number }).fov = 90;

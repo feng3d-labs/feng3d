@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 import './Object3D';   // 触发 registerLogic('Object3D', ...) 副作用
 import { getPrefab, registerPrefabs } from './Prefab';
@@ -26,7 +26,7 @@ describe('core/Prefab', () =>
             overrides: { position: { x: 1, y: 0, z: 0 } },
         } as unknown as Object3D;
 
-        logic(instance);   // 触达 → applyPrefab
+        logicOrThrow(instance);   // 触达 → applyPrefab
 
         const raw = instance as any;
         expect(raw.name).toBe('Cube-1');                        // 实例自身字段优先
@@ -49,8 +49,8 @@ describe('core/Prefab', () =>
 
         const a = { __type__: 'Object3D', prefabId: 'PrefabB' } as unknown as Object3D;
         const b = { __type__: 'Object3D', prefabId: 'PrefabB' } as unknown as Object3D;
-        logic(a);
-        logic(b);
+        logicOrThrow(a);
+        logicOrThrow(b);
 
         (a as any).scale.x = 5;
         expect((b as any).scale.x).toBe(1);
@@ -60,7 +60,7 @@ describe('core/Prefab', () =>
     {
         const node = { __type__: 'Object3D', prefabId: 'NotExists' } as unknown as Object3D;
 
-        expect(() => logic(node)).not.toThrow();
+        expect(() => logicOrThrow(node)).not.toThrow();
         expect(getPrefab('NotExists')).toBeUndefined();
     });
 
@@ -74,7 +74,7 @@ describe('core/Prefab', () =>
             __type__: 'Object3D', prefabId: 'PrefabC',
             overrides: { position: { y: 2 } },   // 只覆盖 y，继承模板 x/z
         } as unknown as Object3D;
-        logic(node);
+        logicOrThrow(node);
 
         expect((node as any).position).toEqual({ x: 0, y: 2, z: 0 });
         expect((node as any).scale).toEqual({ x: 1, y: 1, z: 1 });

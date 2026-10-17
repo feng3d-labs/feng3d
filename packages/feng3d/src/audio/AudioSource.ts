@@ -1,7 +1,7 @@
 import { ErrorCode, reportDegradation } from '../core/CodedError';
 import { getAudioCtx, getGlobalGain } from './AudioListener';
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, effect, reactive } from '@feng3d/reactivity';
+import { registerLogic, logicOrThrow as getLogicOrThrow, effect, reactive } from '@feng3d/reactivity';
 import { mat4GetPosition } from '@feng3d/math';
 
 
@@ -138,7 +138,7 @@ export function audioSourceLogic(data: AudioSource): AudioSourceLogic
 
     function onScenetransformChanged(): void
     {
-        const local2world = getLogic(members.entity!).local2world;
+        const local2world = getLogicOrThrow(members.entity!).local2world;
         const scenePosition = mat4GetPosition(local2world);
 
         const pannerNode = panner!;
@@ -286,7 +286,7 @@ export function audioSourceLogic(data: AudioSource): AudioSourceLogic
             // effect 监听 local2world 变化
             effect(() =>
             {
-                getLogic(members.entity!).local2world;
+                getLogicOrThrow(members.entity!).local2world;
                 onScenetransformChanged();
             });
         },

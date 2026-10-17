@@ -137,6 +137,7 @@ function initComponent(component: Components, owner: Object3D): void
 
     if (initialized.has(component)) return;
     initialized.add(component);
+    // 组件类型可能未注册（可选模块没加载 / 插件被关掉）：跳过它的 init，不影响其它组件
     const l = getLogic(component) as ComponentLogic;
     if (l && typeof l.init === 'function')
     {

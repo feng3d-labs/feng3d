@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../component/Behaviour';
-import { registerLogic, logic as getLogic, batchRun, reactive } from '@feng3d/reactivity';
+import { registerLogic, batchRun, reactive, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { IEvent } from '@feng3d/event';
 import { mat4Append, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4LookAt, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec3Cross, WritableVector3Like } from '@feng3d/math';
 import { windowEventProxy } from '@feng3d/shortcut';
@@ -185,7 +185,7 @@ export function orbitControlsLogic(data: OrbitControls): OrbitControlsLogic
     function initFromPosition(): void
     {
         if (!members.entity) return;
-        const pos = getLogic(members.entity!).position;
+        const pos = getLogicOrThrow(members.entity!).position;
         if (!pos) return;
         const dx = pos.x - targetX;
         const dy = pos.y - targetY;
@@ -256,10 +256,10 @@ export function orbitControlsLogic(data: OrbitControls): OrbitControlsLogic
         const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(objLogic.local2world) };
         mat4LookAt(m, { x: targetX, y: targetY, z: targetZ }, VEC3_Y_AXIS, m);
         // 转回本地坐标（处理父节点）
-        const parent = getLogic(members.entity!).parent;
+        const parent = getLogicOrThrow(members.entity!).parent;
         if (parent)
         {
-            mat4Append(m, getLogic(parent as Object3D).world2local, m);
+            mat4Append(m, getLogicOrThrow(parent as Object3D).world2local, m);
         }
         const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
         mat4ToTRS(m, pos, rot, scl);
