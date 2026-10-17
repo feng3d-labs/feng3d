@@ -1,3 +1,4 @@
+import { registerViewObjectContributor } from './ViewSequence';
 import { mat4Identity, Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
 import { computed, Computed, logicOrThrow, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
@@ -455,3 +456,11 @@ export class ForwardRenderer
  * 前向渲染器
  */
 export const forwardRenderer = new ForwardRenderer();
+
+// 渲染贡献者注册（issue #93：pass 编排声明化）。
+// Forward 是主 pass 的对象来源之一（画在天空盒之后、其他叠加渲染器之前）：
+// 它读场景（剔除结果 / 光照 / 相机 uniform）产出 RenderObject[]，内部 (scene, camera) 缓存不变。
+registerViewObjectContributor({
+    name: 'Forward',
+    build: (_view, context) => forwardRenderer.draw(context.scene, context.camera, context.viewport).value,
+});

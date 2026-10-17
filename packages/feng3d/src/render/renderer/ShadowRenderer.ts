@@ -1,3 +1,4 @@
+import { registerViewPassContributor } from './ViewSequence';
 import { Frustum, Matrix4x4, Vector3Like, frustumFromMatrix, frustumIntersectsBox } from '@feng3d/math';
 import { Computed, computed, reactive, logicOrThrow } from '@feng3d/reactivity';
 import { BindingResources, BufferBinding, releaseBindingResources, RenderPass, RenderPassObject, RenderObject, TextureView } from '@feng3d/webgpu';
@@ -453,3 +454,13 @@ function getCastShadowsModelsByFrustum(scene: Scene, frustum: Frustum): Renderab
  * 阴影图渲染器
  */
 export const shadowRenderer = new ShadowRenderer();
+
+// 渲染贡献者注册（issue #93：pass 编排声明化）。
+// 阴影在序列里声明为 beforeMain：它先写 shadowMap / shadowDepthTexture，主 pass 才能采样到
+// 本帧的阴影图（顺序靠后就是滞后一帧）。注册只声明「我能产出什么」，排在 Main 之前由
+// ViewSequence 的默认序列（beforeMain → main → afterMain）决定，不需要改 View 的编排代码。
+registerViewPassContributor({
+    name: 'Shadow',
+    stage: 'beforeMain',
+    build: (_view, context) => shadowRenderer.draw(context.scene, context.camera).value,
+});
