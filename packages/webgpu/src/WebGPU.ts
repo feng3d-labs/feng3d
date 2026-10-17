@@ -95,6 +95,12 @@ export class WebGPU
     {
         const r_this = reactive(this as unknown as { device: GPUDevice | null });
 
+        // 销毁前清空待销毁队列（issue #89）：归零后排队等提交的资源若就此丢弃，
+        // 它们的 destroyCall 永不执行——统计的 freed 不涨，`created == freed + 存活`
+        // 在设备销毁后就永远不成立。此时 device 对象本身还在（只是马上要被置空），
+        // 队列里的销毁仍能如实记账（GPU 对象随设备一起回收）。
+        if (this.device) flushDeferredReleases(this.device);
+
         r_this.device = null;
     }
 
