@@ -220,7 +220,7 @@ function drawAlphaKeys() {
     
     ctx.clearRect(0, 0, width, height);
     
-    const alphaKeys = props.gradient.alphaKeys;
+    const alphaKeys = r_gradient.value.alphaKeys;
     for (let i = 0; i < alphaKeys.length; i++) {
         const key = alphaKeys[i];
         const isSelected = selectedKey.value === key;
@@ -267,7 +267,7 @@ function drawColorKeys() {
     
     ctx.clearRect(0, 0, width, height);
     
-    const colorKeys = props.gradient.colorKeys;
+    const colorKeys = r_gradient.value.colorKeys;
     for (let i = 0; i < colorKeys.length; i++) {
         const key = colorKeys[i];
         const isSelected = selectedKey.value === key;
@@ -317,7 +317,7 @@ function onAlphaLineMouseDown(event: MouseEvent) {
     const time = Math.max(0, Math.min(1, localPosX / rect.width));
     
     // 检查是否点击了现有关键点
-    const alphaKeys = props.gradient.alphaKeys;
+    const alphaKeys = r_gradient.value.alphaKeys;
     let onClickIndex = -1;
     for (let i = 0; i < alphaKeys.length; i++) {
         const key = alphaKeys[i];
@@ -353,7 +353,7 @@ function onColorLineMouseDown(event: MouseEvent) {
     const time = Math.max(0, Math.min(1, localPosX / rect.width));
     
     // 检查是否点击了现有关键点
-    const colorKeys = props.gradient.colorKeys;
+    const colorKeys = r_gradient.value.colorKeys;
     let onClickIndex = -1;
     for (let i = 0; i < colorKeys.length; i++) {
         const key = colorKeys[i];
@@ -401,15 +401,15 @@ function onAlphaColorMouseMove() {
             if (selectedKey.value.color) {
                 const index = props.gradient.colorKeys.indexOf(selectedKey.value as any);
                 if (index === -1) {
-                    props.gradient.colorKeys.push(selectedKey.value as any);
+                    r_gradient.value.colorKeys.push(selectedKey.value as any);
                 }
-                props.gradient.colorKeys.sort((a, b) => a.time - b.time);
+                r_gradient.value.colorKeys.sort((a, b) => a.time - b.time);
             } else {
                 const index = props.gradient.alphaKeys.indexOf(selectedKey.value as any);
                 if (index === -1) {
-                    props.gradient.alphaKeys.push(selectedKey.value as any);
+                    r_gradient.value.alphaKeys.push(selectedKey.value as any);
                 }
-                props.gradient.alphaKeys.sort((a, b) => a.time - b.time);
+                r_gradient.value.alphaKeys.sort((a, b) => a.time - b.time);
             }
             removedTemp.value = false;
         }
@@ -419,15 +419,15 @@ function onAlphaColorMouseMove() {
             if (selectedKey.value.color) {
                 const index = props.gradient.colorKeys.indexOf(selectedKey.value as any);
                 if (index !== -1) {
-                    props.gradient.colorKeys.splice(index, 1);
+                    r_gradient.value.colorKeys.splice(index, 1);
                 }
-                props.gradient.colorKeys.sort((a, b) => a.time - b.time);
+                r_gradient.value.colorKeys.sort((a, b) => a.time - b.time);
             } else {
                 const index = props.gradient.alphaKeys.indexOf(selectedKey.value as any);
                 if (index !== -1) {
-                    props.gradient.alphaKeys.splice(index, 1);
+                    r_gradient.value.alphaKeys.splice(index, 1);
                 }
-                props.gradient.alphaKeys.sort((a, b) => a.time - b.time);
+                r_gradient.value.alphaKeys.sort((a, b) => a.time - b.time);
             }
             removedTemp.value = true;
         }
@@ -438,9 +438,9 @@ function onAlphaColorMouseMove() {
     selectedKey.value.time = Math.max(0, Math.min(1, localPosX / rect.width));
     
     if (selectedKey.value.color) {
-        props.gradient.colorKeys.sort((a, b) => a.time - b.time);
+        r_gradient.value.colorKeys.sort((a, b) => a.time - b.time);
     } else {
-        props.gradient.alphaKeys.sort((a, b) => a.time - b.time);
+        r_gradient.value.alphaKeys.sort((a, b) => a.time - b.time);
     }
     
     updateView();
@@ -458,13 +458,21 @@ function onAlphaColorMouseUp() {
     updateView();
 }
 
+/**
+ * 写侧形状（§11.3）：`alphaKeys` / `colorKeys` 要就地 push / splice / sort。
+ *
+ * 读侧 `GradientLike` 的数组字段是只读数组（§11.6），写入口只开在这里；
+ * 这里拿到的仍是**同一个底层数组**的代理，push / sort 与原来的直接改写法语义等价，
+ * 只是经代理写会正确触发响应式更新。
+ */
+const r_gradient = computed(() => reactive(props.gradient) as unknown as WritableGradientLike);
+
 // 模式变化
 function onModeChange(item: { label: string; value: GradientMode } | null) {
     if (item) {
         // issue #134 第二批起 `Gradient` 是纯数据接口（字段类型上 readonly）：
         // 写入经响应式代理（根规范 §8.5 / §11.3），代理不外泄、不读代理再写回（§8.2 / §8.4）
-        const r_gradient = reactive(props.gradient) as WritableGradientLike;
-        r_gradient.mode = item.value;
+        r_gradient.value.mode = item.value;
         updateView();
         emit('change', props.gradient);
     }
@@ -504,9 +512,9 @@ function onLocationChange(value: number | undefined) {
         selectedKey.value.time = Math.max(0, Math.min(1, value));
         
         if (selectedKey.value.color) {
-            props.gradient.colorKeys.sort((a, b) => a.time - b.time);
+            r_gradient.value.colorKeys.sort((a, b) => a.time - b.time);
         } else {
-            props.gradient.alphaKeys.sort((a, b) => a.time - b.time);
+            r_gradient.value.alphaKeys.sort((a, b) => a.time - b.time);
         }
         
         updateView();

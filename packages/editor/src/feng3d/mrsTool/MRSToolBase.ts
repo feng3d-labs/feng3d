@@ -207,7 +207,7 @@ export function createMRSToolBaseLogicBase(data: MRSToolBase): { state: MRSToolB
             // 而工具宿主对象没有 MeshRenderer，挂在它上面不会生效（旧实现的 HoldSizeComponent
             // 会作用于整个子树）。这里改为在 {@link onFrame} 中按相机距离直接缩放工具对象。
             const r_host = reactive(host);
-            if (!r_host.components) (host as { components: Component3D[] }).components = [];
+            if (!r_host.components) (host as unknown as { components: Component3D[] }).components = [];
 
             // 注册全局鼠标事件与逐帧回调。
             //

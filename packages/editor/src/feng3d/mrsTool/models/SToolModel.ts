@@ -311,7 +311,7 @@ export function coordinateScaleCubeLogic(data: CoordinateScaleCube): CoordinateS
                     if (material?.uniforms) reactive(material.uniforms).u_segmentColor = color;
 
                     // 轴线：随 scaleValue 伸缩（线段顶点色为白，颜色由材质 uniform 决定）
-                    const geometry = renderer?.geometry as UnReadonly<{ segments: Segment[] }> | undefined;
+                    const geometry = renderer?.geometry as { segments: readonly Segment[] } | undefined;
                     if (geometry)
                     {
                         reactive(geometry).segments = [{

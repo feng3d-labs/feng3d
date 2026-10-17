@@ -29,7 +29,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, markRaw, defineAsyncComponent, watch } from 'vue';
 import { box3Clone, box3GetCenter, box3GetSize, box3RayIntersection, logic, mat4Copy, mat4GetAxisZ, mat4SetPosition, mat4TransformPoint3, Matrix4x4, reactive, shortcut, Stats, ticker, vec3Add, vec3AddNumber, vec3Length, vec3ScaleNumber, vec3Sub, watcher, windowEventProxy } from 'feng3d';
 import type { Vector2Like, Vector3Like, WritableVector2Like } from 'feng3d';
-import type { Camera, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
+import type { Camera, Component3D, PerspectiveCamera, Object3D, FPSController, Ray3, Scene } from 'feng3d';
 import * as TWEEN from '@tweenjs/tween.js';
 import { EditorComponent } from '../../feng3d/EditorComponent';
 import { EditorView } from '../../feng3d/EditorView';
@@ -283,7 +283,8 @@ function initScene() {
     };
 
     const r_viewRoot = reactive(viewRoot);
-    r_viewRoot.components.push(viewSceneComponent);
+    // 写侧断言：读侧 components 是 readonly（§11.6），这里挂视图场景组件属于装配写入
+    (r_viewRoot.components as unknown as Component3D[]).push(viewSceneComponent);
     r_viewRoot.children.push(cameraObject, editorSceneObject);
     if (gameSceneObject3D) r_viewRoot.children.push(gameSceneObject3D);
 
@@ -1002,4 +1003,3 @@ onUnmounted(() => {
   pointer-events: auto;
 }
 </style>
-

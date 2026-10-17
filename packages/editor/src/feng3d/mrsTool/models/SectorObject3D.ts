@@ -129,8 +129,7 @@ export function sectorObject3DLogic(data: SectorObject3D): SectorObject3DLogic
         for (const child of reactive(host).children ?? [])
         {
             if (child.name !== 'border') continue;
-            const borderGeometry = ((child.components ?? [])[0] as MeshRenderer | undefined)?.geometry as
-                UnReadonly<{ segments: Segment[] }> | undefined;
+            const borderGeometry = ((child.components ?? [])[0] as MeshRenderer | undefined)?.geometry as unknown as UnReadonly<{ segments: Segment[] }> | undefined;
             if (!borderGeometry) continue;
 
             // 旧实现：两条边界线各外扩 0.1°，使边界线压在扇形边缘上

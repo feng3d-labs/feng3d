@@ -594,7 +594,7 @@ export function coordinatePlaneLogic(data: CoordinatePlane): CoordinatePlaneLogi
                         r_uniforms.u_segmentColor = color4(border.r!, border.g!, border.b!, border.a!);
                         // 边框：闭合正方形四边（线段顶点色为白，颜色由材质 uniform 决定）
                         const renderer = child.components?.[0] as MeshRenderer | undefined;
-                        const geometry = renderer?.geometry as UnReadonly<SegmentGeometryShape> | undefined;
+                        const geometry = renderer?.geometry as unknown as UnReadonly<SegmentGeometryShape> | undefined;
                         if (geometry)
                         {
                             const segment = (x0: number, z0: number, x1: number, z1: number): Segment => ({
