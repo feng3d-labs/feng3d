@@ -89,8 +89,9 @@ export class WGPUTextureView extends RefCountedReactiveObject
             r_view.texture;
             const wgpuTexture = WGPUTextureLike.getInstance(device, view.texture);
 
-            // 持有底层纹理（issue #89）：视图活着，纹理就不能被销毁
-            this.hold(wgpuTexture);
+            // 持有底层纹理（issue #89）：视图活着，纹理就不能被销毁。
+            // 用 replaceHeld：computed 每次重算都会重新取，累积 hold 会让计数只增不减。
+            this.replaceHeld([wgpuTexture]);
             const gpuTexture = wgpuTexture.gpuTexture;
 
             // 生成纹理视图标签，如果没有指定则使用纹理标签
