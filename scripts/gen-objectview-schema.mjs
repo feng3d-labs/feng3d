@@ -320,7 +320,9 @@ for (const source of program.getSourceFiles())
 
             const field = {
                 name: prop.name,
-                type: typeText(propType),
+                // 展示用类型名：剥掉 `readonly ` 修饰（§11.6 的只读数组只影响写入口，
+                // 不影响面板该显示的数组类型；不剥的话控件判据也会跟着失配）
+                type: typeText(propType).replace(/^readonly\s+/, ''),
                 control,
                 ...(optional ? { optional: true } : {}),
                 ...(readonly ? { readonly: true } : {}),
@@ -333,7 +335,7 @@ for (const source of program.getSourceFiles())
             // 数组元素是 `Components`（所有可挂载组件的联合）时改用**组件列表**控件：
             // 这个字段承载的是对象挂了哪些组件，"把每个组件自己的属性视图渲染出来"才是它的语义，
             // 交给通用数组控件只会显示成一串看不懂的对象（实测：面板里看不到 MeshRenderer 的字段）
-            if (control === 'Array' && typeText(propType) === 'Components[]')
+            if (control === 'Array' && typeText(propType).replace(/^readonly\s+/, '') === 'Components[]')
             {
                 field.control = 'Components';
             }
