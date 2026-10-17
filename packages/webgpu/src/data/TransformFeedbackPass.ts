@@ -13,7 +13,7 @@ export interface TransformFeedbackPass
     /**
      * 变换反馈对象列表。
      */
-    transformFeedbackObjects: TransformFeedbackObject[];
+    readonly transformFeedbackObjects: readonly TransformFeedbackObject[];
 }
 
 export interface TransformFeedbackObject

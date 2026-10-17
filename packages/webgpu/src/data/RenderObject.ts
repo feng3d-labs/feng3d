@@ -16,7 +16,7 @@ export interface RenderObject
     /**
      * 数据类型。
      */
-    __type__?: 'RenderObject';
+    readonly __type__?: 'RenderObject';
 
     /**
      * 视窗。

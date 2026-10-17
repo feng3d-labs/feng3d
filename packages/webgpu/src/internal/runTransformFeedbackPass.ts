@@ -12,10 +12,9 @@ import { ComputePipeline } from '../data/ComputePipeline';
  */
 export function runTransformFeedbackPass(device: GPUDevice, commandEncoder: GPUCommandEncoder, transformFeedbackPass: TransformFeedbackPass)
 {
-    const computePass: ComputePass = {
-        __type__: 'ComputePass',
-        computeObjects: [],
-    };
+    // 装配期在可变数组里累积，最后一次性交给只读形状（§11.6：读侧接口的数组字段是 readonly，
+    // 要就地改数组就改"可写形状"——这里是本函数私有的局部数组，不涉及读侧类型放宽）
+    const computeObjects: ComputeObject[] = [];
 
     transformFeedbackPass.transformFeedbackObjects.forEach((transformFeedbackObject) =>
     {
@@ -23,12 +22,17 @@ export function runTransformFeedbackPass(device: GPUDevice, commandEncoder: GPUC
 
         if (computeObject)
         {
-            computePass.computeObjects.push(computeObject);
+            computeObjects.push(computeObject);
         }
     });
 
-    if (computePass.computeObjects.length > 0)
+    if (computeObjects.length > 0)
     {
+        const computePass: ComputePass = {
+            __type__: 'ComputePass',
+            computeObjects,
+        };
+
         runComputePass(device, commandEncoder, computePass);
     }
 }

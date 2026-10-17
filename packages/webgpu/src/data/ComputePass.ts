@@ -14,12 +14,12 @@ export interface ComputePass
      */
     readonly __type__: 'ComputePass';
 
-    descriptor?: ComputePassDescriptor;
+    readonly descriptor?: ComputePassDescriptor;
 
     /**
      * 计算对象列表。
      */
-    computeObjects: ComputeObject[];
+    readonly computeObjects: readonly ComputeObject[];
 }
 
 export interface ComputePassDescriptor
