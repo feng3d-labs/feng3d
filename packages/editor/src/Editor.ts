@@ -1,4 +1,5 @@
 import { serialization, globalEmitter, logic } from 'feng3d';
+import { isHostAvailable } from './assets/EditorRS';
 import type { EditorRS } from './assets/EditorRS';
 import type { EditorCache } from './caches/Editorcache';
 import { useEditorStore } from './vue-app/stores/editorStore';
@@ -78,7 +79,19 @@ export class Editor
         modules.message = createMessageAdapter() as any;
 
         await this.initLayers();
-        await this.rs.initproject(this.cache);
+
+        // 项目来自宿主磁盘目录（决策 ①）：宿主不可用（dev 纯前端 / 静态部署）时**没有项目可初始化**，
+        // 启动流程不该去碰它——否则每个 `host.*` 都是一次 400，还会抛出未捕获异常。
+        // 如实跳过并说明（"没有宿主"是正常态，见 `isHostAvailable()`）。
+        if (isHostAvailable())
+        {
+            await this.rs.initproject(this.cache);
+        }
+        else
+        {
+            console.info('[Editor] 未检测到宿主：跳过项目初始化（编辑器仍可用，项目相关操作会如实失败）');
+        }
+
         await this.init();
 
         console.log(`初始化完成。`);
@@ -97,16 +110,21 @@ export class Editor
 
         this.cache.setLastProject(this.cache.projectname);
 
-        await this.assetManager.initproject();
-        // 通知 ProjectView 资源树已初始化
-        globalEmitter.emit('projectview.invalidateAssettree' as any);
+        // 宿主可用才有项目可初始化（没有宿主时 ProjectView 会自己跳过空等，见其 initList）
+        const hasProject = isHostAvailable();
+        if (hasProject)
+        {
+            await this.assetManager.initproject();
+            // 通知 ProjectView 资源树已初始化
+            globalEmitter.emit('projectview.invalidateAssettree' as any);
+        }
         
 
         // 优先读取项目资源里的场景文件（`resource/template/default.scene.json` 已由
         // `scripts/migrate-scene-json.mjs` 迁移为**纯数据格式**，`readScene` 直接反序列化即可，
         // 见 docs/migrations/SERIALIZATION_MIGRATION.md 的 S2/S3）；读取或反序列化失败时回退到纯数据
         // 字面量默认场景，保证 `gameScene` 一定非空（层级面板不再显示 `No Data`）。
-        const scene = await this.assetManager.readScene('scenes/default.scene.json');
+        const scene = hasProject ? await this.assetManager.readScene('scenes/default.scene.json') : null;
         useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
 
         // 启动只读 AI 桥接（P1）：让 DSH / CLI 能以语义化方式查询场景。
@@ -117,6 +135,9 @@ export class Editor
 
         window.addEventListener('beforeunload', () =>
         {
+            // 没有宿主 = 没有项目可写回（否则关闭页面时会抛一次 400 未捕获异常）
+            if (!hasProject) return;
+
             // `Scene` 是组件（纯数据接口），没有 `object3D` 字段；
             // 其宿主对象经 logic(scene).entity 取得。
             const scene = useEditorStore().gameScene;

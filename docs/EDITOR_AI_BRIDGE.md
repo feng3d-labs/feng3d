@@ -33,7 +33,7 @@ scripts/editor-bridge-cli.mjs ────────────────�
 
 | 路由 | 说明 |
 |---|---|
-| `GET /ping` | → `{ ok: true }`：**只读探针**，供调用方探测 dev server 实际端口（**不能**用 `/pending` 探测，它会取走并丢弃真任务）|
+| `GET /ping` | → `{ ok: true, host, clients, duplicated }`：**只读探针**，供调用方探测 dev server 实际端口（**不能**用 `/pending` 探测，它会取走并丢弃真任务）；`host` 报服务端**接没接宿主调用器**——页面据此决定要不要探测项目（没接时调 `host.*` 会回 400，而"没有宿主"是正常态，见 `EditorRS.pickBaseFS()`）|
 | `POST /call` | body `{ method, params, target? }` → `{ id }` |
 | `GET /pending` | → `{ requests: [{ id, method, params }] }`（**派发即从队列移除**，保证一次性语义）|
 | `POST /result` | body `{ id, ok, result, error, stack? }`（`stack` 是裁剪过的异常堆栈，成功时省略）|
