@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { Components } from '../component/Component';
 import { logicOrThrow, reactive, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Container', containerLogic) 注册
@@ -247,7 +248,7 @@ describe('containerLogic - 组件管理（继承自 entityLogic）', () =>
         const c = { __type__: 'Container' } as Container;
         const l = logicOrThrow(c);
         const cam = { __type__: 'Camera' };
-        reactive(c).components!.push(cam);
+        (reactive(c).components! as Components[]).push(cam);
 
         expect(toRaw(l.getComponent('Camera'))).toBe(cam);
     });
@@ -258,7 +259,7 @@ describe('containerLogic - 组件管理（继承自 entityLogic）', () =>
         const l = logicOrThrow(c);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
-        reactive(c).components!.push(c1, c2);
+        (reactive(c).components! as Components[]).push(c1, c2);
 
         const result = l.getComponents('').map(toRaw);
 

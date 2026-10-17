@@ -17,8 +17,8 @@ declare module '../../component/Component'
 export interface Skeleton extends Component3D
 {
     readonly __type__: 'Skeleton';
-    readonly boneInverses: Matrix4x4[];
-    readonly boneNames: string[];
+    readonly boneInverses: readonly Matrix4x4[];
+    readonly boneNames: readonly string[];
 }
 
 declare module '@feng3d/reactivity'
