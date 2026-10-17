@@ -4,7 +4,7 @@ import { BufferBinding } from '../data/BufferBinding';
 import { BufferBindingInfo } from '../internal/BufferBindingInfo';
 import { ChainMap } from '../utils/ChainMap';
 import { ArrayInfo, StructInfo, TemplateInfo, TypeInfo } from 'wgsl_reflect';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { convertToAlignedFormat } from '../utils/convertToAlignedFormat';
 import { GpuUploadTask, registerUploadTask } from '../utils/GpuUploadRegistry';
 // 触发 Color4 logic 注册（registerLogic 副作用；纯数据 Color4 的转换在 uniformValueToData 里）
@@ -12,7 +12,7 @@ import './color4Logic';
 import { WGPUBuffer } from './WGPUBuffer';
 import { uniformValueToData } from '../utils/uniformValueToData';
 
-export class WGPUBufferBinding extends ReactiveObject
+export class WGPUBufferBinding extends RefCountedReactiveObject
 {
     get gpuBufferBinding()
     {
@@ -32,7 +32,7 @@ export class WGPUBufferBinding extends ReactiveObject
 
     constructor(device: GPUDevice, bufferBinding: BufferBinding, type: TypeInfo)
     {
-        super();
+        super(device);
         this._device = device;
 
         this._onCreate(device, bufferBinding, type);
@@ -81,7 +81,11 @@ export class WGPUBufferBinding extends ReactiveObject
 
             writableGbuffer.label = gbuffer.label || (`BufferBinding ${type.name}`);
             //
-            const buffer = WGPUBuffer.getInstance(device, gbuffer).gpuBuffer;
+            const wgpuBuffer = WGPUBuffer.getInstance(device, gbuffer);
+
+            // 持有缓冲区（issue #89）：binding 活着，buffer 就不能被销毁
+            this.hold(wgpuBuffer);
+            const buffer = wgpuBuffer.gpuBuffer;
 
             const offset = bufferView.byteOffset;
             const size = bufferView.byteLength;

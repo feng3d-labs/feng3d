@@ -3,7 +3,7 @@ import { ChainMap } from '../utils/ChainMap';
 import { Texture, TextureDimension, TextureFormat, TextureSize, TextureSource } from '../data/Texture';
 import { TextureDataSource } from '../data/TextureDataSource';
 import { TextureImageSource } from '../data/TextureImageSource';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { isCopyExternalImageSupported, writeImageWithFallback } from '../utils/copyExternalImageFallback';
 import { generateMipmap } from '../utils/generate-mipmap';
 import { trackCreate, trackFree, addMemory } from '../utils/GPUDeviceStats';
@@ -37,7 +37,7 @@ import { createResourcePool, ResourcePool, ResourcePoolStats } from '../utils/Re
  * - 深度和模板纹理
  * - 立方体贴图和纹理数组
  */
-export class WGPUTexture extends ReactiveObject
+export class WGPUTexture extends RefCountedReactiveObject
 {
     /**
      * WebGPU纹理对象
@@ -65,7 +65,7 @@ export class WGPUTexture extends ReactiveObject
      */
     constructor(device: GPUDevice, texture: Texture)
     {
-        super();
+        super(device);
         this._device = device;
 
         // 设置纹理创建和更新逻辑
@@ -73,6 +73,8 @@ export class WGPUTexture extends ReactiveObject
 
         //
         WGPUTexture.map.set([device, texture], this);
+        // 归零即摘缓存（issue #89）：归零到提交之间有窗口，getInstance 不能再取到待销毁实例
+        this.setZeroRefCall(() => WGPUTexture.map.delete([device, texture]));
         trackCreate(device, 'texture');
         // 数据侧键登记（设计 7.2）：evictTexture / destroyGpuResourcesOf(texture)
         // 经 GpuResourceReleaser 索引确定性销毁本实例（GPUTexture.destroy + 统计 + 缓存移除）

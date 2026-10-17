@@ -1,10 +1,10 @@
 import { computed, Computed, reactive } from '@feng3d/reactivity';
 import { ChainMap } from '../utils/ChainMap';
 import { Sampler, defaultSampler } from '../data/Sampler';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { trackCreate, trackFree } from '../utils/GPUDeviceStats';
 
-export class WGPUSampler extends ReactiveObject
+export class WGPUSampler extends RefCountedReactiveObject
 {
     get gpuSampler()
     {
@@ -15,12 +15,14 @@ export class WGPUSampler extends ReactiveObject
 
     constructor(device: GPUDevice, sampler: Sampler)
     {
-        super();
+        super(device);
 
         this._onCreate(device, sampler);
 
         //
         WGPUSampler.map.set([device, sampler], this);
+        // 归零即摘缓存（issue #89）：归零到提交之间有窗口，getInstance 不能再取到待销毁实例
+        this.setZeroRefCall(() => WGPUSampler.map.delete([device, sampler]));
         trackCreate(device, 'sampler');
         this.destroyCall(() =>
         {

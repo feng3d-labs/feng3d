@@ -7,7 +7,7 @@ import { Texture } from '../data/Texture';
 import { TextureView } from '../data/TextureView';
 import { ResourceType } from 'wgsl_reflect';
 import { VideoTexture } from '../data/VideoTexture';
-import { ReactiveObject } from '../ReactiveObject';
+import { RefCountedReactiveObject } from '../utils/GpuResourceRef';
 import { ExternalSampledTextureType } from '../types/TextureType';
 import { WGPUBufferBinding } from './WGPUBufferBinding';
 import { WGPUExternalTexture } from './WGPUExternalTexture';
@@ -70,7 +70,7 @@ function adjustSamplerForTexture(texture: Texture | undefined, sampler: Sampler)
     return sampler;
 }
 
-export class WGPUBindGroupEntry extends ReactiveObject
+export class WGPUBindGroupEntry extends RefCountedReactiveObject
 {
     get gpuBindGroupEntry()
     {
@@ -82,7 +82,7 @@ export class WGPUBindGroupEntry extends ReactiveObject
 
     constructor(device: GPUDevice, bindGroupLayout: GPUBindGroupLayoutEntry, bindingResources: BindingResources)
     {
-        super();
+        super(device);
         this._onCreate(device, bindGroupLayout, bindingResources);
 
         //
@@ -143,12 +143,15 @@ export class WGPUBindGroupEntry extends ReactiveObject
                 //
                 const wgpuBufferBinding = WGPUBufferBinding.getInstance(device, bufferBinding, type);
 
+                // 持有本项用到的资源（issue #89）：本 entry 活着，它们就不能被销毁
+                this.hold(wgpuBufferBinding);
                 entry.resource = wgpuBufferBinding.gpuBufferBinding;
             }
             else if (ExternalSampledTextureType[type.name]) // 判断是否为外部纹理
             {
                 const wgpuExternalTexture = WGPUExternalTexture.getInstance(device, bindingResources[name] as VideoTexture);
 
+                this.hold(wgpuExternalTexture);
                 entry.resource = wgpuExternalTexture.gpuExternalTexture;
             }
             else if (resourceType === ResourceType.Texture || resourceType === ResourceType.StorageTexture)
@@ -196,6 +199,7 @@ export class WGPUBindGroupEntry extends ReactiveObject
                 // 上面已确认 textureView 非空，而 WGPUTextureView.getInstance 只在 view 为空时返回 undefined
                 const wgpuTextureView = WGPUTextureView.getInstance(device, textureView)!;
 
+                this.hold(wgpuTextureView);
                 entry.resource = wgpuTextureView.textureView;
             }
             else
@@ -234,6 +238,7 @@ export class WGPUBindGroupEntry extends ReactiveObject
 
                 const wgpuSampler = WGPUSampler.getInstance(device, adjustedSampler);
 
+                this.hold(wgpuSampler);
                 entry.resource = wgpuSampler.gpuSampler;
             }
 

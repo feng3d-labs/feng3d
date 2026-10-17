@@ -70,6 +70,7 @@ export * from './utils/ChainMap';
 export * from './utils/unreadonly';
 export * from './utils/GPUDeviceStats';
 export * from './utils/GpuResourceReleaser';
+export * from './utils/GpuResourceRef';
 export * from './utils/ResourcePool';
 
 // 缓存类（benchmark 统计等）
