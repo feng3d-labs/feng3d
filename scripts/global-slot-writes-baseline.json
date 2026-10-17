@@ -1,0 +1,7 @@
+{
+    "note": "模块顶层给**引擎全局槽位**赋值（R2 的盲区，issue #679）。键是「相对路径::容器名」，值是出现次数（不含行号：行号会随无关改动漂移）。槽位容器名单在 scripts/r2-module-scope.mjs 的 GLOBAL_SLOT_CONTAINERS。**新增即失败**；清理完跑 --update 收紧。",
+    "entries": {
+        "packages/filesystem/src/HttpFS.ts::FS": 1,
+        "packages/filesystem/src/ReadFS.ts::FS": 1
+    }
+}

@@ -276,14 +276,14 @@ check('★ check-toplevel-new 的判据自检条数与 §2.1.2 声称的一致�
     toplevelNewSelfChecks === 12,
     `实测 ${toplevelNewSelfChecks ?? `读不到（${lastRunError ?? '无错误信息'}）`} 条`);
 
-check('★ test/r2ModuleScope.spec.ts 存在，且 it( 条数与 §2.1.2 声称的一致（46）',
+check('★ test/r2ModuleScope.spec.ts 存在，且 it( 条数与 §2.1.2 声称的一致（52）',
     (() =>
     {
         const path = resolve(ROOT, 'test/r2ModuleScope.spec.ts');
 
         if (!existsSync(path)) return false;
 
-        return (readFileSync(path, 'utf8').match(/\bit\(/g) ?? []).length === 46;
+        return (readFileSync(path, 'utf8').match(/\bit\(/g) ?? []).length === 52;
     })(),
     (() =>
     {
