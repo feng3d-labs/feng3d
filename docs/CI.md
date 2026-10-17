@@ -23,7 +23,8 @@ CI 用根 `vitest run` 一次跑完全仓测试：
 
 **当前基线：303 个测试文件 / 3392 个测试用例全部通过**（本机实测，vitest 5.0.2；补测试后请同步本行与 §2.1）。
 本行原先记的是「234 / 2709」、§2.1 第 12 步记的是「252 / 2843」——**两处长期互不一致**（每次都只同步一处），
-issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）按实测把两处一起对齐。
+issue #652 落地时（新增 `test/r2ModuleScope.spec.ts` 的 46 条用例）按实测把两处一起对齐；
+issue #679 补了 6 条全局槽位判据用例（46 → **52**），`check-verifier-wiring.mjs` 的条数断言同步。
 
 这批测试同时产出覆盖率并校验阈值（issue #74），见 §1.3。
 
@@ -353,7 +354,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 
 | # | 步骤 | 命令 | 规范 | 拦什么 |
 |---|---|---|---|---|
-| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 + R13 纯函数层 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读形状：属性 + 数组两个维度，issue #605 / #625）→ `check-pure-modules.mjs`（纯函数层，R13）→ `check-register-logic-factory.mjs`（registerLogic 只接受工厂函数，issue #653）→ `check-feng3d-barrel-exports.mjs`（聚合桶可见性，R1 / issue #592）→ `gates:host`（21 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
+| 1 | 代码检查（eslint，零警告） | `npm run lint:ci` | R2 / R4 / R5（自研规则）+ §11.6 只读形状 + R13 纯函数层 | `prelint:ci` 钩子先跑「构建 `eslint-plugin-feng3d`（`dist/` 不在版本控制里）→ `check-math-no-class.mjs` → `check-readonly-array-fields.mjs`（只读形状：属性 + 数组两个维度，issue #605 / #625）→ `check-pure-modules.mjs`（纯函数层，R13）→ `check-register-logic-factory.mjs`（registerLogic 只接受工厂函数，issue #653）→ `check-feng3d-barrel-exports.mjs`（聚合桶可见性，R1 / issue #592）→ `check-global-slot-writes.mjs`（模块顶层给引擎全局槽位赋值，R2 / issue #679）→ `gates:host`（21 条宿主门禁，见 §2.2）」，再跑 eslint（覆盖 `packages/` + `scripts/` + `test/`，`--max-warnings 0`；`packages/editor` 走自己的配置，见 §2.2） |
 | 2 | 文档相对链接 | `node scripts/check-docs-links.mjs` | ——（文档，非 R 编号） | 仓库内相对链接失效即失败（外链与页内锚点不查） |
 | 3 | effect 盘点 | `node scripts/check-effect-inventory.mjs` | R5 | `EFFECT_INVENTORY.md` 与实际 `effect(` 调用点**按文件比对数量**，脱节即失败 |
 | 4 | 模块级副作用 | `node scripts/check-module-side-effects.mjs --strict` | R2 | **AST 判据**（issue #614；与第 16 步共用 `scripts/r2-module-scope.mjs`）——模块顶层 / 类 **`static` 字段与 `static` 块** / **模块级调用回调**（含**顶层 IIFE**、多行声明、对象字面量、缩进的顶层块）里的：① 缓存创建（空参 / 只有泛型实参的 `new Map/WeakMap/Set/WeakSet()`，外加**项目自有**的 `new ChainMap()`——`ChainMap` 是 webgpu 的链式字典、不套空参限制）；② 启动型调用（定时器 / rAF / ticker 启动）；③ `globalThis` 写入。**新增即失败**（已实测的存量按 `scripts/toplevel-new-baseline.json` 冻结放行）；应用入口按 `ENTRY_FILES` 清单**整类**豁免 |
@@ -723,7 +724,7 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
 > 保护（它只查仓库内相对链接），标题一改就静默失效。本批把内容集中到这里并给上编号，
 > 让那三处引用有落点。
 
-四条边界（都在实测里指得到实例，不是理论）：
+五条边界（都在实测里指得到实例，不是理论）：
 
 1. **应用入口整类豁免**（清单见上表：两个示例导航页 + 编辑器挂载入口），代价是入口页的真副作用一起放行。
    实测一处：`packages/editor/src/vue-app/main.ts:93` 的模块级 `setTimeout(async () => {...}, 0)`（推迟主题初始化）
@@ -756,6 +757,13 @@ error-logger 插件）。Vite 的默认配置文件名解析顺序里 `.js` 在 
    现在规则层 `Map/WeakMap/Set/WeakSet/ChainMap` 与脚本层的 `CACHE_NAMES` + `PROJECT_CACHE_NAMES`
    是**同一集合**，且由机器断言守着（见 §2.1.2）——原先那句「两处名单已同步」只对 `ChainMap` 那批成立、
    `WeakSet` 只在一侧，措辞误导，已随本次修正删掉。
+5. **引擎全局槽位赋值曾不在任何判据里**（issue #679 已补）：`FS.fs = …` / `FS.basefs = …` 是**普通赋值**，
+   既不落在「缓存创建 / 启动型调用 / `globalThis` 写入」的判据面，也不是 `check-toplevel-new.mjs` 关心的对象
+   （它只统计 `new`，不知道「赋给引擎全局槽位」这件事）。现由 `scripts/check-global-slot-writes.mjs` 补上：
+   判据层复用 `r2-module-scope.mjs` 的 AST（槽位容器在 `GLOBAL_SLOT_CONTAINERS` 显式登记），带 6 条合成样例
+   自检（该报的报、函数体内的不报、名单外的不报），存量 2 处冻结在 `scripts/global-slot-writes-baseline.json`。
+   **仍有的边界**：判据只认「名单内的容器 + `X.y = …` 形式」——`Object.assign(FS, …)`、`FS['fs'] = …`、
+   `FS.fs` 的**读**一律不查（读不是副作用）。
 
 ### 2.1.2 门禁自身的回归测试、名单一致性与扫描量自证（issue #652）
 
