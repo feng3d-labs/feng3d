@@ -1,6 +1,6 @@
 import { Computed, computed, reactive, toRaw } from '@feng3d/reactivity';
 import { ChainMap } from '../utils/ChainMap';
-import { Texture, TextureDimension, TextureFormat, TextureSource } from '../data/Texture';
+import { Texture, TextureDimension, TextureFormat, TextureSize, TextureSource } from '../data/Texture';
 import { TextureDataSource } from '../data/TextureDataSource';
 import { TextureImageSource } from '../data/TextureImageSource';
 import { ReactiveObject } from '../ReactiveObject';
@@ -8,6 +8,7 @@ import { isCopyExternalImageSupported, writeImageWithFallback } from '../utils/c
 import { generateMipmap } from '../utils/generate-mipmap';
 import { trackCreate, trackFree, addMemory } from '../utils/GPUDeviceStats';
 import { trackGpuResource } from '../utils/GpuResourceReleaser';
+import { createResourcePool, ResourcePool, ResourcePoolStats } from '../utils/ResourcePool';
 
 /**
  * WebGPU纹理缓存管理器
@@ -51,8 +52,6 @@ export class WGPUTexture extends ReactiveObject
 
     private _computedGpuTexture: Computed<GPUTexture>;
 
-    /** 当前 GPU 纹理占用的字节数（用于销毁/重建时从统计中减去） */
-    private _currentBytes = 0;
     /** 关联的 device（销毁时减统计用） */
     private _device: GPUDevice;
 
@@ -83,13 +82,8 @@ export class WGPUTexture extends ReactiveObject
         {
             untrack();
             WGPUTexture.map.delete([device, texture]);
-            // 释放时从统计中扣除数量与显存
+            // 释放时从统计中扣除数量；显存在 _onCreate 的归还路径里扣（池化开启时入池不扣）
             trackFree(device, 'texture');
-            if (this._currentBytes > 0)
-            {
-                addMemory(device, 'textureMemory', -this._currentBytes);
-                this._currentBytes = 0;
-            }
         });
     }
 
@@ -107,6 +101,8 @@ export class WGPUTexture extends ReactiveObject
         const r_texture = reactive(texture);
 
         let gpuTexture: GPUTexture;
+        /** 当前 GPU 纹理对应的池键（归还时按它入池；占位纹理与池化关闭时为 null） */
+        let gpuTextureKey: string | null = null;
 
         // 监听纹理配置变化，自动重新创建纹理
         this._computedGpuTexture = computed(() =>
@@ -139,14 +135,17 @@ export class WGPUTexture extends ReactiveObject
                 // 创建最小占位 GPU 纹理（1x1 rgba8unorm）
                 if (!gpuTexture || gpuTexture.label !== '__placeholder__')
                 {
+                    // 归还旧纹理：原实现在这条路径上直接覆盖 gpuTexture、不销毁旧的（descriptor 被移除时泄漏一次）
+                    if (gpuTexture) WGPUTexture._disposeGpuTexture(device, gpuTextureKey, gpuTexture);
                     gpuTexture = device.createTexture({
                         size: [1, 1],
                         format: 'rgba8unorm',
                         usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
                     });
                     gpuTexture.label = '__placeholder__';
+                    gpuTextureKey = null;
                     // 占位纹理：1×1×4 字节
-                    this._applyBytes(device, 1 * 1 * 4);
+                    addMemory(device, 'textureMemory', WGPUTexture._gpuTextureBytes(gpuTexture));
                 }
 
                 return gpuTexture;
@@ -196,19 +195,39 @@ export class WGPUTexture extends ReactiveObject
                 console.assert(device.features.has('bgra8unorm-storage'), `当前设备不支持 bgra8unorm 格式！请使用其他格式或者添加 "bgra8unorm-storage" 特性！`);
             }
 
-            // 创建GPU纹理
-            gpuTexture?.destroy();
-            gpuTexture = device.createTexture(gpuTextureDescriptor);
+            // 归还旧纹理：池化开启时入池复用，否则按原行为销毁并扣减显存
+            if (gpuTexture)
+            {
+                WGPUTexture._disposeGpuTexture(device, gpuTextureKey, gpuTexture);
+            }
+            gpuTextureKey = null;
 
-            // 统计显存：width × height × depthOrArrayLayers × sampleCount × bytesPerPixel × mipFactor
-            // - mipFactor：无 mipmap 为 1；有 mipmap 时各级面积几何级数和 ≈ 4/3
-            // - 压缩格式（bc/etc/eac）bytesPerPixel 取不到，按 0 记录（数量仍统计）
-            const bytesPerPixel = Texture.getTextureBytesPerPixel(format as TextureFormat) || 0;
-            const mipFactor = mipLevelCount > 1 ? 4 / 3 : 1;
-            const samples = sampleCount || 1;
-            const bytes = size[0] * size[1] * (size[2] || 1) * samples * bytesPerPixel * mipFactor;
+            const poolKey = WGPUTexture._texturePoolKey(gpuTextureDescriptor);
+            const pool = WGPUTexture._pool;
+            // 池化复用前提（见 _canReuseGpuTexture）：mip 链只有一层、生成 mipmap 关闭、
+            // 且 sources 完整覆盖整个纹理——复用后 _writeTextures 会把内容整体重写，不留旧数据
+            const reusable = pool && WGPUTexture._canReuseGpuTexture(texture, mipLevelCount)
+                ? pool.take(device, poolKey)
+                : undefined;
 
-            this._applyBytes(device, bytes);
+            if (reusable)
+            {
+                gpuTexture = reusable;
+                gpuTexture.label = label;
+                gpuTextureKey = poolKey;
+            }
+            else
+            {
+                // 创建GPU纹理
+                gpuTexture = device.createTexture(gpuTextureDescriptor);
+                gpuTextureKey = poolKey;
+
+                // 统计显存：width × height × depthOrArrayLayers × sampleCount × bytesPerPixel × mipFactor
+                // - mipFactor：无 mipmap 为 1；有 mipmap 时各级面积几何级数和 ≈ 4/3
+                // - 压缩格式（bc/etc/eac）bytesPerPixel 取不到，按 0 记录（数量仍统计）
+                // 只有真正新建才计一次；池中驻留的早在新建时已计入，复用不重复计
+                addMemory(device, 'textureMemory', WGPUTexture._gpuTextureBytes(gpuTexture));
+            }
 
             // 上传初始纹理数据
             WGPUTexture._writeTextures(device, gpuTexture, texture.sources);
@@ -225,10 +244,11 @@ export class WGPUTexture extends ReactiveObject
             return gpuTexture;
         });
 
-        // 注册清理回调，在对象销毁时清理纹理
+        // 注册清理回调，在对象销毁时清理纹理（池化开启时归还入池）
         this.destroyCall(() =>
         {
-            gpuTexture?.destroy();
+            if (gpuTexture) WGPUTexture._disposeGpuTexture(device, gpuTextureKey, gpuTexture);
+            gpuTextureKey = null;
         });
     }
 
@@ -258,28 +278,6 @@ export class WGPUTexture extends ReactiveObject
             // 读取点都是真值判断，undefined 与原来的 null 行为一致）
             r_texture.writeTextures = undefined;
         }).value;
-    }
-
-    /**
-     * 应用当前纹理的字节数到统计（先减旧值再加新值）。
-     *
-     * 在 computed 重建纹理时调用：texture.descriptor 变化会触发重新创建，
-     * 此时旧纹理被 destroy、新纹理创建，显存统计需同步更新。
-     *
-     * @param device GPU 设备
-     * @param bytes 新纹理占用字节数
-     */
-    private _applyBytes(device: GPUDevice, bytes: number)
-    {
-        if (this._currentBytes > 0)
-        {
-            addMemory(device, 'textureMemory', -this._currentBytes);
-        }
-        this._currentBytes = bytes;
-        if (bytes > 0)
-        {
-            addMemory(device, 'textureMemory', bytes);
-        }
     }
 
     /**
@@ -321,6 +319,114 @@ export class WGPUTexture extends ReactiveObject
      * @param gpuTexture 目标WebGPU纹理
      * @param textureSources 纹理数据源数组（可为空——调用方在无数据源时不传，方法体内本就是可选链遍历）
      */
+    /**
+     * 归还 GPU 纹理：池化开启且拿到池键时入池复用，否则立即销毁并扣减显存。
+     *
+     * 显存读数只在**真正销毁**时扣减（池中驻留仍占显存），新建时已加过。
+     */
+    private static _disposeGpuTexture(device: GPUDevice, key: string | null, gpuTexture: GPUTexture): void
+    {
+        if (WGPUTexture._pool && key)
+        {
+            WGPUTexture._pool.put(device, key, gpuTexture);
+
+            return;
+        }
+
+        gpuTexture.destroy();
+        addMemory(device, 'textureMemory', -WGPUTexture._gpuTextureBytes(gpuTexture));
+    }
+
+    /**
+     * GPU 纹理占用的字节数（与创建时的统计口径一致）。
+     *
+     * width × height × depthOrArrayLayers × sampleCount × bytesPerPixel × mipFactor；
+     * mipFactor：无 mipmap 为 1、有 mipmap 时各级面积几何级数和 ≈ 4/3；
+     * 压缩格式（bc/etc/eac）bytesPerPixel 取不到，按 0 记录（数量仍统计）。
+     */
+    static _gpuTextureBytes(gpuTexture: GPUTexture): number
+    {
+        const bytesPerPixel = Texture.getTextureBytesPerPixel(gpuTexture.format as TextureFormat) || 0;
+        const mipFactor = gpuTexture.mipLevelCount > 1 ? 4 / 3 : 1;
+
+        return gpuTexture.width * gpuTexture.height * gpuTexture.depthOrArrayLayers
+            * gpuTexture.sampleCount * bytesPerPixel * mipFactor;
+    }
+
+    /** 池化键：描述符里影响 GPU 纹理规格的全部字段 */
+    private static _texturePoolKey(descriptor: GPUTextureDescriptor): string
+    {
+        const size = descriptor.size;
+        const sizeText = Array.isArray(size) ? size.join('x') : String(size);
+        const viewFormats = descriptor.viewFormats ? [...descriptor.viewFormats].join(',') : '';
+
+        return [
+            sizeText,
+            descriptor.format,
+            descriptor.dimension,
+            descriptor.mipLevelCount,
+            descriptor.sampleCount,
+            descriptor.usage,
+            viewFormats,
+        ].join('|');
+    }
+
+    /**
+     * 复用前提：mip 链只有一层、不生成 mipmap、且 sources 完整覆盖整个纹理。
+     *
+     * 三者缺一都不复用——复用的安全性完全建立在「_writeTextures 会把整张纹理重写」上，
+     * 有任何一块没被覆盖，复用就会把上一份内容泄漏到新纹理里。
+     */
+    private static _canReuseGpuTexture(texture: Texture, mipLevelCount: number): boolean
+    {
+        const descriptor = texture.descriptor;
+        const sources = texture.sources;
+
+        if (!descriptor || descriptor.generateMipmap || mipLevelCount !== 1) return false;
+        if (!sources || sources.length !== 1) return false;
+
+        return WGPUTexture._isFullCoverageSource(sources[0], descriptor.size);
+    }
+
+    /** 单个纹理源是否从 (0,0,0) 开始、完整覆盖整张纹理的 mip 0 */
+    private static _isFullCoverageSource(source: TextureSource, size: TextureSize): boolean
+    {
+        if ((source.mipLevel ?? 0) !== 0) return false;
+
+        const origin = source.textureOrigin;
+
+        if (origin && (origin[0] !== 0 || origin[1] !== 0 || (origin[2] !== undefined && origin[2] !== 0))) return false;
+
+        const imageSource = source as TextureImageSource;
+
+        if (imageSource.image)
+        {
+            const imageOrigin = imageSource.imageOrigin;
+
+            if (imageOrigin && (imageOrigin[0] !== 0 || imageOrigin[1] !== 0)) return false;
+
+            return WGPUTexture._coversTexture(imageSource.size ?? TextureImageSource.getTexImageSourceSize(imageSource.image), size);
+        }
+
+        const dataSource = source as TextureDataSource;
+
+        if (!dataSource.size) return false;
+
+        const dataOrigin = dataSource.dataImageOrigin;
+
+        if (dataOrigin && (dataOrigin[0] !== 0 || dataOrigin[1] !== 0 || (dataOrigin[2] !== undefined && dataOrigin[2] !== 0))) return false;
+
+        return WGPUTexture._coversTexture(dataSource.size, size);
+    }
+
+    /** 拷贝尺寸是否覆盖整张纹理（第三维缺省按 1 比较） */
+    private static _coversTexture(copySize: TextureSize, size: TextureSize): boolean
+    {
+        return copySize[0] === size[0]
+            && copySize[1] === size[1]
+            && (copySize[2] ?? 1) === (size[2] ?? 1);
+    }
+
     static _writeTextures(device: GPUDevice, gpuTexture: GPUTexture, textureSources: readonly TextureSource[] | undefined)
     {
         textureSources?.forEach((v) =>
@@ -514,4 +620,62 @@ export class WGPUTexture extends ReactiveObject
      * 每次创建新纹理时自动递增。
      */
     private static _autoIndex = 0;
+
+    /**
+     * GPU 纹理池（issue #98 阶段 2）。
+     *
+     * **默认关闭**（null）：关闭时每个归还点都直接 destroy，运行时行为与池化前一致。
+     * 池化会改变「显存驻留」与「销毁时机」，未在有 GPU 的真机上看过画面前不应默认开启。
+     */
+    static _pool: ResourcePool<GPUTexture> | null = null;
+}
+
+/**
+ * 打开 / 关闭 GPU 纹理池化（issue #98 阶段 2）。
+ *
+ * 默认关闭。开启后 `WGPUTexture` 的 GPU 纹理在归还点进入池，按描述符规格
+ * （尺寸 / 格式 / 维度 / mip 数 / 采样数 / usage / viewFormats）复用。
+ *
+ * 复用前提是「sources 完整覆盖整个纹理」——复用后会把内容整体重写，不留旧数据；
+ * 无 sources（render target）、生成 mipmap、source 只覆盖局部 的纹理一律不复用。
+ *
+ * @param enabled 是否开启
+ * @param maxIdleTotal 每个 device 允许闲置的纹理条数上限（默认 16；置 0 等价于关闭）
+ */
+export function setGpuTexturePoolEnabled(enabled: boolean, maxIdleTotal = 16): void
+{
+    if (!enabled || maxIdleTotal <= 0)
+    {
+        WGPUTexture._pool = null;
+
+        return;
+    }
+
+    WGPUTexture._pool = createResourcePool<GPUTexture>({
+        maxIdleTotal,
+        onDestroy: (device, gpuTexture) =>
+        {
+            gpuTexture.destroy();
+            // 池中驻留同样占显存：只有真正销毁才扣减
+            addMemory(device, 'textureMemory', -WGPUTexture._gpuTextureBytes(gpuTexture));
+        },
+    });
+}
+
+/** 当前是否开启 GPU 纹理池化 */
+export function isGpuTexturePoolEnabled(): boolean
+{
+    return WGPUTexture._pool !== null;
+}
+
+/** 取 GPU 纹理池读数（未开启时返回全 0） */
+export function getGpuTexturePoolStats(device: GPUDevice): ResourcePoolStats
+{
+    return WGPUTexture._pool ? WGPUTexture._pool.getStats(device) : { reused: 0, released: 0, destroyed: 0, idle: 0 };
+}
+
+/** 清空 GPU 纹理池（销毁全部闲置纹理；测试与设备丢失时用） */
+export function clearGpuTexturePool(device: GPUDevice): void
+{
+    WGPUTexture._pool?.clear(device);
 }

@@ -89,3 +89,11 @@ export {
     getGpuBufferPoolStats,
     clearGpuBufferPool,
 } from './caches/WGPUBuffer';
+
+// GPU 纹理池化（issue #98 阶段 2）：同上，默认关闭；只复用「sources 完整覆盖」的纹理
+export {
+    setGpuTexturePoolEnabled,
+    isGpuTexturePoolEnabled,
+    getGpuTexturePoolStats,
+    clearGpuTexturePool,
+} from './caches/WGPUTexture';
