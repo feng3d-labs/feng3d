@@ -2,7 +2,7 @@ import { logic as getLogic } from 'feng3d';
 import { isBridgeSocketOnline, startBridgeSocket, subscribeBridgeEvent } from './bridgeSocket';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
-import { WRITE_HANDLERS, isWriteEnabled } from './EditorBridgeWrite';
+import { composeWriteHandlers, isWriteEnabled } from './EditorBridgeWrite';
 import { editorReloadScene, sceneSave } from './write/writeMisc';
 import type { EditorRS } from '../assets/EditorRS';
 import type { EditorAsset } from '../ui/assets/EditorAsset';
@@ -393,15 +393,17 @@ function bridgeMethodTables(): {
     };
     // P2 写通道（默认开启，可在「设置」面板里关掉；URL ?bridge=write / ?bridge=read 可强制）
     // 统一包一层：每次写操作都把「期间新出现的报错」带回给调用方
-    const write = withNewErrors({
-        ...WRITE_HANDLERS,
+    const write = withNewErrors(composeWriteHandlers(
         // #278"挪创建点"：这两条要用**注入**的实例——`scene.save` 落盘、
         // `editor.reloadScene` 重读场景。它们原来挂在模块级写方法表里直接 import 单例，
         // 是依赖环的最后一截；现在由入口经 `Editor` 传进来。
-        'scene.save': (params) => sceneSave(params, deps.rs),
-        'editor.reloadScene': (params) => editorReloadScene(params, deps.assetManager),
-        ...Object.fromEntries(contributedWrite.map((entry) => [entry.name, entry.handler])),
-    });
+        // **注入不等于可以绕过包装**：一律经 composeWriteHandlers，否则 dryRun 与审计会漏（#930）
+        {
+            'scene.save': (params) => sceneSave(params, deps.rs),
+            'editor.reloadScene': (params) => editorReloadScene(params, deps.assetManager),
+        },
+        contributedWrite.map((entry) => ({ name: entry.name, handler: entry.handler })),
+    ));
 
     return { read, write, all: { ...read, ...write } };
 }

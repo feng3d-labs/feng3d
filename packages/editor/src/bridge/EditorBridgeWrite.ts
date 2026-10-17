@@ -281,5 +281,42 @@ function withAudit(
     return wrapped;
 }
 
+/** 写方法处理器（同步或异步） */
+export type WriteHandler = (params: Record<string, unknown>) => unknown | Promise<unknown>;
+
+/**
+ * 把统一的「`dryRun` 预演 + 审计」包装到任意写方法表上。
+ *
+ * 导出它是为了让**运行时注入**的方法也走同一条路：`scene.save` / `editor.reloadScene`
+ * 要用注入进来的实例、不能进模块级表，原先在 `EditorBridge` 里被直接展开进写表，
+ * 于是绕过了这层包装——`scene.save { dryRun: true }` 被静默忽略、真的落了盘，
+ * `history.audit` 里也看不到它（issue #930）。
+ */
+export function wrapWriteHandlers(handlers: Record<string, WriteHandler>): Record<string, WriteHandler>
+{
+    return withAudit(withDryRun(handlers));
+}
+
 /** 写方法总表（统一带上 dryRun 预演与**审计**；`scene.batch` 自己处理预演） */
-export const WRITE_HANDLERS = withAudit(withDryRun(RAW_WRITE_HANDLERS));
+export const WRITE_HANDLERS = wrapWriteHandlers(RAW_WRITE_HANDLERS);
+
+/**
+ * 组装最终写方法表：核心方法 → **注入**的方法（同样过统一包装）→ 插件贡献。
+ *
+ * 抽成函数而不是就地展开，是为了让「注入的方法也必须被包装」成为**可离线测试**的行为
+ * （`test/bridgeWriteCompose.spec.ts`），不必依赖 dev server 与浏览器页面。
+ *
+ * @param injected 需要用注入实例的方法（`scene.save` / `editor.reloadScene`）
+ * @param contributed 插件贡献的写方法：语义由插件定义，**原样**放入，不套 `dryRun`
+ */
+export function composeWriteHandlers(
+    injected: Record<string, WriteHandler> = {},
+    contributed: readonly { readonly name: string, readonly handler: WriteHandler }[] = [],
+): Record<string, WriteHandler>
+{
+    return {
+        ...WRITE_HANDLERS,
+        ...wrapWriteHandlers(injected),
+        ...Object.fromEntries(contributed.map((entry) => [entry.name, entry.handler])),
+    };
+}
