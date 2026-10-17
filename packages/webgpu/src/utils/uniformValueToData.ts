@@ -1,4 +1,4 @@
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { isColor4Data } from '../caches/color4Logic';
 
 /**
@@ -116,7 +116,7 @@ export function uniformValueToData(value: unknown, Cls: UniformDataConstructor):
         // 纯数据 Color4（{ __type__: 'Color4', r, g, b, a }，无 class）：
         // 通过 logic 取响应式扁平数组 [r,g,b,a]。computed 内部读取
         // reactive(color4) 的 r/g/b/a，因此任一分量变化都会让本 computed 失效。
-        return new Cls(logic(value).value.value);
+        return new Cls(logicOrThrow(value).value.value);
     }
     if (isMatrixData(value))
     {

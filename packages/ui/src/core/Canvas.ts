@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, createBehaviourLogicBase, Object3D, registerComponentType } from 'feng3d';
-import { logic as getLogic, reactive, registerLogic } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow, reactive, registerLogic } from '@feng3d/reactivity';
 import {
     mat4AppendScale,
     mat4AppendTranslation,
@@ -122,11 +122,11 @@ function invalidateDescendantLayouts(logic: CanvasLogic): void
 
     // includeInactive = true：被禁用/不可见的 UI 元素同样要在尺寸变化后重算布局，
     // 否则重新启用时会停在旧位置上。
-    const layouts = getLogic(entity).getComponentsInChildren<TransformLayout>('TransformLayout', true);
+    const layouts = getLogicOrThrow(entity).getComponentsInChildren<TransformLayout>('TransformLayout', true);
 
     for (let i = 0; i < layouts.length; i++)
     {
-        (getLogic(layouts[i]) as TransformLayoutLogic).invalidateLayout();
+        (getLogicOrThrow(layouts[i]) as TransformLayoutLogic).invalidateLayout();
     }
 }
 

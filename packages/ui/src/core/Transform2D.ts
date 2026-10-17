@@ -1,5 +1,5 @@
 import { Component3D, Component3DLogic, createComponentLogicBase, Object3D, registerComponentType, TransformLayout } from 'feng3d';
-import { computed, effect, logic as getLogic, reactive, ref, registerLogic } from '@feng3d/reactivity';
+import { computed, effect, reactive, ref, registerLogic, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import type { Reactive } from '@feng3d/reactivity';
 import { Vector2Like, Vector4, Vector4Like } from '@feng3d/math';
 import { uiUniforms } from './UIMaterial';
@@ -508,5 +508,5 @@ export function getTransform2D(target: Object3D | Component3D): Transform2D | nu
 
     if (!owner) return null;
 
-    return getLogic(owner).getComponent<Transform2D>('Transform2D') ?? null;
+    return getLogicOrThrow(owner).getComponent<Transform2D>('Transform2D') ?? null;
 }

@@ -3,7 +3,7 @@
 // （第 1 批实测踩过的坑，见 tmp/progress-ui-migration.md）。
 import 'feng3d';
 import { CullFace, Object3D, View } from 'feng3d';
-import { logic, reactive, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, toRaw } from '@feng3d/reactivity';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import '../src/core/Canvas';
 import '../src/core/CanvasRenderer';
@@ -26,10 +26,10 @@ function ray3(origin: { x: number, y: number, z: number }, direction = { x: 0, y
 /** 造一个 UI Pass 上下文（updateUI 只读 canvas；camera / viewport 不影响本文件的断言） */
 function passContext(view: View): ViewPassContext
 {
-    const canvas = logic(view).canvasElement;
+    const canvas = logicOrThrow(view).canvasElement;
 
     return {
-        scene: logic(view).scene,
+        scene: logicOrThrow(view).scene,
         camera: { __type__: 'PerspectiveCamera' } as unknown as ViewPassContext['camera'],
         viewport: [canvas.width, canvas.height],
         canvas,
@@ -60,7 +60,7 @@ function mountCanvasRenderer(options: {
             children: [rendererObject],
         };
     }
-    logic(root);
+    logicOrThrow(root);
 
     const canvas = root.components!.find((component) => component.__type__ === 'Canvas') as Canvas | undefined;
 
@@ -82,7 +82,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
     it('缺省 geometry / material 由 Logic 补成 UI 默认值，显式声明不被覆盖', () =>
     {
         const omitted: Object3D = { __type__: 'Object3D', components: [{ __type__: 'CanvasRenderer' }] };
-        logic(omitted);
+        logicOrThrow(omitted);
         const renderer = omitted.components![0] as CanvasRenderer;
 
         expect(renderer.geometry!.__type__).toBe('UIGeometry');
@@ -97,7 +97,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
                 material: { __type__: 'StandardMaterial' },
             }],
         };
-        logic(explicit);
+        logicOrThrow(explicit);
 
         expect((explicit.components![0] as CanvasRenderer).geometry!.__type__).toBe('CubeGeometry');
     });
@@ -110,10 +110,10 @@ describe('CanvasRenderer（新架构迁移）', () =>
             size: { x: 2, y: 2 },
             pivot: { x: 0, y: 0 },
         });
-        logic(canvas!).calcMouseRay3D({ x: 0.5, y: 0.5 });
+        logicOrThrow(canvas!).calcMouseRay3D({ x: 0.5, y: 0.5 });
 
         // 传入的世界射线被忽略（改读画布鼠标射线），命中 UI 单位四边形
-        const hit = logic(renderer).worldRayIntersection(ray3({ x: 0, y: 0, z: 5 }, { x: 0, y: 0, z: -1 }));
+        const hit = logicOrThrow(renderer).worldRayIntersection(ray3({ x: 0, y: 0, z: 5 }, { x: 0, y: 0, z: -1 }));
 
         expect(hit).toBeTruthy();
         // UI 强制双面可拾取
@@ -127,7 +127,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
     {
         const { renderer } = mountCanvasRenderer({ size: { x: 1, y: 1 }, pivot: { x: 0, y: 0 } });
 
-        const hit = logic(renderer).worldRayIntersection(ray3({ x: 0.5, y: 0.5, z: 0 }));
+        const hit = logicOrThrow(renderer).worldRayIntersection(ray3({ x: 0.5, y: 0.5, z: 0 }));
 
         expect(hit).toBeTruthy();
         expect(hit.localRay.origin).toEqual({ x: 0.5, y: 0.5, z: 0 });
@@ -135,7 +135,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
 
     it('worldRayIntersection：未挂载到对象上时返回 null（不抛异常）', () =>
     {
-        const lone = logic({ __type__: 'CanvasRenderer' } as CanvasRenderer);
+        const lone = logicOrThrow({ __type__: 'CanvasRenderer' } as CanvasRenderer);
 
         expect(lone.worldRayIntersection(ray3({ x: 0.5, y: 0.5, z: 0 }))).toBeNull();
     });
@@ -149,7 +149,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
         const root: Object3D = { __type__: 'Object3D', name: 'ui-root', children: [canvasObject] };
         const canvasElement = { width: 100, height: 50 } as unknown as HTMLCanvasElement;
         const view = { __type__: 'View', canvas: canvasElement, root } as View;
-        logic(view);
+        logicOrThrow(view);
 
         drawCanvas(view, { x: 10, y: 20 });
 
@@ -157,7 +157,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
         const renderer = canvasObject.components!.find((component) => component.__type__ === 'CanvasRenderer') as CanvasRenderer;
 
         // ① 鼠标射线按传入位置更新
-        expect(logic(canvasComp).mouseRay.origin).toEqual({ x: 10, y: 20, z: 0 });
+        expect(logicOrThrow(canvasComp).mouseRay.origin).toEqual({ x: 10, y: 20, z: 0 });
 
         // ② 布局不由 drawCanvas 做——它已移交 UI Pass 的每帧准备
         expect(getTransform2D(canvasObject)!.size).toBeUndefined();
@@ -166,7 +166,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
         uiPassProvider.update!(view, passContext(view));
         expect(getTransform2D(canvasObject)!.size).toEqual({ x: 100, y: 50 });
 
-        const renderObject = logic(renderer).renderObject.value as { uniforms?: Record<string, unknown> };
+        const renderObject = logicOrThrow(renderer).renderObject.value as { uniforms?: Record<string, unknown> };
         const u_rect = renderObject.uniforms!.u_rect as { x: number, y: number, z: number, w: number };
         expect(u_rect.z).toBe(100);
         expect(u_rect.w).toBe(50);
@@ -183,7 +183,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
         await vi.waitFor(() =>
         {
             // computed 是 pull 语义：重新读 renderObject 才会让 beforeRender 重跑、刷新容器
-            logic(renderer).renderObject.value;
+            logicOrThrow(renderer).renderObject.value;
             const u_rectAfter = renderObject.uniforms!.u_rect as { z: number, w: number };
             expect(u_rectAfter.z).toBe(200);
             expect(u_rectAfter.w).toBe(100);
@@ -204,7 +204,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
         const root: Object3D = { __type__: 'Object3D', children: [canvasObject] };
         const canvasElement = { width: 100, height: 50 } as unknown as HTMLCanvasElement;
         const view = { __type__: 'View', canvas: canvasElement, root } as View;
-        logic(view);
+        logicOrThrow(view);
 
         const renderer = rendererObject.components![0] as CanvasRenderer;
 
@@ -222,7 +222,7 @@ describe('CanvasRenderer（新架构迁移）', () =>
 
         const root: Object3D = { __type__: 'Object3D' };
         const view = { __type__: 'View', canvas: 'ui-canvas', root } as View;
-        const viewLogic = logic(view);
+        const viewLogic = logicOrThrow(view);
 
         expect(viewLogic.canvasElement).toBe(canvasElement);
         // scene 缺失时就地创建默认 Scene 并挂到 root.components

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import { findObject3DChild } from 'feng3d';
 import type { Object3D, Skeleton } from 'feng3d';
 import { parseGLB } from '../src/loaders/GLTFLoader';
@@ -72,7 +72,7 @@ function resolveTarget(root: Object3D, path: readonly (readonly [number, string]
  */
 function warmUpTree(object3D: Object3D): void
 {
-    logic(object3D);
+    logicOrThrow(object3D);
     for (const child of object3D.children ?? []) warmUpTree(child);
 }
 
@@ -87,9 +87,9 @@ function setupAnimation(root: Object3D, clip: ReturnType<typeof loadWhale>['anim
         isplaying: true,
         playspeed: 1,
     } as never];
-    logic(root);   // 触发组件 init（建立 animation/time 的 effect）
+    logicOrThrow(root);   // 触发组件 init（建立 animation/time 的 effect）
 
-    return logic(root.components![0]) as unknown as { update: (interval: number) => void };
+    return logicOrThrow(root.components![0]) as unknown as { update: (interval: number) => void };
 }
 
 describe('glTF 动画 → AnimationClipData（whale.glb 真实资源）', () =>
@@ -154,7 +154,7 @@ describe('glTF 动画 → AnimationClipData（whale.glb 真实资源）', () =>
             host: resolveTarget(result.root, propertyClip.path)!,
         }));
         const valueOf = (host: Object3D, propertyName: string) =>
-            JSON.stringify((logic(host) as unknown as Record<string, unknown>)[propertyName]);
+            JSON.stringify((logicOrThrow(host) as unknown as Record<string, unknown>)[propertyName]);
         const before = targets.map((target) => valueOf(target.host, target.propertyClip.propertyName));
 
         animationLogic.update(clip.length / 2);   // 走到整段一半
@@ -175,7 +175,7 @@ describe('glTF 动画 → AnimationClipData（whale.glb 真实资源）', () =>
         expect(skeletonHost).toBeTruthy();
 
         const animationLogic = setupAnimation(result.root, clip);
-        const skeletonLogic = logic(skeletonHost!.component as Skeleton) as unknown as { globalMatrices: unknown[] };
+        const skeletonLogic = logicOrThrow(skeletonHost!.component as Skeleton) as unknown as { globalMatrices: unknown[] };
 
         // globalMatrices 是每次重算的 getter：至少有一根骨骼的 jointMatrix 变化
         const before = skeletonLogic.globalMatrices.map((m) => JSON.stringify(m));

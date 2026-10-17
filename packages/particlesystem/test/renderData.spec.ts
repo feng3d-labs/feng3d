@@ -1,5 +1,5 @@
 import { minMaxCurveDefault } from '@feng3d/math';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { Buffer } from '@feng3d/webgpu';
 import type { DrawIndexed } from '@feng3d/webgpu';
 import { describe, expect, it } from 'vitest';
@@ -22,26 +22,26 @@ describe('ParticleSystem 渲染数据对接', () =>
         const particleSystem = particleSystemDefault();
 
         (particleSystem.main as WritableParticleMainModuleLike).maxParticles = 16;
-        logic(particleSystem).play();
+        logicOrThrow(particleSystem).play();
 
         const object3D: Object3D = {
             __type__: 'Object3D',
             name: 'particleSystem',
             components: [particleSystem],
         };
-        const object3DLogic = logic(object3D);
+        const object3DLogic = logicOrThrow(object3D);
 
         // 经 logic 路径推进（验证 update 已转发到组件的模拟逻辑）
-        logic(particleSystem).update(interval);
+        logicOrThrow(particleSystem).update(interval);
 
-        return { particleSystem, object3D, object3DLogic, renderObject: logic(particleSystem).renderObject.value };
+        return { particleSystem, object3D, object3DLogic, renderObject: logicOrThrow(particleSystem).renderObject.value };
     }
 
     it('每次 update 都会真正发射粒子（update 已转发）', () =>
     {
         const { particleSystem } = createLaunchedSystem();
 
-        expect(logic(particleSystem).particleCount).toBeGreaterThan(0);
+        expect(logicOrThrow(particleSystem).particleCount).toBeGreaterThan(0);
     });
 
     it('把粒子实例属性并入 renderObject.vertices（与几何体属性共存、共享同一交错缓冲）', () =>
@@ -83,7 +83,7 @@ describe('ParticleSystem 渲染数据对接', () =>
         const draw = renderObject.draw as DrawIndexed;
 
         expect(draw.__type__).toBe('DrawIndexed');
-        expect(draw.instanceCount).toBe(logic(particleSystem).particleCount);
+        expect(draw.instanceCount).toBe(logicOrThrow(particleSystem).particleCount);
         expect(draw.instanceCount).toBeGreaterThan(0);
     });
 
@@ -124,14 +124,14 @@ describe('ParticleSystem 纯数据声明式', () =>
         const components = [component] as unknown as Object3D['components'];
 
         const object3D: Object3D = { __type__: 'Object3D', name: 'declarative', components };
-        logic(object3D);
+        logicOrThrow(object3D);
 
         // 纯数据化后不再有「字面量 → 实例」兼容层：字面量（默认工厂 + 覆盖）直接就是组件数据
         expect(component.main.startSpeed.constant).toBe(2);
         // 曲线族已纯数据化：曲线字段是纯数据 AnimationCurve（有 keys 数组，不再有 getValue 方法）
         expect(Array.isArray(component.main.startSpeed.curve.keys)).toBe(true);
 
-        const particleSystemLogic = logic(component);
+        const particleSystemLogic = logicOrThrow(component);
 
         expect(particleSystemLogic.entity).toBe(object3D);
         expect(particleSystemLogic.isVisibleAndEnabled.value).toBe(true);

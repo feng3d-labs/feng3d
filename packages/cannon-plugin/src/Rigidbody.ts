@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, matchType, Object3D, registerComponentType } from 'feng3d';
-import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, UnReadonly, logic as getLogic } from '@feng3d/reactivity';
 import { quatFromEuler, type Vector3Like } from '@feng3d/math';
 import { Body, Vec3 } from 'cannon-es';
 import type { ColliderLogic } from './Collider';

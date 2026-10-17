@@ -2,7 +2,7 @@
 // 会被转译器整条擦除，于是 feng3d 与本包的 registerLogic 都不执行、logic() 返回 null。
 import 'feng3d';
 import { forwardRenderer, getViewPassProviders, isRenderable, Object3D, Scene, View } from 'feng3d';
-import { logic, reactive, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, toRaw } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import '../src/core/Canvas';
 import '../src/core/CanvasRenderer';
@@ -72,7 +72,7 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
             children: [canvasObject, cameraObject],
         };
 
-        logic(root); // 触发组件初始化（注入 entity、补 UI 默认 geometry / material）
+        logicOrThrow(root); // 触发组件初始化（注入 entity、补 UI 默认 geometry / material）
 
         return {
             scene,
@@ -86,10 +86,10 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
     /** 造一个 UI Pass 上下文（updateUI 只读 canvas；camera / viewport 不影响本文件的断言） */
     function passContext(view: View): ViewPassContext
     {
-        const canvas = logic(view).canvasElement;
+        const canvas = logicOrThrow(view).canvasElement;
 
         return {
-            scene: logic(view).scene,
+            scene: logicOrThrow(view).scene,
             camera: { __type__: 'PerspectiveCamera' } as unknown as ViewPassContext['camera'],
             viewport: [canvas.width, canvas.height],
             canvas,
@@ -101,7 +101,7 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
     {
         const canvasElement = { width, height } as unknown as HTMLCanvasElement;
         const view = { __type__: 'View', canvas: canvasElement, root } as View;
-        logic(view);
+        logicOrThrow(view);
 
         return view;
     }
@@ -121,7 +121,7 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
         // 关掉 3D 视锥剔除后拾取链收得到它——剔除是既有行为（遗留项），
         // 与"渲染列表排除 UI"是两件事，本用例只证明后者不是靠 isRenderable 变 false 实现的
         reactive(camera).frustumCulling = false;
-        const pickCache = logic(scene).getPickCache(camera);
+        const pickCache = logicOrThrow(scene).getPickCache(camera);
 
         expect(pickCache.blenditems.map((m) => toRaw(m))).not.toContain(parentRenderer);
         expect(pickCache.unblenditems.map((m) => toRaw(m))).not.toContain(parentRenderer);
@@ -145,7 +145,7 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
         const { root, camera, parentRenderer } = buildScene();
         const view = makeView(root);
 
-        expect(logic(camera).frustumCulling).toBe(true);
+        expect(logicOrThrow(camera).frustumCulling).toBe(true);
         expect(uiPassProvider.collect(view, passContext(view)).map((m) => toRaw(m))).toContain(parentRenderer);
     });
 
@@ -156,7 +156,7 @@ describe('UI 独立渲染 Pass（方案 C）', () =>
         const renderables = uiPassProvider.collect(view, passContext(view));
 
         const renderObjects = forwardRenderer.prepareExtraRenderObjects(scene, camera, [800, 600], renderables);
-        const expected = logic(parentRenderer).renderObject.value;
+        const expected = logicOrThrow(parentRenderer).renderObject.value;
         const ro = renderObjects.find((r) => r === expected)!;
 
         const globalUniforms = (ro.bindingResources as { globalUniforms?: { value: { u_Viewport: { x: number, y: number } } } })

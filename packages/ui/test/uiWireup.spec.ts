@@ -3,7 +3,7 @@
 // （第 1 批实测踩过的坑，见 tmp/progress-ui-migration.md）。
 import 'feng3d';
 import { isRayCastable, isRenderable, matchType, Object3D, Raycaster, Scene } from 'feng3d';
-import { logic, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, toRaw } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import '../src/Button';
 import '../src/core/Canvas';
@@ -45,7 +45,7 @@ describe('UI 渲染器的类型识别（收尾批任务 1）', () =>
             children: [uiObject],
         };
 
-        logic(root); // 触发组件初始化（Scene / Transform2D / CanvasRenderer 的 init 注入 entity）
+        logicOrThrow(root); // 触发组件初始化（Scene / Transform2D / CanvasRenderer 的 init 注入 entity）
 
         return { root, scene, uiObject, renderer };
     }
@@ -76,21 +76,21 @@ describe('UI 渲染器的类型识别（收尾批任务 1）', () =>
         const { scene, renderer } = buildScene();
 
         // 树搜索经过响应式代理，取回的是代理对象——比较前先还原成 raw（逻辑相同，身份不同）
-        expect(logic(scene).models.map((m) => toRaw(m))).toContain(renderer);
+        expect(logicOrThrow(scene).models.map((m) => toRaw(m))).toContain(renderer);
     });
 
     it('getComponentsInChildren(\'Renderable\') 能找到 UI 渲染器', () =>
     {
         const { root, renderer } = buildScene();
 
-        expect(logic(root).getComponentsInChildren('Renderable').map((m) => toRaw(m))).toContain(renderer);
+        expect(logicOrThrow(root).getComponentsInChildren('Renderable').map((m) => toRaw(m))).toContain(renderer);
     });
 
     it('Scene.mouseCheckObjects 收录挂着 UI 渲染器的对象（拾取候选）', () =>
     {
         const { scene, uiObject } = buildScene();
 
-        expect(logic(scene).mouseCheckObjects.map((o) => toRaw(o))).toContain(uiObject);
+        expect(logicOrThrow(scene).mouseCheckObjects.map((o) => toRaw(o))).toContain(uiObject);
     });
 
     it('Raycaster.pick 能拾取到 UI 渲染器', () =>
@@ -100,7 +100,7 @@ describe('UI 渲染器的类型识别（收尾批任务 1）', () =>
         // 世界空间射线：UI 单位四边形（Transform2D size 100×100、pivot 0.5 居中）在 z=0 平面上
         const ray3D = { __type__: 'Line3' as const, origin: { x: 0, y: 0, z: -10 }, direction: { x: 0, y: 0, z: 1 } };
 
-        const picked = raycaster.pick(ray3D, logic(scene).mouseCheckObjects);
+        const picked = raycaster.pick(ray3D, logicOrThrow(scene).mouseCheckObjects);
 
         expect(picked).not.toBeNull();
         expect(toRaw(picked!.object3D)).toBe(uiObject);
@@ -122,11 +122,11 @@ describe('UI 渲染器的类型识别（收尾批任务 1）', () =>
             ],
         };
 
-        logic(root);
+        logicOrThrow(root);
 
         // Button 的状态机由 SceneLogic.update 遍历 activeBehaviours 驱动——
         // 扫不到它，`ButtonLogic.update` 就永远不执行（登记之前实测就是如此）
-        expect(logic(scene).behaviours.map((b) => toRaw(b))).toEqual([canvas, button]);
-        expect(logic(scene).activeBehaviours.map((b) => toRaw(b))).toEqual([canvas, button]);
+        expect(logicOrThrow(scene).behaviours.map((b) => toRaw(b))).toEqual([canvas, button]);
+        expect(logicOrThrow(scene).activeBehaviours.map((b) => toRaw(b))).toEqual([canvas, button]);
     });
 });

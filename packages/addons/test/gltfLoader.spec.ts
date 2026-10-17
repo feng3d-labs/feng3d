@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：feng3d barrel 会拉起 @feng3d/webgpu，先 stub 全局（与 feng3d 自家 spec 同模式）
 import './browser-stub';
 
-import { logic, type GeometryLogic } from 'feng3d';
+import { logicOrThrow, type GeometryLogic } from 'feng3d';
 import { parseGLB, parseGLTF, loadGltfFromUrl } from '../src/loaders/GLTFLoader';
 
 /**
@@ -211,7 +211,7 @@ describe('GLTFLoader', () =>
 
         it('产出的几何能被引擎 logic 消费：顶点属性就绪且顶点数一致', () =>
         {
-            const geometryLogic = logic(result.primitives[0].geometry) as GeometryLogic;
+            const geometryLogic = logicOrThrow(result.primitives[0].geometry) as GeometryLogic;
             const positionAttr = geometryLogic.vertices.a_position;
 
             expect(positionAttr).toBeTruthy();

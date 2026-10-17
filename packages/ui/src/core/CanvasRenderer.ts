@@ -1,6 +1,6 @@
 import { CullFace, Object3D, PickingCollisionVO, Renderable, RenderableLogic, createRenderableLogicBase, registerComponentType, View } from 'feng3d';
 import type { TransformLayout } from 'feng3d';
-import { logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import {
     mat4TransformRay,
     Ray3,
@@ -109,7 +109,7 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
             // 与 UI 组件的 uniform 写入同一容器（material_uniforms 的 value 就是它），
             // 字段级 computed 会在提交前把它重传。
             const entity = logic.entity as Object3D | null;
-            const canvas = entity ? getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0] : null;
+            const canvas = entity ? getLogicOrThrow(entity).getComponentsInParent<Canvas>('Canvas')[0] : null;
             const worldSpace = canvas?.renderMode === UIRenderMode.WorldSpace;
             const r_uniforms = reactive(uiUniforms(renderObject));
             r_uniforms.u_projection = { __type__: 'Vector4', x: worldSpace ? 1 : 0, y: 0, z: 0, w: 0 };
@@ -117,7 +117,7 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
             const material = (logic.component as CanvasRenderer | undefined)?.material;
             if (material && (material as { __type__?: string }).__type__ === 'UIMaterial')
             {
-                (getLogic(material as UIMaterial) as UIMaterialLogic).syncRenderObject(renderObject);
+                (getLogicOrThrow(material as UIMaterial) as UIMaterialLogic).syncRenderObject(renderObject);
             }
         },
         /**
@@ -140,12 +140,12 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
             const entity = logic.entity;
             if (!entity) return null as unknown as PickingCollisionVO;
 
-            const canvas = getLogic(entity).getComponentsInParent<Canvas>('Canvas')[0];
+            const canvas = getLogicOrThrow(entity).getComponentsInParent<Canvas>('Canvas')[0];
 
             // 屏幕空间的 UI 活在"画布像素"坐标系里，用画布鼠标射线判定（调用方给的射线在像素空间里对不上）；
             // 世界空间的 UI 摊在 3D 里，必须用调用方给的**世界射线**（相机射线）。
             const worldSpace = canvas?.renderMode === UIRenderMode.WorldSpace;
-            let ray = canvas && !worldSpace ? getLogic(canvas).mouseRay : worldRay;
+            let ray = canvas && !worldSpace ? getLogicOrThrow(canvas).mouseRay : worldRay;
 
             if (worldSpace)
             {
@@ -162,7 +162,7 @@ export function canvasRendererLogic(data: CanvasRenderer): CanvasRendererLogic
             // 阶段 C-e：`new Ray3()` 改成等价的纯数据字面量（原点为零向量、方向 +Z，与 Line3 默认一致）；
             // `mat4TransformRay` 的 `out` 就是它，就地写入 origin / direction 两个子对象
             const localRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
-            mat4TransformRay(getLogic(entity).world2local, ray, localRay);
+            mat4TransformRay(getLogicOrThrow(entity).world2local, ray, localRay);
 
             const transform2D = getTransform2D(entity);
             // 尺寸与中心点优先取 Transform2D；但它**首次可能还没被镜像到**（issue #729：字段镜像只写"变化"），
@@ -239,19 +239,19 @@ export function drawCanvas(view: View, mousePos?: Vector2Like): void
 {
     if (!mousePos) return;
 
-    const viewLogic = getLogic(view);
+    const viewLogic = getLogicOrThrow(view);
 
     // 纯数据 Scene 没有 `getComponentsInChildren`（行为在 SceneLogic 上），
     // 树搜索的起点是场景组件的宿主对象
-    const sceneEntity = getLogic(viewLogic.scene).entity as Object3D | null;
+    const sceneEntity = getLogicOrThrow(viewLogic.scene).entity as Object3D | null;
     if (!sceneEntity) return;
 
-    const canvasList = getLogic(sceneEntity)
+    const canvasList = getLogicOrThrow(sceneEntity)
         .getComponentsInChildren<Canvas>('Canvas')
-        .filter((v) => getLogic(v).isVisibleAndEnabled.value);
+        .filter((v) => getLogicOrThrow(v).isVisibleAndEnabled.value);
 
     for (let i = 0; i < canvasList.length; i++)
     {
-        getLogic(canvasList[i]).calcMouseRay3D(mousePos);
+        getLogicOrThrow(canvasList[i]).calcMouseRay3D(mousePos);
     }
 }

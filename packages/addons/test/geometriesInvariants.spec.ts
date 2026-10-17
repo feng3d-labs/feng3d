@@ -70,7 +70,7 @@ function build(name: string, factory: () => unknown): GeometryLike
 {
     const gl = logic(factory() as never);
 
-    if (!gl) throw new Error(`${name}: logic() 返回空`);
+    if (!gl) throw new Error(`${name}: logicOrThrow() 返回空`);
 
     return gl as unknown as GeometryLike;
 }

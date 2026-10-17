@@ -5,7 +5,7 @@ import './browser-stub';
 
 // logic 从 feng3d barrel 导入：与 ConvexGeometry.ts 内 registerLogic 走同一
 // reactivity 模块实例（spec 直连 @feng3d/reactivity 会得到另一实例，注册表隔离）
-import { logic } from 'feng3d';
+import { logicOrThrow } from 'feng3d';
 import { Vector3 } from '@feng3d/math';
 // 触发 registerLogic('ConvexGeometry', ...)（值导入若仅作类型使用会被 esbuild 丢弃）
 import '../src/geometries/ConvexGeometry';
@@ -32,7 +32,7 @@ describe('ConvexGeometry quickHull', () =>
             ],
         };
 
-        const gl = logic(geometry) as unknown as ConvexGeometryLogic;
+        const gl = logicOrThrow(geometry) as unknown as ConvexGeometryLogic;
 
         expect(gl).toBeTruthy();
         // 正八面体凸包 = 8 个三角形面，24 个顶点（每面 3 顶点）
@@ -52,7 +52,7 @@ describe('ConvexGeometry quickHull', () =>
             points.push({ x: rand() * 2 - 1, y: rand() * 2 - 1, z: rand() * 2 - 1 });
         }
 
-        const gl = logic({ __type__: 'ConvexGeometry', points } as ConvexGeometry) as unknown as ConvexGeometryLogic;
+        const gl = logicOrThrow({ __type__: 'ConvexGeometry', points } as ConvexGeometry) as unknown as ConvexGeometryLogic;
 
         expect(gl.vertexIndices.length).toBeGreaterThan(0);
         expect(gl.vertexIndices.length % 3).toBe(0);
@@ -65,7 +65,7 @@ describe('ConvexGeometry quickHull', () =>
 
     it('少于 4 点退化为空网格', () =>
     {
-        const gl = logic({
+        const gl = logicOrThrow({
             __type__: 'ConvexGeometry',
             points: [{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }],
         } as ConvexGeometry) as unknown as ConvexGeometryLogic;

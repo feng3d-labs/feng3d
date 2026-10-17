@@ -4,7 +4,7 @@
 import { createRenderableLogicBase, Object3D, ParticleMaterial, QuadGeometry, registerComponentType, Renderable, RenderableLogic, RunEnvironment } from 'feng3d';
 import { ParticleSystemSubEmitterProperties } from './enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from './enums/ParticleSystemSubEmitterType';
-import { logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { serialization } from '@feng3d/serialization';
 import { Buffer, BufferBinding, BindingResources, IDraw, RenderObject, VertexAttribute, VertexAttributes } from '@feng3d/webgpu';
 import { mat3FromMatrix4x4, mat3Identity, mat4GetAxisY, mat4GetAxisZ, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, Matrix3x3, Matrix4x4, vec3Add, vec3Copy, vec3DivideNumber, vec3Length, vec3Negate, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector3, Vector3Like, WritableVector3Like, minMaxCurveGetValue } from '@feng3d/math';
@@ -418,7 +418,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
     function isPaused(): boolean { return !isPlaying && w_data.time !== 0; }
 
     /** 宿主 Object3D（与原 `_obj()` 一致：优先用 init 注入的值） */
-    function object3D(): Object3D { return (owner ?? getLogic(data).entity)!; }
+    function object3D(): Object3D { return (owner ?? getLogicOrThrow(data).entity)!; }
 
     /**
      * 停止
@@ -521,7 +521,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         vec3Copy(emitInfo.currentWorldPos, emitInfo.preWorldPos);
 
         // 粒子系统位置
-        vec3Copy(getLogic(object3D()).worldPosition, emitInfo.currentWorldPos);
+        vec3Copy(getLogicOrThrow(object3D()).worldPosition, emitInfo.currentWorldPos);
 
         // 粒子系统位移
         vec3Sub(emitInfo.currentWorldPos, emitInfo.preWorldPos, emitInfo.moveVec);
@@ -596,8 +596,8 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
                 mat4GetAxisY(cameraMatrix, localCameraUp);
                 if (main.simulationSpace === ParticleSystemSimulationSpace.Local)
                 {
-                    mat4TransformPoint3(getLogic(object3D()).world2localRotation, localCameraForward, localCameraForward);
-                    mat4TransformPoint3(getLogic(object3D()).world2localRotation, localCameraUp, localCameraUp);
+                    mat4TransformPoint3(getLogicOrThrow(object3D()).world2localRotation, localCameraForward, localCameraForward);
+                    mat4TransformPoint3(getLogicOrThrow(object3D()).world2localRotation, localCameraUp, localCameraUp);
                 }
                 const matrix4x4: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4LookAt(mat4Identity(), localCameraForward, localCameraUp) };
 
@@ -721,7 +721,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             const binding = bindingResources.particle_uniforms as BufferBinding<ParticleSystemUniforms>;
             const u_modelMatrix: Matrix4x4 = main.simulationSpace === ParticleSystemSimulationSpace.World
                 ? { __type__: 'Matrix4x4', ...mat4Identity() }
-                : getLogic(object3D()).local2world;
+                : getLogicOrThrow(object3D()).local2world;
 
             reactive(binding).value = {
                 u_particle_billboardMatrix: billboardMatrix,
@@ -1024,7 +1024,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
 
         if (main.simulationSpace === ParticleSystemSimulationSpace.Local)
         {
-            const world2local = getLogic(object3D()).world2local;
+            const world2local = getLogicOrThrow(object3D()).world2local;
             activeParticles.forEach((p) =>
             {
                 mat4TransformPoint3(world2local, p.position, p.position);
@@ -1034,7 +1034,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         }
         else
         {
-            const local2world = getLogic(object3D()).local2world;
+            const local2world = getLogicOrThrow(object3D()).local2world;
             activeParticles.forEach((p) =>
             {
                 mat4TransformPoint3(local2world, p.position, p.position);
@@ -1064,11 +1064,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                mat4TransformPoint3(getLogic(object3D()).world2local, position, position);
+                mat4TransformPoint3(getLogicOrThrow(object3D()).world2local, position, position);
             }
             else
             {
-                mat4TransformPoint3(getLogic(object3D()).local2world, position, position);
+                mat4TransformPoint3(getLogicOrThrow(object3D()).local2world, position, position);
             }
         }
         //
@@ -1094,11 +1094,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    mat4TransformPoint3(getLogic(object3D()).world2local, value, value);
+                    mat4TransformPoint3(getLogicOrThrow(object3D()).world2local, value, value);
                 }
                 else
                 {
-                    mat4TransformPoint3(getLogic(object3D()).local2world, value, value);
+                    mat4TransformPoint3(getLogicOrThrow(object3D()).local2world, value, value);
                 }
             }
             //
@@ -1126,11 +1126,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                mat4TransformVector3(getLogic(object3D()).world2local, velocity, velocity);
+                mat4TransformVector3(getLogicOrThrow(object3D()).world2local, velocity, velocity);
             }
             else
             {
-                mat4TransformVector3(getLogic(object3D()).local2world, velocity, velocity);
+                mat4TransformVector3(getLogicOrThrow(object3D()).local2world, velocity, velocity);
             }
         }
         //
@@ -1156,11 +1156,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    mat4TransformVector3(getLogic(object3D()).world2local, value, value);
+                    mat4TransformVector3(getLogicOrThrow(object3D()).world2local, value, value);
                 }
                 else
                 {
-                    mat4TransformVector3(getLogic(object3D()).local2world, value, value);
+                    mat4TransformVector3(getLogicOrThrow(object3D()).local2world, value, value);
                 }
             }
             //
@@ -1188,11 +1188,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         {
             if (space === ParticleSystemSimulationSpace.World)
             {
-                mat4TransformVector3(getLogic(object3D()).world2local, acceleration, acceleration);
+                mat4TransformVector3(getLogicOrThrow(object3D()).world2local, acceleration, acceleration);
             }
             else
             {
-                mat4TransformVector3(getLogic(object3D()).local2world, acceleration, acceleration);
+                mat4TransformVector3(getLogicOrThrow(object3D()).local2world, acceleration, acceleration);
             }
         }
         //
@@ -1218,11 +1218,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             {
                 if (space === ParticleSystemSimulationSpace.World)
                 {
-                    mat4TransformVector3(getLogic(object3D()).world2local, value, value);
+                    mat4TransformVector3(getLogicOrThrow(object3D()).world2local, value, value);
                 }
                 else
                 {
-                    mat4TransformVector3(getLogic(object3D()).local2world, value, value);
+                    mat4TransformVector3(getLogicOrThrow(object3D()).local2world, value, value);
                 }
             }
             //
@@ -1266,11 +1266,11 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
             // 阶段 C-e：下面要用 `clone()` / 赋给 `Vector3` 字段，所以 out 显式传 Vector3 实例
             const particleWoldPos = { x: 0, y: 0, z: 0 };
 
-            mat4TransformPoint3(getLogic(object3D()).local2world, particle.position, particleWoldPos);
+            mat4TransformPoint3(getLogicOrThrow(object3D()).local2world, particle.position, particleWoldPos);
             // 粒子在子粒子系统的坐标
             const subEmitPos = { x: 0, y: 0, z: 0 };
 
-            mat4TransformPoint3(getLogic((getLogic(subEmitter) as ParticleSystemLogic).object3D).world2local, particleWoldPos, subEmitPos);
+            mat4TransformPoint3(getLogicOrThrow((getLogicOrThrow(subEmitter) as ParticleSystemLogic).object3D).world2local, particleWoldPos, subEmitPos);
             if (!particle.subEmitInfo)
             {
                 const startDelay = minMaxCurveGetValue(main.startDelay, Math.random());
@@ -1295,7 +1295,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
                 vec3Copy(subEmitPos, particle.subEmitInfo.position);
             }
 
-            const subEmits = (getLogic(subEmitter) as ParticleSystemLogic).emitInternal(particle.subEmitInfo);
+            const subEmits = (getLogicOrThrow(subEmitter) as ParticleSystemLogic).emitInternal(particle.subEmitInfo);
 
             emits = emits.concat(subEmits);
         });
@@ -1303,7 +1303,7 @@ export function particleSystemLogic(data: ParticleSystem): ParticleSystemLogic
         emits.sort((a, b) => a.time - b.time);
         emits.forEach((v) =>
         {
-            (getLogic(subEmitter) as ParticleSystemLogic).emitParticles(v);
+            (getLogicOrThrow(subEmitter) as ParticleSystemLogic).emitParticles(v);
         });
     }
 

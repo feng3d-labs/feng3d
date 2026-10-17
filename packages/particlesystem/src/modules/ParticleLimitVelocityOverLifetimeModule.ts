@@ -1,6 +1,6 @@
 import { mat4Copy, mat4Identity, mat4Invert, mat4TransformVector3, minMaxCurveDefault, minMaxCurveGetValue, minMaxCurveVector3Default, minMaxCurveVector3GetValue, vec3Clamp, vec3Copy, vec3LengthSquared, vec3LerpNumber, vec3Negate, vec3NormalizeThickness } from '@feng3d/math';
 import type { Matrix4x4, MinMaxCurve, MinMaxCurveVector3 } from '@feng3d/math';
-import { logic } from 'feng3d';
+import { logicOrThrow } from 'feng3d';
 import { ParticleSystemSimulationSpace } from '../enums/ParticleSystemSimulationSpace';
 import type { Particle } from '../Particle';
 import type { ParticleModuleLike, WritableParticleModuleLike } from './ParticleModule';
@@ -106,11 +106,11 @@ export function particleLimitVelocityOverLifetimeModuleUpdateParticleState(modul
     {
         if (module.space === ParticleSystemSimulationSpace.World)
         {
-            mat4Copy(logic(module.particleSystem!.object3D).local2world, mat);
+            mat4Copy(logicOrThrow(module.particleSystem!.object3D).local2world, mat);
         }
         else
         {
-            mat4Copy(logic(module.particleSystem!.object3D).world2local, mat);
+            mat4Copy(logicOrThrow(module.particleSystem!.object3D).world2local, mat);
         }
     }
     // 变换到现在空间进行限速
