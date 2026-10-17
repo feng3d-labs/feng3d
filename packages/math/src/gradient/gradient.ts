@@ -61,16 +61,17 @@ export interface GradientLike
     /**
      * 在渐变中定义的所有alpha键。
      *
-     * 数组**本身**可变（面板要 `push` / `splice` / `sort`），但字段本身只读（根规范 §8.5）。
+     * 属性与数组都只读（§11.6）。面板的 `push` / `splice` / `sort` 走写侧形状
+     * {@link WritableGradientLike}（§11.3，`GradientEditor.vue` 里经 `reactive(...) as WritableGradientLike` 写）。
      */
-    readonly alphaKeys: GradientAlphaKey[];
+    readonly alphaKeys: readonly GradientAlphaKey[];
 
     /**
      * 在渐变中定义的所有color键。
      *
-     * 数组**本身**可变（同 `alphaKeys`），但字段本身只读。
+     * 属性与数组都只读（同 `alphaKeys`）。
      */
-    readonly colorKeys: GradientColorKey[];
+    readonly colorKeys: readonly GradientColorKey[];
 }
 
 /** 可写出的渐变目标（`out` 参用；`gradientDefault` 的缺省 `out` 即此形状）。 */

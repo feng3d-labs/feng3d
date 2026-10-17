@@ -347,8 +347,7 @@ export function coordinateRotationAxisLogic(data: CoordinateRotationAxis): Coord
                 for (const child of children)
                 {
                     if (child.name !== 'border') continue;
-                    const geometry = ((child.components ?? [])[0] as MeshRenderer | undefined)?.geometry as
-                        UnReadonly<{ segments: Segment[] }> | undefined;
+                    const geometry = ((child.components ?? [])[0] as MeshRenderer | undefined)?.geometry as unknown as unknown as UnReadonly<{ segments: Segment[] }> | undefined;
                     if (geometry) reactive(geometry).segments = segments;
                 }
             });
@@ -491,8 +490,7 @@ export function coordinateRotationFreeAxisLogic(data: CoordinateRotationFreeAxis
                 for (const child of reactive(host).children ?? [])
                 {
                     if (child.name !== 'border') continue;
-                    const geometry = ((child.components ?? [])[0] as MeshRenderer | undefined)?.geometry as
-                        UnReadonly<{ segments: Segment[] }> | undefined;
+                    const geometry = ((child.components ?? [])[0] as MeshRenderer | undefined)?.geometry as unknown as UnReadonly<{ segments: Segment[] }> | undefined;
                     if (geometry) reactive(geometry).segments = segments;
                 }
             });
