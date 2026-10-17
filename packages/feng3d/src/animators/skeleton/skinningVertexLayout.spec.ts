@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
 import '../../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import { WGPUVertexBufferLayout } from '@feng3d/webgpu';
 
 import { standardSkinnedVertexWGSL, standardVertexWGSL } from '../../materials/standardVertexShader';
@@ -26,7 +26,7 @@ import type { VertexAttributes } from '@feng3d/webgpu';
 function buildVertices(withSecondGroup: boolean): VertexAttributes
 {
     const geo = { __type__: 'CustomGeometry' } as CustomGeometry;
-    const g = logic(geo) as GeometryLogic;
+    const g = logicOrThrow(geo) as GeometryLogic;
 
     reactive(geo).positions = [0, 0, 0, 1, 0, 0, 0, 1, 0];
     reactive(geo).a_skinIndices = [0, 1, 2, 3, 1, 2, 3, 0, 2, 3, 0, 1];

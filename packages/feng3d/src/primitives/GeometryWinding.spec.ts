@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { Geometrys } from '../geometry/Geometry';
 import type { GeometryLogic } from '../geometry/Geometry';
 
@@ -59,7 +59,7 @@ describe('内置几何体绕序与法线一致性', () =>
     {
         const verify = () =>
         {
-            const g = logic(geometry) as GeometryLogic;
+            const g = logicOrThrow(geometry) as GeometryLogic;
             const data = readRenderData(g);
 
             const positions = data.vertices['a_position'].data;

@@ -1,4 +1,4 @@
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { frustumIntersectsBox } from '@feng3d/math';
 import { isRenderable } from "../component/Component";
 import type { Camera } from '../cameras/Camera';
@@ -25,22 +25,22 @@ export class SceneUtil
     getActiveRenderers(scene: Scene, camera: Camera)
     {
         const renderers: Renderable[] = [];
-        const camLogic = logic(camera);
+        const camLogic = logicOrThrow(camera);
         const frustum = camLogic.frustum;
         const culling = camLogic.frustumCulling;
 
-        let object3Ds: Object3D[] = [logic(scene).entity as Object3D];
+        let object3Ds: Object3D[] = [logicOrThrow(scene).entity as Object3D];
         while (object3Ds.length > 0)
         {
             const object3D = object3Ds.pop()!;
 
             // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
-            if (!logic(object3D).activeSelf)
+            if (!logicOrThrow(object3D).activeSelf)
             { continue; }
             const renderer = object3D.components?.find(c => isRenderable(c)) as Renderable;
-            if (renderer && logic(renderer).isVisibleAndEnabled.value)
+            if (renderer && logicOrThrow(renderer).isVisibleAndEnabled.value)
             {
-                if (!culling || frustumIntersectsBox(frustum, logic(renderer).selfWorldBounds.value))
+                if (!culling || frustumIntersectsBox(frustum, logicOrThrow(renderer).selfWorldBounds.value))
                 { renderers.push(renderer); }
             }
             object3Ds = object3Ds.concat((object3D.children ?? []) as Object3D[]);

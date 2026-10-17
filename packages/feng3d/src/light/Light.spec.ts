@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { computed, logic } from '@feng3d/reactivity';
+import { computed, logicOrThrow } from '@feng3d/reactivity';
 import type { PerspectiveCamera } from '../cameras/PerspectiveCamera';
 import '../cameras/PerspectiveCamera';
 import type { MeshRenderer } from '../core/MeshRenderer';
@@ -57,11 +57,11 @@ describe('Light 可选字段与默认值', () =>
             children: [cube, lightObject],
         };
 
-        logic(root);
+        logicOrThrow(root);
 
         const camera = { __type__: 'PerspectiveCamera', aspect: 1 } as PerspectiveCamera;
 
-        logic({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 10 }, components: [camera] } as Object3D);
+        logicOrThrow({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 10 }, components: [camera] } as Object3D);
 
         return { scene, camera };
     }

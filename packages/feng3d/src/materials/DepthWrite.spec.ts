@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
 import '../test/webgpu-stub';
 
-import { effect, logic, reactive, type Effect } from '@feng3d/reactivity';
+import { effect, logicOrThrow, reactive, type Effect } from '@feng3d/reactivity';
 import type { RenderObject } from '@feng3d/webgpu';
 
 // 触发各材质 Logic 的 registerLogic
@@ -33,7 +33,7 @@ function readDepthWrite(material: MaterialLogic): boolean | undefined
 /** 按 __type__ 造一个最简材质并取它的 depthWrite */
 function depthWriteOf(type: string, extra?: Record<string, unknown>): boolean | undefined
 {
-    const material = logic({ __type__: type, ...extra } as unknown as Material) as MaterialLogic;
+    const material = logicOrThrow({ __type__: type, ...extra } as unknown as Material) as MaterialLogic;
 
     return readDepthWrite(material);
 }
@@ -59,7 +59,7 @@ describe('materials depthWrite', () =>
             // 字面量类型要显式带上 depthWrite：Material 基接口按设计不声明该字段，
             // 若断言成 Material 会让 `reactive(data).depthWrite` 报属性不存在
             const data: { __type__: string; depthWrite?: boolean } = { __type__: 'StandardMaterial' };
-            const material = logic(data as unknown as Material) as MaterialLogic;
+            const material = logicOrThrow(data as unknown as Material) as MaterialLogic;
 
             expect(readDepthWrite(material)).toBe(true);
 
@@ -70,7 +70,7 @@ describe('materials depthWrite', () =>
         it('效果在 effect 内可被追踪（确认是响应式派生而非一次性写入）', () =>
         {
             const data: { __type__: string; depthWrite?: boolean } = { __type__: 'StandardMaterial', depthWrite: false };
-            const material = logic(data as unknown as Material) as MaterialLogic;
+            const material = logicOrThrow(data as unknown as Material) as MaterialLogic;
 
             let observed: boolean | undefined;
             const watcher: Effect = effect(() =>

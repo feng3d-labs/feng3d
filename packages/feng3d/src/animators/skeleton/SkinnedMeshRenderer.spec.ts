@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：在任何 @feng3d/webgpu 间接导入之前 stub 全局
 import '../../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { WgslReflect } from 'wgsl_reflect';
 
 // 触发 registerLogic 注册（否则 logic() 返回 null）
@@ -84,8 +84,8 @@ describe('SkinnedMeshRendererLogic.beforeRender（issue #337）', () =>
         const component: SkinnedMeshRenderer = { __type__: 'SkinnedMeshRenderer' };
         const root = { __type__: 'Object3D', name: 'skin-root', components: [component] } as Object3D;
 
-        logic(root);
-        const componentLogic = logic(component) as SkinnedMeshRendererLogic;
+        logicOrThrow(root);
+        const componentLogic = logicOrThrow(component) as SkinnedMeshRendererLogic;
         // RenderableLogic.init 接收 Object3D（不是 ComponentLogicBase 的 Entity）
         componentLogic.init(root);
 

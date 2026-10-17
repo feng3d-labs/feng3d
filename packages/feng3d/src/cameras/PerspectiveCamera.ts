@@ -1,6 +1,6 @@
 import { validateFieldTypes } from '../core/Validate';
 import { Frustum, Matrix4x4, Ray3, Vector2Like, Vector3, Vector3Like, WritableVector3Like, frustumFromMatrix, line3FromPosAndDir, line3GetPointWithZ, vec3Length, vec3Sub, vec4FromVector3, vec4ToVector3, mat4Append, mat4Copy, mat4Invert, mat4SetPerspectiveFromFOV, mat4TransformPoint3, mat4TransformRay, mat4TransformVector4, vec4ScaleNumber } from '@feng3d/math';
-import { computed, logic as getLogic, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
+import { computed, logicOrThrow as getLogicOrThrow, reactive, registerLogic, type Computed } from '@feng3d/reactivity';
 import { Camera, CameraLogic, CameraUniforms, createCameraLogicBase } from './Camera';
 
 declare module '../component/Component'
@@ -117,7 +117,7 @@ export function perspectiveCameraLogic(data: PerspectiveCamera): PerspectiveCame
     /** viewProjection：world2local × projectionMatrix */
     const viewProjection = computed<Matrix4x4>(() =>
     {
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(getLogic(members.entity!).world2local) };
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(getLogicOrThrow(members.entity!).world2local) };
 
         mat4Append(m, projectionMatrix.value, m);
 
@@ -134,9 +134,9 @@ export function perspectiveCameraLogic(data: PerspectiveCamera): PerspectiveCame
         return {
             u_projectionMatrix: projectionMatrix.value,
             u_viewProjection: viewProjection.value,
-            u_viewMatrix: getLogic(members.entity!).world2local,
-            u_cameraMatrix: getLogic(members.entity!).local2world,
-            u_cameraPos: getLogic(members.entity!).worldPosition,
+            u_viewMatrix: getLogicOrThrow(members.entity!).world2local,
+            u_cameraMatrix: getLogicOrThrow(members.entity!).local2world,
+            u_cameraPos: getLogicOrThrow(members.entity!).worldPosition,
             u_skyBoxSize: far() / Math.sqrt(3),
             u_scaleByDepth: logic.getScaleByDepth(1),
         };
@@ -174,7 +174,7 @@ export function perspectiveCameraLogic(data: PerspectiveCamera): PerspectiveCame
             // 走纯函数层：它的入参已是 Vector3Like，本方法才能真正接受 { x, y, z } 字面量。
             // （class 方法 world2local.transformPoint3 的入参放宽在并行的 #134 B3。）
             const camLocal = { x: 0, y: 0, z: 0 };
-            mat4TransformPoint3(getLogic(members.entity!).world2local, point3d, camLocal);
+            mat4TransformPoint3(getLogicOrThrow(members.entity!).world2local, point3d, camLocal);
             const v4 = { x: 0, y: 0, z: 0, w: 0 };
             mat4TransformVector4(projectionMatrix.value, vec4FromVector3(camLocal, 1), v4);
             vec4ScaleNumber(v4, 1 / v4.w, v4);
@@ -195,7 +195,7 @@ export function perspectiveCameraLogic(data: PerspectiveCamera): PerspectiveCame
             // 与 `local2world.transformPoint3(ray.getPointWithZ(sZ, v), v)` 等价：
             // 两步都就地写回 v，只是一律走纯函数层，v 才允许是普通字面量。
             line3GetPointWithZ(unprojectRay(inverseProjectionMatrix, sX, sY), sZ, v);
-            mat4TransformPoint3(getLogic(members.entity!).local2world, v, v);
+            mat4TransformPoint3(getLogicOrThrow(members.entity!).local2world, v, v);
 
             return v;
         }) as unknown as PerspectiveCameraLogic['unproject'],
@@ -208,7 +208,7 @@ export function perspectiveCameraLogic(data: PerspectiveCamera): PerspectiveCame
             // （origin 按点变换、direction 按向量变换），返回 ray 本身保证返回类型不退化（P8c）
             const ray = unprojectRay(inverseProjectionMatrix, x, y, ray3D);
 
-            mat4TransformRay(getLogic(members.entity!).local2world, ray, ray);
+            mat4TransformRay(getLogicOrThrow(members.entity!).local2world, ray, ray);
 
             return ray;
         },

@@ -1,4 +1,4 @@
-import { computed, Computed, logic, reactive, toRaw } from "@feng3d/reactivity";
+import { computed, Computed, logicOrThrow, reactive, toRaw } from "@feng3d/reactivity";
 import { frustumIntersectsBox, vec3LengthSquared, vec3Sub } from '@feng3d/math';
 import type { Components } from "../component/Component";
 import { getComponentRenderPass, isRenderable } from "../component/Component";
@@ -28,33 +28,33 @@ function resolveMaterial(renderable: Renderable)
  */
 function collectActiveModels(scene: Scene, camera: Camera): Renderable[]
 {
-    const camLogic = logic(camera);
+    const camLogic = logicOrThrow(camera);
     const frustum = camLogic.frustum;
     const culling = camLogic.frustumCulling;
 
     const models: Renderable[] = [];
-    let object3Ds: Object3D[] = [logic(scene).entity as Object3D];
+    let object3Ds: Object3D[] = [logicOrThrow(scene).entity as Object3D];
     while (object3Ds.length > 0)
     {
         const object3D = object3Ds.pop()!;
 
         // 通过 logic().activeSelf 读取，使 JSON 字面量（缺失字段）能拿到默认值 true
-        if (!logic(object3D).activeSelf)
+        if (!logicOrThrow(object3D).activeSelf)
         {
             continue;
         }
         const r_object3D = reactive(object3D);
         const model = (r_object3D.components ?? []).find(c => isRenderable(c as Components)) as Renderable | undefined;
-        if (model && logic(model).isVisibleAndEnabled.value)
+        if (model && logicOrThrow(model).isVisibleAndEnabled.value)
         {
             // 门控渲染（设计 3.2.2）：renderWhenLoaded=true 的对象在 isLoaded（组件 +
             // 子树资源就绪）前暂不渲染，就绪后本 computed 自动失效、对象出现。
             // 响应式读取两个字段建立依赖；默认 false（纹理走占位符渐进换装）不受影响。
-            if (reactive(model).renderWhenLoaded && !logic(logic(model).entity as Object3D).isLoaded)
+            if (reactive(model).renderWhenLoaded && !logicOrThrow(logicOrThrow(model).entity as Object3D).isLoaded)
             {
                 continue;
             }
-            if (!culling || frustumIntersectsBox(frustum, logic(model).selfWorldBounds.value))
+            if (!culling || frustumIntersectsBox(frustum, logicOrThrow(model).selfWorldBounds.value))
             {
                 models.push(model);
             }
@@ -83,11 +83,11 @@ export class ScenePickCache
 
         const sortBackToFront = (b: Renderable, a: Renderable): number =>
         {
-            const camerapos = logic(logic(camera).entity!).worldPosition;
+            const camerapos = logicOrThrow(logicOrThrow(camera).entity!).worldPosition;
 
             // 阶段 C-f：`Vector3` 的 class 已删除，实例方法换成同义纯函数
-            return vec3LengthSquared(vec3Sub(logic(logic(a).entity!).worldPosition, camerapos))
-                - vec3LengthSquared(vec3Sub(logic(logic(b).entity!).worldPosition, camerapos));
+            return vec3LengthSquared(vec3Sub(logicOrThrow(logicOrThrow(a).entity!).worldPosition, camerapos))
+                - vec3LengthSquared(vec3Sub(logicOrThrow(logicOrThrow(b).entity!).worldPosition, camerapos));
         };
 
         // 主场景渲染列表只收 forward pass 的组件：登记为自定义 pass（如 UI 的 'ui'）的组件
@@ -100,13 +100,13 @@ export class ScenePickCache
         this._blenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                isForward(item) && logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
+                isForward(item) && logicOrThrow(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
         });
 
         this._unblenditemsC = computed(() =>
         {
             return this._activeModelsC.value.filter((item) =>
-                isForward(item) && !logic(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
+                isForward(item) && !logicOrThrow(resolveMaterial(item) as Renderable).isTransparent).sort(sortBackToFront);
         });
     }
 

@@ -1,4 +1,4 @@
-import { effect, logic, reactive } from '@feng3d/reactivity';
+import { effect, logicOrThrow, reactive } from '@feng3d/reactivity';
 import { EventEmitter, IEvent } from '@feng3d/event';
 import { Ray3, RectangleLike, rect2Contains } from '@feng3d/math';
 import { Lazy, lazy } from '@feng3d/polyfill';
@@ -46,7 +46,7 @@ export class Mouse3DManager
         // 先用层级世界包围盒粗筛（可选优化，issue #124）：`pick` 对每个候选都要做一次
         // 三角形级精确求交，而"射线不经过某棵子树的世界包围盒"时整棵子树都不可能被命中——
         // 剔除它们不改变结果（等价性由 `Raycaster.spec.ts` 的随机对拍守着）
-        const candidates = raycaster.cullByHierarchy(mouseRay3D, logic(scene).mouseCheckObjects);
+        const candidates = raycaster.cullByHierarchy(mouseRay3D, logicOrThrow(scene).mouseCheckObjects);
         // 计算得到鼠标射线相交的物体
         const pickingCollisionVO = raycaster.pick(mouseRay3D, candidates);
 

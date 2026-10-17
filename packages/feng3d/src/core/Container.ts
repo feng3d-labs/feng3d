@@ -1,7 +1,7 @@
 import { Entity } from './Entity';
 import { createEntityLogicBase, initComponents, matchType, type EntityLogic, type EntityLogicState } from './Entity';
 import { Components } from '../component/Component';
-import { computed, effect, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
+import { computed, effect, reactive, registerLogic, toRaw, type Computed, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 
 /**
  * 容器
@@ -213,8 +213,8 @@ export function createContainerLogicBase(data: Container): { state: ContainerLog
             for (const r_child of state.children.value)
             {
                 const child = toRaw(r_child) as Container;
-                if (!includeInactive && !getLogic(child).parent) continue;
-                const childLogic = getLogic(child) as unknown as ContainerLogic;
+                if (!includeInactive && !getLogicOrThrow(child).parent) continue;
+                const childLogic = getLogicOrThrow(child) as unknown as ContainerLogic;
                 if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
                 const found = childLogic.getComponentInChildren<T>(typeName, includeInactive);
                 if (found) return found;
@@ -230,7 +230,7 @@ export function createContainerLogicBase(data: Container): { state: ContainerLog
             for (const r_child of state.children.value)
             {
                 const child = toRaw(r_child) as Container;
-                const childLogic = getLogic(child) as unknown as ContainerLogic;
+                const childLogic = getLogicOrThrow(child) as unknown as ContainerLogic;
                 if (!includeInactive && 'activeSelf' in childLogic && !childLogic.activeSelf) continue;
                 childLogic.getComponentsInChildren<T>(typeName, includeInactive, results);
             }
@@ -247,7 +247,7 @@ export function createContainerLogicBase(data: Container): { state: ContainerLog
             while (r_parent)
             {
                 const parent = toRaw(r_parent) as Container;
-                const parentLogic = getLogic(parent) as unknown as ContainerLogic;
+                const parentLogic = getLogicOrThrow(parent) as unknown as ContainerLogic;
                 if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
                 {
                     const c = parent.components?.find(c => matchType(c, typeName)) as T;
@@ -267,7 +267,7 @@ export function createContainerLogicBase(data: Container): { state: ContainerLog
             while (r_parent)
             {
                 const parent = toRaw(r_parent) as Container;
-                const parentLogic = getLogic(parent) as unknown as ContainerLogic;
+                const parentLogic = getLogicOrThrow(parent) as unknown as ContainerLogic;
                 if (includeInactive || !('activeSelf' in parentLogic) || parentLogic.activeSelf)
                 {
                     for (const c of parent.components ?? [])

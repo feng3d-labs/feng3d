@@ -2,7 +2,7 @@ import { MATHF_DEG2RAD } from '@feng3d/math';
 import { reactive } from '@feng3d/reactivity';
 import { mat4TransformPoint3, vec3Copy } from '@feng3d/math';
 import { Object3D } from "../core/Object3D";
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { LookAtController } from './LookAtController';
 
 export class HoverController extends LookAtController
@@ -237,31 +237,31 @@ export class HoverController extends LookAtController
         }
         else if (this._lookAtObject)
         {
-            if (logic(this._targetObject).parent && logic(this._lookAtObject).parent)
+            if (logicOrThrow(this._targetObject).parent && logicOrThrow(this._lookAtObject).parent)
             {
-                if (logic(this._targetObject).parent !== logic(this._lookAtObject).parent)
+                if (logicOrThrow(this._targetObject).parent !== logicOrThrow(this._lookAtObject).parent)
                 {
-                    this._pos.x = logic(this._lookAtObject).worldPosition.x;
-                    this._pos.y = logic(this._lookAtObject).worldPosition.y;
-                    this._pos.z = logic(this._lookAtObject).worldPosition.z;
-                    mat4TransformPoint3(logic(logic(this._targetObject).parent as Object3D).world2local, this._pos, this._pos);
+                    this._pos.x = logicOrThrow(this._lookAtObject).worldPosition.x;
+                    this._pos.y = logicOrThrow(this._lookAtObject).worldPosition.y;
+                    this._pos.z = logicOrThrow(this._lookAtObject).worldPosition.z;
+                    mat4TransformPoint3(logicOrThrow(logicOrThrow(this._targetObject).parent as Object3D).world2local, this._pos, this._pos);
                 }
                 else
                 {
                     // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
-                    vec3Copy(logic(this._lookAtObject).position, this._pos);
+                    vec3Copy(logicOrThrow(this._lookAtObject).position, this._pos);
                 }
             }
-            else if (logic(this._lookAtObject).scene)
+            else if (logicOrThrow(this._lookAtObject).scene)
             {
-                this._pos.x = logic(this._lookAtObject).worldPosition.x;
-                this._pos.y = logic(this._lookAtObject).worldPosition.y;
-                this._pos.z = logic(this._lookAtObject).worldPosition.z;
+                this._pos.x = logicOrThrow(this._lookAtObject).worldPosition.x;
+                this._pos.y = logicOrThrow(this._lookAtObject).worldPosition.y;
+                this._pos.z = logicOrThrow(this._lookAtObject).worldPosition.z;
             }
             else
             {
                 // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
-                vec3Copy(logic(this._lookAtObject).position, this._pos);
+                vec3Copy(logicOrThrow(this._lookAtObject).position, this._pos);
             }
         }
         else

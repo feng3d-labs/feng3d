@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { Camera } from '../cameras/Camera';
 import '../cameras/PerspectiveCamera';
 import type { Object3D } from '../core/Object3D';
@@ -47,7 +47,7 @@ describe('scene 门控渲染（renderWhenLoaded）', () =>
             }],
         };
 
-        logic(root); // 触发组件自动初始化（Scene/Camera init 注入 entity）
+        logicOrThrow(root); // 触发组件自动初始化（Scene/Camera init 注入 entity）
 
         return { scene: root.components![0] as Scene, camera, model };
     }

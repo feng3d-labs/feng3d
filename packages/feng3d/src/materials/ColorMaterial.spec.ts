@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { RenderObject } from '@feng3d/webgpu';
 import './ColorMaterial';
 import type { ColorMaterial } from './ColorMaterial';
@@ -24,7 +24,7 @@ describe('ColorMaterialLogic', () =>
     {
         const mat = { __type__: 'ColorMaterial', ...material } as unknown as ColorMaterial;
 
-        return logic(mat) as MaterialLogic;
+        return logicOrThrow(mat) as MaterialLogic;
     }
 
     /** 取出 beforeRender 写进 renderObject 的 material_uniforms */
@@ -73,7 +73,7 @@ describe('ColorMaterialLogic', () =>
             uniforms: { u_diffuseInput: { __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 } },
         } as unknown as ColorMaterial;
 
-        const l = logic(mat) as MaterialLogic;
+        const l = logicOrThrow(mat) as MaterialLogic;
 
         expect(uniformsOf(l).u_diffuseInput).toMatchObject({ r: 1 });
 

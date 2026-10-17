@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { mat4GetAxisZ } from '@feng3d/math';
 import type { Object3D } from '../core/Object3D';
 import '../core/Object3D';
@@ -34,16 +34,16 @@ describe('FirstPersonControls', () =>
             position,
             components: [controls],
         };
-        logic(camera);
+        logicOrThrow(camera);
 
-        return { camera, controlsLogic: logic(controls) };
+        return { camera, controlsLogic: logicOrThrow(controls) };
     }
 
     /** 取相机前向（本地 -Z 的世界方向，three 的相机 forward） */
     function forwardOf(camera: Object3D)
     {
         const axisZ = { x: 0, y: 0, z: 0 };
-        mat4GetAxisZ(logic(camera).local2world, axisZ);
+        mat4GetAxisZ(logicOrThrow(camera).local2world, axisZ);
         const forward = { x: -axisZ.x, y: -axisZ.y, z: -axisZ.z };
         const length = Math.hypot(forward.x, forward.y, forward.z);
 
@@ -70,7 +70,7 @@ describe('FirstPersonControls', () =>
         controlsLogic.update(1000);
         globalThis.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyW' }));
 
-        const position = logic(camera).position;
+        const position = logicOrThrow(camera).position;
         expect(position.z).toBeCloseTo(-100, 4);
         expect(position.x).toBeCloseTo(0, 6);
     });
@@ -104,8 +104,8 @@ describe('FirstPersonControls', () =>
             lookVertical: false,
         };
         const camera: Object3D = { __type__: 'Object3D', name: 'camera', components: [controls] };
-        logic(camera);
-        const cameraLogic = logic(controls);
+        logicOrThrow(camera);
+        const cameraLogic = logicOrThrow(controls);
         cameraLogic.lookAt({ x: 0, y: 0, z: -1 });
 
         (globalThis as unknown as { innerWidth: number }).innerWidth = 800;

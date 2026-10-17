@@ -2,7 +2,7 @@ import { box3ApplyMatrix, box3Copy, box3Empty, box3FromPoints, box3IsEmpty, box3
 import { isRenderable } from "../component/Component";
 import { effect } from '@feng3d/reactivity';
 import { Object3D } from "./Object3D";
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { RenderableLogic } from './Renderable';
 
 /**
@@ -30,7 +30,7 @@ export class BoundingBox
         // 通过响应式 effect 监听 local2world 变化，失效自身世界包围盒
         effect(() =>
         {
-            logic(object3D).local2world;
+            logicOrThrow(object3D).local2world;
             this._invalidateSelfWorldBounds();
         });
     }
@@ -95,7 +95,7 @@ export class BoundingBox
             const component = components[i];
             if (isRenderable(component))
             {
-                const b = (logic(component) as unknown as RenderableLogic).selfLocalBounds;
+                const b = (logicOrThrow(component) as unknown as RenderableLogic).selfLocalBounds;
                 if (b)
                 {
                     const value = b.value;
@@ -116,7 +116,7 @@ export class BoundingBox
     protected _updateSelfWorldBounds()
     {
         box3Copy(this.selfLocalBounds, this._selfWorldBounds);
-        box3ApplyMatrix(this._selfWorldBounds, logic(this._object3D).local2world, this._selfWorldBounds);
+        box3ApplyMatrix(this._selfWorldBounds, logicOrThrow(this._object3D).local2world, this._selfWorldBounds);
     }
 
     /**
@@ -129,7 +129,7 @@ export class BoundingBox
         // 获取子对象的世界包围盒与自身世界包围盒进行合并
         (this._object3D.children ?? []).forEach((element) =>
         {
-            box3Union(this._worldBounds, logic(element as Object3D).boundingBox.worldBounds, this._worldBounds);
+            box3Union(this._worldBounds, logicOrThrow(element as Object3D).boundingBox.worldBounds, this._worldBounds);
         });
     }
 
@@ -165,9 +165,9 @@ export class BoundingBox
         this._worldBoundsInvalid = true;
 
         // 世界包围盒失效会影响父对象世界包围盒失效
-        const parent = logic(this._object3D).parent;
+        const parent = logicOrThrow(this._object3D).parent;
         if (!parent) return;
-        logic(parent as Object3D).boundingBox._invalidateWorldBounds();
+        logicOrThrow(parent as Object3D).boundingBox._invalidateWorldBounds();
     }
 }
 

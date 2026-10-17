@@ -1,5 +1,5 @@
 import { mat4Copy, mat4LookAt, mat4ToTRS, Matrix4x4, VEC3_Y_AXIS, vec3From, Vector3, Vector3Like, WritableVector3Like } from '@feng3d/math';
-import { logic, batchRun, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, batchRun, reactive } from '@feng3d/reactivity';
 import { Object3D } from '../core/Object3D';
 import { ControllerBase } from './ControllerBase';
 
@@ -84,7 +84,7 @@ export class LookAtController extends ControllerBase
             else if (this._lookAtObject)
             {
                 // 通过 logic().position 读取，使 JSON 字面量（缺失字段）能拿到默认 {0,0,0}
-                const pos = logic(this._lookAtObject).position;
+                const pos = logicOrThrow(this._lookAtObject).position;
                 vec3From(pos.x, pos.y, pos.z, this._pos);
                 this._lookAtTransform(this._targetObject, this._pos, this._upAxis);
             }
@@ -96,7 +96,7 @@ export class LookAtController extends ControllerBase
     private _lookAtTransform(t: Object3D, target: Vector3Like, upAxis: Vector3Like)
     {
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改用纯数据 out + 纯函数（就地语义不变）
-        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logic(t).matrix) };
+        const m: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(logicOrThrow(t).matrix) };
         mat4LookAt(m, target, upAxis, m);
         const pos = { x: 0, y: 0, z: 0 }; const rot = { x: 0, y: 0, z: 0 }; const scl = { x: 0, y: 0, z: 0 };
         mat4ToTRS(m, pos, rot, scl);

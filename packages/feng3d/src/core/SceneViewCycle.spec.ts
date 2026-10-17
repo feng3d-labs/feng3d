@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { batchRun, logic, reactive } from '@feng3d/reactivity';
+import { batchRun, logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { Object3D } from './Object3D';
 import './Object3D';
 import type { Scene } from '../scene/Scene';
@@ -66,7 +66,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
             ],
         };
 
-        logic(viewRoot);
+        logicOrThrow(viewRoot);
 
         return { viewRoot, gameScene, deep: (gameScene.children as Object3D[])[0].children![0] as Object3D };
     }
@@ -80,9 +80,9 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
 
         const readChain = () =>
         {
-            logic(deep).local2world;
-            logic(deep).activeInHierarchy;
-            logic(gameScene).boundingBox.worldBounds;
+            logicOrThrow(deep).local2world;
+            logicOrThrow(deep).activeInHierarchy;
+            logicOrThrow(gameScene).boundingBox.worldBounds;
         };
         readChain();
 
@@ -99,9 +99,9 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
         }
 
         // 摘挂之后仍然"接得上"：深层的世界矩阵链可读、包围盒算得出来
-        expect(logic(deep).local2world).toBeTruthy();
-        expect(logic(deep).activeInHierarchy).toBe(true);
-        expect(box3GetSize(logic(gameScene).boundingBox.worldBounds).x).toBeGreaterThan(0);
+        expect(logicOrThrow(deep).local2world).toBeTruthy();
+        expect(logicOrThrow(deep).activeInHierarchy).toBe(true);
+        expect(box3GetSize(logicOrThrow(gameScene).boundingBox.worldBounds).x).toBeGreaterThan(0);
     });
 
     it('子树被摘掉后 parent 链不断：仍在树里的对象照常读出世界矩阵', () =>
@@ -110,7 +110,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
         const r_viewRoot = reactive(viewRoot);
 
         r_viewRoot.children!.push(gameScene);
-        expect(logic(deep).local2world).toBeTruthy();
+        expect(logicOrThrow(deep).local2world).toBeTruthy();
 
         // 摘掉：对象自身的 logic 与矩阵链仍可用（不抛 `undefined.elements` 这类错）
         batchRun(() =>
@@ -118,7 +118,7 @@ describe('场景视图反复卸载/重建的响应式稳定性（issue #177）',
             r_viewRoot.children = [];
         });
 
-        expect(logic(gameScene).local2world).toBeTruthy();
-        expect(logic(deep).local2world).toBeTruthy();
+        expect(logicOrThrow(gameScene).local2world).toBeTruthy();
+        expect(logicOrThrow(deep).local2world).toBeTruthy();
     });
 });

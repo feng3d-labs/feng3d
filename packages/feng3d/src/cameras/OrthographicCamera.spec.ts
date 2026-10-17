@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import '../core/Object3D';
 import type { Object3D } from '../core/Object3D';
 import './OrthographicCamera';
@@ -21,9 +21,9 @@ describe('OrthographicCameraLogic', () =>
         const cam = { __type__: 'OrthographicCamera', ...camera } as unknown as OrthographicCamera;
         const object: Object3D = { __type__: 'Object3D', name: 'cam', components: [cam] };
 
-        logic(object);
+        logicOrThrow(object);
 
-        return logic(cam) as OrthographicCameraLogic;
+        return logicOrThrow(cam) as OrthographicCameraLogic;
     }
 
     it('投影矩阵由 left / right / top / bottom / near / far 派生', () =>
@@ -52,9 +52,9 @@ describe('OrthographicCameraLogic', () =>
         const cam = { __type__: 'OrthographicCamera', left: -2, right: 2, top: 1, bottom: -1 } as unknown as OrthographicCamera;
         const object: Object3D = { __type__: 'Object3D', name: 'cam', components: [cam] };
 
-        logic(object);
+        logicOrThrow(object);
 
-        const l = logic(cam) as OrthographicCameraLogic;
+        const l = logicOrThrow(cam) as OrthographicCameraLogic;
 
         expect(l.projectionMatrix.elements[0]).toBeCloseTo(0.5, 10);
 

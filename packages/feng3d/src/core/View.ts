@@ -1,5 +1,5 @@
 import { ErrorCode, reportDegradation } from './CodedError';
-import { computed, getMutationCount, logic as getLogic, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
+import { computed, getMutationCount, logicOrThrow as getLogicOrThrow, reactive, registerLogic, toRaw, type Computed } from '@feng3d/reactivity';
 import { CanvasContext, CanvasTexture, Color, PassEncoder, RenderPass, RenderPassDescriptor, Submit, Texture, TextureSize, TextureView } from '@feng3d/webgpu';
 import { Camera } from "../cameras/Camera";
 import { ShadowType } from '../light/shadow/ShadowType';
@@ -128,7 +128,7 @@ function updateView(
     const scene = sceneComputed.value;
     if (!scene) return;
 
-    getLogic(scene).update();
+    getLogicOrThrow(scene).update();
 
     const canvas = resolveCanvas(view);
     // 画布布局尺寸为 0 时（面板卸载后 canvas 移出 DOM、窗口最小化、display:none）
@@ -240,7 +240,7 @@ export function viewLogic(view: View): ViewLogic
     // 读 r_view.root 建立响应式依赖——root 替换时本 computed 自动重算。
     const sceneComputed = computed(() =>
     {
-        let scene = getLogic(toRaw(reactive(view).root)).getComponent<Scene>('Scene');
+        let scene = getLogicOrThrow(toRaw(reactive(view).root)).getComponent<Scene>('Scene');
         if (!scene)
         {
             scene = { __type__: 'Scene' } as Scene;
@@ -256,14 +256,14 @@ export function viewLogic(view: View): ViewLogic
     {
         const r_view = reactive(view);
         const r_root = r_view.root;   // 响应式读取建立依赖
-        let camera = getLogic(toRaw(r_root)).getComponentsInChildren<Camera>('Camera')[0];
+        let camera = getLogicOrThrow(toRaw(r_root)).getComponentsInChildren<Camera>('Camera')[0];
         if (!camera)
         {
             const defaultCamObj = { __type__: 'Object3D', name: 'defaultCamera' } as Object3D;
-            getLogic(defaultCamObj);
+            getLogicOrThrow(defaultCamObj);
             camera = { __type__: 'PerspectiveCamera' } as Camera;
             reactive(defaultCamObj).components!.push(camera);
-            r_root.children!.push(getLogic(camera).entity as Object3D);
+            r_root.children!.push(getLogicOrThrow(camera).entity as Object3D);
         }
 
         return camera;
@@ -491,7 +491,7 @@ export function viewLogic(view: View): ViewLogic
     }
 
     // 触发 logic：注册 EntityLogic（组件自动初始化）与 ContainerLogic（子级自动同步 parent）
-    getLogic(view.root);
+    getLogicOrThrow(view.root);
 
     // skyboxRenderObject 读 input.scene/input.camera 建立响应式依赖
     const skyboxObjects = skyboxRenderObject({
@@ -620,7 +620,7 @@ export function createNewScene(): Scene
     };
 
     // 触发 logic：注册 EntityLogic（组件自动初始化）与 ContainerLogic（子级自动同步 parent）
-    getLogic(root);
+    getLogicOrThrow(root);
 
     return root.components!.find(c => c.__type__ === 'Scene') as Scene;
 }

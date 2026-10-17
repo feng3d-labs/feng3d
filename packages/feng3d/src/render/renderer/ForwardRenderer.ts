@@ -1,5 +1,5 @@
 import { mat4Identity, Matrix4x4, Vector3, Vector3Like } from '@feng3d/math';
-import { computed, Computed, logic, reactive } from '@feng3d/reactivity';
+import { computed, Computed, logicOrThrow, reactive } from '@feng3d/reactivity';
 import { BufferBinding, RenderObject, Sampler, Texture } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
 import type { Color4 } from '../../core/Color4';
@@ -113,14 +113,14 @@ function createLightsUniformComputed(scene: Scene): Computed<LightsUniform>
  */
 function buildLightsUniform(scene: Scene): LightsUniform
 {
-    const sLogic = logic(scene);
+    const sLogic = logicOrThrow(scene);
     const dirLights = sLogic.activeDirectionalLights;
     const pointLights = sLogic.activePointLights;
     const spotLights = sLogic.activeSpotLights;
 
     // 方向光（取第一个）
     const dirLight = dirLights.length > 0 ? dirLights[0] : null;
-    const dirDir = dirLight ? logic(dirLight).direction : { x: 0, y: 0, z: 0 };
+    const dirDir = dirLight ? logicOrThrow(dirLight).direction : { x: 0, y: 0, z: 0 };
     const dirColor = dirLight ? dirLight.color : { r: 0, g: 0, b: 0 };
     const dirIntensity = dirLight ? (dirLight.intensity ?? 1) : 0;
 
@@ -132,7 +132,7 @@ function buildLightsUniform(scene: Scene): LightsUniform
         if (i < pointLightCount)
         {
             const pl = pointLights[i];
-            const pos = logic(pl).position as Vector3;
+            const pos = logicOrThrow(pl).position as Vector3;
             pointLightArray.push({
                 position: [pos.x, pos.y, pos.z],
                 range: pl.range ?? 10,
@@ -159,7 +159,7 @@ function buildLightsUniform(scene: Scene): LightsUniform
             position: [0, 0, 0], range: 0, color: [0, 0, 0], intensity: 0,
             direction: [0, 0, 0], coneCos: 0, penumbraCos: 0, _pad1: 0,
         };
-        const slLogic = logic(spotLight);
+        const slLogic = logicOrThrow(spotLight);
         const pos = slLogic.position;
         const dir = slLogic.direction;
 
@@ -267,14 +267,14 @@ export class ForwardRenderer
 
         const computedRenderObjects = computed<readonly RenderObject[]>(() =>
         {
-            const sLogic = logic(scene);
+            const sLogic = logicOrThrow(scene);
             const blenditems = sLogic.getPickCache(camera).blenditems;
             const unblenditems = sLogic.getPickCache(camera).unblenditems;
 
             // cameraUniforms 是响应式 computed（CameraLogic.uniforms），其 .value 依赖
             // viewMatrix/lens 等，相机变换变化时自动失效。bindingResources 持有同一 computed 引用，
             // 上游 WGPUBufferBinding 会重新读取 .value 并上传到 GPU。
-            const cameraUniforms = logic(camera).uniforms;
+            const cameraUniforms = logicOrThrow(camera).uniforms;
             const vp = viewport.value;
             const globalUniforms: GlobalUniforms = {
                 // scene.ambientColor 已放宽为 `Color4Like | Color4`（issue #134）：uniform 侧字段
@@ -299,7 +299,7 @@ export class ForwardRenderer
             let shadowMapTexture: Texture | null = null;
             if (shadowLight)
             {
-                const sLightLogic = logic(shadowLight);
+                const sLightLogic = logicOrThrow(shadowLight);
                 // 直接用光源 logic 的 shadowViewProjection（ShadowRenderer 渲染阴影图时由
                 // updateShadowByCamera 写入，与此处读取完全一致，避免时序/缓存不匹配）。
                 const shadowVP = sLightLogic.shadowViewProjection;
@@ -346,7 +346,7 @@ export class ForwardRenderer
             const drawRenderable = (renderable: Renderable) =>
             {
                 // 绘制
-                const renderObject = logic(renderable).renderObject.value;
+                const renderObject = logicOrThrow(renderable).renderObject.value;
 
                 const bindingResources = renderObject.bindingResources;
 
@@ -375,7 +375,7 @@ export class ForwardRenderer
                     r_bindingResources.s_shadowMap = SHADOW_MAP_COMPARISON_SAMPLER;
                 }
 
-                logic(renderable).beforeRender(renderObject);
+                logicOrThrow(renderable).beforeRender(renderObject);
 
                 renderObjects.push(renderObject);
             };
@@ -426,13 +426,13 @@ export class ForwardRenderer
             u_Viewport: { x: viewport[0], y: viewport[1] },
         };
         reactive(sharedGlobalUniforms).value = globalUniforms;
-        reactive(sharedCameraUniforms).value = logic(camera).uniforms;
+        reactive(sharedCameraUniforms).value = logicOrThrow(camera).uniforms;
 
         const renderObjects: RenderObject[] = [];
         for (let i = 0; i < renderables.length; i++)
         {
             const renderable = renderables[i];
-            const renderObject = logic(renderable).renderObject.value;
+            const renderObject = logicOrThrow(renderable).renderObject.value;
             const bindingResources = renderObject.bindingResources;
 
             // 身份比较跳过未变写入（与 draw 的共享绑定注入同款）
@@ -442,7 +442,7 @@ export class ForwardRenderer
                 reactive(bindingResources).cameraUniforms = sharedCameraUniforms;
             }
 
-            logic(renderable).beforeRender(renderObject);
+            logicOrThrow(renderable).beforeRender(renderObject);
 
             renderObjects.push(renderObject);
         }

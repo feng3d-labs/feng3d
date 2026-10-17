@@ -1,6 +1,6 @@
 import { Renderable, RenderableLogic, createRenderableLogicBase } from '../../core/Renderable';
 import type { RenderObject, RenderPipeline } from '@feng3d/webgpu';
-import { registerLogic, logic as getLogic, reactive, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, logicOrThrow as getLogicOrThrow, reactive, UnReadonly } from '@feng3d/reactivity';
 import { mat4Identity, Matrix4x4 } from '@feng3d/math';
 import type { Object3D } from '../../core/Object3D';
 import { standardSkinnedVertexWGSL, standardVertexWGSL } from '../../materials/standardVertexShader';
@@ -67,11 +67,11 @@ export function skinnedMeshRendererLogic(data: SkinnedMeshRenderer): SkinnedMesh
 
     function getSkeletonGlobalMatriices(): Matrix4x4[]
     {
-        const skeletonComponent = getLogic(members.entity as Object3D).getComponentInParent<Skeleton>('Skeleton');
+        const skeletonComponent = getLogicOrThrow(members.entity as Object3D).getComponentInParent<Skeleton>('Skeleton');
 
         if (skeletonComponent)
         {
-            return getLogic(skeletonComponent).globalMatrices;
+            return getLogicOrThrow(skeletonComponent).globalMatrices;
         }
 
         return defaultSkeletonGlobalMatriices;

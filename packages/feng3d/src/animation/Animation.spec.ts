@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import { mat4GetPosition } from '@feng3d/math';
 import { AnimationClip } from './AnimationClip';
 import { PropertyClip } from './PropertyClip';
@@ -44,7 +44,7 @@ describe('animation/imperative', () =>
             }],
         } as unknown as Object3D;
 
-        logic(obj);   // entity logic：组件自动 init（effect 建立）
+        logicOrThrow(obj);   // entity logic：组件自动 init（effect 建立）
 
         return obj;
     };
@@ -53,11 +53,11 @@ describe('animation/imperative', () =>
     {
         const obj = makeAnimatedObject();
         const animationComponent = obj.components![0] as unknown as { __type__: 'Animation' };
-        const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
+        const animationLogic = logicOrThrow(animationComponent) as unknown as { update: (interval: number) => void };
 
         animationLogic.update(500);   // 500ms → position.x = 5
 
-        const objLogic = logic(obj);
+        const objLogic = logicOrThrow(obj);
         expect(objLogic.position.x).toBe(5);
         // 变更驱动：矩阵链自动失效（写入经响应式代理）
         expect(mat4GetPosition(objLogic.local2world).x).toBe(5);
@@ -67,24 +67,24 @@ describe('animation/imperative', () =>
     {
         const obj = makeAnimatedObject();
         const animationComponent = obj.components![0] as unknown as { __type__: 'Animation' };
-        const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
+        const animationLogic = logicOrThrow(animationComponent) as unknown as { update: (interval: number) => void };
 
         animationLogic.update(250);
-        expect(logic(obj).position.x).toBe(2.5);
+        expect(logicOrThrow(obj).position.x).toBe(2.5);
 
         reactive(animationComponent as unknown as { isplaying: boolean }).isplaying = false;
         animationLogic.update(500);
-        expect(logic(obj).position.x).toBe(2.5);   // 未变
+        expect(logicOrThrow(obj).position.x).toBe(2.5);   // 未变
     });
 
     it('循环回绕：time 超过 length 取模', () =>
     {
         const obj = makeAnimatedObject();
         const animationComponent = obj.components![0] as unknown as { __type__: 'Animation' };
-        const animationLogic = logic(animationComponent) as unknown as { update: (interval: number) => void };
+        const animationLogic = logicOrThrow(animationComponent) as unknown as { update: (interval: number) => void };
 
         animationLogic.update(1250);   // 1250ms → 回绕 250ms → x=2.5
 
-        expect(logic(obj).position.x).toBe(2.5);
+        expect(logicOrThrow(obj).position.x).toBe(2.5);
     });
 });

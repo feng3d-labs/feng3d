@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { PerspectiveCamera } from '../cameras/PerspectiveCamera';
 import '../cameras/PerspectiveCamera';
 import type { MeshRenderer } from '../core/MeshRenderer';
@@ -59,12 +59,12 @@ describe('DirectionalLight 的阴影配置', () =>
             components: [scene],
             children: [cube, lightObject],
         };
-        logic(root);
+        logicOrThrow(root);
 
         const camera = { __type__: 'PerspectiveCamera', aspect: 1 } as PerspectiveCamera;
-        logic({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 10 }, components: [camera] } as Object3D);
+        logicOrThrow({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 10 }, components: [camera] } as Object3D);
 
-        const models = logic(scene).getPickByDirectionalLight(light);
+        const models = logicOrThrow(scene).getPickByDirectionalLight(light);
         expect(models.length).toBeGreaterThan(0);
 
         return { scene, camera, models };
@@ -73,7 +73,7 @@ describe('DirectionalLight 的阴影配置', () =>
     /** 调用一次 updateShadowByCamera 并取回阴影参数 */
     function updateShadow(light: DirectionalLight, ctx: ReturnType<typeof build>)
     {
-        const lightLogic = logic(light);
+        const lightLogic = logicOrThrow(light);
         lightLogic.updateShadowByCamera(ctx.scene, ctx.camera, ctx.models);
 
         return {
@@ -128,7 +128,7 @@ describe('DirectionalLight 的阴影配置', () =>
     {
         const light = makeLight();
         build(light);
-        const lightLogic = logic(light);
+        const lightLogic = logicOrThrow(light);
 
         expect(lightLogic.shadowMapSize).toMatchObject({ x: 1024, y: 1024 });
         expect((lightLogic.shadowDepthTexture as unknown as { descriptor: { size: number[] } }).descriptor.size)
@@ -139,7 +139,7 @@ describe('DirectionalLight 的阴影配置', () =>
     {
         const light = makeLight({ shadowMapSize: { x: 2048, y: 1024 } });
         build(light);
-        const lightLogic = logic(light);
+        const lightLogic = logicOrThrow(light);
 
         expect(lightLogic.shadowMapSize).toMatchObject({ x: 2048, y: 1024 });
         expect((lightLogic.shadowDepthTexture as unknown as { descriptor: { size: number[] } }).descriptor.size)

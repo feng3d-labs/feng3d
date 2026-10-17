@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { RenderObject } from '@feng3d/webgpu';
 import './ProjectedShadowMaterial';
 import type { ProjectedShadowMaterial } from './ProjectedShadowMaterial';
@@ -22,7 +22,7 @@ describe('ProjectedShadowMaterialLogic', () =>
     {
         const mat = { __type__: 'ProjectedShadowMaterial', ...material } as unknown as ProjectedShadowMaterial;
 
-        return logic(mat) as MaterialLogic;
+        return logicOrThrow(mat) as MaterialLogic;
     }
 
     /** 取出 beforeRender 写进 renderObject 的 material_uniforms */
@@ -96,7 +96,7 @@ describe('ProjectedShadowMaterialLogic', () =>
     it('修改纯数据 uniforms 后 beforeRender 反映新值（响应式）', () =>
     {
         const mat = { __type__: 'ProjectedShadowMaterial', uniforms: { u_opacity: 0.6 } } as unknown as ProjectedShadowMaterial;
-        const l = logic(mat) as MaterialLogic;
+        const l = logicOrThrow(mat) as MaterialLogic;
 
         expect(uniformsOf(l).u_opacity).toBe(0.6);
 

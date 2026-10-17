@@ -1,5 +1,5 @@
 import { mat4Copy, mat4Identity, mat4Prepend, Matrix4x4 } from '@feng3d/math';
-import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { Component3D, Component3DLogic, createComponentLogicBase } from '../../component/Component';
 import type { Object3D, Object3DLogic } from '../../core/Object3D';
 
@@ -161,7 +161,7 @@ export function skeletonLogic(data: Skeleton): SkeletonLogic
                     continue;
                 }
 
-                mat4Copy(getLogic(bone).local2world, matrix);
+                mat4Copy(getLogicOrThrow(bone).local2world, matrix);
                 mat4Prepend(matrix, boneInverse, matrix);
             }
 

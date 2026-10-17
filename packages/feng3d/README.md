@@ -115,12 +115,17 @@ const geometry: CubeGeometry = { __type__: 'CubeGeometry', width: 1 };
 ### 数据与行为分离：`logic(data)`
 
 - 纯数据接口放**数据**（`interface Xxx`），`XxxLogic` 放**行为**（getter / computed / 方法），二者同文件、一一对应
-- `XxxLogic` 是 class（不是 interface + 工厂），`protected constructor`，只有 `logic()` 能创建；实例对外**只读**
-- `logic(data)` 返回 `Logic | null`，调用方须显式处理（R6）
+- `XxxLogic` 是 **interface + 工厂函数**（`xxxLogic(data)`，issue #674 / #653）：`registerLogic('Xxx', xxxLogic)` 登记，`logic()` 按 `__type__` 分发；实例对外**只读**
+- `logic(data)` 的返回类型是 `Logic | null`——类型与运行期一致（未注册的类型返回 `null`，issue #92 / R6）
+- 期望非空时用 `logicOrThrow(data)`：未注册即抛出带 `__type__` 与数据键的错误，而不是让 `null` 流到下游炸成 "Cannot read properties of null"
 
 ```ts
+// 可选查找（插件没装 / 外部数据 / 遍历未知类型）→ 显式判空
 const meshLogic = logic(meshRenderer);
 if (meshLogic) { /* … */ }
+
+// 已知注册（数据是本包场景树的一部分）→ 断言非空，错误在发生处抛出
+const cameraLogic = logicOrThrow(camera);
 ```
 
 ### 写入经响应式代理

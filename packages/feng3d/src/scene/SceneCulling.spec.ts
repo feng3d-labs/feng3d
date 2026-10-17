@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import '../test/webgpu-stub';
 
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { PerspectiveCamera } from '../cameras/PerspectiveCamera';
 import '../cameras/PerspectiveCamera';
 import type { MeshRenderer } from '../core/MeshRenderer';
@@ -116,11 +116,11 @@ describe('剔除与筛选开关（issue #229）', () =>
 
         const root: Object3D = { __type__: 'Object3D', name: 'root', components: [scene], children: [...children, lightObject] };
 
-        logic(root);
+        logicOrThrow(root);
 
         const camera = { __type__: 'PerspectiveCamera', fov: 60, aspect: 1, near: 0.1, far: 1000 } as unknown as PerspectiveCamera;
 
-        logic({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 0 }, components: [camera] } as Object3D);
+        logicOrThrow({ __type__: 'Object3D', name: 'cam', position: { x: 0, y: 0, z: 0 }, components: [camera] } as Object3D);
 
         return { scene, camera, visible, sun: lightObject };
     }
@@ -128,7 +128,7 @@ describe('剔除与筛选开关（issue #229）', () =>
     it('默认开启视锥剔除：相机背后的对象不进 activeModels', () =>
     {
         const { scene, camera } = buildScene({ behindCameraObject: true });
-        const names = logic(scene).getPickCache(camera).activeModels.map((m) => logic(m).entity!.name);
+        const names = logicOrThrow(scene).getPickCache(camera).activeModels.map((m) => logicOrThrow(m).entity!.name);
 
         expect(names).toContain('visible');
         expect(names).not.toContain('behind');
@@ -137,7 +137,7 @@ describe('剔除与筛选开关（issue #229）', () =>
     it('frustumCulling: false 时相机背后的对象**仍**参与（开关真的生效）', () =>
     {
         const { scene, camera } = buildScene({ behindCameraObject: true });
-        const namesOf = () => logic(scene).getPickCache(camera).activeModels.map((m) => logic(m).entity!.name);
+        const namesOf = () => logicOrThrow(scene).getPickCache(camera).activeModels.map((m) => logicOrThrow(m).entity!.name);
 
         // 先读一次，让 activeModels 的 computed 带着"culling 开启"的结果进缓存
         expect(namesOf()).toContain('visible');

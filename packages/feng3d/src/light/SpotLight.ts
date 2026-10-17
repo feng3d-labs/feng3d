@@ -1,7 +1,7 @@
 import { MATHF_DEG2RAD } from '@feng3d/math';
 import { Light, LightLogic, createLightLogicBase } from './Light';
 import { LightType } from './LightType';
-import { registerLogic, logic as getLogic, computed, reactive } from "@feng3d/reactivity";
+import { registerLogic, logicOrThrow as getLogicOrThrow, computed, reactive } from "@feng3d/reactivity";
 import { mat4Append, mat4Copy, mat4Identity, mat4SetPerspectiveFromFOV, Matrix4x4 } from '@feng3d/math';
 import { Texture } from '@feng3d/webgpu';
 
@@ -74,7 +74,7 @@ export function spotLightLogic(data: SpotLight): SpotLightLogic
         const angle = r_light.angle;
         const range = r_light.range;
         // light 是组件，必然挂在 Object3D 上（entity 非空）；strictNullChecks 下显式断言
-        const viewMatrix = getLogic(members.entity!).world2local;
+        const viewMatrix = getLogicOrThrow(members.entity!).world2local;
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，改成「纯数据字面量 + 纯函数」
         const projection: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4SetPerspectiveFromFOV(angle, 1, 0.1, range) };
 

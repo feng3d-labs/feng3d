@@ -1,6 +1,6 @@
 import { Vector3Like } from '@feng3d/math';
 import { Component3D, Component3DLogic, createComponentLogicBase } from '../component/Component';
-import { registerLogic, logic as getLogic, batchRun, effect, reactive } from "@feng3d/reactivity";
+import { registerLogic, logicOrThrow as getLogicOrThrow, batchRun, effect, reactive } from "@feng3d/reactivity";
 import { ticker } from '../utils/Ticker';
 import { Object3D } from './Object3D';
 
@@ -134,7 +134,7 @@ export function transformLayoutLogic(data: TransformLayout): TransformLayoutLogi
         const anchorMax = () => r_layout.anchorMax ?? { x: 0.5, y: 0.5, z: 0.5 };
         const pivot = () => r_layout.pivot ?? { x: 0.5, y: 0.5, z: 0.5 };
 
-        const parent = state.entity && getLogic(state.entity as Object3D).parent as Object3D | null;
+        const parent = state.entity && getLogicOrThrow(state.entity as Object3D).parent as Object3D | null;
         if (!parent) return;
         const transformLayout = parent.components?.find(c => c.__type__ === 'TransformLayout') as TransformLayout;
         if (!transformLayout) return;

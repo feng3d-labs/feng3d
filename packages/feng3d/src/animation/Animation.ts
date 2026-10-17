@@ -2,7 +2,7 @@ import { Behaviour, BehaviourLogic, createBehaviourLogicBase } from '../componen
 import type { Component, Components } from '../component/Component';
 import type { AnimationClipData } from './AnimationClip';
 // `logic` 这个名字在下方被 `const logic: AnimationLogic` 占用，故按本仓约定用 `getLogic` 别名
-import { registerLogic, effect, reactive, logic as getLogic } from '@feng3d/reactivity';
+import { registerLogic, effect, reactive, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { findObject3DChild } from '../core/Object3D';
 import { matchType } from '../core/Entity';
 import type { Object3D } from '../core/Object3D';
@@ -125,7 +125,7 @@ export function animationLogic(data: Animation): AnimationLogic
         if (path.length > 0
             && path[0][0] === PropertyClipPathItemType.Object3D
             && members.entity !== null
-            && getLogic(members.entity).name === path[0][1])
+            && getLogicOrThrow(members.entity).name === path[0][1])
         {
             return resolve(1);
         }

@@ -1,5 +1,5 @@
 import { box3ApplyMatrix, box3Clone, box3RayIntersection, Box3, mat4TransformRay, Ray3 } from '@feng3d/math';
-import { computed, Computed, isLogicRegistered, logic as getLogic, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { computed, Computed, isLogicRegistered, logicOrThrow as getLogicOrThrow, reactive, registerLogic, UnReadonly } from '@feng3d/reactivity';
 import { BindingResources, releaseBindingResources, RenderObject } from '@feng3d/webgpu';
 import { BehaviourLogic, createBehaviourLogicBase, type BehaviourLogicState } from '../component/Behaviour';
 import { Geometrys } from '../geometry/Geometry';
@@ -252,7 +252,7 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
         const r_renderable = reactive(state.component as Renderable) as unknown as { geometry: unknown; material: unknown };
         r_renderable.geometry;
 
-        return getLogic(resolveGeometry(state)).bounding;
+        return getLogicOrThrow(resolveGeometry(state)).bounding;
     });
 
     /** 自身世界包围盒 */
@@ -264,7 +264,7 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
         // 阶段 C-e：`Box3` 的 class 已删除；`applyMatrixTo` = copy + 就地 applyMatrix
         const worldBounds: Box3 = { __type__: 'Box3', ...box3Clone(localBounds) };
 
-        box3ApplyMatrix(worldBounds, getLogic(state.entity as Object3D).local2world, worldBounds);
+        box3ApplyMatrix(worldBounds, getLogicOrThrow(state.entity as Object3D).local2world, worldBounds);
 
         return worldBounds;
     });
@@ -282,22 +282,22 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
 
         // Geometry：beforeRender 写入 vertices/indices/draw（computed 驱动，
         // 几何数据变化精确失效；与 Material/Object3D 的 beforeRender 同模式）
-        getLogic(resolveGeometry(state)).beforeRender(ro);
+        getLogicOrThrow(resolveGeometry(state)).beforeRender(ro);
 
         // Material：beforeRender 写入 pipeline / material_uniforms（稳定引用）/ 纹理绑定
         // （与 Object3DLogic.beforeRender 同模式：内部经响应式读取建立依赖，
         // 材质/uniform/纹理变化 → 本 computed 失效 → beforeRender 重跑换装）
-        getLogic(resolveMaterial(state)).beforeRender(ro);
+        getLogicOrThrow(resolveMaterial(state)).beforeRender(ro);
 
         // Transform 写入 transform uniform（稳定 binding 实例，字段级更新）
-        getLogic(state.entity as Object3D).beforeRender(ro);
+        getLogicOrThrow(state.entity as Object3D).beforeRender(ro);
 
         // 同对象其他组件的 beforeRender（过渡期保留：Billboard/HoldSize/
         // SkinnedMeshRenderer/ParticleSystem 等待矩阵链重构后 computed 化）
         const components = (state.entity as Object3D).components ?? [];
         for (const element of components)
         {
-            const cl = getLogic(element);
+            const cl = getLogicOrThrow(element);
             if (cl) cl.beforeRender(ro);
         }
 
@@ -305,7 +305,7 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
     });
 
     // 是否加载完成
-    state.isLoaded = computed<boolean>(() => getLogic(resolveMaterial(state)).isLoaded);
+    state.isLoaded = computed<boolean>(() => getLogicOrThrow(resolveMaterial(state)).isLoaded);
 
     const members: RenderableLogic = {
         /** 关联的组件数据（raw） */
@@ -335,7 +335,7 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
         baseBeforeRender(renderObject)
         {
             // Transform 写入 transform uniform
-            getLogic(state.entity as Object3D).beforeRender(renderObject);
+            getLogicOrThrow(state.entity as Object3D).beforeRender(renderObject);
 
             // 同对象其他组件（跳过自身）
             const components = (state.entity as Object3D).components ?? [];
@@ -343,7 +343,7 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
             {
                 if (element !== state.component)
                 {
-                    const cl = getLogic(element);
+                    const cl = getLogicOrThrow(element);
                     if (cl) cl.beforeRender(renderObject);
                 }
             }
@@ -399,7 +399,7 @@ export function createRenderableLogicBase(data: Renderable): { state: Renderable
             const localRay: Ray3 = { __type__: 'Line3', origin: { x: 0, y: 0, z: 0 }, direction: { x: 0, y: 0, z: 1 } };
 
             // 阶段 C-e：`Matrix4x4.transformRay` 已删除，改用纯函数（`out` 传同一个 localRay，就地语义不变）
-            mat4TransformRay(getLogic(state.entity as Object3D).world2local, worldRay, localRay);
+            mat4TransformRay(getLogicOrThrow(state.entity as Object3D).world2local, worldRay, localRay);
 
             return members.localRayIntersection(localRay);
         },

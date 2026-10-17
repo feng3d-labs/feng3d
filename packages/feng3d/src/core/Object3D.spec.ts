@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import { mat4GetPosition, mat4Invert, mat4TransformPoint3, mat4TransformVector3, mat4Transpose, vec3Equals, vec3Normalized, Vector3Like } from '@feng3d/math';
-import { logic, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, registerLogic, toRaw } from '@feng3d/reactivity';
 
 // 触发 registerLogic('Object3D', object3DLogic) 注册
 import './Object3D';
@@ -77,7 +77,7 @@ describe('object3DLogic - 默认值与基本属性', () =>
     it('logic 实例非空且 entity 指向 raw', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
 
         expect(l).not.toBeNull();
         expect(l.entity).toBe(obj);
@@ -85,7 +85,7 @@ describe('object3DLogic - 默认值与基本属性', () =>
 
     it('字面量对象返回默认字段值', () =>
     {
-        const l = logic(({ __type__: 'Object3D' } as Object3D));
+        const l = logicOrThrow(({ __type__: 'Object3D' } as Object3D));
 
         expect(l.name).toBe('Object3D');
         expect(l.mouseEnabled).toBe(true);
@@ -99,7 +99,7 @@ describe('object3DLogic - 默认值与基本属性', () =>
     {
         // 最小字面量：仅 __type__，缺失字段由 logic computed 内 ?? 字面量补齐
         const raw = { __type__: 'Object3D' } as Object3D;
-        const l = logic(raw);
+        const l = logicOrThrow(raw);
 
         expect(l.name).toBe('Object3D');
         expect(l.mouseEnabled).toBe(true);
@@ -112,7 +112,7 @@ describe('object3DLogic - 默认值与基本属性', () =>
     it('缺省字段不写回 raw（raw 保持干净，便于序列化）', () =>
     {
         const raw = { __type__: 'Object3D' } as Object3D;
-        const l = logic(raw);
+        const l = logicOrThrow(raw);
 
         // 访问触发 computed
         expect(l.name).toBe('Object3D');
@@ -130,7 +130,7 @@ describe('object3DLogic - 默认值与基本属性', () =>
 
     it('isLoaded：无 Renderable 组件且无 children 时为 true', () =>
     {
-        const l = logic(({ __type__: 'Object3D' } as Object3D));
+        const l = logicOrThrow(({ __type__: 'Object3D' } as Object3D));
 
         expect(l.isLoaded).toBe(true);
     });
@@ -141,7 +141,7 @@ describe('object3DLogic - 组件管理', () =>
     it('getComponent：按 __type__ 精确匹配', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj); // 先 logic 触发 components pre-fill
+        const l = logicOrThrow(obj); // 先 logic 触发 components pre-fill
         const camera = { __type__: 'Camera' };
         reactive(obj).components!.push(camera);
 
@@ -152,7 +152,7 @@ describe('object3DLogic - 组件管理', () =>
     it('getComponent：经类型层级表匹配父类型（Camera 属于 Component 子类型）', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const camera = { __type__: 'Camera' };
         reactive(obj).components!.push(camera);
 
@@ -162,7 +162,7 @@ describe('object3DLogic - 组件管理', () =>
 
     it('getComponent：未命中返回 undefined', () =>
     {
-        const l = logic(({ __type__: 'Object3D' } as Object3D));
+        const l = logicOrThrow(({ __type__: 'Object3D' } as Object3D));
 
         expect(l.getComponent('NotExisting')).toBeUndefined();
     });
@@ -170,7 +170,7 @@ describe('object3DLogic - 组件管理', () =>
     it('getComponents：返回所有匹配项', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Camera' };
         const c3 = { __type__: 'Light' };
@@ -184,7 +184,7 @@ describe('object3DLogic - 组件管理', () =>
     it('getComponents：空 typeName 返回全部组件', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const c1 = { __type__: 'Camera' };
         const c2 = { __type__: 'Light' };
         reactive(obj).components!.push(c1, c2);
@@ -197,7 +197,7 @@ describe('object3DLogic - 组件管理', () =>
     it('getComponents：传入 results 数组累加结果', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const cam = { __type__: 'Camera' };
         reactive(obj).components!.push(cam);
 
@@ -215,7 +215,7 @@ describe('object3DLogic - 组件管理', () =>
         initSpy.lastOwner = null;
 
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const objLogic = logic(obj);
+        const objLogic = logicOrThrow(obj);
         // 触发 components computed 求值，建立自动 init effect 的依赖
         objLogic.getComponents('');
         const comp = createInitSpyComp();
@@ -229,7 +229,7 @@ describe('object3DLogic - 组件管理', () =>
     {
         initSpy.callCount = 0;
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const objLogic = logic(obj);
+        const objLogic = logicOrThrow(obj);
         objLogic.getComponents('');
         const comp = createInitSpyComp();
         reactive(obj).components!.push(comp);
@@ -246,7 +246,7 @@ describe('object3DLogic - 父子层级', () =>
 {
     it('parent 默认为 null', () =>
     {
-        const l = logic(({ __type__: 'Object3D' } as Object3D));
+        const l = logicOrThrow(({ __type__: 'Object3D' } as Object3D));
 
         expect(l.parent).toBeNull();
     });
@@ -256,19 +256,19 @@ describe('object3DLogic - 父子层级', () =>
         const parent = ({ __type__: 'Object3D' } as Object3D);
         const child = ({ __type__: 'Object3D' } as Object3D);
         // 先 logic(parent) 让 children→parent 同步 effect 注册依赖
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         // 触发 children computed 求值建立依赖
         void parentLogic.children.length;
 
         reactive(parent).children!.push(child);
 
-        expect(toRaw(logic(child).parent)).toBe(parent);
+        expect(toRaw(logicOrThrow(child).parent)).toBe(parent);
     });
 
     it('parent 为只读 getter：外部直接赋值无效', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const parent = ({ __type__: 'Object3D' } as Object3D);
 
         // 直接赋值在严格模式下静默失败（getter-only 属性无 setter）
@@ -284,7 +284,7 @@ describe('object3DLogic - 父子层级', () =>
     it('parent 为只读 getter：通过 reactive 代理赋值同样无效', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const r_l = reactive(l);
         const parent = ({ __type__: 'Object3D' } as Object3D);
 
@@ -299,7 +299,7 @@ describe('object3DLogic - 父子层级', () =>
     it('children getter 反映 raw.children 的变化', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         // 建立 computed 依赖
         void l.children.length;
 
@@ -319,39 +319,39 @@ describe('object3DLogic - 激活状态', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         reactive(obj).activeSelf = false;
 
-        expect(logic(obj).activeSelf).toBe(false);
+        expect(logicOrThrow(obj).activeSelf).toBe(false);
     });
 
     it('activeInHierarchy：无 parent 时等于 activeSelf', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
 
-        expect(logic(obj).activeInHierarchy).toBe(true);
+        expect(logicOrThrow(obj).activeInHierarchy).toBe(true);
         reactive(obj).activeSelf = false;
-        expect(logic(obj).activeInHierarchy).toBe(false);
+        expect(logicOrThrow(obj).activeInHierarchy).toBe(false);
     });
 
     it('activeInHierarchy：父 activeSelf=false 时子为 false', () =>
     {
         const parent = ({ __type__: 'Object3D' } as Object3D);
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         const child = ({ __type__: 'Object3D' } as Object3D);
         void parentLogic.children.length;
         reactive(parent).children!.push(child);
         reactive(parent).activeSelf = false;
 
-        expect(logic(child).activeInHierarchy).toBe(false);
+        expect(logicOrThrow(child).activeInHierarchy).toBe(false);
     });
 
     it('activeInHierarchy：父子均 active 时为 true（AND 链）', () =>
     {
         const parent = ({ __type__: 'Object3D' } as Object3D);
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         const child = ({ __type__: 'Object3D' } as Object3D);
         void parentLogic.children.length;
         reactive(parent).children!.push(child);
 
-        expect(logic(child).activeInHierarchy).toBe(true);
+        expect(logicOrThrow(child).activeInHierarchy).toBe(true);
     });
 });
 
@@ -359,7 +359,7 @@ describe('object3DLogic - scene 派生', () =>
 {
     it('无 Scene 组件且无 parent：scene 为 null', () =>
     {
-        const l = logic(({ __type__: 'Object3D' } as Object3D));
+        const l = logicOrThrow(({ __type__: 'Object3D' } as Object3D));
 
         expect(l.scene).toBeNull();
     });
@@ -367,17 +367,17 @@ describe('object3DLogic - scene 派生', () =>
     it('自身持 Scene 组件：scene 为该组件', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        logic(obj);
+        logicOrThrow(obj);
         const sceneComp = { __type__: 'Scene' };
         reactive(obj).components!.push(sceneComp);
 
-        expect(toRaw(logic(obj).scene)).toBe(sceneComp);
+        expect(toRaw(logicOrThrow(obj).scene)).toBe(sceneComp);
     });
 
     it('parent 持 Scene 组件：子对象 scene 经 parent 链派生为该组件', () =>
     {
         const parent = ({ __type__: 'Object3D' } as Object3D);
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         void parentLogic.children.length;
         const sceneComp = { __type__: 'Scene' };
         reactive(parent).components!.push(sceneComp);
@@ -385,7 +385,7 @@ describe('object3DLogic - scene 派生', () =>
         const child = ({ __type__: 'Object3D' } as Object3D);
         reactive(parent).children!.push(child);
 
-        expect(toRaw(logic(child).scene)).toBe(sceneComp);
+        expect(toRaw(logicOrThrow(child).scene)).toBe(sceneComp);
     });
 });
 
@@ -396,7 +396,7 @@ describe('object3DLogic - 矩阵变换', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         reactive(obj).position = { x: 1, y: 2, z: 3 };
 
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         expectVec3Close(mat4GetPosition(l.matrix), { x: 1, y: 2, z: 3 });
     });
 
@@ -405,7 +405,7 @@ describe('object3DLogic - 矩阵变换', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         reactive(obj).scale = { x: 2, y: 3, z: 4 };
 
-        const m = logic(obj).matrix.elements;
+        const m = logicOrThrow(obj).matrix.elements;
         expect(m[0]).toBeCloseTo(2, 5);
         expect(m[5]).toBeCloseTo(3, 5);
         expect(m[10]).toBeCloseTo(4, 5);
@@ -416,7 +416,7 @@ describe('object3DLogic - 矩阵变换', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         reactive(obj).position = { x: 5, y: 0, z: 0 };
 
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const mPos = mat4GetPosition(l.matrix);
         const wPos = mat4GetPosition(l.local2world);
 
@@ -426,7 +426,7 @@ describe('object3DLogic - 矩阵变换', () =>
     it('有 parent：worldPosition = parent 位置 + child 位置', () =>
     {
         const parent = ({ __type__: 'Object3D' } as Object3D);
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         void parentLogic.children.length;
         reactive(parent).position = { x: 1, y: 0, z: 0 };
 
@@ -434,7 +434,7 @@ describe('object3DLogic - 矩阵变换', () =>
         reactive(child).position = { x: 0, y: 2, z: 0 };
         reactive(parent).children!.push(child);
 
-        expectVec3Close(logic(child).worldPosition, { x: 1, y: 2, z: 0 });
+        expectVec3Close(logicOrThrow(child).worldPosition, { x: 1, y: 2, z: 0 });
     });
 
     it('world2local：把世界坐标映回本地坐标', () =>
@@ -442,7 +442,7 @@ describe('object3DLogic - 矩阵变换', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         reactive(obj).position = { x: 1, y: 2, z: 3 };
 
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         // 世界点 (1,2,3) 即物体原点，映回本地应为 (0,0,0)
         const local = mat4TransformPoint3(l.world2local, { x: 1, y: 2, z: 3 });
 
@@ -454,7 +454,7 @@ describe('object3DLogic - 矩阵变换', () =>
         const obj = ({ __type__: 'Object3D' } as Object3D);
         reactive(obj).position = { x: 1, y: 2, z: 3 };
 
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const expected = mat4Invert(l.local2world);
 
         expect(Array.from(expected.elements) as number[]).toEqual(
@@ -465,7 +465,7 @@ describe('object3DLogic - 矩阵变换', () =>
     it('响应式：修改 position 后 matrix 随之变化', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
 
         expectVec3Close(mat4GetPosition(l.matrix), { x: 0, y: 0, z: 0 });
 
@@ -479,7 +479,7 @@ describe('object3DLogic - 矩阵变换', () =>
         reactive(obj).position = { x: 1, y: 0, z: 0 };
         reactive(obj).scale = { x: 2, y: 1, z: 1 };
 
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const expected = mat4Transpose(mat4Invert(l.local2world));
 
         expect(Array.from(expected.elements) as number[]).toEqual(
@@ -497,7 +497,7 @@ describe('object3DLogic - lookAt', () =>
      */
     function forwardPointsTo(obj: Object3D, target: Vector3Like): boolean
     {
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const localNegZ = { x: 0, y: 0, z: -1 };
         // 阶段 C-e：`Matrix4x4.transformVector3` 已删除；缺省 out 是纯字面量（没有 Vector3 方法），
         // 而下面要用 `normalize()` / `equals()`，所以显式传 Vector3 实例
@@ -513,7 +513,7 @@ describe('object3DLogic - lookAt', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const target = { x: 0, y: 0, z: -10 };
-        logic(obj).lookAt(target);
+        logicOrThrow(obj).lookAt(target);
 
         expect(forwardPointsTo(obj, target)).toBe(true);
     });
@@ -522,7 +522,7 @@ describe('object3DLogic - lookAt', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const target = { x: 10, y: 0, z: 0 };
-        logic(obj).lookAt(target);
+        logicOrThrow(obj).lookAt(target);
 
         expect(forwardPointsTo(obj, target)).toBe(true);
     });
@@ -531,7 +531,7 @@ describe('object3DLogic - lookAt', () =>
     {
         const raw = { __type__: 'Object3D' } as Object3D;
         // 签名已放宽为 Vector3Like：字面量可直接传（无需 new Vector3）
-        logic(raw).lookAt({ x: 0, y: 0, z: -1 });
+        logicOrThrow(raw).lookAt({ x: 0, y: 0, z: -1 });
 
         expect('rotation' in raw).toBe(true);
         expect(raw.rotation).toBeDefined();
@@ -547,21 +547,21 @@ describe('object3DLogic - beforeRender', () =>
 
         // 构造最小 RenderObject mock（仅用到的字段）
         const renderObject: any = { bindingResources: {} };
-        logic(obj).beforeRender(renderObject);
+        logicOrThrow(obj).beforeRender(renderObject);
 
         const transform = renderObject.bindingResources.transform.value;
         expect(transform).toBeDefined();
         // u_modelMatrix 应等于 local2world
-        expect(transform.u_modelMatrix.elements).toEqual(logic(obj).local2world.elements);
+        expect(transform.u_modelMatrix.elements).toEqual(logicOrThrow(obj).local2world.elements);
         // u_ITModelMatrix 应等于 ITlocal2world
-        expect(transform.u_ITModelMatrix.elements).toEqual(logic(obj).ITlocal2world.elements);
+        expect(transform.u_ITModelMatrix.elements).toEqual(logicOrThrow(obj).ITlocal2world.elements);
     });
 
     it('多次调用复用同一 transform 对象', () =>
     {
         const obj = ({ __type__: 'Object3D' } as Object3D);
         const renderObject: any = { bindingResources: {} };
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
 
         l.beforeRender(renderObject);
         const first = renderObject.bindingResources.transform;
@@ -577,37 +577,37 @@ describe('object3DLogic - dispose', () =>
     it('从父级 children 移除并清空 parent', () =>
     {
         const parent = ({ __type__: 'Object3D' } as Object3D);
-        const parentLogic = logic(parent);
+        const parentLogic = logicOrThrow(parent);
         void parentLogic.children.length;
         const child = ({ __type__: 'Object3D' } as Object3D);
         reactive(parent).children!.push(child);
 
-        expect(logic(parent).children.length).toBe(1);
+        expect(logicOrThrow(parent).children.length).toBe(1);
 
-        logic(child).dispose();
+        logicOrThrow(child).dispose();
 
-        expect(logic(parent).children.length).toBe(0);
-        expect(logic(child).parent).toBeNull();
+        expect(logicOrThrow(parent).children.length).toBe(0);
+        expect(logicOrThrow(child).parent).toBeNull();
     });
 
     it('递归 dispose 子对象（子的 parent 清空）', () =>
     {
         const root = ({ __type__: 'Object3D' } as Object3D);
-        const rootLogic = logic(root);
+        const rootLogic = logicOrThrow(root);
         void rootLogic.children.length;
         const mid = ({ __type__: 'Object3D' } as Object3D);
         reactive(root).children!.push(mid);
 
-        logic(root).dispose();
+        logicOrThrow(root).dispose();
 
-        expect(logic(mid).parent).toBeNull();
+        expect(logicOrThrow(mid).parent).toBeNull();
     });
 
     it('dispose 移除并清理所有组件', () =>
     {
         initSpy.callCount = 0;
         const obj = ({ __type__: 'Object3D' } as Object3D);
-        const l = logic(obj);
+        const l = logicOrThrow(obj);
         const comp = createInitSpyComp();
         reactive(obj).components!.push(comp);
 

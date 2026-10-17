@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { logic, registerLogic, type LogicFactory } from '@feng3d/reactivity';
+import { logicOrThrow, registerLogic, type LogicFactory } from '@feng3d/reactivity';
 import { createComponentLogicBase } from './Component';
 import './Component';
 import '../component/Billboard';
@@ -13,10 +13,10 @@ import '../component/HoldSize';
  */
 describe('component/Logic 只经工厂函数分发', () =>
 {
-    it('工厂形态（对象字面量）可经 logic() 创建', () =>
+    it('工厂形态（对象字面量）可经 logicOrThrow() 创建', () =>
     {
         const billboard = { __type__: 'Billboard' } as never;
-        const l = logic(billboard) as unknown as BillboardLike;
+        const l = logicOrThrow(billboard) as unknown as BillboardLike;
 
         expect(l).toBeDefined();
         expect(l.component).toBe(billboard);
@@ -26,7 +26,7 @@ describe('component/Logic 只经工厂函数分发', () =>
     it('工厂形态实例行为一致（entity 注入）', async () =>
     {
         const holdSize = { __type__: 'HoldSize' } as never;
-        const l = logic(holdSize) as unknown as { entity: unknown; init: (e?: unknown) => void };
+        const l = logicOrThrow(holdSize) as unknown as { entity: unknown; init: (e?: unknown) => void };
         expect(l.entity).toBeNull();
 
         const entity = { __type__: 'Object3D' } as never;
@@ -54,8 +54,8 @@ describe('component/Logic 只经工厂函数分发', () =>
         }
         registerLogic('FooFn', fooFnLogic);
 
-        expect((logic({ __type__: 'FooBase' } as never) as unknown as { hello(): string }).hello()).toBe('base');
-        expect((logic({ __type__: 'FooFn' } as never) as unknown as { hello(): string }).hello()).toBe('fn');
+        expect((logicOrThrow({ __type__: 'FooBase' } as never) as unknown as { hello(): string }).hello()).toBe('base');
+        expect((logicOrThrow({ __type__: 'FooFn' } as never) as unknown as { hello(): string }).hello()).toBe('fn');
     });
 
     it('class 构造函数不作为工厂注册（类型层门禁）', () =>
