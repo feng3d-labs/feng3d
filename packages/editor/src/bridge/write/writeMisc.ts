@@ -2,7 +2,6 @@ import { serialization } from 'feng3d';
 import type { EditorRS } from '../../assets/EditorRS';
 import type { EditorAsset } from '../../ui/assets/EditorAsset';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
-import { createDefaultSceneComponent } from '../../utils/createDefaultScene';
 import { clearEditorLogs } from '../../utils/editorLog';
 import { requireSceneRoot } from '../EditorBridge';
 import { countTree } from '../read/readCore';
@@ -15,15 +14,18 @@ import { requireWriteEnabled, resetHistory } from './writeCore';
  * P2 之前所有写操作只改页面内存，刷新即丢。这里补上显式落盘，复用编辑器自身
  * beforeunload 保存的同一条链路（`serialization.serialize` + `editorRS.fs.writeObject`）。
  */
-export function sceneSave(params: Record<string, unknown>, rs: EditorRS): unknown
+export async function sceneSave(params: Record<string, unknown>, rs: EditorRS): Promise<unknown>
 {
     requireWriteEnabled();
 
     const path = params.path === undefined ? 'scenes/default.scene.json' : String(params.path);
     const root = requireSceneRoot();
     const data = serialization.serialize(root);
-    // writeObject 是异步的；与 Editor.ts 的 beforeunload 保存保持一致，不阻塞等待
-    void rs.fs.writeObject(path, data);
+    // **必须等待写入完成**（issue #938）：桥接调用**有返回值**，不 await 就等于把失败变成不可见——
+    // 实测无宿主环境下 `writeObject` 抛「宿主方法未接入」，而调用方拿到的仍是 `{ saved: ... }`，
+    // 于是它据此认为"已落盘、可以安全丢弃内存改动"。beforeunload 那条链路可以不等待（页面都要关了），
+    // 这里不行。
+    await rs.fs.writeObject(path, data);
 
     return { saved: path, childCount: (root.children ?? []).length };
 }
@@ -58,11 +60,22 @@ export async function editorReloadScene(params: Record<string, unknown>, assetMa
     requireWriteEnabled();
 
     const path = params.path === undefined ? 'scenes/default.scene.json' : String(params.path);
-    const scene = await assetManager.readScene(path);
-    // 读不到或反序列化失败时退回默认空场景——与 Editor.ts 启动时的处理一致，
-    // 保证 gameScene 一定非空（否则层级面板会显示 No Data）
-    const fallback = !scene;
-    useEditorStore().gameScene = scene ?? createDefaultSceneComponent();
+
+    // 读不到就**保持当前场景不动**并明确报错（issue #938）。
+    // 曾经这里退回默认空场景：在"宿主没接、文件根本读不到"的环境里，那等于把用户正在编辑的
+    // 东西**静默清空**——比失败本身危险得多。启动时的兜底由 Editor.ts 负责，运行期重载不替用户做这个决定。
+    let scene;
+    try
+    {
+        scene = await assetManager.readScene(path);
+    }
+    catch (error)
+    {
+        throw new Error(`重载失败：读不到场景文件 ${path}（${error instanceof Error ? error.message : String(error)}）。当前场景未改动。`);
+    }
+    if (!scene) throw new Error(`重载失败：${path} 不存在或内容无效。当前场景未改动。`);
+
+    useEditorStore().gameScene = scene;
 
     const undoCleared = params.keepHistory === true ? 0 : resetHistory();
     selectionSet({ objectIds: [] });
@@ -73,9 +86,6 @@ export async function editorReloadScene(params: Record<string, unknown>, assetMa
     return {
         path,
         reloaded: true,
-        fallback,
-        // 退回默认空场景比"悄悄给你一个空场景"更需要被说出来
-        ...(fallback ? { warning: `读不到或反序列化失败：${path}，已退回默认空场景` } : {}),
         sceneName: root.name ?? null,
         objectCount: countTree(root).objects,
         childCount: children.length,
