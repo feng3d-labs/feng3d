@@ -56,6 +56,15 @@ export interface RenderObject
      * 与着色器中名称对应的绑定资源（纹理、采样器、统一数据、存储数据等）。
      */
     readonly bindingResources?: BindingResources;
+
+    /**
+     * 内容修订号（可选，运行时由框架维护）。
+     *
+     * 绑定写入路径（`writeMaterialBase` / `writeTextureBindings` 等）在**实际写入**时递增。
+     * RenderBundle 缓存据此判断「元素身份没变、但内容变了」——例如纹理换装时
+     * `renderPassObjects` 的元素序列不变，仅靠元素身份会把旧命令当缓存重放（issue #947）。
+     */
+    readonly revision?: number;
 }
 
 export class RenderObject
