@@ -6,7 +6,7 @@
  * 校验是否为最新（CI 门禁）：`node scripts/gen-objectview-schema.mjs --check`
  *
  * 来源：packages/feng3d 里所有自带 `readonly __type__: '<字面量>'` 的导出 interface
- * （共 111 个类型 / 681 个字段）。判据是接口自己声明的 `__type__`——
+ * （共 111 个类型 / 683 个字段）。判据是接口自己声明的 `__type__`——
  * 新增组件按范式写接口，本表自动跟随，面板无需改代码。
  */
 import type { DataTypeFieldSchema } from '../dataTypeSchema';
@@ -914,6 +914,8 @@ export const DATA_TYPE_SCHEMA: DataTypeSchema = {
         { name: 'canvas', type: 'string | HTMLCanvasElement', control: 'Default', readonly: true },
         { name: 'defs', type: '{ readonly [key: string]: Record<string, object>; readonly prefabs?: Record<string, Object3D>; }', control: 'Object', optional: true, readonly: true },
         { name: 'root', type: 'Object3D', control: 'Object', readonly: true, typeNames: ['Object3D'] },
+        { name: 'passes', type: 'readonly string[]', control: 'Array', optional: true, readonly: true, itemControl: 'String' },
+        { name: 'renderObjects', type: 'readonly string[]', control: 'Array', optional: true, readonly: true, itemControl: 'String' },
     ],
     'Wireframe': [
         { name: 'color', type: 'Color4Like', control: 'Color4', readonly: true },
