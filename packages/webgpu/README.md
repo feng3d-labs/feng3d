@@ -23,15 +23,16 @@ src/
 │   └── renderobject/           # 单次绘制的状态设置（pipeline / bindGroup / vertex / index / draw）
 ├── consts/             # 常量（顶点格式映射等）
 ├── types/              # 类型定义（TypedArray / VertexFormat）
-└── utils/              # ChainMap / GPUDeviceStats / GpuResourceReleaser / renderState
+└── utils/              # ChainMap / GPUDeviceStats / GpuResourceReleaser / ResourcePool / renderState
 ```
 
-### 四个核心机制
+### 五个核心机制
 
 1. **身份键缓存**：每个数据对象对应一个 `WGPU*` 包装类，经 `getInstance(device, 数据对象, …附加身份)` + `static get map()`（**首次访问才创建** `ChainMap`，模块 import 期不分配——R2 零模块级副作用）查表。缓存键是**数据对象身份**（如 `(device, texture)`、`(device, buffer, TypeInfo)`），同一数据对象复用同一 GPU 资源。
 2. **按需呈现**：`View` 把全局变更计数写入 `Submit.version`；`WebGPU.submit` 比对上次已提交版本，相同则**直接返回**（不编码、不提交），画布保持最后呈现帧（`WebGPU.ts:114`）。
 3. **pull 式上传**：uniform/顶点的差异上传不在写入时 push，而在 `runSubmit` 编码完成后统一拉取（版本号判定，无变化不上传），保证 `writeBuffer` 排队先于本次命令缓冲执行。
 4. **命令编码缓存**：`WGPURenderPass` 按「renderPassObjects 元素身份序列」把连续段录成 RenderBundle，序列不变则重放；带 blend（透明排序敏感）的对象不进 bundle。
+5. **可选资源池**（issue #98）：`ResourcePool` 按「规格键 → 闲置资源」分桶复用，容量按单键 + 单 device 两级控制、超出淘汰最旧；`WGPUBuffer` 接入后由 `setGpuBufferPoolEnabled()` 控制，**默认关闭**（池化改变显存驻留与销毁时机，需真机画面验证后再默认开启）。
 
 ### 公开 API
 
@@ -48,8 +49,8 @@ src/
 | `destoryTexture(texture)` | 销毁纹理（**方法名拼写如此**，非 `destroyTexture`） |
 | `destroy()` | 销毁设备与上下文 |
 
-`src/index.ts` 公开导出：`Submit` 及全部 `data/*` 描述类型、`utils/*` 工具（`ChainMap` / `GPUDeviceStats` / `GpuResourceReleaser`）、`types/*`。
-**注意**：`caches/` 下的 35 个 `WGPU*` 类中，仅 `WGPURenderBundle` 被导出（供 benchmark 统计）。其余为内部实现，**不承诺 API 稳定性**。
+`src/index.ts` 公开导出：`Submit` 及全部 `data/*` 描述类型、`utils/*` 工具（`ChainMap` / `GPUDeviceStats` / `GpuResourceReleaser` / `ResourcePool`）、`types/*`。
+**注意**：`caches/` 下的 35 个 `WGPU*` 类中，仅 `WGPURenderBundle`（供 benchmark 统计）与 `WGPUBuffer` 的池开关（`setGpuBufferPoolEnabled` / `isGpuBufferPoolEnabled` / `getGpuBufferPoolStats` / `clearGpuBufferPool`，issue #98）被导出。其余为内部实现，**不承诺 API 稳定性**。
 
 ### 依赖
 

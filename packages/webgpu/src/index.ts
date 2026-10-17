@@ -70,6 +70,7 @@ export * from './utils/ChainMap';
 export * from './utils/unreadonly';
 export * from './utils/GPUDeviceStats';
 export * from './utils/GpuResourceReleaser';
+export * from './utils/ResourcePool';
 
 // 缓存类（benchmark 统计等）
 export { WGPURenderBundle } from './caches/WGPURenderBundle';
@@ -80,3 +81,11 @@ export { WGPUVertexBufferLayout } from './caches/WGPUVertexBufferLayout';
 
 // 渲染状态
 export { renderState } from './utils/renderState';
+
+// GPU 缓冲区池化（issue #98）：默认关闭，开启后换装 churn 复用同规格 GPUBuffer
+export {
+    setGpuBufferPoolEnabled,
+    isGpuBufferPoolEnabled,
+    getGpuBufferPoolStats,
+    clearGpuBufferPool,
+} from './caches/WGPUBuffer';
