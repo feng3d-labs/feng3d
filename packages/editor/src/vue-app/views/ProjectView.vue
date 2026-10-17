@@ -133,6 +133,7 @@ import type { WritableVector2Like } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
 import { useEditorAssets } from '../composables/useEditorAssets';
+import { isHostAvailable } from '../../assets/EditorRS';
 import { AssetNode } from '../../ui/assets/AssetNode';
 import { useEditorStore } from '../stores/editorStore';
 import Icon from '../components/Icon.vue';
@@ -235,7 +236,14 @@ function initList() {
   if (setupAssetTreeListeners()) {
     return; // 已成功初始化
   }
-  
+
+  // 没有宿主 = 没有项目可列（dev 纯前端 / 静态部署）：不要空等 5 秒再报"初始化超时"——
+  // 那不是错误，是正常态（见 EditorRS 的 isHostAvailable()）。
+  if (!isHostAvailable()) {
+    console.info('ProjectView: 未检测到宿主，资源树为空（项目来自宿主磁盘目录）');
+    return;
+  }
+
   // 如果还未初始化，等待一下再试
   let checkCount = 0;
   const maxChecks = 50; // 最多检查 50 次（5 秒）

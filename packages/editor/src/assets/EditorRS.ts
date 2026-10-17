@@ -2,7 +2,7 @@ import { saveAs } from 'file-saver';
 import { FS, loader, ReadRS, ReadWriteFS, ReadWriteRS } from 'feng3d';
 import JSZip from 'jszip';
 import type { EditorCache } from '../caches/Editorcache';
-import { callHost } from '../bridge/hostCall';
+import { callHost, probeHost } from '../bridge/hostCall';
 import { HostFS } from './HostFS';
 
 // 使用相对路径，与 index.html 处于同一层级
@@ -253,6 +253,23 @@ export function installEditorResourceSystem(): EditorRS
 /** 探测宿主的超时（毫秒）。静态部署下这个请求会被投给页面、**没人应答**，不能让它拖住启动 */
 const HOST_PROBE_TIMEOUT = 1500;
 
+/** 宿主是否可用（`pickBaseFS()` 的探测结果，读它请用 `isHostAvailable()`） */
+let hostAvailable = false;
+
+/**
+ * 当前是否连着宿主（#274 / 决策 ①）。
+ *
+ * 它是"有没有项目"的**唯一判据**：没有宿主 = 没有项目（`npm run dev` 的纯前端、静态部署），
+ * 那是**正常态**而不是错误。启动流程据此跳过项目初始化——否则页面会对着一个不存在的宿主
+ * 发一串 `host.*`，每个都拿到 400，还会抛出未捕获异常（用户看到的只是"页面报错"）。
+ *
+ * @returns 宿主可用（开着项目）返回 true
+ */
+export function isHostAvailable(): boolean
+{
+    return hostAvailable;
+}
+
 /**
  * **如果宿主开着项目，就把文件系统切到它上面**（#274；设计稿见 `docs/MIGRATE_TO_HOST_FS.md`）。
  *
@@ -262,12 +279,19 @@ const HOST_PROBE_TIMEOUT = 1500;
  * 而"宿主有没有开着项目"只能**异步**问。所以"选哪个 FS"这件事必须从模块顶层挪进启动流程——
  * 也就是这个函数：启动时 `await` 它，它再决定要不要覆盖 `FS.basefs`。
  *
- * ## "没有宿主"的语义变了（决策 ①）
+ * ## 两步探测：先问能力、再问项目
  *
- * - **没有宿主**（静态部署 / dev server 没接 relay）：静默返回 `false`。
- *   它**不再是"保持原样用页面副本"**那样一个正常态 —— 决策 ① 之后**没有副本可退**，
- *   `FS.basefs` 就是 `HostFS`，于是**任何碰项目的操作会如实失败**。
- *   编辑器页面本身照样起得来（设置页这类不碰项目的部分不受影响）。
+ * ① 服务端接没接**宿主调用器**（`probeHost()` 走 `/ping`，固定 200）——没有就到此为止。
+ *    直接调 `host.workspace.info` 的话，没有宿主时回的是 **400**，那是控制台里一条
+ *    `Failed to load resource`；而"没有宿主"是**正常态**（`npm run dev` 只有 vite 中继、
+ *    静态部署连中继都没有），不该看起来像页面坏了。
+ * ② 接了再问它有没有开着项目——这一步的失败是**真的异常**，如实返回 `false`（不切 FS）。
+ *
+ * ## "没有宿主"与"宿主挂了"
+ *
+ * - **没有宿主**：静默返回 `false`，并把 `hostAvailable` 记为 `false`。决策 ① 之后
+ *   **没有副本可退** —— `FS.basefs` 就是 `HostFS`，于是**任何碰项目的操作会如实失败**。
+ *   启动流程据 `isHostAvailable()` 跳过项目初始化，页面本身照样起得来（设置页这类不碰项目的部分不受影响）。
  * - **宿主挂了**（探测成功之后的调用失败）：同样当场报错，由 `HostFS` / `callHost` 抛出去。
  *
  * 两条都**不再"悄悄退回另一份项目"** —— 那会让"保存"看着成功、实际写进了别处，
@@ -277,8 +301,14 @@ const HOST_PROBE_TIMEOUT = 1500;
  */
 export async function pickBaseFS(): Promise<boolean>
 {
+    hostAvailable = false;
+
+    // ① 能力探测：服务端没有宿主调用器就到此为止（一个 host.* 都不发，避免 400 噪音）
+    if (!await probeHost()) return false;
+
     try
     {
+        // ② 宿主接入了，再问它开没开项目
         const info = await Promise.race([
             callHost<{ open: boolean }>('host.workspace.info'),
             new Promise<never>((_, reject) =>
@@ -290,6 +320,7 @@ export async function pickBaseFS(): Promise<boolean>
         if (!info.open) return false;
 
         FS.basefs = new HostFS();
+        hostAvailable = true;
 
         return true;
     }

@@ -13,6 +13,46 @@
 /** 桥接前缀（与 `EditorBridge` / 服务端一致） */
 const BRIDGE_PREFIX = '/__editor-bridge';
 
+/** 能力探测的超时（毫秒）：本地回环，超过这个时间说明端口上没有可用的桥接 */
+const PROBE_TIMEOUT = 1500;
+
+/**
+ * 探测**服务端有没有接入宿主调用器**（宿主的 `setHostInvoker`，见 `bridge/relay.mjs`）。
+ *
+ * ## 为什么不直接调一个 `host.*` 试试
+ *
+ * 没有宿主时 `POST /call` 回的是 **400**。那在浏览器控制台是一条
+ * `Failed to load resource: the server responded with a status of 400` ——
+ * 而"没有宿主"是**正常态**（`npm run dev` 只有 vite 中继、静态部署连中继都没有），
+ * 不该让正常态看起来像页面坏了。
+ *
+ * `/ping` 是只读能力探针、**固定 200**（见 `bridge/relay.mjs` 的 `/ping` 路由），
+ * 拿它问没有任何 4xx 噪音。
+ *
+ * @returns 服务端接了宿主返回 `true`；超时 / 不可达 / 没这个字段一律 `false`
+ */
+export async function probeHost(): Promise<boolean>
+{
+    try
+    {
+        const response = await fetch(`${BRIDGE_PREFIX}/ping`, {
+            cache: 'no-store',
+            signal: AbortSignal.timeout(PROBE_TIMEOUT),
+        });
+
+        if (!response.ok) return false;
+
+        const payload = await response.json() as { host?: boolean };
+
+        return payload.host === true;
+    }
+    catch
+    {
+        // 端口上没有桥接（静态部署 / dev server 没起）：静默当作"没有宿主"
+        return false;
+    }
+}
+
 /**
  * 调一个宿主方法。
  *

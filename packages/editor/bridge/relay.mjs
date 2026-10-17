@@ -25,7 +25,7 @@
  *
  * ## 路由（前缀默认 `/__editor-bridge`）
  *
- * - `GET  /ping`    → `{ ok, name, clients, duplicated }`（只读探针，**绝不能用 /pending 探测**）
+ * - `GET  /ping`    → `{ ok, name, host, clients, duplicated }`（只读探针，**绝不能用 /pending 探测**）
  * - `POST /call`    → `{ id, target }`（入队，调用方随后取结果）
  * - `GET  /pending` → `{ requests: [...] }`（派发即移除，一次性语义）
  * - `POST /result`  → `{ received: true }`
@@ -359,6 +359,10 @@ export function createBridgeRelay(options = {})
                 return send(res, 200, {
                     ok: true,
                     name: 'feng3d-editor-bridge',
+                    // **宿主调用器接没接**（#272 / #274）：页面据此决定要不要探测项目——
+                    // 没有它时调 `host.*` 会回 400，而"没有宿主"是正常态（dev 纯前端 / 静态部署），
+                    // 不该在控制台留下 "Failed to load resource"
+                    host: !!hostInvoker,
                     clients: list,
                     // 同名多开：即使调用方指定了 target，也救不了——两个页面都符合条件
                     duplicated: [...counts]

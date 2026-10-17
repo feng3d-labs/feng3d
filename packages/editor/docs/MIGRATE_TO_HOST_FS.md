@@ -95,6 +95,17 @@ export async function pickBaseFS(): Promise<void>
   那会让"保存"看着成功、实际写进了另一份项目里 —— 比直接失败危险得多）；
 - 这两条的区别要写进注释：**"没有宿主"是正常态，"宿主挂了"是错误态**。
 
+**落地形态（2026-10-05 复核）**：探测分**两步**——
+
+1. 先 `probeHost()` 读 `GET /__editor-bridge/ping` 的 `host` 能力位（只读探针、**固定 200**）。
+   服务端没接宿主调用器就直接到此为止，**一个 `host.*` 都不发**——否则每次探测都是一次 400，
+   浏览器控制台留下 `Failed to load resource`，"没有宿主"这个正常态看起来像页面坏了。
+2. 确认接了宿主，才问 `host.workspace.info`（开没开项目）。这一步的失败是真异常，如实不切 FS。
+
+结果记进 `isHostAvailable()`：启动流程（`Editor.onAddedToStage` / `init`）据此**跳过项目初始化**，
+ProjectView 也不再空等 5 秒。于是"没有宿主"只留下一条 `console.info`，
+不再是未捕获异常 + 超时告警。
+
 ## 6. 已知代价（**已量过**，见 `scripts/editor-host-io-bench.mjs`）
 
 `HostFS` 的**每一次读写都是一次 HTTP 往返**（`POST /call` + `GET /result`）。实测（本机回环、40 个文件）：

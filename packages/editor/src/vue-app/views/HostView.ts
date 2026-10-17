@@ -1,5 +1,6 @@
 import { computed, onUnmounted, ref } from 'vue';
 import { callHost } from '../../bridge/hostCall';
+import { isHostAvailable } from '../../assets/EditorRS';
 import { subscribeBridgeEvent } from '../../bridge/bridgeSocket';
 import { getEnabledPlugins } from '../../plugins/registry';
 
@@ -83,6 +84,19 @@ export function useHostPanel()
      */
     async function refresh(): Promise<void>
     {
+        // 没有宿主（dev 纯前端 / 静态部署）：**没有可问的对象**——直接说明，不去调 `host.*`
+        // （那会是一次 400 + 控制台报错，而"没有宿主"是正常态，见 `isHostAvailable()`）。
+        // 面板本身照常显示，只是内容空着、按钮禁用。
+        if (!isHostAvailable())
+        {
+            isOpen.value = false;
+            root.value = null;
+            entries.value = [];
+            note.value = '未连接宿主（用 --project <目录> 启动宿主后可用）';
+
+            return;
+        }
+
         loading.value = true;
         note.value = '';
 
