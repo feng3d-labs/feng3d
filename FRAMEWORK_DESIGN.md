@@ -341,7 +341,7 @@ registerLogic('Rotate', rotateLogic);
 - **每实例各有方法闭包**：这是有意用「内存」换「直观」——放弃了共享 proto 的原型共享优势。
 - 迁移状态：存量已全部迁完（#674 批 0–3）；新 Logic 一律按本形态写。
 ## 6. 渲染管线模块契约
-> 现状：🔶 部分（Renderer 接口与 `(scene, camera)` 缓存已是此形态：packages/feng3d/src/render/renderer/ForwardRenderer.ts；beforeRender 收窄进行中）
+> 现状：🔶 部分（Renderer 接口与 `(scene, camera)` 缓存已是此形态：packages/feng3d/src/render/renderer/ForwardRenderer.ts；**pass 编排已声明化（issue #93）**；beforeRender 收窄进行中）
 
 - **Renderer 接口**：`draw(scene, camera, time) → Computed<RenderObject[] | RenderPass[]>`，内部按 `(scene, camera)` 缓存（`ForwardRenderer` 等已是此形态）。
 - **beforeRender 的正式定位（2026-08-15 修正）**：geometry / material / transform 已由 renderObject computed 变更驱动承担（3d 完成）；剩余的 beforeRender 分发是 **per-camera 数据的正式处理时机**——Billboard/HoldSize/公告牌粒子等矩阵依赖渲染它的相机，多相机下每相机不同，天然属于 pass 级（forward 注入 cameraUniforms 之后）而非 per-entity computed。原终态消亡表述作废。
@@ -355,7 +355,7 @@ local2world (computed) → billboardMatrix (computed，读 cameraUniforms) → r
 
   **实施条件澄清（2026-08-23）**：矩阵链节点要求 billboardMatrix 依赖渲染它的相机，而 renderObject 是 per-entity 缓存——单相机假设。多相机下需要 renderObject 按 (entity, camera) 缓存（架构级改动，牵动 RenderBundle 指纹）。当前单 View 语义（见第 10 章非目标）下，Billboard/HoldSize 的 per-camera 处理由上面修正过的 beforeRender 分发承担（已实现，属正式定位而非临时桥）；矩阵链独立节点留待多 View / 多相机需求明确后与 renderObject per-camera 化一并实施。
 
-- **pass 顺序**是隐式序（阴影在前、主 Pass 在后），在 `submitComputed` 中以显式序列表达，属于少数允许命令式编排的位置。
+- **pass 顺序由数据声明（issue #93）**：`View.passes` / `View.renderObjects` 给出**贡献者名序列**，各渲染模块用 `registerViewPassContributor`（pass 级，`stage: 'beforeMain' | 'afterMain'`）/ `registerViewObjectContributor`（主 pass 内对象）注册；`submitComputed` 与 `canvasRenderPassComputed` 只做「按名字查表 + 按顺序拼接」，不认识任何具体 renderer。**新增一个自带 pass 的渲染模块只需注册贡献者（必要时在 `View.passes` 里写名字），不改核心编排代码**——原「阴影在前、主 Pass 在后」由默认序列（beforeMain → main → afterMain）表达。不引入完整 FrameGraph：没有资源别名、没有跨 pass 依赖推导（pass 之间的唯一真实依赖是「写 shadowMap → 采样」，顺序即依赖）。
 
 ### 6.5 命令编码缓存（RenderBundle 自动化）
 

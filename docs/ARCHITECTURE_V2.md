@@ -253,7 +253,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 
 | 能力 | 做法 | 借鉴来源 | 服务于 |
 |---|---|---|---|
-| **pass 编排声明化** | 把 `submitComputed` 里硬编码的 pass 序列改为可声明的 pass 图（不引入 FrameGraph 的完整复杂度） | Babylon.js FrameGraph | 战场 B |
+| **pass 编排声明化** | ✅ 已落地（#93）：`View.passes` / `View.renderObjects` 给出**贡献者名序列**，各渲染模块用 `registerViewPassContributor` / `registerViewObjectContributor` 注册；`submitComputed` 只做「按名字查表 + 按顺序拼接」，不再认识任何具体 renderer。新增 pass 只注册、不改核心（不引入 FrameGraph 的完整复杂度：无资源别名 / 跨 pass 依赖推导） | Babylon.js FrameGraph | 战场 B |
 | **纯函数式扩展面** | 可选特性（后处理、glTF 扩展、诊断）一律独立模块 + 动态 import + 显式注册，核心不硬编码特性分支 | Babylon Lite（`GltfFeature`/`PbrExt` 模式） | 战场 B/C |
 | **计算图可观测** | `computedGraphStats` 增强为可用工具：依赖边、失效计数、上次求值耗时；dev overlay | PlayCanvas 的 Inspector + Babylon 的 Inspector | 战场 C |
 | **编辑器已收回** | 代码在主仓 `packages/editor`（workspace 成员，CI 有 `editor:` / `editor-e2e:` job）；objectview 是其 Inspector 底座 | PlayCanvas（引擎/编辑器解耦但同生态） | 战场 A |
@@ -736,7 +736,7 @@ Lite 的错误处理是**编码错误**：默认返回错误码，`enableErrorDe
 | 资源 refcount + deferred release | Babylon.js | `GPUDeviceStats` 的 `created == freed + 存活` 恒等式成立（当前不成立） |
 | 修复 `GPUDeviceStats.totalMemory` 双计 delta | — | 显存读数正确（当前每次 `addMemory` 多计一个 delta） |
 | `strictNullChecks` 收敛（全仓 23 个包） | Babylon Lite | ✅ **已完成**：`feng3d`（#251 / #253 / #269）与 `editor`（#303 / #305）走独立 `tsconfig.strict.json` + `scripts/check-strict-dirs.mjs`；其余 21 个包直接开各自的 `tsconfig.json`（#282 / #284 / #288 / #290 / #293 / #295 / #297 / #299 / #301；`ui` 为收尾批补登记的第 19 个；`editor-plugin-rotate` 为 #276 阶段 3 新增）。进度与豁免清单在 `scripts/strict-packages.json`，由 `scripts/check-strict-packages.mjs` 双向守住（漏登记 / 误关闭都失败）。**存量**：`feng3d` / `editor` 的 `tsconfig.json` 自身仍关 4 项；`editor` 的 test/ 未纳入 |
-| pass 编排声明化 | Babylon FrameGraph | 现有 5 个 renderer 的 pass 序列可从数据描述 |
+| pass 编排声明化 | Babylon FrameGraph | ✅ **已完成（#93）**：`render/renderer/ViewSequence.ts` 提供贡献者注册表 + 序列解析；`View.passes` / `View.renderObjects` 是数据入口，`submitComputed` / `canvasRenderPassComputed` 只按序列拼装。5 个 renderer 的落点：Forward / Outline / Wireframe 是主 pass 内对象贡献者，Shadow 是 `beforeMain` 的 pass 贡献者，**Mouse 不占位**（GPU 拾取已由 CPU 射线取代、`draw()` 恒返回 null——「不占位」由「不注册贡献者」表达，不再是编排代码里的特例）。回归：`render/renderer/ViewSequence.spec.ts` + `ViewSequence.builtin.spec.ts` |
 | `logic()` 返回类型改为 `Logic \| null` 并修调用方 | — | ✅ **已完成（#92）**：签名改为 `Logic \| null`（与运行期一致）；新增 `logicOrThrow()` 给「这里必须有 logic」的调用方，未注册即抛出带 `__type__` 与数据键的错误；~690 处调用点按「可选查找 / 已知注册」二分处理——可选查找保留 `logic()` 并显式判空（如 `Entity.initComponent` 跳过未注册组件、编辑器插件注销后的探测），其余改走 `logicOrThrow()` |
 
 ### P4 — 差异化能力（持续）
