@@ -1,3 +1,4 @@
+import { registerViewObjectContributor } from './ViewSequence';
 import { Computed, computed } from '@feng3d/reactivity';
 import { RenderObject } from '@feng3d/webgpu';
 import type { Camera } from '../../cameras/Camera';
@@ -62,3 +63,10 @@ export class OutlineRenderer
  * 轮廓渲染器
  */
 export const outlineRenderer = new OutlineRenderer();
+
+// 渲染贡献者注册（issue #93：pass 编排声明化）。
+// 当前为空实现（draw 恒返回空数组），接入实现后无需改 View 的编排代码。
+registerViewObjectContributor({
+    name: 'Outline',
+    build: (_view, context) => outlineRenderer.draw(context.scene, context.camera).value,
+});

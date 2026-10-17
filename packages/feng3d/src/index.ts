@@ -98,6 +98,7 @@ export * from './render/renderer/ForwardRenderer';
 export * from './render/renderer/OutlineRenderer';
 export * from './render/renderer/ShadowRenderer';
 export * from './render/renderer/WireframeRenderer';
+export * from './render/renderer/ViewSequence';
 export * from './scene/Scene';
 export * from './scene/Scene';
 export * from './scene/ScenePickCache';
@@ -133,4 +134,3 @@ export * from '@feng3d/watcher';
  * 版本号
  */
 export const version = '0.6.0';
-
