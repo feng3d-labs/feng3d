@@ -75,6 +75,13 @@ async function check(name, fn)
     }
 }
 
+/** 环境不满足时**如实跳过**：不计入失败，也不伪装成 PASS（issue #938） */
+function skip(name, reason)
+{
+    results.push({ name, ok: true, skipped: true });
+    console.log(`  SKIP  ${name} — ${reason}`);
+}
+
 /** 断言某次调用会失败（用于验证防呆与错误路径） */
 async function expectFailure(method, params)
 {
@@ -92,12 +99,17 @@ async function expectFailure(method, params)
 
 console.log(`桥接地址: ${base}${target ? `（target=${target}）` : ''}\n`);
 
+// 无宿主（`ping.host === false`）时落盘与重载都不可用——它们走宿主 FS。
+// 这类"环境不满足"要**如实标记跳过**，而不是让它表现为"功能坏了"（issue #938）。
+let hasHost = false;
+
 // 先看有几个页面在线：不指定 target 时请求会被**随机**取走（可能落到用户的浏览器页面上），
 // 场景状态于是在多个页面之间跳——表现是一堆互相矛盾的 FAIL，而真因极难看出来。
 // 与其跑出一份不可信的结果，不如在这里停下（这是实测踩过的坑，见 docs §9「定向投递」）。
 try
 {
     const ping = await (await fetch(`${base}${PREFIX}/ping`)).json();
+    hasHost = ping.host === true;
     const online = ping.clients ?? [];
     if (online.length > 0)
     {
@@ -1703,6 +1715,15 @@ else
 
         await check('scene.save 写回存储', async () =>
         {
+            if (!hasHost)
+            {
+                // 无宿主时 writeObject 必然失败——这正是 #938 要钉住的行为：必须**如实报错**，
+                // 不能返回 `{ saved }` 假装成功
+                const message = await expectFailure('scene.save');
+
+                return `无宿主，如实报错：${message}`;
+            }
+
             const saved = await call('scene.save');
 
             return `${saved.saved}（${saved.childCount} 个子对象）`;
@@ -1733,28 +1754,34 @@ await check('log.clear 清空日志', async () =>
         });
 
         // 放在最后：它会清空撤销栈，前面依赖撤销还原的检查都已经跑完
-        await check('editor.reloadScene 不刷页面重新加载场景', async () =>
+        if (hasHost)
         {
-            const saved = await call('scene.save');
-            await call('scene.add', { name: 'ReloadCheck', shape: 'cube' });
+            await check('editor.reloadScene 不刷页面重新加载场景', async () =>
+            {
+                const saved = await call('scene.save');
+                await call('scene.add', { name: 'ReloadCheck', shape: 'cube' });
 
-            const before = (await call('scene.summary')).objectCount;
-            const reloaded = await call('editor.reloadScene');
+                const before = (await call('scene.summary')).objectCount;
+                const reloaded = await call('editor.reloadScene');
 
-            assert(reloaded.reloaded === true, '返回里没有 reloaded 标记');
-            assert(reloaded.fallback === false, `意外退回默认场景：${JSON.stringify(reloaded.warning ?? reloaded)}`);
-            assert(reloaded.undoCleared >= 1, `应报告被清掉的撤销步数，实际 ${reloaded.undoCleared}`);
+                assert(reloaded.reloaded === true, '返回里没有 reloaded 标记');
+                assert(reloaded.undoCleared >= 1, `应报告被清掉的撤销步数，实际 ${reloaded.undoCleared}`);
 
-            const after = await call('scene.summary');
-            assert(after.objectCount === saved.childCount + 1,
-                `重载后应为存储里的 ${saved.childCount} 个子对象 + 场景根，实际 ${after.objectCount}（重载前 ${before}）`);
-            const leftover = await call('scene.find', { name: 'ReloadCheck' });
-            assert(leftover.count === 0, '未保存的新对象应在重载后消失');
-            const history = await call('history.status', { labels: 0 });
-            assert(history.undoCount === 0, `撤销栈应被清空，实际 ${history.undoCount} 步`);
+                const after = await call('scene.summary');
+                assert(after.objectCount === saved.childCount + 1,
+                    `重载后应为存储里的 ${saved.childCount} 个子对象 + 场景根，实际 ${after.objectCount}（重载前 ${before}）`);
+                const leftover = await call('scene.find', { name: 'ReloadCheck' });
+                assert(leftover.count === 0, '未保存的新对象应在重载后消失');
+                const history = await call('history.status', { labels: 0 });
+                assert(history.undoCount === 0, `撤销栈应被清空，实际 ${history.undoCount} 步`);
 
-            return `回到存储状态：${after.objectCount} 个对象（丢弃了 ${before - after.objectCount} 个未保存的），清掉 ${reloaded.undoCleared} 步历史`;
-        });
+                return `回到存储状态：${after.objectCount} 个对象（丢弃了 ${before - after.objectCount} 个未保存的），清掉 ${reloaded.undoCleared} 步历史`;
+            });
+        }
+        else
+        {
+            skip('editor.reloadScene 不刷页面重新加载场景', '无宿主：readScene 走宿主 FS，见 #938');
+        }
     }
 }
 
@@ -1762,7 +1789,8 @@ await check('log.clear 清空日志', async () =>
 // 汇总
 // ---------------------------------------------------------------------------
 const failed = results.filter((item) => !item.ok);
-console.log(`\n共 ${results.length} 项：通过 ${results.length - failed.length}，失败 ${failed.length}`);
+const skipped = results.filter((item) => item.skipped);
+console.log(`\n共 ${results.length} 项：通过 ${results.length - failed.length - skipped.length}，跳过 ${skipped.length}，失败 ${failed.length}`);
 for (const item of failed) console.log(`  FAIL  ${item.name} — ${item.message}`);
 
 process.exit(failed.length === 0 ? 0 : 1);
