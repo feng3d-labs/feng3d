@@ -13,9 +13,6 @@
         "packages/feng3d/src/geometry/SegmentGeometry.ts::SegmentGeometry.segments": 1,
         "packages/math/src/geom/matrix4x4.ts::Matrix4x4.elements": 1,
         "packages/math/src/gradient/gradient.ts::GradientLike.alphaKeys": 1,
-        "packages/math/src/gradient/gradient.ts::GradientLike.colorKeys": 1,
-        "packages/webgpu/src/data/ComputePass.ts::ComputePass.computeObjects": 1,
-        "packages/webgpu/src/data/OcclusionQuery.ts::OcclusionQuery.renderObjects": 1,
-        "packages/webgpu/src/data/TransformFeedbackPass.ts::TransformFeedbackPass.transformFeedbackObjects": 1
+        "packages/math/src/gradient/gradient.ts::GradientLike.colorKeys": 1
     }
 }

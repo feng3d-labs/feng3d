@@ -30,18 +30,18 @@ type Vec3Value = ReturnType<typeof vec3>;
  */
 interface MaterialLike
 {
-    u_diffuse: Vec4Value;
-    u_alphaThreshold: FloatValue;
-    u_specular: Vec4Value;
-    u_glossiness: FloatValue;
-    u_ambient: Vec4Value;
-    u_reflectivity: FloatValue;
-    u_emissive: Vec4Value;
-    u_fogMinDistance: FloatValue;
-    u_fogMaxDistance: FloatValue;
-    u_fogColor: Vec4Value;
-    u_fogDensity: FloatValue;
-    u_fogMode: FloatValue;
+    readonly u_diffuse: Vec4Value;
+    readonly u_alphaThreshold: FloatValue;
+    readonly u_specular: Vec4Value;
+    readonly u_glossiness: FloatValue;
+    readonly u_ambient: Vec4Value;
+    readonly u_reflectivity: FloatValue;
+    readonly u_emissive: Vec4Value;
+    readonly u_fogMinDistance: FloatValue;
+    readonly u_fogMaxDistance: FloatValue;
+    readonly u_fogColor: Vec4Value;
+    readonly u_fogDensity: FloatValue;
+    readonly u_fogMode: FloatValue;
     [key: string]: unknown;
 }
 

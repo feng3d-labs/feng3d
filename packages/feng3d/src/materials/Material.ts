@@ -21,7 +21,7 @@ export interface Material
     readonly __type__: string;
 
     /** 材质名称（缺失时由 registerLogic 自动填充） */
-    name?: string;
+    readonly name?: string;
 }
 
 /**

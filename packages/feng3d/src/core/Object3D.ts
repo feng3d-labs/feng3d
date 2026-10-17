@@ -33,7 +33,7 @@ import { initComponents } from './Entity';
  */
 export interface Object3D extends Container<Object3D>
 {
-    __type__: 'Object3D';
+    readonly __type__: 'Object3D';
 
     /**
      * 名称（缺失时由 Object3DLogic 提供默认值）
