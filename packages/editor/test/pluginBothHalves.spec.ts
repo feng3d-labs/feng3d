@@ -1,4 +1,4 @@
-import { logic } from '@feng3d/reactivity';
+import { logic, logicOrThrow } from '@feng3d/reactivity';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { loadPluginPackage, resetClientHalfImporter, resetPluginLoader } from '../src/plugins/loader';
 import { resetPlugins } from '../src/plugins/registry';
@@ -37,12 +37,12 @@ describe('验收③：同一个 __type__ 两端都有行为（编辑器侧）', 
         expect(outcome.loaded).toBe(true);
 
         // 编辑器侧：清单的 logics 贡献被落到了引擎注册表
-        const rotateLogic = logic({ __type__: 'Rotate' } as never) as { update: (interval: number) => number } | null;
+        const rotateLogic = logicOrThrow({ __type__: 'Rotate' } as never) as { update: (interval: number) => number } | null;
 
         expect(rotateLogic).toBeTruthy();
         expect(rotateLogic!.update(1)).toBe(0); // 没给 speed → 按 0
 
-        const withSpeed = logic({ __type__: 'Rotate', speed: 90 } as never) as { update: (interval: number) => number };
+        const withSpeed = logicOrThrow({ __type__: 'Rotate', speed: 90 } as never) as { update: (interval: number) => number };
 
         expect(withSpeed.update(1)).toBe(90);
 

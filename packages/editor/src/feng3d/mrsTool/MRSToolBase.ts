@@ -1,5 +1,5 @@
 import { planeIntersectWithLine3 } from 'feng3d';
-import { createComponentLogicBase, logic as getLogic, mat4Copy, mat4Invert, mat4TransformPoint3, Plane, raycaster, shortcut, ticker, windowEventProxy } from 'feng3d';
+import { createComponentLogicBase, mat4Copy, mat4Invert, mat4TransformPoint3, Plane, raycaster, shortcut, ticker, windowEventProxy, logic as getLogic } from 'feng3d';
 import type { Camera, Component3D, Component3DLogic, ComponentLogicState, Components, Matrix4x4, Object3D, Ray3, Vector3 } from 'feng3d';
 import { reactive, toRaw, UnReadonly } from '@feng3d/reactivity';
 import { CoordinateAxis, CoordinateCube, CoordinatePlane } from './models/MToolModel';

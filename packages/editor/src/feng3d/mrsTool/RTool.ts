@@ -1,5 +1,5 @@
 import { planeFromNormalAndPoint, planeGetNormal } from 'feng3d';
-import { logic as getLogic, mat4Append, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4GetPosition, mat4GetRotation, Matrix4x4, Plane, shortcut, vec2Sub, vec3Copy, vec3Cross, vec3Dot, vec3Negate, vec3NormalizeThickness, vec3Sub, Vector2, Vector3, Vector3Like, windowEventProxy } from 'feng3d';
+import { mat4Append, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4GetPosition, mat4GetRotation, Matrix4x4, Plane, shortcut, vec2Sub, vec3Copy, vec3Cross, vec3Dot, vec3Negate, vec3NormalizeThickness, vec3Sub, Vector2, Vector3, Vector3Like, windowEventProxy, logic as getLogic, logicOrThrow as getLogicOrThrow } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinateRotationAxis, CoordinateRotationFreeAxis, RToolModel, RToolModelLogic } from './models/RToolModel';
@@ -250,7 +250,7 @@ export function rToolLogic(data: RTool): RToolLogic
     {
         const component = data.toolModel;
 
-        return component ? getLogic(component) : null;
+        return component ? getLogicOrThrow(component) : null;
     }
 
     function onMouseMove(): void
@@ -267,7 +267,7 @@ export function rToolLogic(data: RTool): RToolLogic
             // 自由旋转：按屏幕拖动量绕相机右轴/上轴旋转
             const startMousePos = data.startMousePos;
             const cameraObject = baseMembers.editorCameraObject;
-            const cameraSceneTransform = cameraObject ? getLogic(cameraObject)?.local2world : null;
+            const cameraSceneTransform = cameraObject ? getLogicOrThrow(cameraObject)?.local2world : null;
             if (!startMousePos || !cameraSceneTransform) return;
 
             const offset = vec2Sub({ x: windowEventProxy.clientX, y: windowEventProxy.clientY }, startMousePos);

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { logic, objectview } from 'feng3d';
+import { objectview, logic } from 'feng3d';
 import {
     BUILTIN_PLUGINS,
     EDITOR_PLUGIN_API_VERSION,

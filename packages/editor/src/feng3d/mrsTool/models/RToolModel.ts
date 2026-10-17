@@ -1,4 +1,4 @@
-import { createComponentLogicBase, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, Vector3Like } from 'feng3d';
+import { createComponentLogicBase, mat4TransformPoint3, mat4TransformVector3, Vector3Like, logic as getLogic } from 'feng3d';
 import type { Color4, Component3D, Component3DLogic, MeshRenderer, Object3D, Segment, Vector3 } from 'feng3d';
 import { effect, reactive, UnReadonly } from '@feng3d/reactivity';
 import { color4 } from './MToolModel';

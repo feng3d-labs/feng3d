@@ -1,4 +1,4 @@
-import { Vector3, logic as getLogic, reactive, effect, shortcut, ticker } from 'feng3d';
+import { Vector3, logicOrThrow as getLogicOrThrow, reactive, effect, shortcut, ticker } from 'feng3d';
 import type { Billboard, Camera, Color4, DirectionalLight, HoldSize, MeshRenderer, Object3D, PlaneGeometry, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { createEditorScriptLogicBase } from './EditorScript';
@@ -197,12 +197,12 @@ export function directionLightIconLogic(data: DirectionLightIcon): DirectionLigh
                 const light = data.light; // 原始值
                 if (!light) return;
 
-                const lightObject3D = getLogic(light).entity;
+                const lightObject3D = getLogicOrThrow(light).entity;
                 const host = members.entity;
                 if (!lightObject3D || !host) return;
 
                 // 读取灯光世界矩阵（Computed）建立依赖：灯光变换变化 → 本 effect 重跑
-                setWorldMatrix(host, getLogic(lightObject3D).local2world);
+                setWorldMatrix(host, getLogicOrThrow(lightObject3D).local2world);
             });
         },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
@@ -223,7 +223,7 @@ export function directionLightIconLogic(data: DirectionLightIcon): DirectionLigh
             }
 
             const lines = lightLines;
-            const lightObject3D = getLogic(light).entity;
+            const lightObject3D = getLogicOrThrow(light).entity;
             if (lines && lightObject3D)
             {
                 reactive(lines).activeSelf = useEditorStore().selectedObject3Ds.indexOf(lightObject3D) !== -1;
@@ -234,7 +234,7 @@ export function directionLightIconLogic(data: DirectionLightIcon): DirectionLigh
             const light = data.light;
             if (!light) return;
 
-            const lightObject3D = getLogic(light).entity;
+            const lightObject3D = getLogicOrThrow(light).entity;
             if (!lightObject3D) return;
 
             useEditorStore().selectObject(lightObject3D);
@@ -254,8 +254,8 @@ export function directionLightIconLogic(data: DirectionLightIcon): DirectionLigh
             lightLines = null;
             textureMaterial = null;
 
-            if (icon) getLogic(icon).dispose();
-            if (lines) getLogic(lines).dispose();
+            if (icon) getLogicOrThrow(icon).dispose();
+            if (lines) getLogicOrThrow(lines).dispose();
 
             // 基类 dispose 写入 enabled = false
             members.dispose();

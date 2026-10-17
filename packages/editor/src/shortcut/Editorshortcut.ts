@@ -1,6 +1,6 @@
 import { shortcut, serialization } from 'feng3d';
 import type { Object3D } from 'feng3d';
-import { logic, reactive, toRaw } from '@feng3d/reactivity';
+import { logicOrThrow, reactive, toRaw } from '@feng3d/reactivity';
 import { shortcutConfig } from '../configs/ShortcutConfig';
 import type { ViewportNavigationSchemeId } from '../configs/ViewportNavigationSchemes';
 import { useEditorStore, MRSToolType } from '../vue-app/stores/editorStore';
@@ -16,7 +16,7 @@ import { AssetNode } from '../ui/assets/AssetNode';
  */
 function removeObject3D(object3D: Object3D): void
 {
-    const parent = logic(object3D).parent;
+    const parent = logicOrThrow(object3D).parent;
     if (!parent) return;
 
     const children = parent.children;
@@ -116,7 +116,7 @@ export class Editorshortcut
         //
         const objects = store.copyObjects.filter((v) => v && !(v instanceof AssetNode)) as Object3D[];
         if (objects.length === 0) return;
-        const parent = logic(objects[0]).parent;
+        const parent = logicOrThrow(objects[0]).parent;
         if (!parent) return;
         const newObject3Ds = objects.map((v) => serialization.clone(v));
         // 旧 `parent.addChild(v)` → 新范式下等价于向父节点 children 追加，父子关系由 effect 维护

@@ -1,4 +1,4 @@
-import { Ray3, Vector3, logic as getLogic, mat4TransformPoint3, mat4TransformVector3, reactive, windowEventProxy } from 'feng3d';
+import { Ray3, Vector3, logic, logicOrThrow as getLogicOrThrow, mat4TransformPoint3, mat4TransformVector3, reactive, windowEventProxy } from 'feng3d';
 import type { Camera, ColorMaterial, MeshRenderer, Object3D, PerspectiveCamera, SphereGeometry } from 'feng3d';
 import { createEditorScriptLogicBase } from './EditorScript';
 import type { EditorScript, EditorScriptLogic } from './EditorScript';
@@ -86,7 +86,7 @@ export function mouseRayTestScriptLogic(data: MouseRayTestScript): MouseRayTestS
         // 射线起点/方向 → 球体本地空间
         // 阶段 C-d：`ray.origin` / `ray.direction` 已是纯数据字段（不再有 `Vector3.clone()`），
         // 改用纯函数 + 全新的 `out` 字面量，等价于原来的 `transformPoint3(origin.clone())`
-        const world2local = getLogic(object3D).world2local;
+        const world2local = getLogicOrThrow(object3D).world2local;
         const position = mat4TransformPoint3(world2local, mouseRay3D.origin, { x: 0, y: 0, z: 0 });
         const direction = mat4TransformVector3(world2local, mouseRay3D.direction, { x: 0, y: 0, z: 0 });
         reactive(object3D).position = { x: position.x, y: position.y, z: position.z };
@@ -110,7 +110,7 @@ export function mouseRayTestScriptLogic(data: MouseRayTestScript): MouseRayTestS
             }
             else
             {
-                getLogic(object3D).dispose();
+                getLogicOrThrow(object3D).dispose();
             }
             num--;
         };
@@ -130,18 +130,18 @@ export function mouseRayTestScriptLogic(data: MouseRayTestScript): MouseRayTestS
         const host = members.entity;
         if (!host) return null!;
 
-        const scene = getLogic(host).scene;
-        const sceneEntity = scene ? getLogic(scene).entity : null;
+        const scene = getLogicOrThrow(host).scene;
+        const sceneEntity = scene ? getLogicOrThrow(scene).entity : null;
         if (!sceneEntity) return null!;
 
-        const camera = getLogic(sceneEntity as Object3D).getComponentInChildren<Camera>('Camera');
+        const camera = getLogicOrThrow(sceneEntity as Object3D).getComponentInChildren<Camera>('Camera');
         if (!camera) return null!;
 
         // 窗口坐标 → NDC（编辑器视口占满窗口）
         const x = (windowEventProxy.clientX / window.innerWidth) * 2 - 1;
         const y = 1 - (windowEventProxy.clientY / window.innerHeight) * 2;
 
-        return getLogic(camera as PerspectiveCamera).getRay3D(x, y);
+        return getLogicOrThrow(camera as PerspectiveCamera).getRay3D(x, y);
     }
 
     const logic: MouseRayTestScriptLogic = {

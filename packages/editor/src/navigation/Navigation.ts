@@ -1,4 +1,4 @@
-import { createComponentLogicBase, mat4TransformPoint3, Vector3, geometryUtils, logic as getLogic, reactive } from 'feng3d';
+import { createComponentLogicBase, mat4TransformPoint3, Vector3, geometryUtils, logic, logic as getLogic, logicOrThrow as getLogicOrThrow, reactive } from 'feng3d';
 import type { Color4, Component3D, Component3DLogic, MeshRenderer, Object3D, PointGeometry, PointMaterial } from 'feng3d';
 import { UnReadonly } from '@feng3d/reactivity';
 import { Recastnavigation, VoxelFlag } from '../recastnavigation/Recastnavigation';
@@ -177,7 +177,7 @@ export function navigationLogic(data: Navigation): NavigationLogic
         clear()
         {
             const currentNavObject = navObject;
-            if (currentNavObject) getLogic(currentNavObject).dispose();
+            if (currentNavObject) getLogicOrThrow(currentNavObject).dispose();
         },
         /**
          * 计算导航网格数据
@@ -188,15 +188,15 @@ export function navigationLogic(data: Navigation): NavigationLogic
             if (!host) return;
 
             // 场景根对象（替代旧 `this.object3D.scene.object3D`）
-            const scene = getLogic(host).scene;
-            const sceneObject = scene ? getLogic(scene).entity : null;
+            const scene = getLogicOrThrow(host).scene;
+            const sceneObject = scene ? getLogicOrThrow(scene).entity : null;
             if (!sceneObject) return;
 
             const geometrys = getNavGeometrys(sceneObject);
             const currentNavObject = navObject;
             if (geometrys.length === 0)
             {
-                if (currentNavObject) getLogic(currentNavObject).dispose();
+                if (currentNavObject) getLogicOrThrow(currentNavObject).dispose();
 
                 return;
             }
@@ -255,7 +255,7 @@ export function navigationLogic(data: Navigation): NavigationLogic
      */
     function getNavGeometrys(object3D: Object3D, geometrys: { positions: number[], indices: number[] }[] = []): { positions: number[], indices: number[] }[]
     {
-        const objectLogic = getLogic(object3D);
+        const objectLogic = getLogicOrThrow(object3D);
 
         if (!objectLogic.activeSelf)
         { return geometrys; }
@@ -264,7 +264,7 @@ export function navigationLogic(data: Navigation): NavigationLogic
         if (geometry)
         {
             // 顶点数据在 GeometryLogic 上：a_position 为 Float32Array，索引为 Uint16/Uint32Array
-            const geometryLogic = getLogic(geometry);
+            const geometryLogic = getLogicOrThrow(geometry);
             const sourcePositions = geometryLogic.vertices.a_position?.data ?? new Float32Array();
             const sourceIndices = geometryLogic.vertexIndices ?? [];
 

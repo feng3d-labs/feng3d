@@ -1,5 +1,5 @@
 import { planeFromNormalAndPoint, planeFromPoints } from 'feng3d';
-import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4GetPosition, mat4PrependTranslation, mat4TransformPoint3, Matrix4x4, Plane, shortcut, vec3Cross, vec3Sub, Vector3, windowEventProxy } from 'feng3d';
+import { mat4Copy, mat4GetAxisZ, mat4GetPosition, mat4PrependTranslation, mat4TransformPoint3, Matrix4x4, Plane, shortcut, vec3Cross, vec3Sub, Vector3, windowEventProxy, logic as getLogic, logicOrThrow as getLogicOrThrow } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { CoordinatePlane, MToolModel, MToolModelLogic } from './models/MToolModel';
@@ -238,7 +238,7 @@ export function mToolLogic(data: MTool): MToolLogic
     {
         const component = data.toolModel;
 
-        return component ? getLogic(component) : null;
+        return component ? getLogicOrThrow(component) : null;
     }
 
     function onMouseMove(): void

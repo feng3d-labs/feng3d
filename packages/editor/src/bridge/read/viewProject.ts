@@ -1,5 +1,5 @@
 import { box3GetCenter } from 'feng3d';
-import { isRenderable, logic as getLogic } from 'feng3d';
+import { isRenderable, logic as getLogic, logicOrThrow as getLogicOrThrow } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { getActiveEditorView } from '../../feng3d/editorViewRegistry';
 import { resolveObjectId, getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
@@ -58,7 +58,7 @@ export function cropPixels(
 export function getProjector(): ((point: { x: number, y: number, z: number }) => { x: number, y: number, z: number }) | null
 {
     const view = getActiveEditorView();
-    const cameraLogic = view ? getLogic(view.camera as never) as {
+    const cameraLogic = view ? getLogicOrThrow(view.camera as never) as {
         project?: (point: { x: number, y: number, z: number }) => { x: number, y: number, z: number },
     } | null : null;
 

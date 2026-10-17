@@ -1,5 +1,5 @@
 import { box3GetCenter, box3GetSize } from 'feng3d';
-import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, Vector3 } from 'feng3d';
+import { logic, logicOrThrow as getLogicOrThrow, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, Vector3 } from 'feng3d';
 import type { Camera, Object3D, PerspectiveCamera, Scene, View, ViewLogic } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import type { ReadPixels } from '@feng3d/webgpu';
@@ -108,7 +108,7 @@ export class Feng3dScreenShotRenderer
                 }],
             },
         };
-        this.viewLogic = getLogic(this.view);
+        this.viewLogic = getLogicOrThrow(this.view);
     }
 
     /** 同步画布显示尺寸（`ViewLogic` 据此同步渲染分辨率） */
@@ -127,7 +127,7 @@ export class Feng3dScreenShotRenderer
      */
     updateCameraPosition(object3D: Object3D): void
     {
-        const bounds = getLogic(object3D).boundingBox.worldBounds;
+        const bounds = getLogicOrThrow(object3D).boundingBox.worldBounds;
         const center = box3GetCenter(bounds);
         const size = box3GetSize(bounds);
         // 包围球半径取半对角线：仅取最长边会在目标旋转后露角
@@ -148,7 +148,7 @@ export class Feng3dScreenShotRenderer
 
         // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，链式调用换成「纯数据基准 + 纯函数」
-        const rotation = getLogic(this.cameraObject).rotation;
+        const rotation = getLogicOrThrow(this.cameraObject).rotation;
         const forward = mat4TransformVector3(
             mat4SetRotation(mat4Identity(), { x: rotation.x, y: rotation.y, z: rotation.z }),
             { x: 0, y: 0, z: -1 });

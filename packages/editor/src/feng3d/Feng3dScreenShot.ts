@@ -1,4 +1,4 @@
-import { isLogicRegistered, logic as getLogic, reactive } from 'feng3d';
+import { isLogicRegistered, logicOrThrow as getLogicOrThrow, reactive } from 'feng3d';
 import type { Camera, GeometryLike, Geometrys, Material, Materials, MeshRenderer, Object3D, Scene, TextureMaterial, TextureResource, View, ViewLogic } from 'feng3d';
 import { Feng3dScreenShotRenderer } from './Feng3dScreenShotRenderer';
 import { imageToDataURL, textureCubeToDataURL } from './screenShotCanvas';
@@ -310,7 +310,7 @@ export class Feng3dScreenShot
     {
         for (let i = 0; i < maxTries; i++)
         {
-            if (!material || getLogic(material).isLoaded) return;
+            if (!material || getLogicOrThrow(material).isLoaded) return;
             // 轮询的是确定性状态（isLoaded），间隔只用于让出事件循环等待加载回调
             await new Promise<void>((resolve) => { setTimeout(resolve, 16); });
         }

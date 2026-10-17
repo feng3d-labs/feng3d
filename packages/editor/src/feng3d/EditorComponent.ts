@@ -1,4 +1,4 @@
-import { createComponentLogicBase, matchType, logic as getLogic, reactive, effect } from 'feng3d';
+import { createComponentLogicBase, matchType, logicOrThrow as getLogicOrThrow, reactive, effect } from 'feng3d';
 import type { Camera, Component3D, Component3DLogic, Components, DirectionalLight, Object3D, PointLight, Scene, SpotLight } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import { CameraIcon } from '../scripts/CameraIcon';
@@ -207,7 +207,7 @@ export function editorComponentLogic(data: EditorComponent): EditorComponentLogi
             else reactive(iconData as DirectionLightIcon | PointLightIcon | SpotLightIcon).light = undefined;
         }
 
-        getLogic(iconObject3D).dispose();
+        getLogicOrThrow(iconObject3D).dispose();
     }
 
     const logic: EditorComponentLogic = {
@@ -232,7 +232,7 @@ export function editorComponentLogic(data: EditorComponent): EditorComponentLogi
 
                 if (!scene) return;
 
-                const root = getLogic(scene).entity as Object3D | null;
+                const root = getLogicOrThrow(scene).entity as Object3D | null;
                 if (!root) return;
 
                 syncIcons(collectIconTargets(root));
@@ -263,7 +263,7 @@ export function editorComponentLogic(data: EditorComponent): EditorComponentLogi
             // 并递归释放图标对象上的组件（等价旧写法逐个 `object3D.remove()`）。
             for (const iconObject3D of iconMap.values())
             {
-                getLogic(iconObject3D).dispose();
+                getLogicOrThrow(iconObject3D).dispose();
             }
             iconMap.clear();
 

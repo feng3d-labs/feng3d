@@ -1,4 +1,4 @@
-import { logic as getLogic } from 'feng3d';
+import { logic, logicOrThrow as getLogicOrThrow } from 'feng3d';
 import { isBridgeSocketOnline, startBridgeSocket, subscribeBridgeEvent } from './bridgeSocket';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { installEditorLogCapture, queryEditorLogs, subscribeEditorLog } from '../utils/editorLog';
@@ -414,7 +414,7 @@ type BridgeHandler = (params: Record<string, unknown>) => unknown | Promise<unkn
 /** 编辑器概览 */
 function editorInfo(): unknown
 {
-    const root = getLogic(requireSceneRoot())?.scene ?? null;
+    const root = getLogicOrThrow(requireSceneRoot())?.scene ?? null;
     // 方法表现算（插件可被关掉）：计数与列表必须反映**当前**可用方法，
     // 否则关掉插件后 editor.info 还在报一个调不通的方法
     const tables = bridgeMethodTables();

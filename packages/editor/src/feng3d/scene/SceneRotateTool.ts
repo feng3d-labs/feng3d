@@ -1,4 +1,4 @@
-import { createComponentLogicBase, globalEmitter, logic as getLogic, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, ticker, Vector3, WritableVector3Like } from 'feng3d';
+import { createComponentLogicBase, globalEmitter, logicOrThrow as getLogicOrThrow, mat4FromRotation, mat4GetRotation, mat4Invert, reactive, ticker, Vector3, WritableVector3Like } from 'feng3d';
 import type { Color4, Component3D, Component3DLogic, Object3D, PerspectiveCamera, Ray3, Scene, StandardMaterial, Vector3Like, View, ViewLogic } from 'feng3d';
 import type { EditorView } from '../EditorView';
 
@@ -204,9 +204,9 @@ export function sceneRotateToolLogic(data: SceneRotateTool): SceneRotateToolLogi
             const view = { __type__: 'View', canvas: canvasElement, root } as View;
 
             camera = cameraData;
-            viewLogic = getLogic(view);
+            viewLogic = getLogicOrThrow(view);
             // 小视图相机看向原点
-            getLogic(cameraObject).lookAt({ x: 0, y: 0, z: 0 });
+            getLogicOrThrow(cameraObject).lookAt({ x: 0, y: 0, z: 0 });
 
             // ---- 每帧提交（复用编辑器 WebGPU 设备） ----
             const viewLogicData = viewLogic;
@@ -288,7 +288,7 @@ export function sceneRotateToolLogic(data: SceneRotateTool): SceneRotateToolLogi
 
             // 写入编辑器相机宿主对象（rotation 单位为弧度）
             const editorCamera = data.view?.camera;
-            const cameraObject = editorCamera ? getLogic(editorCamera).entity as Object3D | null : null;
+            const cameraObject = editorCamera ? getLogicOrThrow(editorCamera).entity as Object3D | null : null;
             if (cameraObject)
             {
                 reactive(cameraObject).rotation = { x: result.x, y: result.y, z: result.z };
@@ -316,7 +316,7 @@ export function sceneRotateToolLogic(data: SceneRotateTool): SceneRotateToolLogi
         // 屏幕坐标 → GPU 坐标（-1~1，Y 翻转）
         const gx = ((event.clientX - rect.left) * 2 - rect.width) / rect.width;
         const gy = -((event.clientY - rect.top) * 2 - rect.height) / rect.height;
-        const ray = getLogic(camera).getRay3D(gx, gy);
+        const ray = getLogicOrThrow(camera).getRay3D(gx, gy);
 
         let nearest: Object3D | null = null;
         let nearestDistance = Number.MAX_VALUE;
@@ -324,7 +324,7 @@ export function sceneRotateToolLogic(data: SceneRotateTool): SceneRotateToolLogi
         {
             const model = arrow.components?.[0];
             if (!model) continue;
-            const hit = (getLogic(model) as unknown as { worldRayIntersection(ray: Ray3): { rayEntryDistance: number } | null })
+            const hit = (getLogicOrThrow(model) as unknown as { worldRayIntersection(ray: Ray3): { rayEntryDistance: number } | null })
                 .worldRayIntersection(ray);
             if (hit && hit.rayEntryDistance < nearestDistance)
             {

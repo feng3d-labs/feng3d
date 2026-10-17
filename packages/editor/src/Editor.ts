@@ -1,4 +1,4 @@
-import { serialization, globalEmitter, logic } from 'feng3d';
+import { serialization, globalEmitter, logic, logicOrThrow } from 'feng3d';
 import { isHostAvailable } from './assets/EditorRS';
 import type { EditorRS } from './assets/EditorRS';
 import type { EditorCache } from './caches/Editorcache';
@@ -141,7 +141,7 @@ export class Editor
             // `Scene` 是组件（纯数据接口），没有 `object3D` 字段；
             // 其宿主对象经 logic(scene).entity 取得。
             const scene = useEditorStore().gameScene;
-            const sceneObject3D = scene ? logic(scene).entity : null;
+            const sceneObject3D = scene ? logicOrThrow(scene).entity : null;
             if (!sceneObject3D) return;
 
             const obj = serialization.serialize(sceneObject3D);

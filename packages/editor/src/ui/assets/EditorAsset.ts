@@ -1,4 +1,4 @@
-import { ArrayBufferAsset, AudioAsset, dataTransform, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, globalEmitter, ImageUtil, JSAsset, JsonAsset, logic, MaterialAsset, path, regExps, ScriptAsset, serialization, ShaderAsset, TextAsset, TextureAsset, TextureCubeAsset, watcher } from 'feng3d';
+import { ArrayBufferAsset, AudioAsset, dataTransform, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, globalEmitter, ImageUtil, JSAsset, JsonAsset, logicOrThrow, MaterialAsset, path, regExps, ScriptAsset, serialization, ShaderAsset, TextAsset, TextureAsset, TextureCubeAsset, watcher } from 'feng3d';
 import type { Object3D, gPartial, Material, Scene } from 'feng3d';
 // IEvent 是纯类型（interface），运行时不存在，必须用 import type 以免 ESM 链接期报错
 import type { IEvent } from 'feng3d';
@@ -116,7 +116,7 @@ export class EditorAsset
 
         console.info(`[EditorAsset] 场景已从文件加载: ${path}${isDataFormat ? '（纯数据格式）' : '（旧格式）'}`);
 
-        return logic(object).getComponent<Scene>('Scene') ?? null;
+        return logicOrThrow(object).getComponent<Scene>('Scene') ?? null;
     }
 
     /**

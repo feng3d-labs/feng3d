@@ -1,4 +1,4 @@
-import { logic as getLogic } from 'feng3d';
+import { logic, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, toRaw } from '@feng3d/reactivity';
 import { MAX_TREE_DEPTH, getObjectId, requireSceneRoot, resolveObjectId } from '../EditorBridge';
