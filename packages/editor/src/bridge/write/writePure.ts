@@ -243,6 +243,13 @@ export function resolvePath(root: object, path: string): { holder: object, key: 
         }
 
         const next = (current as Record<string, unknown>)[key];
+        // `scene.get` 把组件参数包在 `params` 里（读侧包装），数据上并不存在这一层——
+        // 于是"照着 get 的结果拼 set 路径"必然失败。这里把它当作同层下钻（issue #931）。
+        // 只对组件（带 `__type__` 的对象）生效，避免误伤真有 `params` 字段的数据。
+        if (next === undefined && key === 'params' && Object.prototype.hasOwnProperty.call(current as object, '__type__'))
+        {
+            continue;
+        }
         // 中间段不存在时立刻报错并列出可用字段：AI 把路径拼成 `postion.y` 时，
         // 越早指出"哪一段错了、有哪些候选"，越不容易在错误前提上继续操作
         if (next === undefined)
@@ -262,6 +269,27 @@ export function resolvePath(root: object, path: string): { holder: object, key: 
     const last = segments[segments.length - 1];
 
     return { holder: current as object, key: /^\d+$/.test(last) ? Number(last) : last };
+}
+
+/**
+ * 读侧会用 Logic 默认值补全、但**数据里可能没有**的字段。
+ *
+ * `scene.get` 报它们时总给一个值（`activeSelf ?? true`），所以调用方"读得到"；
+ * 而 `scene.set` 按数据字段存在性判断，于是"写不回"——这是 issue #931 的另一半。
+ * 写入它们等于补一个显式覆盖值，应当放行（效果等同 `create: true`，但不必让调用方自己知道）。
+ *
+ * 用数组而不是 `Set`：R2 禁止模块级 `new Set()`（见 AGENTS.md §15）。
+ */
+const READ_DEFAULT_FIELDS: readonly string[] = ['activeSelf'];
+
+/**
+ * 该字段是否属于「读侧补默认、写侧按新增放行」的字段（issue #931）。
+ *
+ * @param key 字段名
+ */
+export function isReadDefaultField(key: string): boolean
+{
+    return READ_DEFAULT_FIELDS.includes(key);
 }
 
 /**

@@ -1,3 +1,4 @@
+import { logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { readBounds, compareField, readFieldPath, getObjectId, requireSceneRoot } from './readCore';
 import { assertWhereConditionValue, WHERE_OPS } from './whereCondition';
@@ -101,7 +102,12 @@ export function sceneFind(params: Record<string, unknown>): unknown
         let conditionsSatisfied = true;
         conditions.forEach((condition, index) =>
         {
-            if (compareField(readFieldPath(object, condition.path), condition.op, condition.value))
+            // `activeSelf` 是**逻辑字段**（数据上可能没有），`scene.get` 报的是 Logic 的默认值。
+            // 这里必须用同一口径读，否则 `where: { path: 'activeSelf' }` 对旧场景对象恒不命中（issue #931）
+            const actual = condition.path === 'activeSelf'
+                ? ((getLogic(object) as { activeSelf?: boolean } | null)?.activeSelf ?? true)
+                : readFieldPath(object, condition.path);
+            if (compareField(actual, condition.op, condition.value))
             {
                 conditionHits[index]++;
             }
