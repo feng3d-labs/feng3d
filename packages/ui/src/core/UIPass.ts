@@ -1,6 +1,6 @@
 import { registerViewPass } from 'feng3d';
 import type { Object3D, Renderable, View, ViewPassContext, ViewPassProvider } from 'feng3d';
-import { logic as getLogic } from '@feng3d/reactivity';
+import { logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 // 副作用导入：Canvas / CanvasRenderer / Transform2D 是纯数据类型，行为要靠各自的
 // registerLogic 与 registerComponentType；只用作类型标注的 import 会被转译器整条擦除。
 import './Canvas';
@@ -42,12 +42,12 @@ import type { CanvasRenderer } from './CanvasRenderer';
  */
 function collectCanvases(view: View): Canvas[]
 {
-    const sceneEntity = getLogic(getLogic(view).scene).entity as Object3D | null;
+    const sceneEntity = getLogicOrThrow(getLogicOrThrow(view).scene).entity as Object3D | null;
     if (!sceneEntity) return [];
 
-    return getLogic(sceneEntity)
+    return getLogicOrThrow(sceneEntity)
         .getComponentsInChildren<Canvas>('Canvas')
-        .filter((v) => getLogic(v).isVisibleAndEnabled.value);
+        .filter((v) => getLogicOrThrow(v).isVisibleAndEnabled.value);
 }
 
 /**
@@ -61,12 +61,12 @@ function collectCanvases(view: View): Canvas[]
  */
 function collectRenderers(canvas: Canvas): CanvasRenderer[]
 {
-    const canvasEntity = getLogic(canvas).entity as Object3D | null;
+    const canvasEntity = getLogicOrThrow(canvas).entity as Object3D | null;
     if (!canvasEntity) return [];
 
-    return getLogic(canvasEntity)
+    return getLogicOrThrow(canvasEntity)
         .getComponentsInChildren<CanvasRenderer>('CanvasRenderer')
-        .filter((v) => getLogic(v).isVisibleAndEnabled.value);
+        .filter((v) => getLogicOrThrow(v).isVisibleAndEnabled.value);
 }
 
 /**
@@ -88,7 +88,7 @@ function updateUI(view: View, context: ViewPassContext): void
     const canvases = collectCanvases(view);
     for (let i = 0; i < canvases.length; i++)
     {
-        getLogic(canvases[i]).layout(canvas.width, canvas.height);
+        getLogicOrThrow(canvases[i]).layout(canvas.width, canvas.height);
     }
 }
 

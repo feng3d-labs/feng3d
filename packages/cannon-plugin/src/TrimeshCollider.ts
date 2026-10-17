@@ -1,5 +1,5 @@
 import { Object3D, registerComponentType, type Geometrys } from 'feng3d';
-import { logic as getLogic, registerLogic } from '@feng3d/reactivity';
+import { registerLogic, logic as getLogic } from '@feng3d/reactivity';
 import { Trimesh } from 'cannon-es';
 import { Collider, ColliderLogic, createColliderLogicBase } from './Collider';
 

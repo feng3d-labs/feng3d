@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { minMaxCurveDefault } from '@feng3d/math';
-import { logic } from 'feng3d';
+import { logicOrThrow } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { ParticleSystemSubEmitterProperties } from '../src/enums/ParticleSystemSubEmitterProperties';
 import { ParticleSystemSubEmitterType } from '../src/enums/ParticleSystemSubEmitterType';
@@ -50,7 +50,7 @@ describe('模块字段可选化 + logic 补默认', () =>
             components: [system as never],
         };
 
-        logic(object3D);
+        logicOrThrow(object3D);
 
         // 组件分发不复制数据：宿主里的就是同一个对象
         const mounted = object3D.components![0] as unknown as ParticleSystem;

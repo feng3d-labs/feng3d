@@ -1,5 +1,5 @@
 import { Behaviour, BehaviourLogic, Components, createBehaviourLogicBase, findByName, matchType, Object3D, reactive, registerComponentType } from 'feng3d';
-import { logic as getLogic, registerLogic, UnReadonly } from '@feng3d/reactivity';
+import { registerLogic, UnReadonly, logic as getLogic, logicOrThrow as getLogicOrThrow } from '@feng3d/reactivity';
 import { mat4FromQuaternion, mat4GetRotation, type Vector3Like, type WritableVector3Like } from '@feng3d/math';
 // 别名导入：cannon-es 的 Material 与 feng3d 的纯数据类 Material 同名，
 // 而 check-imperative-construction.mjs 只看名字、不看导入来源（已知局限），
@@ -491,7 +491,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             // 每帧重建「刚体 → 所属 Object3D」映射，并对账 world 里的刚体：
             // 本帧新出现的加进去，已从场景消失的移除（动态场景必需，否则会一直泄漏）
             bodyToObject3D.clear();
-            const rigidbodies = getLogic(o3d).getComponentsInChildren('Rigidbody', true);
+            const rigidbodies = getLogicOrThrow(o3d).getComponentsInChildren('Rigidbody', true);
             const currentBodies = new Set<Body>();
             for (const rigidbody of rigidbodies)
             {
@@ -534,7 +534,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             }
 
             // ---- 约束：连接两个刚体（两端 body 都就绪才创建，且只创建一次） ----
-            const constraints = getLogic(o3d).getComponentsInChildren('Constraint', true);
+            const constraints = getLogicOrThrow(o3d).getComponentsInChildren('Constraint', true);
             for (const constraintData of constraints)
             {
                 if (createdConstraints.has(constraintData)) continue;
@@ -558,7 +558,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
 
             // ---- SPH：注册求解器与粒子 ----
             // cannon-es 0.20 的 World 没有 addSystem，但 step() 会遍历 world.subsystems 逐个 update()。
-            const sphSystemDatas = getLogic(o3d).getComponentsInChildren('SPHSystem', true);
+            const sphSystemDatas = getLogicOrThrow(o3d).getComponentsInChildren('SPHSystem', true);
             if (sphSystem === null && sphSystemDatas.length > 0)
             {
                 const sphLogic = getLogic(sphSystemDatas[0]) as SPHSystemLogic | null;
@@ -571,7 +571,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
 
             if (sphSystem !== null)
             {
-                const sphParticles = getLogic(o3d).getComponentsInChildren('SPHParticle', true);
+                const sphParticles = getLogicOrThrow(o3d).getComponentsInChildren('SPHParticle', true);
                 for (const particleData of sphParticles)
                 {
                     if (createdSPHParticles.has(particleData)) continue;
@@ -599,7 +599,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             // ---- 弹簧：必须在 step **之前**施力 ----
             // cannon-es 的 Spring 不参与约束求解，要每帧自己 applyForce() 才生效，
             // 所以它走不了 addConstraint 那条路——这是 PhysicsWorld 里唯一的"步进前钩子"。
-            const springs = getLogic(o3d).getComponentsInChildren('Spring', true);
+            const springs = getLogicOrThrow(o3d).getComponentsInChildren('Spring', true);
             for (const springData of springs)
             {
                 const springLogic = getLogic(springData) as SpringLogic | null;
@@ -622,7 +622,7 @@ export function physicsWorldLogic(data: PhysicsWorld): PhysicsWorldLogic
             }
 
             // ---- 车辆：同样要在 step **之前**更新（射线探地 + 悬挂 + 摩擦） ----
-            const vehicles = getLogic(o3d).getComponentsInChildren('Vehicle', true);
+            const vehicles = getLogicOrThrow(o3d).getComponentsInChildren('Vehicle', true);
             for (const vehicleData of vehicles)
             {
                 const vehicleLogic = getLogic(vehicleData) as VehicleLogic | null;

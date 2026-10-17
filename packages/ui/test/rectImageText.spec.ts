@@ -3,7 +3,7 @@
 // 都不执行、logic() 返回 null（第 1 批实测踩过的坑，见 tmp/progress-ui-migration.md）。
 import 'feng3d';
 import { defaultTexture, Object3D } from 'feng3d';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import type { RenderObject } from '@feng3d/webgpu';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import '../src/Image';
@@ -45,7 +45,7 @@ function mount(type: 'Rect' | 'Image' | 'Text', options: { withTransform2D?: boo
     components.push({ __type__: type });
 
     const object3D = { __type__: 'Object3D', components } as Object3D;
-    logic(object3D);
+    logicOrThrow(object3D);
 
     return {
         object3D,
@@ -76,11 +76,11 @@ describe('Rect / Image / Text（新架构迁移）', () =>
                 __type__: 'Object3D',
                 components: [{ __type__: 'Rect', color: { __type__: 'Color4', r: 0.25, g: 0.5, b: 0.75, a: 1 } }],
             };
-            logic(object3D);
+            logicOrThrow(object3D);
             const rect = object3D.components![0] as Rect;
             const renderObject = {} as RenderObject;
 
-            logic(rect).beforeRender(renderObject);
+            logicOrThrow(rect).beforeRender(renderObject);
 
             const uniforms = (renderObject as unknown as { uniforms: Record<string, unknown> }).uniforms;
             expect(uniforms.u_color).toEqual({ __type__: 'Color4', r: 0.25, g: 0.5, b: 0.75, a: 1 });
@@ -111,11 +111,11 @@ describe('Rect / Image / Text（新架构迁移）', () =>
         {
             const texture = { descriptor: { size: [8, 4] as const, format: 'rgba8unorm' as const } };
             const object3D: Object3D = { __type__: 'Object3D', components: [{ __type__: 'Image', image: texture }] };
-            logic(object3D);
+            logicOrThrow(object3D);
             const image = object3D.components![0] as Image;
             const renderObject = {} as RenderObject;
 
-            logic(image).beforeRender(renderObject);
+            logicOrThrow(image).beforeRender(renderObject);
 
             const uniforms = (renderObject as unknown as { uniforms: Record<string, unknown> }).uniforms;
             expect(uniforms.s_texture).toBe(texture);
@@ -129,10 +129,10 @@ describe('Rect / Image / Text（新架构迁移）', () =>
                 __type__: 'Object3D',
                 components: [{ __type__: 'Transform2D', size: { x: 1, y: 1 } }, { __type__: 'Image', image: texture }],
             };
-            logic(object3D);
+            logicOrThrow(object3D);
             const image = object3D.components![1] as Image;
 
-            logic(image).setNativeSize();
+            logicOrThrow(image).setNativeSize();
 
             expect(getTransform2D(object3D)!.size).toEqual({ x: 200, y: 100 });
         });
@@ -141,7 +141,7 @@ describe('Rect / Image / Text（新架构迁移）', () =>
         {
             const image = { __type__: 'Image' } as Image;
 
-            expect(() => logic(image).setNativeSize()).not.toThrow();
+            expect(() => logicOrThrow(image).setNativeSize()).not.toThrow();
         });
 
         it('createImageObject3D 返回 100×100 的 Transform2D + CanvasRenderer + Image', () =>
@@ -171,7 +171,7 @@ describe('Rect / Image / Text（新架构迁移）', () =>
             const { object3D, component } = mount('Text', { withTransform2D: true });
             const renderObject = {} as RenderObject;
 
-            logic(component).beforeRender(renderObject);
+            logicOrThrow(component).beforeRender(renderObject);
 
             expect(mocks.drawText).toHaveBeenCalledTimes(1);
             const uniforms = (renderObject as unknown as { uniforms: Record<string, unknown> }).uniforms;
@@ -191,11 +191,11 @@ describe('Rect / Image / Text（新架构迁移）', () =>
                     { __type__: 'Text', autoSize: false },
                 ],
             };
-            logic(object3D);
+            logicOrThrow(object3D);
             const text = object3D.components![1] as Text;
             const renderObject = {} as RenderObject;
 
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
 
             const uniforms = (renderObject as unknown as { uniforms: Record<string, unknown> }).uniforms;
             expect(uniforms.u_uvRect).toEqual({ __type__: 'Vector4', x: 0, y: 0, z: 0.5, w: 0.5 });
@@ -209,13 +209,13 @@ describe('Rect / Image / Text（新架构迁移）', () =>
             const text = component as Text;
             const renderObject = {} as RenderObject;
 
-            logic(text).beforeRender(renderObject);
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
             // 没有变化时不重绘（画布与纹理复用）
             expect(mocks.drawText).toHaveBeenCalledTimes(1);
 
             reactive(text).text = 'changed';
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
 
             expect(mocks.drawText).toHaveBeenCalledTimes(2);
             expect(mocks.drawText.mock.calls[1][1]).toBe('changed');
@@ -227,11 +227,11 @@ describe('Rect / Image / Text（新架构迁移）', () =>
             const text = component as Text;
             const renderObject = {} as RenderObject;
 
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
             expect(mocks.drawText).toHaveBeenCalledTimes(1);
 
             text.style!.fontSize = 40;
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
 
             expect(mocks.drawText).toHaveBeenCalledTimes(2);
         });
@@ -243,20 +243,20 @@ describe('Rect / Image / Text（新架构迁移）', () =>
             const oldStyle = text.style!;
             const renderObject = {} as RenderObject;
 
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
             reactive(text).style = new TextStyle();
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
             // 迁移前 `_styleChanged` 只做 off / on，不置失效标志——替换样式本身不触发重绘
             expect(mocks.drawText).toHaveBeenCalledTimes(1);
 
             // 旧样式变化不再影响该文本（监听已换挂）
             oldStyle.fontSize = 50;
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
             expect(mocks.drawText).toHaveBeenCalledTimes(1);
 
             // 新样式变化照常失效
             text.style!.fontSize = 60;
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
             expect(mocks.drawText).toHaveBeenCalledTimes(2);
         });
 
@@ -266,9 +266,9 @@ describe('Rect / Image / Text（新架构迁移）', () =>
             const text = component as Text;
             const renderObject = {} as RenderObject;
 
-            logic(text).beforeRender(renderObject);
-            logic(text).invalidate();
-            logic(text).beforeRender(renderObject);
+            logicOrThrow(text).beforeRender(renderObject);
+            logicOrThrow(text).invalidate();
+            logicOrThrow(text).beforeRender(renderObject);
 
             expect(mocks.drawText).toHaveBeenCalledTimes(2);
         });
@@ -305,9 +305,9 @@ describe('Rect / Image / Text（新架构迁移）', () =>
                     { __type__: 'Rect' },
                 ],
             };
-            logic(object3D);
+            logicOrThrow(object3D);
             const renderer = object3D.components![1] as CanvasRenderer;
-            const renderObject = logic(renderer).renderObject.value as unknown as { uniforms: Record<string, unknown> };
+            const renderObject = logicOrThrow(renderer).renderObject.value as unknown as { uniforms: Record<string, unknown> };
 
             expect(renderObject.uniforms.u_color).toEqual({ __type__: 'Color4', r: 1, g: 1, b: 1, a: 1 });
             // Transform2D 的 u_rect 与 Rect 的 u_color 在同一个容器里。

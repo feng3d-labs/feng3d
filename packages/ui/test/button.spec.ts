@@ -3,7 +3,7 @@
 // registerLogic 都不执行、logic() 返回 null（前几批实测踩过的坑，见 tmp/progress-ui-migration.md）。
 import 'feng3d';
 import { Object3D } from 'feng3d';
-import { logic, reactive } from '@feng3d/reactivity';
+import { logicOrThrow, reactive } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import '../src/Button';
 import '../src/Rect';
@@ -21,7 +21,7 @@ function mountButton(children?: Object3D[])
         components: [{ __type__: 'Button' }],
         ...(children ? { children } : {}),
     };
-    logic(object3D);
+    logicOrThrow(object3D);
 
     return {
         object3D,
@@ -47,10 +47,10 @@ describe('Button（新架构迁移）', () =>
             expect(button.allStateData).toEqual({});
         });
 
-        it('logic() 分发到 ButtonLogic（BehaviourLogic 子类，带 saveState / update）', () =>
+        it('logicOrThrow() 分发到 ButtonLogic（BehaviourLogic 子类，带 saveState / update）', () =>
         {
             const { button } = mountButton();
-            const buttonLogic = logic(button);
+            const buttonLogic = logicOrThrow(button);
 
             // 工厂形态（issue #674）：BehaviourLogic 只有类型、运行时是 proto 链，按行为断言
             expect(typeof buttonLogic.init).toBe('function');
@@ -65,7 +65,7 @@ describe('Button（新架构迁移）', () =>
                 __type__: 'Object3D',
                 components: [{ __type__: 'Button', state: ButtonState.disabled, allStateData: { disabled: {} } }],
             };
-            logic(object3D);
+            logicOrThrow(object3D);
             const button = object3D.components![0] as Button;
 
             expect(button.state).toBe(ButtonState.disabled);
@@ -79,7 +79,7 @@ describe('Button（新架构迁移）', () =>
         {
             const { button } = mountButton([labeledChild('bg', 'A'), labeledChild('label', 'B')]);
 
-            logic(button).saveState();
+            logicOrThrow(button).saveState();
 
             const stateData = button.allStateData![ButtonState.up];
             expect(Object.keys(stateData).sort()).toEqual(['bg', 'label']);
@@ -94,7 +94,7 @@ describe('Button（新架构迁移）', () =>
         {
             const { button } = mountButton([labeledChild('dup', 'first'), labeledChild('dup', 'second')]);
 
-            logic(button).saveState();
+            logicOrThrow(button).saveState();
 
             const stateData = button.allStateData![ButtonState.up];
             expect(Object.keys(stateData)).toEqual(['dup']);
@@ -105,7 +105,7 @@ describe('Button（新架构迁移）', () =>
         {
             const child = labeledChild('label', 'up-tag');
             const { button } = mountButton([child]);
-            const buttonLogic = logic(button);
+            const buttonLogic = logicOrThrow(button);
 
             buttonLogic.saveState();
             reactive(child).tag = 'down-tag';
@@ -119,7 +119,7 @@ describe('Button（新架构迁移）', () =>
         it('未挂载到对象上时安全（没有实体就没有子对象，只写入空的状态数据）', () =>
         {
             const button: Button = { __type__: 'Button' };
-            const buttonLogic = logic(button);
+            const buttonLogic = logicOrThrow(button);
 
             expect(() => buttonLogic.saveState()).not.toThrow();
             expect(button.allStateData).toEqual({ up: {} });
@@ -132,7 +132,7 @@ describe('Button（新架构迁移）', () =>
         {
             const child = labeledChild('label', 'A');
             const { button } = mountButton([child]);
-            const buttonLogic = logic(button);
+            const buttonLogic = logicOrThrow(button);
 
             buttonLogic.saveState();                        // up = { label: { tag: 'A' } }
             buttonLogic.update(16);
@@ -153,7 +153,7 @@ describe('Button（新架构迁移）', () =>
         {
             const child = labeledChild('label', 'A');
             const { button } = mountButton([child]);
-            const buttonLogic = logic(button);
+            const buttonLogic = logicOrThrow(button);
 
             buttonLogic.saveState();
             buttonLogic.update(16);                         // 首次 update 消耗掉初始失效标志
@@ -173,7 +173,7 @@ describe('Button（新架构迁移）', () =>
         it('未挂载到对象上时 update 安全（无子对象可写）', () =>
         {
             const button: Button = { __type__: 'Button' };
-            const buttonLogic = logic(button);
+            const buttonLogic = logicOrThrow(button);
 
             expect(() => buttonLogic.update(16)).not.toThrow();
         });
@@ -189,13 +189,13 @@ describe('Button（新架构迁移）', () =>
             expect(getTransform2D(object3D)!.size).toEqual({ x: 160, y: 30 });
         });
 
-        it('产出的字面量能被 logic() 正常初始化（含 ButtonLogic 与默认状态）', () =>
+        it('产出的字面量能被 logicOrThrow() 正常初始化（含 ButtonLogic 与默认状态）', () =>
         {
             const object3D = createButtonObject3D();
-            logic(object3D);
+            logicOrThrow(object3D);
             const button = object3D.components![1] as Button;
 
-            expect(typeof logic(button)!.saveState).toBe('function');
+            expect(typeof logicOrThrow(button)!.saveState).toBe('function');
             expect(button.state).toBe(ButtonState.up);
             expect(button.allStateData).toEqual({});
         });

@@ -1,4 +1,4 @@
-import { Geometry, logic, MeshRenderer, SkinnedMeshRenderer } from 'feng3d';
+import { Geometry, logicOrThrow, MeshRenderer, SkinnedMeshRenderer } from 'feng3d';
 import { mat4Append, mat4FromRotation, mat4GetRotation, mat4Identity, mat4LookAt, mat4TransformPoint3, mat4TransformVector3, minMaxCurveDefault, minMaxCurveGetValue, vec3Add, vec3Copy, vec3From, vec3LerpNumber, vec3Length, vec3NormalizeThickness, vec3Random, vec3ScaleNumber, vec3SubNumber } from '@feng3d/math';
 import type { Matrix4x4, MinMaxCurve, Vector3Like } from '@feng3d/math';
 import { ParticleSystemMeshShapeType } from '../enums/ParticleSystemMeshShapeType';
@@ -210,7 +210,7 @@ export function particleShapeModuleInitParticleState(module: ParticleShapeModule
     vec3ScaleNumber(dir, startSpeed, dir);
     if (module.particleSystem!.main.simulationSpace === ParticleSystemSimulationSpace.World)
     {
-        const local2world = logic(module.particleSystem!.object3D).local2world;
+        const local2world = logicOrThrow(module.particleSystem!.object3D).local2world;
 
         mat4TransformPoint3(local2world, position, position);
         mat4TransformVector3(local2world, dir, dir);

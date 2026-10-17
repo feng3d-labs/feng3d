@@ -2,7 +2,7 @@
 // 会被转译器整条擦除，于是 registerLogic 不执行、logic() 返回 null（与 ui 包测试同款坑）。
 import 'feng3d';
 import { Object3D, reactive } from 'feng3d';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { Body, Box, ConvexPolyhedron, Cylinder, Heightfield, HingeConstraint as CannonHingeConstraint, Particle, Plane, Sphere, Trimesh } from 'cannon-es';
 import { describe, expect, it } from 'vitest';
 import '../src/index';
@@ -28,7 +28,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('BoxCollider 缺省尺寸补成 1/1/1，shape 是半边长各半的 Box', () =>
     {
         const data = { __type__: 'BoxCollider' } as BoxCollider;
-        const colliderLogic = logic(data) as ColliderLogic;
+        const colliderLogic = logicOrThrow(data) as ColliderLogic;
 
         expect(data.width).toBe(1);
         expect(data.height).toBe(1);
@@ -43,7 +43,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('BoxCollider 显式尺寸不被覆盖，半边长按尺寸的一半', () =>
     {
         const data = { __type__: 'BoxCollider', width: 2, height: 4, depth: 6 } as BoxCollider;
-        const shape = (logic(data) as ColliderLogic).shape as Box;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as Box;
 
         expect(shape.halfExtents.x).toBe(1);
         expect(shape.halfExtents.y).toBe(2);
@@ -53,7 +53,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('SphereCollider 缺省半径 0.5，shape 半径一致', () =>
     {
         const data = { __type__: 'SphereCollider' } as SphereCollider;
-        const shape = (logic(data) as ColliderLogic).shape as Sphere;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as Sphere;
 
         expect(data.radius).toBe(0.5);
         expect(shape).toBeInstanceOf(Sphere);
@@ -63,7 +63,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('TrimeshCollider 从几何体的顶点/索引生成 Trimesh', () =>
     {
         const data = { __type__: 'TrimeshCollider', geometry: { __type__: 'CubeGeometry' } } as TrimeshCollider;
-        const shape = (logic(data) as ColliderLogic).shape as Trimesh;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as Trimesh;
 
         expect(shape).toBeInstanceOf(Trimesh);
         expect(shape.vertices.length).toBeGreaterThan(0);
@@ -73,7 +73,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('ConvexCollider 从几何体的顶点/三角面生成 ConvexPolyhedron', () =>
     {
         const data = { __type__: 'ConvexCollider', geometry: { __type__: 'CubeGeometry' } } as ConvexCollider;
-        const shape = (logic(data) as ColliderLogic).shape as ConvexPolyhedron;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as ConvexPolyhedron;
 
         expect(shape).toBeInstanceOf(ConvexPolyhedron);
         expect(shape.vertices.length).toBeGreaterThan(0);
@@ -87,7 +87,7 @@ describe('cannon-plugin：碰撞体', () =>
             vertices: [{ x: 0, y: 0, z: 0 }, { x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: 1 }],
             faces: [[0, 1, 2], [0, 2, 3], [0, 3, 1], [1, 3, 2]],
         } as ConvexCollider;
-        const shape = (logic(data) as ColliderLogic).shape as ConvexPolyhedron;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as ConvexPolyhedron;
 
         expect(shape).toBeInstanceOf(ConvexPolyhedron);
         expect(shape.vertices.length).toBe(4);
@@ -97,7 +97,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('ParticleCollider 的 shape 是 Particle（点状、无体积）', () =>
     {
         const data = { __type__: 'ParticleCollider' } as ParticleCollider;
-        const shape = (logic(data) as ColliderLogic).shape;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape;
 
         expect(shape).toBeInstanceOf(Particle);
     });
@@ -105,7 +105,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('HeightfieldCollider 缺省 elementSize 补成 1，shape 是 Heightfield', () =>
     {
         const data = { __type__: 'HeightfieldCollider', heights: [[0, 0], [0, 1]] } as HeightfieldCollider;
-        const shape = (logic(data) as ColliderLogic).shape as Heightfield;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as Heightfield;
 
         expect(data.elementSize).toBe(1);
         expect(shape).toBeInstanceOf(Heightfield);
@@ -114,7 +114,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('PlaneCollider 的 shape 是 Plane', () =>
     {
         const data = { __type__: 'PlaneCollider' } as PlaneCollider;
-        const shape = (logic(data) as ColliderLogic).shape;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape;
 
         expect(shape).toBeInstanceOf(Plane);
     });
@@ -122,7 +122,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('CylinderCollider 缺省参数补成 0.5/0.5/2/16', () =>
     {
         const data = { __type__: 'CylinderCollider' } as CylinderCollider;
-        const shape = (logic(data) as ColliderLogic).shape as Cylinder;
+        const shape = (logicOrThrow(data) as ColliderLogic).shape as Cylinder;
 
         expect(data.topRadius).toBe(0.5);
         expect(data.bottomRadius).toBe(0.5);
@@ -136,7 +136,7 @@ describe('cannon-plugin：碰撞体', () =>
     it('shape 惰性创建且只创建一次（多次访问同一实例）', () =>
     {
         const data = { __type__: 'BoxCollider' } as BoxCollider;
-        const colliderLogic = logic(data) as ColliderLogic;
+        const colliderLogic = logicOrThrow(data) as ColliderLogic;
 
         expect(colliderLogic.shape).toBe(colliderLogic.shape);
     });
@@ -147,7 +147,7 @@ describe('cannon-plugin：刚体', () =>
     it('缺省质量 0（与 cannon-es 的 Body 默认一致，即静态）', () =>
     {
         const data = { __type__: 'Rigidbody' } as Rigidbody;
-        const rigidbodyLogic = logic(data) as RigidbodyLogic;
+        const rigidbodyLogic = logicOrThrow(data) as RigidbodyLogic;
 
         expect(data.mass).toBe(0);
         expect(rigidbodyLogic.body.mass).toBe(0);
@@ -164,10 +164,10 @@ describe('cannon-plugin：刚体', () =>
                 { __type__: 'Rigidbody', mass: 5 },
             ],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
 
         const rigidbody = object3D.components![2] as Rigidbody;
-        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+        const rigidbodyLogic = logicOrThrow(rigidbody) as RigidbodyLogic;
 
         expect(rigidbodyLogic.body.mass).toBe(5);
         // 两个碰撞体 → 两个形状
@@ -187,9 +187,9 @@ describe('cannon-plugin：刚体', () =>
                 { __type__: 'Rigidbody', mass: 1 },
             ],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const rigidbody = object3D.components![1] as Rigidbody;
-        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+        const rigidbodyLogic = logicOrThrow(rigidbody) as RigidbodyLogic;
 
         // 绕 Y 轴 90° → 四元数 (0, √½, 0, √½)
         expect(rigidbodyLogic.body.quaternion.y).toBeCloseTo(Math.SQRT1_2, 5);
@@ -207,9 +207,9 @@ describe('cannon-plugin：刚体', () =>
                 { __type__: 'Rigidbody', mass: 1 },
             ],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const rigidbody = object3D.components![3] as Rigidbody;
-        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+        const rigidbodyLogic = logicOrThrow(rigidbody) as RigidbodyLogic;
 
         expect(rigidbodyLogic.body.shapes.length).toBe(3);
         // 未声明 offset 的杆在原点
@@ -239,7 +239,7 @@ describe('cannon-plugin：物理世界', () =>
                 },
             ],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
 
         return object3D;
     }
@@ -247,7 +247,7 @@ describe('cannon-plugin：物理世界', () =>
     it('缺省重力是 (0, -9.82, 0)', () =>
     {
         const data = { __type__: 'PhysicsWorld' } as PhysicsWorld;
-        logic(data);
+        logicOrThrow(data);
 
         expect(data.gravity).toEqual({ x: 0, y: -9.82, z: 0 });
     });
@@ -256,7 +256,7 @@ describe('cannon-plugin：物理世界', () =>
     {
         const object3D = createScene();
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
 
@@ -271,7 +271,7 @@ describe('cannon-plugin：物理世界', () =>
         const object3D = createScene();
         const physicsWorld = object3D.components![0] as PhysicsWorld;
         const child = object3D.children![0];
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         for (let i = 0; i < 60; i++) physicsWorldLogic.update(1000 / 60);
 
@@ -288,8 +288,8 @@ describe('cannon-plugin：物理世界', () =>
         const physicsWorld = object3D.components![0] as PhysicsWorld;
         const child = object3D.children![0];
         const rigidbody = child.components![1] as Rigidbody;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
-        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
+        const rigidbodyLogic = logicOrThrow(rigidbody) as RigidbodyLogic;
 
         // 先跑一帧完成注册，再人为把刚体转过 90°（绕 Y）
         physicsWorldLogic.update(1000 / 60);
@@ -306,9 +306,9 @@ describe('cannon-plugin：物理世界', () =>
             __type__: 'Object3D',
             components: [{ __type__: 'PhysicsWorld', gravity: { x: 0, y: -1, z: 0 } }],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
 
@@ -318,7 +318,7 @@ describe('cannon-plugin：物理世界', () =>
     it('世界默认摩擦/弹性写到 defaultContactMaterial', () =>
     {
         const data = { __type__: 'PhysicsWorld', friction: 0.5, restitution: 0.9 } as PhysicsWorld;
-        const physicsWorldLogic = logic(data) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(data) as PhysicsWorldLogic;
 
         expect(physicsWorldLogic.world.defaultContactMaterial.friction).toBe(0.5);
         expect(physicsWorldLogic.world.defaultContactMaterial.restitution).toBe(0.9);
@@ -345,9 +345,9 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
         expect(physicsWorldLogic.world.constraints.length).toBe(1);
@@ -372,9 +372,9 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         expect(() => physicsWorldLogic.update(1000 / 60)).not.toThrow();
         expect(physicsWorldLogic.world.constraints.length).toBe(0);
@@ -400,9 +400,9 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
         expect(physicsWorldLogic.world.constraints.length).toBe(1);
@@ -430,8 +430,8 @@ describe('cannon-plugin：物理世界', () =>
                     ],
                 }],
             } as Object3D;
-            logic(object3D);
-            const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+            logicOrThrow(object3D);
+            const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
             physicsWorldLogic.update(1000 / 60);
 
@@ -450,8 +450,8 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'SphereCollider', radius: 1 }, { __type__: 'Rigidbody', mass: 1 }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
         physicsWorldLogic.update(1000 / 60);
 
         const result = physicsWorldLogic.raycastClosest({ x: -5, y: 0, z: 0 }, { x: 5, y: 0, z: 0 });
@@ -476,8 +476,8 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'SphereCollider', radius: 1 }, { __type__: 'Rigidbody', mass: 1 }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
         let steps = 0;
         const off = physicsWorldLogic.onAfterStep(() => { steps++; });
@@ -505,11 +505,11 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
         physicsWorldLogic.update(1000 / 60);
 
-        const rigidbodyLogic = logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
+        const rigidbodyLogic = logicOrThrow(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
 
         expect(rigidbodyLogic.body.collisionResponse).toBe(false);
     });
@@ -529,8 +529,8 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'SPHParticle', mass: 0.01, materialName: 'fluid' }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
         physicsWorldLogic.update(1000 / 60);
 
         const particleBody = [...physicsWorldLogic.world.bodies].find((body) => Math.abs(body.mass - 0.01) < 1e-9);
@@ -549,9 +549,9 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'SphereCollider', radius: 1 }, { __type__: 'Rigidbody', mass: 2 }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
-        const rigidbodyLogic = logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        const rigidbodyLogic = logicOrThrow(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
 
         physicsWorldLogic.update(1000 / 60);
 
@@ -587,8 +587,8 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
         let begins = 0;
         let ends = 0;
@@ -611,7 +611,7 @@ describe('cannon-plugin：物理世界', () =>
                 { a: 'ground', b: 'slippery', friction: 0, restitution: 0.3 },
             ],
         } as PhysicsWorld;
-        const physicsWorldLogic = logic(data) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(data) as PhysicsWorldLogic;
 
         expect(physicsWorldLogic.world.contactmaterials.length).toBe(2);
         const first = physicsWorldLogic.world.contactmaterials[0];
@@ -640,12 +640,12 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1, materialName: 'slippery' }],
             }],
         };
-        logic(root);
-        const physicsWorldLogic = logic(world) as PhysicsWorldLogic;
+        logicOrThrow(root);
+        const physicsWorldLogic = logicOrThrow(world) as PhysicsWorldLogic;
         physicsWorldLogic.update(1000 / 60);
 
-        const bodyA = (logic(root.children![0].components![1] as Rigidbody) as RigidbodyLogic).body;
-        const bodyB = (logic(root.children![1].components![1] as Rigidbody) as RigidbodyLogic).body;
+        const bodyA = (logicOrThrow(root.children![0].components![1] as Rigidbody) as RigidbodyLogic).body;
+        const bodyB = (logicOrThrow(root.children![1].components![1] as Rigidbody) as RigidbodyLogic).body;
 
         // 两个刚体拿到不同的具名材质，各自带上声明的摩擦
         expect(bodyA.material).not.toBe(bodyB.material);
@@ -675,8 +675,8 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
 
@@ -691,7 +691,7 @@ describe('cannon-plugin：物理世界', () =>
             enableMotor: true,
             motorSpeed: -14,
         } as unknown as HingeConstraint;
-        const hingeLogic = logic(data) as HingeConstraintLogic;
+        const hingeLogic = logicOrThrow(data) as HingeConstraintLogic;
         const bodyA = new Body({ mass: 0 });
         const bodyB = new Body({ mass: 1 });
 
@@ -723,8 +723,8 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
         for (let i = 0; i < 60; i++) physicsWorldLogic.update(1000 / 60);
 
@@ -744,9 +744,9 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 2 }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
-        const rigidbodyLogic = logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        const rigidbodyLogic = logicOrThrow(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic;
 
         physicsWorldLogic.update(1000 / 60);
         rigidbodyLogic.applyImpulse({ x: 4, y: 0, z: 0 });
@@ -772,8 +772,8 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'SphereCollider', radius: 0.5 }, { __type__: 'Rigidbody', mass: 1 }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
         const events: string[] = [];
         const off = physicsWorldLogic.onCollide((event) =>
@@ -821,8 +821,8 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
         const vehicle = object3D.children![1].components![2] as Vehicle;
 
         expect(() => { for (let i = 0; i < 120; i++) physicsWorldLogic.update(1000 / 60); }).not.toThrow();
@@ -839,8 +839,8 @@ describe('cannon-plugin：物理世界', () =>
             components: [{ __type__: 'PhysicsWorld' }],
             children: [],
         };
-        logic(root);
-        const physicsWorldLogic = logic(root.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(root);
+        const physicsWorldLogic = logicOrThrow(root.components![0] as PhysicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
         expect(physicsWorldLogic.world.bodies.length).toBe(0);
@@ -871,7 +871,7 @@ describe('cannon-plugin：物理世界', () =>
             quatNormalizeFast: true,
             quatNormalizeSkip: 3,
         } as PhysicsWorld;
-        const physicsWorldLogic = logic(data) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(data) as PhysicsWorldLogic;
 
         expect((physicsWorldLogic.world.solver as unknown as { iterations: number }).iterations).toBe(5);
         expect(physicsWorldLogic.world.defaultContactMaterial.contactEquationStiffness).toBe(5e6);
@@ -900,8 +900,8 @@ describe('cannon-plugin：物理世界', () =>
                 components: [{ __type__: 'SPHParticle', mass: 2 }],
             }],
         };
-        logic(object3D);
-        const physicsWorldLogic = logic(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
+        logicOrThrow(object3D);
+        const physicsWorldLogic = logicOrThrow(object3D.components![0] as PhysicsWorld) as PhysicsWorldLogic;
         const sphSystem = object3D.components![1] as SPHSystem;
         // 第二个粒子才是显式声明了 mass 的那个
         const particle = object3D.children![1].components![0] as SPHParticle;
@@ -933,13 +933,13 @@ describe('cannon-plugin：物理世界', () =>
                 ],
             }],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
         physicsWorldLogic.update(1000 / 60);
 
         const rigidbody = object3D.children![0].components![1] as Rigidbody;
-        const rigidbodyLogic = logic(rigidbody) as RigidbodyLogic;
+        const rigidbodyLogic = logicOrThrow(rigidbody) as RigidbodyLogic;
         const material = rigidbodyLogic.body.material;
 
         expect(material).toBeTruthy();
@@ -958,13 +958,13 @@ describe('cannon-plugin：物理世界', () =>
                 { __type__: 'Object3D', components: [{ __type__: 'BoxCollider' }, { __type__: 'Rigidbody', mass: 1, restitution: 0.5 }] },
             ],
         };
-        logic(object3D);
+        logicOrThrow(object3D);
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
         physicsWorldLogic.update(1000 / 60);
 
-        const m0 = (logic(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic).body.material;
-        const m1 = (logic(object3D.children![1].components![1] as Rigidbody) as RigidbodyLogic).body.material;
+        const m0 = (logicOrThrow(object3D.children![0].components![1] as Rigidbody) as RigidbodyLogic).body.material;
+        const m1 = (logicOrThrow(object3D.children![1].components![1] as Rigidbody) as RigidbodyLogic).body.material;
 
         expect(m0).toBe(m1);
     });
@@ -973,7 +973,7 @@ describe('cannon-plugin：物理世界', () =>
     {
         const object3D = createScene();
         const physicsWorld = object3D.components![0] as PhysicsWorld;
-        const physicsWorldLogic = logic(physicsWorld) as PhysicsWorldLogic;
+        const physicsWorldLogic = logicOrThrow(physicsWorld) as PhysicsWorldLogic;
 
         physicsWorldLogic.update(1000 / 60);
         expect(physicsWorldLogic.world.bodies.length).toBe(1);

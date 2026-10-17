@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import type { Object3D } from 'feng3d';
 import { Particle } from '../src/Particle';
 import { ParticleSystemShapeMultiModeValue } from '../src/enums/ParticleSystemShapeMultiModeValue';
@@ -61,9 +61,9 @@ function makeSystemLogic(): ParticleSystemLogic
     const data = particleSystemDefault();
     const object3D: Object3D = { __type__: 'Object3D', name: 'shape-owner', components: [data as never] };
 
-    logic(object3D);
+    logicOrThrow(object3D);
 
-    return logic(data) as ParticleSystemLogic;
+    return logicOrThrow(data) as ParticleSystemLogic;
 }
 
 describe('分支矩阵 · 形状的多模式与变体', () =>

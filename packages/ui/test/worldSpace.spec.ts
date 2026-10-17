@@ -3,7 +3,7 @@
 import 'feng3d';
 import { Object3D } from 'feng3d';
 import type { Components, Ray3 } from 'feng3d';
-import { logic } from '@feng3d/reactivity';
+import { logicOrThrow } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import '../src/core/Canvas';
 import '../src/core/CanvasRenderer';
@@ -67,7 +67,7 @@ function buildScene(renderMode?: UIRenderMode)
         children: [uiObject],
     };
 
-    logic(canvasObject); // 触发初始化（注入 entity、补 UI 默认 geometry / material）
+    logicOrThrow(canvasObject); // 触发初始化（注入 entity、补 UI 默认 geometry / material）
 
     return { canvasObject, renderer };
 }
@@ -78,13 +78,13 @@ describe('UIRenderMode.WorldSpace（UI 画在 3D 平面上）', () =>
     {
         const { canvasObject, renderer } = buildScene();
         const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
-        logic(canvas).layout(800, 600);
+        logicOrThrow(canvas).layout(800, 600);
 
         // 屏幕空间画布钉在画布像素原点：位置 / 旋转 / 缩放被复位
         expect(canvasObject.position).toEqual({ x: 0, y: 0, z: 0 });
         expect(canvasObject.scale).toEqual({ x: 1, y: 1, z: 1 });
 
-        const uniforms = (logic(renderer).renderObject.value as UniformsOf).uniforms!;
+        const uniforms = (logicOrThrow(renderer).renderObject.value as UniformsOf).uniforms!;
         expect(uniforms.u_projection!.x).toBe(0);
     });
 
@@ -92,14 +92,14 @@ describe('UIRenderMode.WorldSpace（UI 画在 3D 平面上）', () =>
     {
         const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
         const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
-        logic(canvas).layout(800, 600);
+        logicOrThrow(canvas).layout(800, 600);
 
         // 世界空间画布的位置 / 旋转 / 缩放就是它在 3D 里的摆放，必须保留
         expect(canvasObject.position).toEqual({ x: 2, y: 1, z: 0 });
         expect(canvasObject.rotation).toEqual({ x: 0, y: 0.5, z: 0 });
         expect(canvasObject.scale).toEqual({ x: 0.01, y: 0.01, z: 0.01 });
 
-        const uniforms = (logic(renderer).renderObject.value as UniformsOf).uniforms!;
+        const uniforms = (logicOrThrow(renderer).renderObject.value as UniformsOf).uniforms!;
         expect(uniforms.u_projection!.x).toBe(1);
     });
 
@@ -107,20 +107,20 @@ describe('UIRenderMode.WorldSpace（UI 画在 3D 平面上）', () =>
     {
         const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
         const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
-        logic(canvas).layout(800, 600);
+        logicOrThrow(canvas).layout(800, 600);
 
         // 元素局部位置为 0，故其数据世界位置 ≈ 宿主 Canvas 的位置（2,1,0）。
         // 传入的是"所见"射线：元素在屏幕上被 y 镜像显示，所以 y 取 -1（拾取内部会翻回来）。
         const worldRay: Ray3 = { __type__: 'Line3', origin: { x: 2, y: -1, z: 5 }, direction: { x: 0, y: 0, z: -1 } };
 
-        expect(logic(renderer).worldRayIntersection(worldRay)).toBeTruthy();
+        expect(logicOrThrow(renderer).worldRayIntersection(worldRay)).toBeTruthy();
     });
 
     it('世界空间：射线打在元素内但偏离中心也应命中（尺寸回退到 TransformLayout）', () =>
     {
         const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
         const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
-        logic(canvas).layout(800, 600);
+        logicOrThrow(canvas).layout(800, 600);
 
         // 元素尺寸 100×50、缩放 0.01 → 世界半宽 0.5；偏 49 像素（0.49 世界单位）仍在元素内。
         // 宿主 Canvas 绕 Y 转了 0.5，所以必须沿元素**法线**构造射线，
@@ -138,19 +138,19 @@ describe('UIRenderMode.WorldSpace（UI 画在 3D 平面上）', () =>
             direction: { x: -nx, y: 0, z: -nz },
         };
 
-        expect(logic(renderer).worldRayIntersection(worldRay)).toBeTruthy();
+        expect(logicOrThrow(renderer).worldRayIntersection(worldRay)).toBeTruthy();
     });
 
     it('世界空间：射线偏离元素时不命中（证明用的确实是传入射线，而不是画布鼠标射线）', () =>
     {
         const { canvasObject, renderer } = buildScene(UIRenderMode.WorldSpace);
         const canvas = canvasObject.components!.find((component) => component.__type__ === 'Canvas') as Canvas;
-        logic(canvas).layout(800, 600);
+        logicOrThrow(canvas).layout(800, 600);
 
         // x 偏出 100 个世界单位（缩放 0.01 → 局部偏出 10000 像素），必然不命中
         const worldRay: Ray3 = { __type__: 'Line3', origin: { x: 102, y: -1, z: 5 }, direction: { x: 0, y: 0, z: -1 } };
 
-        expect(logic(renderer).worldRayIntersection(worldRay)).toBeFalsy();
+        expect(logicOrThrow(renderer).worldRayIntersection(worldRay)).toBeFalsy();
     });
 
     it('着色器同时支持两种投影：世界空间走 cameraUniforms，屏幕空间走 u_Viewport', () =>

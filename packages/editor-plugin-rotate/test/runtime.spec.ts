@@ -1,4 +1,4 @@
-import { isLogicRegistered, logic } from '@feng3d/reactivity';
+import { isLogicRegistered, logicOrThrow } from '@feng3d/reactivity';
 import { describe, expect, it } from 'vitest';
 import { installRotateRuntime } from '../src/runtime';
 import { ROTATE_TYPE } from '../src/shared';
@@ -19,7 +19,7 @@ describe('runtime 半：游戏端行为', () =>
         expect(isLogicRegistered(ROTATE_TYPE)).toBe(true);
 
         const data: Rotate = { __type__: ROTATE_TYPE, speed: 90 };
-        const rotateLogic = logic(data);
+        const rotateLogic = logicOrThrow(data);
 
         expect(rotateLogic).toBeTruthy();
         expect(rotateLogic.angle).toBe(0);
@@ -33,14 +33,14 @@ describe('runtime 半：游戏端行为', () =>
 
         const data = { __type__: ROTATE_TYPE, speed: 10 } as const;
 
-        expect(logic(data)).toBe(logic(data));
+        expect(logicOrThrow(data)).toBe(logicOrThrow(data));
     });
 
     it('只有 __type__ 也能装载（缺省 speed 按 0 处理）', () =>
     {
         installRotateRuntime();
 
-        expect(logic({ __type__: ROTATE_TYPE }).update(1)).toBe(0);
+        expect(logicOrThrow({ __type__: ROTATE_TYPE }).update(1)).toBe(0);
     });
 
     it('装载是幂等的（重复装载不改变行为）', () =>
@@ -50,6 +50,6 @@ describe('runtime 半：游戏端行为', () =>
 
         const data: Rotate = { __type__: ROTATE_TYPE, speed: 180 };
 
-        expect(logic(data).update(1)).toBe(180);
+        expect(logicOrThrow(data).update(1)).toBe(180);
     });
 });

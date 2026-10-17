@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 // 必须最先：feng3d barrel 会拉起 @feng3d/webgpu，先 stub 全局（与其它几何 spec 同模式）
 import './browser-stub';
 
-import { logic } from 'feng3d';
+import { logicOrThrow } from 'feng3d';
 import { Shape2 } from '@feng3d/math';
 import '../src/geometries/ExtrudeGeometry';
 
@@ -49,7 +49,7 @@ describe('ExtrudeGeometry 的 bevel 倒角', () =>
 {
     it('未启用 bevel：只有 z=0 与 z=depth 两层，轮廓不外扩', () =>
     {
-        const geo = logic({ __type__: 'ExtrudeGeometry', shapes: square(10), depth: 4 }) as unknown as GeoLike;
+        const geo = logicOrThrow({ __type__: 'ExtrudeGeometry', shapes: square(10), depth: 4 }) as unknown as GeoLike;
         const e = extents(geo);
 
         expect(e.minZ).toBe(0);
@@ -61,7 +61,7 @@ describe('ExtrudeGeometry 的 bevel 倒角', () =>
 
     it('bevelThickness 把 z 范围两端各撑开；bevelSize 只外扩轮廓、不改变主体', () =>
     {
-        const geo = logic({
+        const geo = logicOrThrow({
             __type__: 'ExtrudeGeometry',
             shapes: square(10),
             depth: 4,
@@ -84,7 +84,7 @@ describe('ExtrudeGeometry 的 bevel 倒角', () =>
 
     it('bevelSegments 决定分层数：顶点数随段数单调增加', () =>
     {
-        const make = (segments: number) => logic({
+        const make = (segments: number) => logicOrThrow({
             __type__: 'ExtrudeGeometry',
             shapes: square(10),
             depth: 4,
@@ -102,7 +102,7 @@ describe('ExtrudeGeometry 的 bevel 倒角', () =>
 
     it('bevelSize 为 0 时退化成直挤出（层不外扩，z 范围仍被 thickness 撑开）', () =>
     {
-        const geo = logic({
+        const geo = logicOrThrow({
             __type__: 'ExtrudeGeometry',
             shapes: square(10),
             depth: 4,
@@ -121,7 +121,7 @@ describe('ExtrudeGeometry 的 bevel 倒角', () =>
 
     it('倒角几何不产生 NaN / Infinity 顶点，索引不越界', () =>
     {
-        const geo = logic({
+        const geo = logicOrThrow({
             __type__: 'ExtrudeGeometry',
             shapes: square(10),
             depth: 4,

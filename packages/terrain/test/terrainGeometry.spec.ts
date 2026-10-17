@@ -36,7 +36,7 @@ function build(data: TerrainGeometry): GeometryLike
 {
     const gl = logic(data);
 
-    if (!gl) throw new Error('logic() 返回空');
+    if (!gl) throw new Error('logicOrThrow() 返回空');
 
     return gl as unknown as GeometryLike;
 }
