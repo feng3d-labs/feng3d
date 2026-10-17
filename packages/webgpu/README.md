@@ -32,7 +32,7 @@ src/
 2. **按需呈现**：`View` 把全局变更计数写入 `Submit.version`；`WebGPU.submit` 比对上次已提交版本，相同则**直接返回**（不编码、不提交），画布保持最后呈现帧（`WebGPU.ts:114`）。
 3. **pull 式上传**：uniform/顶点的差异上传不在写入时 push，而在 `runSubmit` 编码完成后统一拉取（版本号判定，无变化不上传），保证 `writeBuffer` 排队先于本次命令缓冲执行。
 4. **命令编码缓存**：`WGPURenderPass` 按「renderPassObjects 元素身份序列」把连续段录成 RenderBundle，序列不变则重放；带 blend（透明排序敏感）的对象不进 bundle。
-5. **可选资源池**（issue #98）：`ResourcePool` 按「规格键 → 闲置资源」分桶复用，容量按单键 + 单 device 两级控制、超出淘汰最旧；`WGPUBuffer` 接入后由 `setGpuBufferPoolEnabled()` 控制，**默认关闭**（池化改变显存驻留与销毁时机，需真机画面验证后再默认开启）。
+5. **可选资源池**（issue #98）：`ResourcePool` 按「规格键 → 闲置资源」分桶复用，容量按单键 + 单 device 两级控制、超出淘汰最旧；`WGPUBuffer` / `WGPUTexture` 分别由 `setGpuBufferPoolEnabled()` / `setGpuTexturePoolEnabled()` 控制，**默认关闭**（池化改变显存驻留与销毁时机，需真机画面验证后再默认开启）。纹理的复用前提更严：mip 链只有一层、不生成 mipmap、且 sources 完整覆盖整张纹理——复用后必须把内容整体重写。
 
 ### 公开 API
 
@@ -50,7 +50,7 @@ src/
 | `destroy()` | 销毁设备与上下文 |
 
 `src/index.ts` 公开导出：`Submit` 及全部 `data/*` 描述类型、`utils/*` 工具（`ChainMap` / `GPUDeviceStats` / `GpuResourceReleaser` / `ResourcePool`）、`types/*`。
-**注意**：`caches/` 下的 35 个 `WGPU*` 类中，仅 `WGPURenderBundle`（供 benchmark 统计）与 `WGPUBuffer` 的池开关（`setGpuBufferPoolEnabled` / `isGpuBufferPoolEnabled` / `getGpuBufferPoolStats` / `clearGpuBufferPool`，issue #98）被导出。其余为内部实现，**不承诺 API 稳定性**。
+**注意**：`caches/` 下的 35 个 `WGPU*` 类中，仅 `WGPURenderBundle`（供 benchmark 统计）与 `WGPUBuffer` / `WGPUTexture` 的池开关（`setGpuBufferPoolEnabled` 等 4 个 + `setGpuTexturePoolEnabled` 等 4 个，issue #98）被导出。其余为内部实现，**不承诺 API 稳定性**。
 
 ### 依赖
 
