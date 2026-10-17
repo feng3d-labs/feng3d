@@ -83,8 +83,10 @@ export class WGPUBufferBinding extends RefCountedReactiveObject
             //
             const wgpuBuffer = WGPUBuffer.getInstance(device, gbuffer);
 
-            // 持有缓冲区（issue #89）：binding 活着，buffer 就不能被销毁
-            this.hold(wgpuBuffer);
+            // 持有缓冲区（issue #89）：binding 活着，buffer 就不能被销毁。
+            // 用 replaceHeld 而不是累积 hold：本 computed 每次重算都会重新取一遍，
+            // 累积的话引用计数只增不减，资源永远等不到归零（换装 churn 下就是泄漏）。
+            this.replaceHeld([wgpuBuffer]);
             const buffer = wgpuBuffer.gpuBuffer;
 
             const offset = bufferView.byteOffset;

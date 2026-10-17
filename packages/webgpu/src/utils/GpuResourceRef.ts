@@ -64,15 +64,22 @@ export function flushDeferredReleases(device: GPUDevice): void
 {
     const set = getPending().get(device);
 
-    if (!set || set.size === 0) return;
+    if (!set) return;
 
-    // 先摘队列再销毁：destroy() 内部可能触发新的 release（级联引用）
-    const pending = [...set];
-
-    set.clear();
-    for (let i = 0; i < pending.length; i++)
+    // **循环到队列空**：销毁本身会释放它持有的资源（entry → bufferBinding → buffer），
+    // 那些 release 可能又归零、又入队。只处理一轮的话，级联销毁被拖到后面的提交点，
+    // 表现为「统计的 freed 迟迟不涨、存活数迟迟不回落」——实测换装 churn 里就是这个症状。
+    // 轮数上限防病态环（正常持有链深度是个位数）。
+    for (let round = 0; round < 32 && set.size > 0; round++)
     {
-        pending[i].destroy();
+        // 先摘队列再销毁：destroy() 内部触发的新 release 会入下一轮
+        const pending = [...set];
+
+        set.clear();
+        for (let i = 0; i < pending.length; i++)
+        {
+            pending[i].destroy();
+        }
     }
 }
 
@@ -160,6 +167,45 @@ export class RefCountedReactiveObject extends ReactiveObject implements GpuResou
     }
 
     /**
+     * 释放当前持有的全部资源（持有集本身保留可用）。
+     *
+     * 供「每轮重算都换一批持有」的场景使用（如渲染 pass：它只在**本轮编码**期间
+     * 需要用到那些管线与绑定组，下一轮重新编码时换一批）。
+     */
+    protected releaseHeld(): void
+    {
+        const held = this._held;
+
+        if (!held || held.length === 0) return;
+        this._held = [];
+        for (let i = 0; i < held.length; i++) held[i].release();
+    }
+
+    /**
+     * 替换本实例持有的资源集：先释放上一轮，再持有这一轮。
+     *
+     * 与 {@link hold} 的区别：{@link hold} 是**累积**语义（每多一处使用就多持一份，
+     * 销毁时按次数等量释放）；本方法是**替换**语义（持有集只保留最新一轮），
+     * 用于「每轮重算整体换一批消费者」的地方，避免长期重算把引用计数越堆越高。
+     *
+     * @param resources 本轮持有的资源
+     */
+    protected replaceHeld(resources: readonly unknown[]): void
+    {
+        // **先持新的、再放旧的**：两轮之间重叠的资源（同一份管线 / 绑定组被复用）会先 +1 再 -1，
+        // 计数不会中途经过 0。顺序反过来的话，重叠资源会被判成「归零」→ 摘缓存 + 排队销毁，
+        // 而本轮编码 / 重录的命令仍在引用它：轻则下一帧重建同一份资源（性能塌陷），重则读到已销毁对象。
+        const previous = this._held;
+
+        this._held = [];
+        this.hold(...resources);
+        if (previous)
+        {
+            for (let i = 0; i < previous.length; i++) previous[i].release();
+        }
+    }
+
+    /**
      * 销毁：先执行自身清理链（destroyCall），再释放自己持有的资源。
      *
      * 顺序不能反：先断开自身对外的引用，再让被持有的资源有机会归零。
@@ -169,13 +215,8 @@ export class RefCountedReactiveObject extends ReactiveObject implements GpuResou
     {
         super.destroy();
 
-        const held = this._held;
-
+        this.releaseHeld();
         this._held = null;
-        if (held)
-        {
-            for (let i = 0; i < held.length; i++) held[i].release();
-        }
     }
 
     retain(): void

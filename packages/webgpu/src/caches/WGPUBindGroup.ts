@@ -43,9 +43,15 @@ export class WGPUBindGroup extends RefCountedReactiveObject
     {
         this._computedGpuBindGroup = computed(() =>
         {
+            // 持有本项 entry（issue #946）：bindGroup 活着时，它引用的 buffer / texture / sampler
+            // 都不能被销毁（entry 自己已经持有那些，这里把这条链续上）。
+            // 同样用 replaceHeld：本 computed 每次重算都会重新取一遍 entry。
+            const held: unknown[] = [];
             const entries = bindGroupLayout.entries.map((v) =>
             {
                 const wgpuBindGroupEntry = WGPUBindGroupEntry.getInstance(device, v, bindingResources);
+
+                held.push(wgpuBindGroupEntry);
 
                 return wgpuBindGroupEntry.gpuBindGroupEntry;
             });
@@ -63,6 +69,8 @@ export class WGPUBindGroup extends RefCountedReactiveObject
 
                 WGPUBindGroup.gpuBindGroupMap.set(gpuBindGroupKey, gBindGroup);
             }
+
+            this.replaceHeld(held);
 
             return gBindGroup;
         });
