@@ -55,8 +55,14 @@ export interface FooLike { items: Item[]; }
 1. 名字以 `Like` 结尾、且不以 `Writable` 开头；
 2. 声明了 `__type__` 属性（纯数据类，与 §11.4 和 R3 门禁的定义同源）。
 
-这两类接口的数组字段，只要**属性缺 `readonly`** 或**数组外层可变**（`T[]` / `Array<T>` /
-元组 `[A, B]`，含 `T[] | undefined` 这类联合包装），即违规。**新增即失败**；存量冻结在基线里。
+这两类接口的**每一个 property signature** 都必须 `readonly`（属性维度，§11.1）；
+**数组字段还要求数组外层只读**（`readonly T[]`，数组维度，§11.6；`T[]` / `Array<T>` /
+元组 `[A, B]`，含 `T[] | undefined` 这类联合包装都算可变）。**新增即失败**；存量冻结在基线里。
+
+> **2026-10-17 扩维度（issue #625）**：判据原先只覆盖数组字段——非数组字段的属性可写一眼都不看，
+> 是「看起来管了、其实只覆盖一个维度」的典型。扩维度后实测判据内 1003 个字段：属性维度违规
+> 27 处（webgpu 的 `TextureImageSource` / `TextureDataSource` 等 8 个接口）+ `MaterialLike` 12 处，
+> 本批已全部清零；剩下的 13 处全是**数组维度**（见 §4.2），属 #605 的范围。
 
 ### 2.2 为什么不全仓一刀切（误报面）
 
@@ -118,7 +124,10 @@ export interface FooLike { items: Item[]; }
 在它们改完之前，`GradientLike` 的类型改不动（改了会立刻编译不过）。
 这一步**不改类型声明**，可独立验收、不改变行为。
 
-### 4.2 判据内的 16 处（**必须清**，改了记得 `--update` 收紧基线）
+### 4.2 判据内的 13 处（**必须清**，改了记得 `--update` 收紧基线）
+
+> 原表是 16 处；第 4 批（webgpu 的 3 处 ③「属性与数组都可变」）已在 issue #625 清掉，
+> 同批还把 `MaterialLike` 的 12 处属性维度违规一并清零（门禁扩维度后才看得见它们）。
 
 | 批次 | 包 | 位置 | 备注 |
 |---|---|---|---|
@@ -126,12 +135,15 @@ export interface FooLike { items: Item[]; }
 | 1 | `packages/math` | `Matrix4x4.elements` | **WebGPU 边界**（§10）：按 §10 用 `TypeConvert.ts` 转换，不要靠删 `readonly` 修 |
 | 2 | `packages/feng3d` | `Animation.animations`、`Skeleton.boneInverses`、`Skeleton.boneNames`、`Entity.components`、`PointGeometry.points`、`SegmentGeometry.segments` | 先确认消费方没有就地改数组 |
 | 3 | `packages/addons` | `ConvexGeometry.points`、`ExtrudeGeometry.shapes`、`PolyhedronGeometry.indices`、`PolyhedronGeometry.vertices` | 同上 |
-| 4 | `packages/webgpu` | `ComputePass.computeObjects`、`OcclusionQuery.renderObjects`、`TransformFeedbackPass.transformFeedbackObjects` | 这 3 处是 ③（属性也可变），除数组外还要补属性的 `readonly` |
+| 4 | `packages/webgpu` | `ComputePass.computeObjects`、`OcclusionQuery.renderObjects`、`TransformFeedbackPass.transformFeedbackObjects` | ✅ 已清（#625）：这 3 处原本是 ③（属性也可变），数组与属性两个维度都补了 |
 
 每批的做法：先把就地改数组的位置改为经 `Writable*` 形状 → 再把接口的数组字段改成
 `readonly T[]` → 跑 `npm run types:packages`、`npx vitest run`、门禁脚本 → `--update` 收紧基线。
 
-### 4.3 判据外的 128 处（**不强制**，随包迁移分批）
+### 4.3 判据外的 129 处（**不强制**，随包迁移分批）
+
+> 原记 128 处；`node scripts/check-readonly-array-fields.mjs --stats` 实测 129（多出的 1 处是
+> `packages/math/src/bezier/highFunction.ts::HighFunction.as`，与 #625 正文的核实一致）。
 
 | 包 | ① 只读数组（已合口径） | ② 属性只读 + 数组可变 | ③ 属性与数组都可变 |
 |---|---|---|---|

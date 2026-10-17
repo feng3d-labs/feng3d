@@ -219,9 +219,12 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
 - 默认值由 Logic 工厂顶部统一填充（`if (data.field === undefined) writable.field = <默认>`，经 `UnReadonly<T>` 断言写入）
 - 这样字面量声明可省略任意字段，由工厂补全；类型声明与实现保持一致（避免「类型必填、实现按可选处理」的矛盾）
 
-### 11.6 数组字段：属性与数组都只读（issue #605 定口径）
+### 11.6 判据内接口：属性与数组都只读（issue #605 定口径，#625 扩维度）
 
-> **读侧纯数据接口的数组字段一律 `readonly T[]`**——属性 `readonly`、数组本身也 `readonly`。
+> **读侧纯数据接口的每个字段都必须是 `readonly`**（§11.1 的属性维度）；**数组字段还要求数组本身只读**（`readonly T[]`）。
+> 2026-10-17 起门禁两个维度都判（issue #625）：原先只判数组字段，26 处非数组字段的属性可写完全没人管——
+> 「看起来管了、其实只覆盖一个维度」。扩维度后 webgpu 的 27 处属性缺失与 MaterialLike 的 12 处已清零，
+> 剩下的 13 处全是**数组维度**（#605 的范围，`Matrix4x4.elements` / `GradientLike.alphaKeys` 等）。
 > 执行者：`scripts/check-readonly-array-fields.mjs`（新增即失败，存量冻结在
 > `scripts/readonly-array-fields-baseline.json`；本地等价命令 `node scripts/check-readonly-array-fields.mjs`，
 > 随 `prelint:ci` 进 CI）。存量清单与分批策略见 [docs/migrations/READONLY_SHAPES_MIGRATION.md](docs/migrations/READONLY_SHAPES_MIGRATION.md)。
@@ -235,6 +238,8 @@ registerLogic('CubeGeometry', cubeGeometryLogic);
   export interface GradientLike { readonly alphaKeys: GradientAlphaKey[]; }
   // ✗ 属性也可变：§11.1 要求纯数据接口只声明 readonly 字段
   export interface FooLike { items: Item[]; }
+  // ✗ 非数组字段也要 readonly：属性维度与数组维度是两个判据（#625）
+  export interface BarLike { name: string; }
   ```
 - **要就地改数组，改「可写形状」（§11.3），不改读侧类型**：
   ```ts
