@@ -403,6 +403,52 @@ export function collectModuleLevelGlobalThisWrites(sourceFile)
 }
 
 /**
+ * 引擎**全局槽位**的容器名单（issue #679）。
+ *
+ * 这些是模块级单例的公开槽位：`FS.fs` / `FS.basefs` / `ReadRS.rs` 之类。
+ * 在模块顶层给它们赋值 = 「import 这个模块就改引擎全局装配」——正是 R2 要禁的形态，
+ * 但它既不是缓存创建、也不是启动型调用、也不是 `globalThis` 写入，此前**没有任何执行者**
+ * （`check-module-side-effects.mjs` 的判据面不含普通赋值；`check-toplevel-new.mjs` 只统计 `new`，
+ * 不知道「赋给引擎全局槽位」这件事）。
+ *
+ * 名单是**显式的**：新增一个槽位容器就要在这里登记——与缓存容器名单同一口径，
+ * 宁可漏掉（并在此注明）也不要让判据悄悄扩大成「任何模块级属性赋值」。
+ */
+export const GLOBAL_SLOT_CONTAINERS = new Set(['FS', 'ReadRS']);
+
+/**
+ * 收集一个文件里**在 import 时执行**的「给引擎全局槽位赋值」。
+ *
+ * 判据：模块级上下文（`module` / `static-field` / `static-block` / `module-call-callback`）里
+ * 的 `X.y = ...`，且 `X` 在 {@link GLOBAL_SLOT_CONTAINERS} 名单里。
+ *
+ * @param {import('typescript').SourceFile} sourceFile 源文件
+ * @returns {{ line: number, text: string, container: string }[]} 命中列表
+ */
+export function collectModuleLevelGlobalSlotWrites(sourceFile)
+{
+    const found = [];
+    const visit = (node) =>
+    {
+        if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken && isImportTimeCode(node))
+        {
+            const left = node.left.getText(sourceFile);
+            const matched = left.match(/^([A-Za-z_$][\w$]*)\s*\./);
+
+            if (matched && GLOBAL_SLOT_CONTAINERS.has(matched[1]))
+            {
+                found.push({ line: lineOf(sourceFile, node), text: left, container: matched[1] });
+            }
+        }
+        ts.forEachChild(node, visit);
+    };
+
+    visit(sourceFile);
+
+    return found;
+}
+
+/**
  * 某个仓库根相对路径是否是应用入口（页面入口）。
  *
  * @param {string} rel 相对路径（正斜杠）

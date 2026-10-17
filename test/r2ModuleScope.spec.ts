@@ -10,6 +10,7 @@ import {
     checkCacheNameLists,
     collectModuleLevelCalls,
     collectModuleLevelGlobalThisWrites,
+    collectModuleLevelGlobalSlotWrites,
     collectModuleLevelNews,
     collectTsFiles,
     diffCacheNameLists,
@@ -534,5 +535,57 @@ describe('R2 名单一致性（issue #652 做法 5：名单漂移必须 exit 1�
             expect(result.peers.editor).toBeNull();
             expect(result.problems.length).toBe(2);
         });
+    });
+});
+
+/**
+ * 引擎全局槽位赋值（issue #679）。
+ *
+ * 判据补的是 R2 的一个**盲区**：`FS.fs = new ReadFS()` 是普通赋值，既不在
+ * 「缓存创建 / 启动型调用 / globalThis 写入」的判据面，也不是「模块级 `new`」关心的对象。
+ * 这里钉住「该报的报、不该报的不报」，防止判据退化成永远绿。
+ */
+describe('collectModuleLevelGlobalSlotWrites（issue #679）', () =>
+{
+    /** 把一段源码解析成 SourceFile 并跑判据 */
+    function collect(code: string)
+    {
+        const sf = ts.createSourceFile('t.ts', code, ts.ScriptTarget.Latest, true);
+
+        return collectModuleLevelGlobalSlotWrites(sf);
+    }
+
+    it('模块顶层给 FS 槽位赋值：命中，并带上容器名', () =>
+    {
+        const hits = collect("import { FS } from './FS';\nFS.fs = new A();\n");
+
+        expect(hits).toHaveLength(1);
+        expect(hits[0].container).toBe('FS');
+        expect(hits[0].text).toBe('FS.fs');
+    });
+
+    it('名单内的第二个容器（ReadRS.rs）同样命中', () =>
+    {
+        expect(collect("import { ReadRS } from './ReadRS';\nReadRS.rs = makeRS();\n")).toHaveLength(1);
+    });
+
+    it('函数体内的赋值不命中（运行时装配是允许的）', () =>
+    {
+        expect(collect("import { FS } from './FS';\nexport function install() { FS.fs = makeFS(); }\n")).toHaveLength(0);
+    });
+
+    it('名单外的容器不命中（判据不扩成「任何模块级属性赋值」）', () =>
+    {
+        expect(collect("import { Other } from './Other';\nOther.x = 1;\n")).toHaveLength(0);
+    });
+
+    it('读取槽位不是副作用：不命中', () =>
+    {
+        expect(collect("import { FS } from './FS';\nconst f = FS.fs;\n")).toHaveLength(0);
+    });
+
+    it('类 static 字段里的赋值也算 import 期执行：命中', () =>
+    {
+        expect(collect("import { FS } from './FS';\nclass A { static init = (FS.fs = makeFS()); }\n")).toHaveLength(1);
     });
 });
