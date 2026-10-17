@@ -166,7 +166,7 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 | `particlesystem` | 80.0 | 45/45 | 79.4 | 62.5 | 82.7 |
 | `filesystem` | 67.9 | 8/12 | 70.5 | 77.3 | 65.3 |
 | `assets` | 47.3 | 19/20 | 48.0 | 28.9 | 27.9 |
-| `webgpu` | 35.0 | 62/136 | 35.2 | 28.4 | 41.0 |
+| `webgpu` | 35.9 | 63/137 | 36.0 | 29.3 | 41.6 |
 | `editor` | 18.2 | 88/190 | 18.3 | 15.1 | 16.6 |
 
 > **2026-10-05（#709 收编 `@feng3d/tsl` 批）本机实测**：`packages/tsl` 作为第 **22** 个包进入分母
@@ -177,6 +177,12 @@ node scripts/coverage-by-package.mjs --check                    # 与本节比�
 > tsl 的加入让全局读数小幅下降：分母 +82 个文件，其中 **43 个当前零覆盖**（`glsl/` 的各内置函数与
 > `types/` 的类型包装层没有被单测直接触及；收编批只做「原样迁移 + 门禁对齐」，不新增用例，见 issue #709）。
 > 受统计文件 **683 → 765**。
+
+> **2026-10-17（GPU 资源引用计数批 #89）本机实测**：`webgpu` 行 **35.0 → 35.9**（文件 62/136 → 63/137），
+> 新增 `packages/webgpu/test/GpuResourceRef.spec.ts`（5 条：共享释放 / deferred release / 归零后重建 /
+> 换装 churn 计数收敛 / `created == freed + 存活`），首次执行 `utils/GpuResourceRef.ts` 与
+> `WGPUBuffer`、`WGPUBufferBinding`、`WGPUBindGroupEntry` 的 `hold` / `release` 路径。
+> 全局 **60.0 / 49.5 / 54.6 / 60.6**，阈值 `52/42/45/52` 未变（余量 8.0 / 7.5 / 9.6 / 8.6）。
 
 > **2026-10-05（蒙皮第二批 #337）本机实测**：已 rebase 到最新 master（含 #674 批 1 的 Geometry 工厂化、
 > #652 的门禁脚本退出码回归用例），新增测试文件
