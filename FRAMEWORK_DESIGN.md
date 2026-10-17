@@ -416,7 +416,15 @@ computed 链把派生开销降到零之后，剩余的每帧规模成本在**命
 
 **实现（issue #89）**：`packages/webgpu/src/utils/GpuResourceRef.ts` 提供 `RefCountedReactiveObject`（`retain` / `release` / `refCount` / `isReleased` + 消费侧的 `hold()`）与按 device 分桶的 deferred 队列；`runSubmit` 在 `queue.submit()` 之后调 `flushDeferredReleases(device)`，级联销毁在同一次 flush 内循环处理。`WGPUBuffer` / `WGPUTexture` / `WGPUTextureView` / `WGPUSampler` / `WGPUBindGroup` / `WGPURenderPipeline` 已换到该基类；消费关系按「持有」接线：`WGPUBindGroupEntry` →（bufferBinding / textureView / sampler / external）、`WGPUBufferBinding` → buffer、`WGPUTextureView` → texture。
 
-**留账**：`WGPUBindGroup` → entry、`WGPURenderPass` → pipeline / bindGroup 两层持有尚未接线——它们数量少、生命周期跟随 pass，接入需要真实 GPU 场景验证「不提前销毁」，见 issue #89 的后续批。
+**接线现状（#946）**：
+
+- `WGPUBindGroup` → `WGPUBindGroupEntry` **已接**：entry 是 bindGroup 的组成部分，所有权明确，bindGroup 销毁时释放它持有的 entry。
+- `WGPURenderPass` → pipeline / bindGroup **不接**：经推演 + 真机实测否定。pass 的生命周期跟随视图与整条渲染链，
+  远长于单个资源；由它持有会让资源**永不归零**（换装 churn 实测：`freed` 恒为 0、待销毁队列恒空），比不接更糟。
+  正确关系是「释放由**数据侧**驱动（`bindingResources` / `texture` 登记）+ deferred release 保证编码窗口安全」，
+  pass 在编码期间只**使用**裸 GPU 对象，不需要持有包装实例。
+- 所有 computed 里的持有都用 `replaceHeld`（先持新的、再放旧的），不用累积 `hold`：那些 computed 每次数据变化都会重算，
+  累积持有会让引用计数只增不减——同样表现为「永不归零」。
 
 ## 8. 错误处理与数据校验
 > 现状：🔶 部分（编码错误 + 按需解码未做，见 issue #94；数据校验见 packages/feng3d/src/core/Validate.ts）
