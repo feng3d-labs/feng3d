@@ -47,9 +47,10 @@ import type { AnimationClipData, Components, Skeleton, TextureResource } from 'f
  * `occlusionTexture` / `emissiveTexture` **不映射**——`StandardMaterial` 是 Phong 风格，没有
  * metallic/roughness/自发光字段，AO 也没有语义对应的槽位，不臆造等价映射。
  *
- * 来源转 url 的三条规则：`data:` URI（`.gltf` 内嵌图片）原样作为 url；普通 `uri`（外部图片）原样保留，
- * **相对路径的基准由调用方决定**（与 `buffers[].uri` 口径一致，本加载器不做 base 解析）；
- * `bufferView`（GLB 内嵌图片）转成 `data:<mimeType>;base64,…`——GLB 的常见形态，转完即可被引擎加载。
+ * 来源转 url 的三条规则：`data:` URI（`.gltf` 内嵌图片）原样作为 url；普通 `uri`（外部图片）按
+ * `baseUri` 解析成绝对地址——`loadGltfFromUrl` / `loadGLTFWithExternalBuffersFromUrl` 会传 glTF 自身地址，
+ * `parseGLTF` 直接调用时没有基准、**原样保留**（不猜基准）；`bufferView`（GLB 内嵌图片）转成
+ * `data:<mimeType>;base64,…`——GLB 的常见形态，转完即可被引擎加载。
  *
  * 不支持：`metallicFactor` / `roughnessFactor` / `emissiveFactor`（无对应字段，不做臆造的等价映射）、
  * `alphaMode: 'BLEND'` 的透明混合（无可用开关）、`metallicRoughnessTexture` / `occlusionTexture` /
@@ -658,7 +659,8 @@ export async function loadGltfFromUrl(url: string): Promise<GLTFResult>
         return parseGLB(buffer);
     }
 
-    return parseGLTF(new TextDecoder().decode(buffer));
+    // 传 url 作为图片 uri 的解析基准：纹理声明能直接拿到可加载的绝对地址
+    return parseGLTF(new TextDecoder().decode(buffer), undefined, url);
 }
 
 /** 「调用方没有提供该文件」时提示该怎么办（避免只报错不给方向） */
@@ -724,7 +726,7 @@ export async function loadGLTFWithExternalBuffersFromUrl(gltfUrl: string): Promi
     if (uris.length === 0)
     {
         // 没有外部引用：与 loadGltfFromUrl 完全等价，不必多绕
-        return parseGLTF(text);
+        return parseGLTF(text, undefined, gltfUrl);
     }
 
     // `new URL` 在 gltfUrl 本身是相对地址时会抛错，此处如实抛给调用方（与 #352 一致）
@@ -748,7 +750,7 @@ export async function loadGLTFWithExternalBuffersFromUrl(gltfUrl: string): Promi
     const externalBuffers = new Map<string, ArrayBuffer>();
     uris.forEach((uri, i) => externalBuffers.set(uri, contents[i]));
 
-    return parseGLTF(text, externalBuffers);
+    return parseGLTF(text, externalBuffers, gltfUrl);
 }
 
 /**
@@ -809,13 +811,17 @@ export function parseGLB(buffer: ArrayBuffer): GLTFResult
  * 仅支持内嵌 base64 buffer（`data:` URI）；外部文件 URI 会抛错而不是静默产出空几何。
  *
  * @param text `.gltf` 文档内容
+ * @param externalBuffers 外部 `buffers[].uri` 的内容（键为**定义里的原始 uri**）
+ * @param baseUri 图片 `uri` 的解析基准（glTF 文件自身的地址）。缺省时图片 uri **原样**保留——
+ *   `parseGLTF` 直接调用时没有基准信息，猜一个基准比不解析更危险；`loadGltfFromUrl` /
+ *   `loadGLTFWithExternalBuffersFromUrl` 会自动传入。解析失败（baseUri 本身是相对地址）也原样降级。
  */
-export function parseGLTF(text: string, externalBuffers?: ReadonlyMap<string, ArrayBuffer>): GLTFResult
+export function parseGLTF(text: string, externalBuffers?: ReadonlyMap<string, ArrayBuffer>, baseUri?: string): GLTFResult
 {
     const json: GLTFJson = JSON.parse(text);
     const buffers = (json.buffers || []).map((bufferDef, i) => decodeBuffer(bufferDef, i, null, externalBuffers));
 
-    return parseGLTFDocument(json, buffers);
+    return parseGLTFDocument(json, buffers, baseUri);
 }
 
 /**
@@ -994,7 +1000,28 @@ function bytesToDataUrl(bytes: Uint8Array, mimeType: string): string
     return `data:${mimeType};base64,${bytesToBase64(bytes)}`;
 }
 
-function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
+/**
+ * 把图片 `uri` 解析为可加载的 url。
+ *
+ * - `data:` URI 原样（内嵌数据与基准无关）；
+ * - 没有 `baseUri` 时原样（`parseGLTF` 直接调用，没有基准信息）；
+ * - `new URL(uri, baseUri)` 失败（baseUri 本身是相对地址）时原样——如实降级，不猜测。
+ */
+function resolveTextureUri(uri: string, baseUri: string | undefined): string
+{
+    if (!baseUri || uri.startsWith('data:')) return uri;
+
+    try
+    {
+        return new URL(uri, baseUri).href;
+    }
+    catch
+    {
+        return uri;
+    }
+}
+
+function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[], baseUri?: string): GLTFResult
 {
     const accessors = json.accessors || [];
     const bufferViews = json.bufferViews || [];
@@ -1155,7 +1182,7 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
      */
     function textureInfoToResource(info: GLTFTextureInfo): TextureResource | undefined
     {
-        if (info.uri !== undefined) return { __type__: 'Texture', url: info.uri };
+        if (info.uri !== undefined) return { __type__: 'Texture', url: resolveTextureUri(info.uri, baseUri) };
         if (info.bufferView === undefined) return undefined;
 
         const bytes = getBufferViewBytes(info.bufferView);
