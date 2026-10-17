@@ -129,9 +129,9 @@ describe('脏子节点的防线没有被人删掉', () =>
 
         const filterIndex = source.indexOf('filterValidSceneObjects<');
         const addGuardIndex = source.indexOf('describeInvalidSceneObject(rawObject3D)');
-        const parentReadIndex = source.indexOf('getLogic(object3D).parent');
+        const parentReadIndex = source.indexOf('getLogicOrThrow(object3D).parent');
 
-        expect(parentReadIndex, '找不到 `getLogic(object3D).parent`——Hierarchy 的取父方式变了，请更新本判据').toBeGreaterThan(-1);
+        expect(parentReadIndex, '找不到 `getLogicOrThrow(object3D).parent`——Hierarchy 的取父方式变了，请更新本判据').toBeGreaterThan(-1);
         expect(filterIndex, '`collectTree` 不再过滤无效子节点了').toBeGreaterThan(-1);
         expect(addGuardIndex, '`add` 不再对无效子节点判空了').toBeGreaterThan(-1);
         expect(filterIndex, '过滤必须发生在读 logic 之前').toBeLessThan(parentReadIndex);

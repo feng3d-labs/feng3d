@@ -123,7 +123,7 @@ async function main(): Promise<void>
 
     if (!viewLogic)
     {
-        throw new Error('视图类型未注册：`logic(view)` 返回 null（View 的 Logic 是否已注册？）');
+        throw new Error('视图类型未注册：`logicOrThrow(view)` 返回 null（View 的 Logic 是否已注册？）');
     }
 
     const objects = countObjects(scene);

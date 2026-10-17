@@ -1,4 +1,4 @@
-import { isRenderable, logic as getLogic, serialization } from 'feng3d';
+import { isRenderable, serialization, logic as getLogic, logicOrThrow as getLogicOrThrow } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { mergeBounds, readBounds, countTree, summarizeValue, resolveObjectId, getObjectId, isActiveInHierarchy, requireSceneRoot } from './readCore';
@@ -134,7 +134,7 @@ export function sceneList(params: Record<string, unknown>): unknown
 function objectDetail(objectId: string, includeScreen = false, includeBounds = false): unknown
 {
     const object = resolveObjectId(objectId);
-    const objectLogic = getLogic(object);
+    const objectLogic = getLogicOrThrow(object);
 
     return {
         id: getObjectId(object),

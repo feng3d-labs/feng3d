@@ -1,4 +1,4 @@
-import { mat4Append, mat4Copy, mat4ToTRS, Matrix4x4, Vector3, logic as getLogic, reactive } from 'feng3d';
+import { mat4Append, mat4Copy, mat4ToTRS, Matrix4x4, Vector3, logicOrThrow as getLogicOrThrow, reactive } from 'feng3d';
 import type { Camera, Matrix4x4Like, Object3D, OrthographicCamera, PerspectiveCamera } from 'feng3d';
 import type { UnReadonly } from '@feng3d/reactivity';
 
@@ -23,7 +23,7 @@ export const ALPHA_BLEND = {
  */
 export function cameraObject3D(camera: Camera): Object3D | null
 {
-    return getLogic(camera as PerspectiveCamera | OrthographicCamera).entity;
+    return getLogicOrThrow(camera as PerspectiveCamera | OrthographicCamera).entity;
 }
 
 /**
@@ -38,10 +38,10 @@ export function cameraObject3D(camera: Camera): Object3D | null
  */
 export function setWorldMatrix(object3D: Object3D, world: Matrix4x4Like): void
 {
-    const parent = getLogic(object3D).parent;
+    const parent = getLogicOrThrow(object3D).parent;
     // 阶段 C-e：`Matrix4x4` 的 class 已删除，`clone()` / `append()` / `toTRS()` 换成纯函数
     const local: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(world) };
-    if (parent) mat4Append(local, getLogic(parent).world2local, local);
+    if (parent) mat4Append(local, getLogicOrThrow(parent).world2local, local);
     const position = { x: 0, y: 0, z: 0 };
     const rotation = { x: 0, y: 0, z: 0 };
     const scale = { x: 0, y: 0, z: 0 };

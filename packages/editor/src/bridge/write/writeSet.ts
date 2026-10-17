@@ -1,5 +1,5 @@
 import { box3GetCenter, box3GetSize } from 'feng3d';
-import { logic as getLogic } from 'feng3d';
+import { logicOrThrow as getLogicOrThrow } from 'feng3d';
 import { getObjectId, resolveObjectId } from '../EditorBridge';
 import { requireWriteEnabled, pushCommand, redoStack, undoStack } from './writeCore';
 import { isFiniteF32, assertBatchSize } from './writePure';
@@ -178,7 +178,7 @@ export function sceneArrange(params: Record<string, unknown>): unknown
     const infos = rawIds.map((id) =>
     {
         const object = resolveObjectId(String(id));
-        const bounds = getLogic(object).boundingBox.worldBounds;
+        const bounds = getLogicOrThrow(object).boundingBox.worldBounds;
 
         return {
             objectId: getObjectId(object),
@@ -282,7 +282,7 @@ export function sceneArrange(params: Record<string, unknown>): unknown
         let centerAxis = sumOf((info) => axisValue(info.center, axis)) / infos.length;
 
         const explicitCenter = params.centerObjectId !== undefined
-            ? box3GetCenter(getLogic(resolveObjectId(String(params.centerObjectId))).boundingBox.worldBounds)
+            ? box3GetCenter(getLogicOrThrow(resolveObjectId(String(params.centerObjectId))).boundingBox.worldBounds)
             : params.center;
 
         if (explicitCenter !== undefined)

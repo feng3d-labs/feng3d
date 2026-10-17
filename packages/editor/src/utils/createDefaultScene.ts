@@ -1,4 +1,4 @@
-import { LightType, ShadowType, logic } from 'feng3d';
+import { LightType, ShadowType, logic, logicOrThrow } from 'feng3d';
 import type { Object3D, Scene, Vector3 } from 'feng3d';
 
 /**
@@ -151,7 +151,7 @@ export function createDefaultScene(): Object3D
     // 挂载：构造 Object3DLogic（含 EntityLogic / ContainerLogic 的结构同步 effect）——
     // 组件在此获得宿主并执行 init()，父子关系自动建立。
     // 从根开始 `logic()` 即可递归触达整棵树（ContainerLogic 的 effect 会为每个子对象创建 logic）。
-    logic(root);
+    logicOrThrow(root);
 
     return root;
 }
@@ -168,5 +168,5 @@ export function createDefaultSceneComponent(): Scene | null
 {
     const root = createDefaultScene();
 
-    return logic(root).getComponent<Scene>('Scene') ?? null;
+    return logicOrThrow(root).getComponent<Scene>('Scene') ?? null;
 }

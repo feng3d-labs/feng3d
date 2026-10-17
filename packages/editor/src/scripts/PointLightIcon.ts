@@ -1,4 +1,4 @@
-import { effect, logic as getLogic, mat4TransformPoint3, reactive, shortcut, ticker, vec3Dot, Vector3, Vector3Like } from 'feng3d';
+import { effect, logicOrThrow as getLogicOrThrow, mat4TransformPoint3, reactive, shortcut, ticker, vec3Dot, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, PointLight, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { createEditorScriptLogicBase } from './EditorScript';
@@ -181,11 +181,11 @@ export function pointLightIconLogic(data: PointLightIcon): PointLightIconLogic
                 const light = data.light;
                 if (!light) return;
 
-                const lightObject3D = getLogic(light).entity;
+                const lightObject3D = getLogicOrThrow(light).entity;
                 const host = members.entity;
                 if (!lightObject3D || !host) return;
 
-                setWorldMatrix(host, getLogic(lightObject3D).local2world);
+                setWorldMatrix(host, getLogicOrThrow(lightObject3D).local2world);
             });
         },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
@@ -215,7 +215,7 @@ export function pointLightIconLogic(data: PointLightIcon): PointLightIconLogic
             reactive(lines).scale = { x: range, y: range, z: range };
             reactive(points).scale = { x: range, y: range, z: range };
 
-            const lightObject3D = getLogic(light).entity;
+            const lightObject3D = getLogicOrThrow(light).entity;
             if (!lightObject3D || useEditorStore().selectedObject3Ds.indexOf(lightObject3D) === -1)
             {
                 reactive(lines).activeSelf = false;
@@ -229,7 +229,7 @@ export function pointLightIconLogic(data: PointLightIcon): PointLightIconLogic
             if (!editorCameraObject3D) return;
             // 缺省 out 是纯字面量（没有 Vector3 的方法），而 `ringAlpha` 收 `Vector3`（阶段 C-e 不改它的签名）
             const camerapos = { x: 0, y: 0, z: 0 };
-            mat4TransformPoint3(getLogic(host).world2local, getLogic(editorCameraObject3D).worldPosition, camerapos);
+            mat4TransformPoint3(getLogicOrThrow(host).world2local, getLogicOrThrow(editorCameraObject3D).worldPosition, camerapos);
 
             const segments: Segment[] = [];
             const pointInfos: PointInfo[] = [];
@@ -291,7 +291,7 @@ export function pointLightIconLogic(data: PointLightIcon): PointLightIconLogic
             const light = data.light;
             if (!light) return;
 
-            const lightObject3D = getLogic(light).entity;
+            const lightObject3D = getLogicOrThrow(light).entity;
             if (!lightObject3D) return;
 
             useEditorStore().selectObject(lightObject3D);
@@ -315,9 +315,9 @@ export function pointLightIconLogic(data: PointLightIcon): PointLightIconLogic
             segmentGeometry = null;
             pointGeometry = null;
 
-            if (icon) getLogic(icon).dispose();
-            if (lines) getLogic(lines).dispose();
-            if (points) getLogic(points).dispose();
+            if (icon) getLogicOrThrow(icon).dispose();
+            if (lines) getLogicOrThrow(lines).dispose();
+            if (points) getLogicOrThrow(points).dispose();
 
             members.dispose();
         },

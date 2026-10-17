@@ -1,4 +1,4 @@
-import { logic as getLogic, mat4AppendRotation, mat4AppendTranslation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4MoveForward, mat4SetPosition, Matrix4x4, shortcut, ticker, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3Dot, vec3LengthSquared, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector2, Vector2Like, Vector3, Vector3Like, WritableVector2Like, WritableVector3Like } from 'feng3d';
+import { logicOrThrow as getLogicOrThrow, mat4AppendRotation, mat4AppendTranslation, mat4Copy, mat4GetAxisX, mat4GetAxisY, mat4GetAxisZ, mat4MoveForward, mat4SetPosition, Matrix4x4, shortcut, ticker, VEC3_Y_AXIS, vec3Add, vec3Copy, vec3Dot, vec3LengthSquared, vec3NormalizeThickness, vec3ScaleNumber, vec3Sub, Vector2, Vector2Like, Vector3, Vector3Like, WritableVector2Like, WritableVector3Like } from 'feng3d';
 import type { Object3D, PerspectiveCamera } from 'feng3d';
 import { getNavigationScheme } from '../../configs/ViewportNavigationSchemes';
 import type { MouseGestureBinding, NavigationKeyMap, ViewportAction, ViewportNavigationScheme } from '../../configs/ViewportNavigationSchemes';
@@ -270,7 +270,7 @@ export class ViewportNavigation
         const gesture = this.#matchGesture(event);
         if (!gesture) return;
 
-        const camLogic = getLogic(this.#cameraObject);
+        const camLogic = getLogicOrThrow(this.#cameraObject);
         this.#active = {
             action: gesture.action,
             buttons: gesture.buttons,
@@ -403,7 +403,7 @@ export class ViewportNavigation
         const picked = this.#getOrbitPivot?.() ?? null;
         if (picked) return picked;
 
-        const camLogic = getLogic(this.#cameraObject);
+        const camLogic = getLogicOrThrow(this.#cameraObject);
         // 阶段 C-e：`Matrix4x4.getAxisZ` 已删除，缺省 out 没有 Vector3 的方法，显式传实例
         const forward = { x: 0, y: 0, z: 0 };
 
@@ -443,9 +443,9 @@ export class ViewportNavigation
         const rect = this.#viewRect();
         if (!rect.width || !rect.height) return;
 
-        const camera = getLogic(this.#cameraObject).getComponent<PerspectiveCamera>('PerspectiveCamera');
+        const camera = getLogicOrThrow(this.#cameraObject).getComponent<PerspectiveCamera>('PerspectiveCamera');
         const scaleByDepth = camera
-            ? getLogic(camera).getScaleByDepth(sceneControlConfig.lookDistance)
+            ? getLogicOrThrow(camera).getScaleByDepth(sceneControlConfig.lookDistance)
             : rect.height;
         const boost = this.#shiftBoost();
         const worldPerPixel = scaleByDepth / rect.height * boost;
@@ -494,7 +494,7 @@ export class ViewportNavigation
     /** 沿当前视线前后移动（正数前进） */
     #dolly(distance: number): void
     {
-        const camLogic = getLogic(this.#cameraObject);
+        const camLogic = getLogicOrThrow(this.#cameraObject);
         const dollyMatrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
 
         mat4MoveForward(dollyMatrix, distance, dollyMatrix);
@@ -510,7 +510,7 @@ export class ViewportNavigation
         active.startPointer.y = pointer.y;
         if (dx === 0 && dy === 0) return;
 
-        const camLogic = getLogic(this.#cameraObject);
+        const camLogic = getLogicOrThrow(this.#cameraObject);
         const matrix: Matrix4x4 = { __type__: 'Matrix4x4', ...mat4Copy(camLogic.local2world) };
         const position = camLogic.worldPosition;
         const lookAxisX = { x: 0, y: 0, z: 0 };
@@ -540,7 +540,7 @@ export class ViewportNavigation
     {
         const dt = (interval > 0 ? interval : 1000 / 60) / 1000;
 
-        const camLogic = getLogic(this.#cameraObject);
+        const camLogic = getLogicOrThrow(this.#cameraObject);
         // 阶段 C-e：`getAxisX|Z` 已删除，缺省 out 没有 Vector3 的方法（下面要用 `scaleNumber`）
         const right = { x: 0, y: 0, z: 0 };
         const forward = { x: 0, y: 0, z: 0 };

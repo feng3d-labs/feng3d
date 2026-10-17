@@ -1,4 +1,4 @@
-import { globalEmitter, logic as getLogic, mat4AppendRotation, mat4FromPosition, mat4FromRotation, mat4GetPosition, mat4GetRotation, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, reactive, ticker, vec3Add, vec3Copy, vec3Length, vec3Multiply, vec3ScaleNumber, Vector3, Vector3Like, WritableVector3Like } from 'feng3d';
+import { globalEmitter, mat4AppendRotation, mat4FromPosition, mat4FromRotation, mat4GetPosition, mat4GetRotation, mat4TransformPoint3, mat4TransformVector3, Matrix4x4, reactive, ticker, vec3Add, vec3Copy, vec3Length, vec3Multiply, vec3ScaleNumber, Vector3, Vector3Like, WritableVector3Like, logic, logic as getLogic } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { isVector3Like } from '../../utils/sceneObjectGuard';

@@ -1,5 +1,5 @@
 import { planeFromNormalAndPoint } from 'feng3d';
-import { logic as getLogic, mat4Copy, mat4GetAxisZ, mat4TransformPoint3, Plane, shortcut, vec3Cross, vec3From, vec3Sub, Vector2, Vector3, windowEventProxy } from 'feng3d';
+import { mat4Copy, mat4GetAxisZ, mat4TransformPoint3, Plane, shortcut, vec3Cross, vec3From, vec3Sub, Vector2, Vector3, windowEventProxy, logic as getLogic, logicOrThrow as getLogicOrThrow } from 'feng3d';
 import type { Object3D } from 'feng3d';
 import { reactive, UnReadonly } from '@feng3d/reactivity';
 import type { SToolModel, SToolModelLogic } from './models/SToolModel';
@@ -211,7 +211,7 @@ export function sToolLogic(data: STool): SToolLogic
     {
         const component = data.toolModel;
 
-        return component ? getLogic(component) : null;
+        return component ? getLogicOrThrow(component) : null;
     }
 
     function onMouseMove(): void

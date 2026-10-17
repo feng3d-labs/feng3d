@@ -1,4 +1,4 @@
-import { isRenderable, logic as getLogic } from 'feng3d';
+import { isRenderable, logic, logic as getLogic } from 'feng3d';
 import { toRaw } from '@feng3d/reactivity';
 import type { Object3D, Scene } from 'feng3d';
 import { useEditorStore } from '../../vue-app/stores/editorStore';

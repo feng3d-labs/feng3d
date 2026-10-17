@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { AssetType, dataTransform, effect, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, logic as getLogic, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
+import { AssetType, dataTransform, effect, FileAsset, FolderAsset, Object3DAsset, GeometryAsset, logic, logic as getLogic, logicOrThrow as getLogicOrThrow, MaterialAsset, serialize, TextureAsset, TextureCubeAsset } from 'feng3d';
 import JSZip from 'jszip';
 import type { EditorRS } from '../../assets/EditorRS';
 import { Feng3dScreenShot } from '../../feng3d/Feng3dScreenShot';
@@ -162,7 +162,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
         else if (this.asset instanceof MaterialAsset)
         {
             const materialAsset = this.asset;
-            this.#whenLoaded(getLogic(materialAsset.data), () =>
+            this.#whenLoaded(getLogicOrThrow(materialAsset.data), () =>
                 Feng3dScreenShot.feng3dScreenShot.drawMaterial(materialAsset.data));
         }
         else if (this.asset instanceof GeometryAsset)
@@ -172,7 +172,7 @@ export class AssetNode<T extends AssetNodeEventMap = AssetNodeEventMap> extends 
         else if (this.asset instanceof Object3DAsset)
         {
             const object3D = this.asset.data;
-            this.#whenLoaded(getLogic(object3D), () =>
+            this.#whenLoaded(getLogicOrThrow(object3D), () =>
                 Feng3dScreenShot.feng3dScreenShot.drawObject3D(object3D));
         }
     }

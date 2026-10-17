@@ -1,7 +1,7 @@
 import { box3GetCenter, box3GetSize } from 'feng3d';
 import type { ComponentLogic } from 'feng3d';
 import type { Camera, Color4, Object3D, PerspectiveCamera, Ray3, Scene, Stats, View, ViewLogic } from 'feng3d';
-import { logic as getLogic, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, ticker, Vector3 } from 'feng3d';
+import { logic, logicOrThrow as getLogicOrThrow, markMutation, mat4Identity, mat4SetRotation, mat4TransformVector3, reactive, ticker, Vector3 } from 'feng3d';
 import { WebGPU } from '@feng3d/webgpu';
 import type { ReadPixels, Submit } from '@feng3d/webgpu';
 import type { EditorComponent } from './EditorComponent';
@@ -133,7 +133,7 @@ export class EditorView
     /** 视图 logic（渲染链由响应式提交链承载） */
     get viewLogic(): ViewLogic
     {
-        this.#viewLogic ||= getLogic(this.view);
+        this.#viewLogic ||= getLogicOrThrow(this.view);
 
         return this.#viewLogic;
     }
@@ -141,7 +141,7 @@ export class EditorView
     /** 视图场景（`ViewLogic` 从 root 自身组件解析出的 Scene） */
     get viewScene(): Scene | null
     {
-        return getLogic(this.root).getComponent<Scene>('Scene') ?? null;
+        return getLogicOrThrow(this.root).getComponent<Scene>('Scene') ?? null;
     }
 
     /**
@@ -330,7 +330,7 @@ export class EditorView
         const camera = this.camera as PerspectiveCamera | null;
         if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
 
-        const cameraObject = getLogic(camera).entity as Object3D | null;
+        const cameraObject = getLogicOrThrow(camera).entity as Object3D | null;
         if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
 
         reactive(cameraObject).rotation = { x: rotation.x, y: rotation.y, z: rotation.z };
@@ -354,10 +354,10 @@ export class EditorView
         const camera = this.camera as PerspectiveCamera | null;
         if (!camera) throw new Error('编辑器相机尚未就绪（SceneView 还没注入相机）');
 
-        const cameraObject = getLogic(camera).entity as Object3D | null;
+        const cameraObject = getLogicOrThrow(camera).entity as Object3D | null;
         if (!cameraObject) throw new Error('编辑器相机没有宿主对象');
 
-        const bounds = getLogic(object3D).boundingBox.worldBounds;
+        const bounds = getLogicOrThrow(object3D).boundingBox.worldBounds;
         const center = box3GetCenter(bounds);
         const size = box3GetSize(bounds);
         // 包围球半径取半对角线：只取最长边会在目标旋转后露角
@@ -370,7 +370,7 @@ export class EditorView
         // 相机前向 = 旋转矩阵 × (0,0,-1)（与 Object3DLogic 的矩阵构造同源，避免欧拉约定差异）
         // 阶段 C-e：`Matrix4x4` 的 class 已删除，链式调用换成「纯数据基准 + 纯函数」
         // （`setRotation` 的 `a` 提供位移与缩放，原 class 形态传的是刚 new 出来的单位矩阵）
-        const rotation = getLogic(cameraObject).rotation;
+        const rotation = getLogicOrThrow(cameraObject).rotation;
         const forward = mat4TransformVector3(
             mat4SetRotation(mat4Identity(), { x: rotation.x, y: rotation.y, z: rotation.z }),
             { x: 0, y: 0, z: -1 });
@@ -412,7 +412,7 @@ export class EditorView
     {
         this.camera = camera;
         this.editorComponent = editorComponent;
-        this.editorComponentLogic = editorComponent ? getLogic(editorComponent) as ComponentLogic : null;
+        this.editorComponentLogic = editorComponent ? getLogicOrThrow(editorComponent) as ComponentLogic : null;
 
         // 经响应式代理写入组件数据字段（数据只读，写入必须走代理）——等价旧写法的
         // `editorComponent.scene = ...` / `editorComponent.editorCamera = ...`，
@@ -446,7 +446,7 @@ export class EditorView
         const gx = ((clientX - rect.x) * 2 - rect.width) / rect.width;
         const gy = -((clientY - rect.y) * 2 - rect.height) / rect.height;
 
-        return getLogic(camera).getRay3D(gx, gy);
+        return getLogicOrThrow(camera).getRay3D(gx, gy);
     }
 
     /** 层级树（同步 `rootObject3D`） */

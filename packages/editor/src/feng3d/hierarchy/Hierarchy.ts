@@ -1,4 +1,4 @@
-import { globalEmitter, watcher, logic as getLogic, effect, reactive, toRaw } from 'feng3d';
+import { globalEmitter, watcher, logic, logic as getLogic, logicOrThrow as getLogicOrThrow, effect, reactive, toRaw } from 'feng3d';
 import type { Effect, Object3D, Object3DAsset } from 'feng3d';
 import { useEditorStore } from '../../vue-app/stores/editorStore';
 import { describeInvalidSceneObject, filterValidSceneObjects } from '../../utils/sceneObjectGuard';
@@ -415,7 +415,7 @@ export class Hierarchy
         // ⚠️ `parent` getter 内部经 `reactive(parentState)` 读取，会被响应式系统**包装成代理**；
         // 而 `nodeMap` 的键是 raw 对象，必须 `toRaw` 还原后再查，否则查不到父结点，
         // 子对象会被整体跳过（表现为层级面板只有根节点、子节点不显示）。
-        const parent = getLogic(object3D).parent;
+        const parent = getLogicOrThrow(object3D).parent;
         const parentnode = parent ? this.nodeMap.get(toRaw(parent as Object3D)) : undefined;
         if (parentnode)
         {

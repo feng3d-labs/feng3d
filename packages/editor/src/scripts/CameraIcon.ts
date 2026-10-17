@@ -1,4 +1,4 @@
-import { effect, logic as getLogic, reactive, shortcut, ticker, Vector3, Vector3Like } from 'feng3d';
+import { effect, logicOrThrow as getLogicOrThrow, reactive, shortcut, ticker, Vector3, Vector3Like } from 'feng3d';
 import type { Billboard, Camera, Color4, MeshRenderer, Object3D, OrthographicCamera, PerspectiveCamera, PlaneGeometry, PointGeometry, PointInfo, PointMaterial, Segment, SegmentGeometry, SegmentMaterial, TextureMaterial } from 'feng3d';
 import { useEditorStore } from '../vue-app/stores/editorStore';
 import { createEditorScriptLogicBase } from './EditorScript';
@@ -281,8 +281,8 @@ export function cameraIconLogic(data: CameraIcon): CameraIconLogic
                 if (camera)
                 {
                     const type = (camera as { __type__: string }).__type__;
-                    if (type === 'PerspectiveCamera') void getLogic(camera as PerspectiveCamera).projectionMatrix;
-                    else if (type === 'OrthographicCamera') void getLogic(camera as OrthographicCamera).projectionMatrix;
+                    if (type === 'PerspectiveCamera') void getLogicOrThrow(camera as PerspectiveCamera).projectionMatrix;
+                    else if (type === 'OrthographicCamera') void getLogicOrThrow(camera as OrthographicCamera).projectionMatrix;
                 }
 
                 lensChanged = true;
@@ -302,7 +302,7 @@ export function cameraIconLogic(data: CameraIcon): CameraIconLogic
                 const host = members.entity;
                 if (!cameraObject || !host) return;
 
-                setWorldMatrix(host, getLogic(cameraObject).local2world);
+                setWorldMatrix(host, getLogicOrThrow(cameraObject).local2world);
             });
         },
         beforeRender(renderObject) { members.beforeRender(renderObject); },
@@ -364,9 +364,9 @@ export function cameraIconLogic(data: CameraIcon): CameraIconLogic
             segmentGeometry = null;
             pointGeometry = null;
 
-            if (icon) getLogic(icon).dispose();
-            if (lines) getLogic(lines).dispose();
-            if (points) getLogic(points).dispose();
+            if (icon) getLogicOrThrow(icon).dispose();
+            if (lines) getLogicOrThrow(lines).dispose();
+            if (points) getLogicOrThrow(points).dispose();
 
             // 基类 dispose 写入 enabled = false
             members.dispose();
