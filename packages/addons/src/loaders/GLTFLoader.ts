@@ -1,6 +1,6 @@
 import { mat4Append, mat4FromPosition, mat4FromQuaternion, mat4FromScale, mat4Identity, mat4Invert, mat4TransformPoints, mat4TransformVector3, mat4Transpose, Matrix4x4, quatSet } from '@feng3d/math';
 import { AssetType, CustomGeometry, Object3D, PropertyClip, PropertyClipPathItemType, reactive, StandardMaterial } from 'feng3d';
-import type { AnimationClipData, Components, Skeleton } from 'feng3d';
+import type { AnimationClipData, Components, Skeleton, TextureResource } from 'feng3d';
 
 /**
  * glTF 2.0 加载器（做深而非做多）。
@@ -33,19 +33,27 @@ import type { AnimationClipData, Components, Skeleton } from 'feng3d';
  *   `wrapS`/`wrapT`/`magFilter`/`minFilter` 按 glTF 数字枚举**原样保留**（不映射到 feng3d 字段）
  * - 覆盖的纹理槽位：`pbrMetallicRoughness.baseColorTexture` / `metallicRoughnessTexture`、
  *   `normalTexture` / `occlusionTexture` / `emissiveTexture`；`texCoord` 原样保留
+ * - **纹理映射**：`baseColorTexture` → `s_diffuse`、`normalTexture` → `s_normal`，值是声明式
+ *   纹理引用 `{ __type__: 'Texture', url }`，由引擎的 `resolveTexture` 异步加载（见下段）
  *
  * 变换语义：**顶点在解析期被烘焙到世界空间**——每个节点沿父链累乘得到世界矩阵
  * （`M_world = M_local × M_parent_world`，与 {@link Object3DLogic.local2world} 同一约定），
  * 位置用世界矩阵变换、法线用其逆转置变换。因此产出的 Object3D 树只承载层级/名称，
  * 其自身 transform 保持单位矩阵，避免对已烘焙的顶点二次变换。
  *
- * 不支持：**纹理图片的加载**——本加载器只解析上一条所说的索引链与来源（文件名 / `mimeType`），
- * **不加载图片**：`GLTFPrimitive.material` 是 `StandardMaterial`，它的 `s_diffuse` 等槽位需要真正的
- * `Texture` 实例，而加载图片是**异步**的、依赖具体运行环境（浏览器 / Node / 打包器），故与 issue #12
- * 处理 MTL 贴图的口径一致（只给出文件名/来源，由调用方自行加载，见 `MTLMaterialRecord.textureFiles`）；
- * `metallicFactor` / `roughnessFactor` / `emissiveFactor`（StandardMaterial 是 Phong 风格，
- * 没有对应字段，不做臆造的等价映射）、`alphaMode: 'BLEND'` 的透明混合（无可用开关）、
- * 形变目标（`weights`）、Draco 压缩、外部文件 URI
+ * **纹理映射（本批）**：在索引链之上，把能映射到 `StandardMaterial` 的槽位写成声明式纹理引用
+ * （`{ __type__: 'Texture', url }`，见 `TextureResource`），由引擎的 `resolveTexture` 异步加载：
+ * `baseColorTexture` → `s_diffuse`、`normalTexture` → `s_normal`。`metallicRoughnessTexture` /
+ * `occlusionTexture` / `emissiveTexture` **不映射**——`StandardMaterial` 是 Phong 风格，没有
+ * metallic/roughness/自发光字段，AO 也没有语义对应的槽位，不臆造等价映射。
+ *
+ * 来源转 url 的三条规则：`data:` URI（`.gltf` 内嵌图片）原样作为 url；普通 `uri`（外部图片）原样保留，
+ * **相对路径的基准由调用方决定**（与 `buffers[].uri` 口径一致，本加载器不做 base 解析）；
+ * `bufferView`（GLB 内嵌图片）转成 `data:<mimeType>;base64,…`——GLB 的常见形态，转完即可被引擎加载。
+ *
+ * 不支持：`metallicFactor` / `roughnessFactor` / `emissiveFactor`（无对应字段，不做臆造的等价映射）、
+ * `alphaMode: 'BLEND'` 的透明混合（无可用开关）、`metallicRoughnessTexture` / `occlusionTexture` /
+ * `emissiveTexture` 的槽位映射（无对应字段）、Draco 压缩、外部文件 URI
  * （`buffers[].uri` 指向外部文件需网络/文件读取，暂不实现）。
  *
  * **动画可播放（本批）**：`animations` 除索引链外，另产出 {@link GLTFResult.animationClips}——
@@ -194,9 +202,9 @@ interface GLTFTextureRefDef
  * `StandardMaterial` 是 Phong 风格，这些量没有对应字段，声明了也无法消费，
  * 详见 `parseGLTFDocument` 内的 `buildMaterial`。
  *
- * 纹理引用在这里**只出现不消费**：因子映射与纹理索引链是两条独立的产物（前者进
- * `StandardMaterial`，后者进 {@link GLTFTextureUsage}），见 `parseGLTFDocument` 内的
- * `resolveMaterialTextures`。
+ * 纹理引用有两条消费路径：`baseColorTexture` / `normalTexture` 进 `StandardMaterial` 的
+ * `s_diffuse` / `s_normal`（声明式纹理引用，见 `buildMaterial`），全部槽位另进
+ * {@link GLTFTextureUsage} 索引链（见 `resolveMaterialTextures`）。
  */
 interface GLTFMaterialDef
 {
@@ -449,18 +457,19 @@ export interface GLTFPrimitive
      */
     readonly mode: number;
     /**
-     * 该 primitive 的材质（按自身 `material` 下标解析 `materials[i]` 的因子）。
+     * 该 primitive 的材质（按自身 `material` 下标解析 `materials[i]` 的因子与贴图）。
      *
      * `material` 下标缺失或越界时回落到默认材质；无论哪条路径，每个 primitive
-     * 都持有**独立**的材质数据实例。
+     * 都持有**独立**的材质数据实例。`s_diffuse` / `s_normal` 是声明式纹理引用，
+     * 由引擎异步加载（见下方 `textures` 与文件头"纹理映射"）。
      */
     readonly material: StandardMaterial;
     /**
      * 该 primitive 的材质**实际引用**的贴图（按槽位固定顺序，见 {@link GLTFTextureSlot}）。
      *
      * 每项含槽位名 + `texCoord` + 索引链解出的终点数据（{@link GLTFTextureInfo}）。
-     * **图片没有加载**（`material` 上的 `s_diffuse` 等槽位仍为空，见文件头"不支持"清单），
-     * 这里给的是"该去哪加载"的信息。
+     * 其中 `baseColorTexture` / `normalTexture` 已同时写进 `material.s_diffuse` / `material.s_normal`
+     * （声明式纹理引用）；其余三个槽位没有语义对应的材质字段，这里保留"该去哪加载"的信息。
      *
      * 材质下标缺失/越界（回落默认材质）或材质没写任何贴图时为空数组。
      */
@@ -961,6 +970,30 @@ function parseAnimations(json: GLTFJson): GLTFAnimation[]
     });
 }
 
+/**
+ * 把二进制数据编码为 base64（分块，避免大图片一次性展开成超长参数列表）。
+ *
+ * 用 `btoa`：浏览器与 Node 16+ 都有，纹理解析要能同时在两边跑（单元测试在 Node 下）。
+ */
+function bytesToBase64(bytes: Uint8Array): string
+{
+    const chunkSize = 0x8000;
+    let binary = '';
+
+    for (let i = 0; i < bytes.length; i += chunkSize)
+    {
+        binary += String.fromCharCode(...Array.from(bytes.subarray(i, i + chunkSize)));
+    }
+
+    return btoa(binary);
+}
+
+/** 把 `images[].bufferView` 的像素数据转成可被纹理资源加载的 data URL */
+function bytesToDataUrl(bytes: Uint8Array, mimeType: string): string
+{
+    return `data:${mimeType};base64,${bytesToBase64(bytes)}`;
+}
+
 function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
 {
     const accessors = json.accessors || [];
@@ -1005,6 +1038,10 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
      *   只对 `'MASK'` 有效，`'OPAQUE'`/`'BLEND'` 不应受它影响）；
      * - `name`（规范 5.19）→ `Material.name`。
      *
+     * **贴图映射（本批）**：`baseColorTexture` → `s_diffuse`、`normalTexture` → `s_normal`，
+     * 值是声明式纹理引用（`{ __type__: 'Texture', url }`），由引擎异步加载；其余三个槽位
+     * 没有语义对应的字段，不映射。
+     *
      * **有意不映射**（无依据，不臆造等价映射）：
      * - `metallicFactor` / `roughnessFactor`：StandardMaterial 没有 metallic/roughness 字段；
      * - `emissiveFactor`：StandardMaterial 没有自发光字段；
@@ -1025,10 +1062,17 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
         const baseColor = materialDef.pbrMetallicRoughness?.baseColorFactor;
         const alphaMode = materialDef.alphaMode ?? 'OPAQUE';
         const alphaThreshold = alphaMode === 'MASK' ? (materialDef.alphaCutoff ?? 0.5) : 0;
+        // 贴图：只映射语义上真有对应字段的两个槽位（见文件头"纹理映射"）
+        const baseColorTexture = materialDef.pbrMetallicRoughness?.baseColorTexture;
+        const normalTexture = materialDef.normalTexture;
+        const s_diffuse = baseColorTexture === undefined ? undefined : textureInfoToResource(buildTextureInfo(baseColorTexture.index));
+        const s_normal = normalTexture === undefined ? undefined : textureInfoToResource(buildTextureInfo(normalTexture.index));
 
         return {
             __type__: 'StandardMaterial',
             ...(materialDef.name !== undefined && { name: materialDef.name }),
+            ...(s_diffuse !== undefined && { s_diffuse }),
+            ...(s_normal !== undefined && { s_normal }),
             // doubleSided 缺省 false：glTF 默认单面 + 剔除背面
             cullFace: materialDef.doubleSided === true ? 'none' : 'back',
             uniforms: {
@@ -1089,6 +1133,35 @@ function parseGLTFDocument(json: GLTFJson, buffers: ArrayBuffer[]): GLTFResult
             ...(samplerDef?.magFilter !== undefined && { magFilter: samplerDef.magFilter }),
             ...(samplerDef?.minFilter !== undefined && { minFilter: samplerDef.minFilter }),
         };
+    }
+
+    /** 取 `bufferViews[index]` 的字节（图片像素在 buffer 里时用；越界或 buffer 缺失返回 undefined） */
+    function getBufferViewBytes(viewIndex: number): Uint8Array | undefined
+    {
+        const viewDef = (json.bufferViews || [])[viewIndex];
+        if (!viewDef) return undefined;
+
+        const buffer = buffers[viewDef.buffer ?? 0];
+        if (!buffer) return undefined;
+
+        return new Uint8Array(buffer, viewDef.byteOffset ?? 0, viewDef.byteLength);
+    }
+
+    /**
+     * 把一条纹理的索引链终点转成**声明式纹理引用**（`{ __type__: 'Texture', url }`）。
+     *
+     * 三种来源：`data:` URI 原样作为 url；普通 `uri` 原样保留（相对路径的基准由调用方决定）；
+     * `bufferView` 把像素数据转成 `data:<mimeType>;base64,…`。取不到来源时返回 undefined，不猜测。
+     */
+    function textureInfoToResource(info: GLTFTextureInfo): TextureResource | undefined
+    {
+        if (info.uri !== undefined) return { __type__: 'Texture', url: info.uri };
+        if (info.bufferView === undefined) return undefined;
+
+        const bytes = getBufferViewBytes(info.bufferView);
+        if (!bytes) return undefined;
+
+        return { __type__: 'Texture', url: bytesToDataUrl(bytes, info.mimeType ?? 'image/png') };
     }
 
     /**
